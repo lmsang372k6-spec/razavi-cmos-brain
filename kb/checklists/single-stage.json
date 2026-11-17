@@ -1,0 +1,111 @@
+{
+  "checklist_id": "single-stage",
+  "title_vi": "Bảng kiểm cấu trúc tầng khuếch đại đơn (CS, Suy biến nguồn, Bám nguồn SF, Cổng chung CG & Cascode)",
+  "applies_to": [
+    "topo-cs-resistive-and-diode-load",
+    "topo-cs-current-source-and-active-load",
+    "topo-cs-source-degeneration",
+    "topo-source-follower",
+    "topo-common-gate-stage",
+    "topo-cascode-stage"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-SS-01",
+      "name": "Bias current defined by current mirror rather than PVT-sensitive gate voltage divider",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Transconductor DC drain current ID is pinned by a current-mirror reference or feedback loop, never by an open-loop resistive divider setting fixed VGS from VDD",
+      "why_vi": "Giữ VGS cố định bằng cầu phân áp điện trở từ VDD khiến ID biến thiên hàng trăm phần trăm khi VTH, mu*Cox và VDD trôi theo góc công nghệ và nhiệt độ.",
+      "cadence_check": "Xác minh độ lệch dòng phân cực |ID(corner) - ID(nom)| / ID(nom) trên các góc SS/-40°C và FF/125°C nằm trong dải thiết kế.",
+      "related_nodes": [
+        "tech-stage-biasing-rules",
+        "concept-process-corners-and-temperature",
+        "topo-basic-current-mirror"
+      ]
+    },
+    {
+      "id": "CHK-SS-02",
+      "name": "CS output quiescent point centered between triode boundary and load headroom ceiling",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "VDS,min_driver <= Vout_DC - VS_driver and Vout_DC <= VDD - V_headroom_load, leaving symmetric linear swing without entering triode at peak excursion",
+      "why_vi": "Tầng nguồn chung tải nguồn dòng hoặc đẩy–kéo CMOS có độ lợi DC lớn khiến sai lệch nhỏ ở phân cực DC đẩy Vout chạm rìa nguồn cấp hoặc ép transistor đầu vào xuống vùng triode.",
+      "cadence_check": "Quét dc Vin quanh điểm làm việc và vẽ deriv(Vout) theo Vout để xác nhận vùng độ lợi phẳng bao phủ trọn vẹn dải Vout_swing yêu cầu.",
+      "related_nodes": [
+        "topo-cs-resistive-and-diode-load",
+        "topo-cs-current-source-and-active-load",
+        "tech-stage-biasing-rules"
+      ]
+    },
+    {
+      "id": "CHK-SS-03",
+      "name": "Cascode gate bias Vb preserves saturation of input transconductor without crushing output swing",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "VGS_cas + VDS,min_in <= Vb - VS_in <= VGS_cas + VDS_max_safe_in so both input M1 and cascode M2 stay strictly in saturation across signal swing and PVT",
+      "why_vi": "Đặt Vb quá thấp ép cực máng M1 xuống dưới VDS,min_1 làm M1 rơi vào vùng triode và đánh sập Rout cascode; đặt Vb quá cao đẩy cực nguồn M2 lên cao ăn mất khoảng dự trữ dải dao động ngõ ra.",
+      "cadence_check": "Kiểm tra đồng thời OP(M1, \"vds\") - OP(M1, \"vdsat\") >= 50mV và OP(M2, \"vds\") - OP(M2, \"vdsat\") >= 50mV trên mọi góc PVT.",
+      "related_nodes": [
+        "topo-cascode-stage",
+        "topo-lvccml-wide-swing-mirror",
+        "tech-channel-length-and-opamp-scaling"
+      ]
+    },
+    {
+      "id": "CHK-SS-04",
+      "name": "Body-effect penalty and nonlinearity accounted for in Source Follower and Diode Load",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "When source terminal swings (SF or NMOS diode load on shared p-sub), gain attenuation 1/(1+eta) and VTH(VSB) harmonic distortion are budgeted, or PMOS in dedicated n-well (B tied to S) is used",
+      "why_vi": "Hiệu ứng thân gmb = eta*gm làm trần độ lợi mạch bám nguồn tụt xuống dưới 0.75–0.85, tăng mức dịch áp DC khi Vout cao và gây méo phi tuyến bậc hai/ba.",
+      "cadence_check": "Đo OP(M, \"gmbs\")/OP(M, \"gm\"), kiểm tra THD qua mô phỏng tran+DFT và kiểm tra điện dung giếng n-well xuống đế nếu nối tắt B–S.",
+      "related_nodes": [
+        "topo-source-follower",
+        "topo-cs-resistive-and-diode-load",
+        "concept-mos-transconductance-and-body-effect"
+      ]
+    },
+    {
+      "id": "CHK-SS-05",
+      "name": "Common-Gate input impedance blow-up under high-impedance current-source load",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Rin_CG = (RD + ro) / (1 + (gm + gmb)*ro) only equals ~1/(gm+gmb) when RD << (gm+gmb)*ro; with active current-source load RD ~ gm*ro^2, Rin rises dramatically to ~RD/(gm*ro)",
+      "why_vi": "Do điện trở rO hữu hạn nối phản hồi từ tải cực máng lớn ngược về cực nguồn đầu vào, tầng cổng chung mất đặc tính trở kháng vào thấp nếu tải cực máng có trở kháng cỡ cascode.",
+      "cadence_check": "Chạy phân tích xf hoặc ac đo trực tiếp Zin(f) = V(in)/I(in) từ DC đến tần số làm việc thay vì giả định mù quáng Rin = 1/gm.",
+      "related_nodes": [
+        "topo-common-gate-stage",
+        "topo-cascode-stage"
+      ]
+    },
+    {
+      "id": "CHK-SS-06",
+      "name": "Source-Follower inductive output impedance ringing when driven by high source resistance",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "When driving capacitive load CL through a Source Follower whose gate sees R_sig > 1/gm, check high-frequency peaking/ringing caused by inductive Zout behavior",
+      "why_vi": "Khi trở kháng nguồn điều khiển cổng lớn hơn 1/gm, trở kháng ra của mạch bám nguồn tăng theo tần số như một cuộn cảm, cộng hưởng với tụ tải CL gây vọt lố và rung bước nhảy.",
+      "cadence_check": "Chạy ac đo Zout(f) và chạy tran bước nhảy nhỏ trên tải CL thực tế để phát hiện peaking/ringing.",
+      "related_nodes": [
+        "topo-source-follower",
+        "concept-source-follower-inductive-zout"
+      ]
+    },
+    {
+      "id": "CHK-SS-07",
+      "name": "Miller multiplication of CGD and feedforward RHP zero in high-gain CS stages",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Effective input capacitance Cin_eff ~ CGS + (1 + |Av|)*CGD interacted with R_sig does not bottleneck bandwidth, and RHP zero +gm/CGD is evaluated",
+      "why_vi": "Ở tầng nguồn chung độ lợi lớn được lái bởi nguồn có trở kháng hữu hạn, tụ chồng lấn CGD bị nhân Miller lên (1 + |Av|) lần tạo cực đầu vào tần số thấp và đường truyền thẳng đổi pha.",
+      "cadence_check": "Kiểm tra đóng góp hằng số thời gian nút cổng bằng phương pháp ZVTC hoặc chạy pz / ac để xác định vị trí cực đầu vào và zero.",
+      "related_nodes": [
+        "topo-cs-current-source-and-active-load",
+        "law-miller-theorem-and-rhp-zero",
+        "topo-cascode-stage"
+      ]
+    }
+  ]
+}

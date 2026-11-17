@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="596" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.19</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Multi-Finger Folded Gate &amp; 2D ABBA Common-Centroid Layout (+ Dummies)</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Layout Chia Ngón (Multi-Finger) &amp; Đối xứng Trọng tâm Chung ABBA Kèm Dải Giả Dummy/STI/WPE (Ch.19 §19.2)</text>
+  <rect x="18" y="74" width="495" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="495" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Multi-Finger Folded MOSFET (M = 4 Fingers)</text>
+  <rect x="533" y="74" width="529" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="533" y="74" width="529" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="545" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) 2D ABBA Common-Centroid + Dummy Strips + WPE/LOD</text>
+  <rect x="135" y="148" width="260" height="18" rx="3" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="135" y="344" width="260" height="18" rx="3" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="265" y="140" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#dc2626" text-anchor="middle" font-weight="bold">Double-Contacted Gate Bus (RG ↓ by 12·M²!)</text>
+  <rect x="95" y="190" width="340" height="130" rx="4" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <rect x="152" y="166" width="18" height="178" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="222" y="166" width="18" height="178" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="292" y="166" width="18" height="178" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="362" y="166" width="18" height="178" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="122" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">S</text>
+  <rect x="117" y="213" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="117" y="250" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="117" y="287" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <text x="196" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d97706" text-anchor="middle" font-weight="bold">D</text>
+  <rect x="191" y="213" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="191" y="250" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="191" y="287" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <text x="266" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">S</text>
+  <rect x="261" y="213" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="261" y="250" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="261" y="287" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <text x="336" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d97706" text-anchor="middle" font-weight="bold">D</text>
+  <rect x="331" y="213" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="331" y="250" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="331" y="287" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <text x="404" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">S</text>
+  <rect x="399" y="213" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="399" y="250" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="399" y="287" width="10" height="10" rx="1" fill="#0f172a" stroke="#ffffff" stroke-width="1"/>
+  <rect x="36" y="386" width="458" height="174" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="392" x2="39" y2="554" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="404" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="start" font-weight="bold">Why Folding W into M Fingers is Mandatory (§19.2)</text>
+  <text x="48" y="421" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">1. Gate Resistance RG Reduction (Thermal Noise!):</text>
+  <text x="48" y="437" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   • Single-side gate contact:  RG = RG,1 / (3 · M²)</text>
+  <text x="48" y="453" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   • Double-side gate contact:  RG = RG,1 / (12 · M²) !</text>
+  <text x="48" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">2. Drain Junction Capacitance CDB Halved:</text>
+  <text x="48" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   • Even M shares internal drains between 2 gates,</text>
+  <text x="48" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">     cutting CDB area &amp; sidewall perimeter by ~2x!</text>
+  <rect x="562" y="126" width="470" height="242" rx="8" fill="#f8fafc" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="6,4"/>
+  <text x="797" y="144" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#7c3aed" text-anchor="middle" font-weight="bold">N-Well / STI Edge Boundary (Keep WPE &amp; LOD Margin ≥ d_min!)</text>
+  <rect x="590" y="164" width="46" height="180" rx="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.6"/>
+  <text x="613" y="250" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#475569" text-anchor="middle" font-weight="bold">DUM</text>
+  <text x="613" y="266" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">(VSS)</text>
+  <rect x="958" y="164" width="46" height="180" rx="5" fill="#e2e8f0" stroke="#475569" stroke-width="1.6"/>
+  <text x="981" y="250" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#475569" text-anchor="middle" font-weight="bold">DUM</text>
+  <text x="981" y="266" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">(VSS)</text>
+  <rect x="662" y="164" width="124" height="82" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="724" y="210" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#2563eb" text-anchor="middle" font-weight="bold">M1a (A1)</text>
+  <rect x="808" y="164" width="124" height="82" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="870" y="210" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#059669" text-anchor="middle" font-weight="bold">M2a (B1)</text>
+  <rect x="662" y="262" width="124" height="82" rx="6" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="724" y="308" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#059669" text-anchor="middle" font-weight="bold">M2b (B2)</text>
+  <rect x="808" y="262" width="124" height="82" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="870" y="308" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12.5" fill="#2563eb" text-anchor="middle" font-weight="bold">M1b (A2)</text>
+  <line x1="724" y1="205" x2="870" y2="303" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <line x1="870" y1="205" x2="724" y2="303" stroke="#059669" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <circle cx="797" cy="254" r="6.5" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+  <line x1="580" y1="358" x2="1012" y2="358" stroke="#dc2626" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="797" y="353" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="bold">Linear Wafer / Thermal Gradient ∇P(x, y) -&gt; Cancels at Shared Centroid!</text>
+  <rect x="550" y="386" width="494" height="174" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="553" y1="392" x2="553" y2="554" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="562" y="404" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#b45309" text-anchor="start" font-weight="bold">Nanometer Layout Matching Checklist (90nm / 65nm / 45nm)</text>
+  <text x="562" y="421" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Same Orientation: Current MUST flow parallel (never rotate 90°!).</text>
+  <text x="562" y="437" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Common-Centroid [A B / B A] or 1D [A B B A]: Identical center</text>
+  <text x="562" y="453" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  of gravity (Xc, Yc) cancels 1st-order tox, VTH &amp; ΔT gradients!</text>
+  <text x="562" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Dummy Poly &amp; Active Strips: Equalize poly etch micro-loading</text>
+  <text x="562" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  AND equalize STI Mechanical Stress (LOD) across all fingers!</text>
+  <text x="562" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Well Proximity Effect (WPE): Keep matched pairs far &amp; equidistant</text>
+  <text x="562" y="517" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  from N-Well edges where scattered implant ions shift VTH!</text>
+</svg>

@@ -1,0 +1,97 @@
+{
+  "checklist_id": "switched-capacitor",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Mạch Tụ Chuyển mạch và Công tắc Lấy mẫu (Switched-Capacitor Circuits)",
+  "applies_to": [
+    "topo-mos-and-cmos-sampling-switches",
+    "tech-charge-injection-and-bottom-plate-sampling",
+    "topo-bootstrapped-sampling-switch",
+    "topo-switched-capacitor-amplifiers-integrators",
+    "tech-switched-capacitor-cmfb"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-SC-01",
+      "name": "Xung nhịp hai pha không chồng lấn (Non-Overlapping Clocks) và sườn ngắt sớm cho Lấy mẫu Tấm đáy",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "t_dead(phi1, phi2) > 0 trên mọi góc PVT VÀ t_fall_end(phi1_early) xảy ra trước khi phi1 bắt đầu ngắt công tắc phía tín hiệu Vin",
+      "why_vi": "Nếu hai pha phi1 và phi2 chồng lấn dù chỉ vài chục picogiây, điện tích trên tụ lấy mẫu và tụ tích phân bị phóng tắt trực tiếp làm mất trí nhớ trạng thái. Đồng thời quy tắc vàng Bottom-Plate Sampling bắt buộc ngắt công tắc nối đất ảo/tham chiếu bằng xung sớm phi1_e trước khi ngắt công tắc đầu vào để triệt tiêu phun điện tích phụ thuộc tín hiệu.",
+      "cadence_check": "Mô phỏng `tran` bộ tạo xung nhịp ở góc `FF/-40C` và `SS/125C` đo khoảng hở không chồng lấn của cả xung gốc lẫn xung đảo `phi_bar`, và xác nhận thứ tự ngắt `phi1_e -> phi1`.",
+      "related_nodes": [
+        "tech-charge-injection-and-bottom-plate-sampling",
+        "topo-switched-capacitor-amplifiers-integrators",
+        "tech-switched-capacitor-cmfb"
+      ]
+    },
+    {
+      "id": "CHK-SC-02",
+      "name": "Không để vùng chết dẫn điện (Ron Dead-Zone) trên toàn dải dao động tín hiệu ở nguồn cấp thấp",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Với mọi Vin thuộc [Vin_min, Vin_max]: G_on(Vin) = 1 / Ron(Vin) > 0 liên tục VÀ tau_max = Ron_max * C_sample <= T_track / ((N_bits + 1) * ln(2))",
+      "why_vi": "Ở VDD thấp (<= 1.0 V trong 65nm/45nm), khi VDD < VTH,N + |VTH,P| ở góc SS/-40C, cả NMOS lẫn PMOS trong cổng truyền CMOS cùng tắt ở khoảng giữa dải áp vào tạo vùng chết hở mạch; khi đó bắt buộc phải nâng cấp sang công tắc nâng áp cổng giữ VGS hằng định (Bootstrapped Switch).",
+      "cadence_check": "Quét `dc` mức `Vin` từ `0` đến `VDD` tại góc `SS, -40 °C, VDD_min`, vẽ đường cong `Ron(Vin)` và kiểm tra hằng số thời gian xấu nhất so với nửa chu kỳ xung nhịp.",
+      "related_nodes": [
+        "topo-mos-and-cmos-sampling-switches",
+        "topo-bootstrapped-sampling-switch",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    },
+    {
+      "id": "CHK-SC-03",
+      "name": "Giới hạn an toàn điện môi cổng (SOA Gate-Oxide Reliability) trong công tắc Bootstrap",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "|VGS(t)| <= VDD_max, |VGD(t)| <= VDD_max, |VGB(t)| <= VDD_max với mọi transistor và mọi thời điểm chuyển mạch t",
+      "why_vi": "Trong pha dẫn của mạch bootstrap, điện thế cực cổng công tắc chính vọt lên tới Vin + VDD (tới 2*VDD!). Nếu nối trực tiếp cực cổng này vào một transistor NMOS nối đất mà thiếu transistor chắn cascode treo VDD, điện áp cổng-máng 2*VDD sẽ đánh thủng tức thời oxit cổng mỏng nanomet.",
+      "cadence_check": "Bật cảnh báo giới hạn SOA (`assert` / device voltage check) trong Spectre `tran` với `Vin` biên độ cực đại ở `VDD_max`, kiểm tra đỉnh `VGS, VGD, VGB` của toàn bộ các MOSFET trong ô bootstrap.",
+      "related_nodes": [
+        "topo-bootstrapped-sampling-switch",
+        "law-short-channel-effects"
+      ]
+    },
+    {
+      "id": "CHK-SC-04",
+      "name": "Định cỡ tụ lấy mẫu CH theo trần nhiễu nhiệt kT/C và ngân sách độ lợi vòng hở A0 của OTA",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "C_sample >= k * T_max / V_n_rms_budget^2 (nhân 2 cho vi sai và nhân 2 nếu tính cả hai pha lấy mẫu + truyền điện tích) VÀ beta * A0 >= 2^(N_bits + 1)",
+      "why_vi": "Nhiễu nhiệt tích phân trên tụ lấy mẫu bằng kT/C hoàn toàn độc lập với Ron công tắc nên chỉ có thể nén bằng cách tăng điện dung C. Đồng thời hệ số hồi tiếp beta = C2 / (C1 + C2 + Cin) làm giảm độ lợi vòng, sinh sai số tĩnh 1/(beta*A0) và làm chậm tốc độ xác lập hàm mũ trong pha khuếch đại.",
+      "cadence_check": "Chạy SpectreRF `pss` + `pnoise` (chế độ `sampled/timedomain` tại cuối pha giữ) để đo tổng nhiễu lấy mẫu bị gập phổ (aliased noise), và đo sai số xác lập cuối pha phi2 trong `tran`.",
+      "related_nodes": [
+        "topo-mos-and-cmos-sampling-switches",
+        "topo-switched-capacitor-amplifiers-integrators",
+        "law-mos-thermal-and-flicker-noise"
+      ]
+    },
+    {
+      "id": "CHK-SC-05",
+      "name": "Đấu đúng cực bản đáy (Bottom Plate) của tụ MIM/MOM về phía nguồn áp thấp trở kháng để miễn nhiễm ký sinh",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Bản đáy có ký sinh lớn xuống đế (Cp,bot ~ 1%-5% C) luôn hướng về phía công tắc lái nguồn áp Vin/Vout; bản đỉnh sạch ký sinh (top plate) nối về phía nút đất ảo ngõ vào OTA",
+      "why_vi": "Tụ tích hợp luôn bất đối xứng giữa hai bản cực. Nếu gắn nhầm bản đáy nhiều ký sinh vào nút đất ảo của OTA, điện dung ký sinh nối xuống đất sẽ làm giảm mạnh hệ số hồi tiếp beta, ăn mất dự trữ pha/băng thông và tiêm nhiễu đế trực tiếp vào ngõ vào bộ khuếch đại.",
+      "cadence_check": "Kiểm tra ký hiệu bất đối xứng (vạch cong/đậm bản đáy) của tụ `mimcap`/`momcap` trên schematic và kiểm tra giảm băng thông sau trích xuất `PEX`.",
+      "related_nodes": [
+        "topo-switched-capacitor-amplifiers-integrators",
+        "law-cmos-wells-and-latchup-guard-rings",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-SC-06",
+      "name": "Không để nút đất ảo ngõ vào OTA hoặc nút CMFB thả nổi DC mà thiếu pha làm tươi điện tích",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi nút chỉ nối qua tụ điện và công tắc (như ngõ vào OTA trong bộ tích phân SC hoặc nút cổng điều khiển của SC-CMFB) phải có đường đặt lại/làm tươi DC định kỳ mỗi chu kỳ xung nhịp",
+      "why_vi": "Nút hoàn toàn cô lập bằng tụ điện sẽ bị dòng rò tiếp giáp S/D của công tắc và dòng rò cổng nanomet làm trôi điện thế DC cho tới khi OTA bão hòa sát nguồn cấp.",
+      "cadence_check": "Trong Spectre `dc` / `tran` dài hạn (hàng trăm chu kỳ ở `125 °C`), xác nhận mức DC trung bình của nút đất ảo và mức đồng pha ngõ ra hội tụ về đúng `VCM_ref` từ mọi trạng thái khởi đầu.",
+      "related_nodes": [
+        "topo-switched-capacitor-amplifiers-integrators",
+        "tech-switched-capacitor-cmfb",
+        "tech-common-mode-feedback-cmfb"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "checklist_id": "bandgap-and-bias",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Mạch Tham chiếu Vùng cấm, PTAT và Phân cực Độc lập Nguồn cấp",
+  "applies_to": [
+    "tech-supply-independent-bias-and-startup",
+    "law-ctat-ptat-temperature-cancellation",
+    "topo-bandgap-reference-core",
+    "tech-ptat-current-and-constant-gm",
+    "topo-low-voltage-sub1v-bandgap"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-BGB-01",
+      "name": "Tồn tại mạch khởi động và thoát điểm suy biến I = 0 trên quét DC chậm",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "I_core(VDD_min, SS, -40C) > 0 trong phép quét DC (không dựa vào C*dVDD/dt) VÀ I_startup_leak(VDD_max, FF, 125C) < 1 nA sau khi mạch đã khóa",
+      "why_vi": "Mọi vòng tự phân cực và mạch tham chiếu vùng cấm đều có nghiệm suy biến ổn định dòng bằng không (I = 0). Nếu chỉ kiểm tra bằng nguồn xung quá độ sườn dốc, tụ ký sinh gây khởi động giả; ngược lại nếu nhánh khởi động không ngắt hẳn sau khi khóa sẽ rò dòng từ VDD làm hỏng PSRR và độ chính xác VREF.",
+      "cadence_check": "Chạy Spectre `dc` quét `VDD` từ `0` lên `VDD_max` ở cả 5 góc PVT + `tran` với `vpwl` sườn chậm `10 ms` và sập nguồn brown-out; đo `IDC(\"/M_startup/D\")` tại trạng thái xác lập.",
+      "related_nodes": [
+        "tech-supply-independent-bias-and-startup",
+        "topo-bandgap-reference-core",
+        "topo-low-voltage-sub1v-bandgap"
+      ]
+    },
+    {
+      "id": "CHK-BGB-02",
+      "name": "Độ lợi vòng hồi tiếp dương nhỏ hơn 1 và đặt đúng điện trở RS ở nhánh bội số K > 1",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "K > 1 tại nhánh mắc nối tiếp RS sao cho 0 < T_pos_loop = (gm_mirror_ratio) * (Gm_degen / gm_diode) < 1 tại điểm làm việc",
+      "why_vi": "Trong mạch phân cực độc lập nguồn cấp và Constant-Gm, điện trở RS bắt buộc nằm ở cực nguồn của transistor có kích thước lớn gấp K lần (thường K = 4). Nếu đặt nhầm RS sang nhánh 1x hoặc chọn K <= 1, phương trình cân bằng vô nghiệm dương và dòng sập về 0.",
+      "cadence_check": "Kiểm tra bội số `m` trên schematic (`m_M2 = K * m_M1` nối tiếp `RS`) và chèn `iprobe` chạy `stb` xác nhận biên độ độ lợi vòng hồi tiếp dương `< 0 dB` tại điểm phân cực.",
+      "related_nodes": [
+        "tech-supply-independent-bias-and-startup",
+        "tech-ptat-current-and-constant-gm"
+      ]
+    },
+    {
+      "id": "CHK-BGB-03",
+      "name": "Cực tính tổng của hai vòng hồi tiếp âm và dương quanh Op-Amp Bandgap (beta_N > beta_P)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "beta_N - beta_P > 0 (khuyến nghị beta_N >= 2 * beta_P) với dấu pha tính cả tầng gương dòng PMOS nếu Op-Amp lái cực cổng PMOS",
+      "why_vi": "Op-Amp trong lõi Bandgap hồi tiếp về cả hai ngõ vào. Khi Op-Amp lái trực tiếp đỉnh cầu điện trở, nhánh R3 + Q2 nối vào ngõ vào đảo (-); nhưng khi Op-Amp lái cực cổng gương dòng PMOS (có đảo pha 180 độ), nhánh R1 + Q2 bắt buộc phải đổi sang nối vào ngõ vào không đảo (+) để vòng tổng là hồi tiếp âm.",
+      "cadence_check": "Đặt `iprobe` ngay tại ngõ ra của Op-Amp (trước điểm rẽ nhánh) và chạy `stb`: độ lợi vòng tần số thấp phải mang pha hồi tiếp âm chuẩn với `Phase Margin >= 60 deg`.",
+      "related_nodes": [
+        "topo-bandgap-reference-core",
+        "topo-low-voltage-sub1v-bandgap",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-BGB-04",
+      "name": "Cực góp BJT pnp đế nối đất và ma trận BJT đơn vị nguyên 1 : n tâm chung",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "VC_pnp == VSS/GND cho mọi native substrate PNP; Q1 dùng m = 1 ô pcell chuẩn, Q2 dùng m = n ô pcell chuẩn y hệt (ví dụ n = 8 hoặc n = 24)",
+      "why_vi": "Trong CMOS giếng n tiêu chuẩn, cực góp của PNP dọc chính là đế bán dẫn loại p nên bắt buộc nối đất (không thể mắc nối tiếp trực tiếp hai diode PNP nếu không biến đổi thành emitter follower). Đồng thời chỉ việc nhân bội số ô đơn vị giống hệt nhau mới bảo toàn tỉ số dòng bão hòa IS2 = n * IS1.",
+      "cadence_check": "Kiểm tra thuộc tính CDF của `vpnp`: `Q1` và `Q2` dùng đúng cùng một tên model kích thước emitter cố định, chỉ khác hệ số nhân `m = 1` và `m = 8` (hoặc `24`).",
+      "related_nodes": [
+        "law-ctat-ptat-temperature-cancellation",
+        "topo-bandgap-reference-core",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-BGB-05",
+      "name": "Ngân sách điện áp lệch ngõ vào Op-Amp VOS bị nhân bội lên VREF và độ trôi nhiệt TC",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "(1 + R2/R3) * (3 * sigma_VOS) < Delta_VREF_budget (hoặc R4 / (R1 || R2) * 3 * sigma_VOS < Delta_VBG_budget trong mạch Banba)",
+      "why_vi": "Điện áp lệch VOS của Op-Amp trừ trực tiếp vào tín hiệu nhỏ ΔVBE (~ 54-80 mV) và bị khuếch đại từ 6 đến 10 lần lên ngõ ra, đồng thời độ trôi dVOS/dT làm lệch nhiệt độ đỉnh zero-TC giữa các mẫu chip.",
+      "cadence_check": "Chạy Spectre `montecarlo` (200 mẫu mismatch + process) kèm quét nhiệt độ `-40..125 °C`; kiểm tra độ lệch chuẩn `sigma(VREF)` trước và sau hiệu chỉnh 1 điểm tại `27 °C`.",
+      "related_nodes": [
+        "topo-bandgap-reference-core",
+        "topo-low-voltage-sub1v-bandgap",
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "tech-dynamic-offset-cancellation-az-cds"
+      ]
+    },
+    {
+      "id": "CHK-BGB-06",
+      "name": "Cùng một loại vật liệu điện trở đơn vị cho toàn bộ mạng lập tỉ số nhiệt và phân số",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "device_model(R1) == device_model(R2) == device_model(R3) == device_model(R4) và cùng chiều rộng thanh đơn vị W_unit",
+      "why_vi": "Sự triệt tiêu hệ số nhiệt của điện trở (TC1, TC2) trong VREF và VBG phụ thuộc hoàn toàn vào việc các điện trở lập tỉ số đồng biến giống hệt nhau theo nhiệt độ và ăn mòn biên.",
+      "cadence_check": "Rà soát netlist Spectre đảm bảo mọi điện trở trong lõi BGR ghép nối tiếp/song song từ cùng một cell điện trở đơn vị (ví dụ `rppolywo`) kèm thanh giả hai biên.",
+      "related_nodes": [
+        "topo-bandgap-reference-core",
+        "tech-ptat-current-and-constant-gm",
+        "topo-low-voltage-sub1v-bandgap",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-BGB-07",
+      "name": "Khoảng dự trữ đồng pha ngõ vào Op-Amp quanh VBE ở cả -40 °C và +125 °C",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "V_ICMR_min(T) <= V_BE(T) <= V_ICMR_max(T) trên toàn dải T thuộc [-40 °C, +125 °C] tại VDD_min",
+      "why_vi": "VBE tăng lên ~0.88 V ở -40 °C (dễ ép nguồn dòng đuôi PMOS của OTA nguồn thấp < 1 V vào vùng triode) và giảm xuống ~0.55 V ở +125 °C (dễ ép nguồn dòng đuôi NMOS vào vùng triode).",
+      "cadence_check": "Kiểm tra `region == 2` (saturation) và `vds - vdsat >= 50 mV` cho cặp đầu vào và nguồn dòng đuôi của Op-Amp tại cả hai điểm cực trị `(-40 °C, VDD_min)` và `(125 °C, VDD_min)`.",
+      "related_nodes": [
+        "topo-bandgap-reference-core",
+        "topo-low-voltage-sub1v-bandgap",
+        "topo-five-transistor-ota",
+        "topo-folded-cascode-ota"
+      ]
+    },
+    {
+      "id": "CHK-BGB-08",
+      "name": "Phân phối dòng chuẩn qua nhánh nguồn dòng thay vì kéo dây điện áp cổng đường dài",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Mỗi khối chức năng xa trung tâm nhận nhánh dòng phân cực I_bias riêng và chuyển đổi cục bộ sang V_GS kèm tụ lọc tại chỗ",
+      "why_vi": "Kéo dây điện áp cổng V_bias đi xa trên chip chịu sụt áp đất IR drop, sai lệch VTH theo khoảng cách và thu nhiễu xuyên âm đế bán dẫn làm sai lệch nặng dòng phân cực.",
+      "cadence_check": "Kiểm tra sơ đồ kết nối mức top-level: chỉ xuất các chân dòng `IBIAS_OUT<k>` từ gương dòng cascode trở kháng cao của khối trung tâm.",
+      "related_nodes": [
+        "tech-ptat-current-and-constant-gm",
+        "topo-lvccml-wide-swing-mirror",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    }
+  ]
+}

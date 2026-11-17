@@ -1,0 +1,627 @@
+{
+  "schema": "razavi-cmos-brain.manifest.v1",
+  "release": "2026.11.18.1",
+  "node_count": 68,
+  "edge_count": 112,
+  "diagram_count": 38,
+  "checklist_count": 13,
+  "glossary_count": 2200,
+  "file_count": 123,
+  "files": [
+    {
+      "path": "kb/checklists/bandgap-and-bias.json",
+      "bytes": 9208,
+      "sha256": "bf074b8dce74a57c09fd8419b7980f2237259ac72dd095636f11e693f8a72437"
+    },
+    {
+      "path": "kb/checklists/cmfb.json",
+      "bytes": 6843,
+      "sha256": "ad17845afbb1b78c85927fa1586c95bf9e40f9e2d666be3135bde9ac51d4ef58"
+    },
+    {
+      "path": "kb/checklists/common-mos.json",
+      "bytes": 7771,
+      "sha256": "75d85eb55e39d74b350d0755c8653c4d081f7163ee903895eb2e6ceb156dd2a5"
+    },
+    {
+      "path": "kb/checklists/current-mirror.json",
+      "bytes": 6441,
+      "sha256": "6b1deef0e305eda074b9430936134a5263f7ee5e92c46d55bb337fed9462772e"
+    },
+    {
+      "path": "kb/checklists/differential-pair.json",
+      "bytes": 6576,
+      "sha256": "64841fb78ca350f9af37bf1e4224cdb35811cbc6a43be977803d959f1006017b"
+    },
+    {
+      "path": "kb/checklists/feedback-and-stb.json",
+      "bytes": 8316,
+      "sha256": "673bebf58fe1275cc298324ec21af88036ddf1b06b09d6141241a32bba39f4d7"
+    },
+    {
+      "path": "kb/checklists/folded-cascode.json",
+      "bytes": 7010,
+      "sha256": "7c5a2d16976c71382d76a9a628a4893a3c1dda8bcd93386bc7a8eef833318454"
+    },
+    {
+      "path": "kb/checklists/layout-and-matching.json",
+      "bytes": 7670,
+      "sha256": "385d4b0316cdc1b59d9c81174830f5e1e1a1884f613ef85c8eda931864868ddc"
+    },
+    {
+      "path": "kb/checklists/ldo-regulator.json",
+      "bytes": 6873,
+      "sha256": "875de241e87136da761471c12d8931c7cc0953eb2ce1f7d8111a6bf1965d208d"
+    },
+    {
+      "path": "kb/checklists/oscillator-and-pll.json",
+      "bytes": 7900,
+      "sha256": "10087dd050eab8992b1c6f81d98beb73141639560d3df2be1c334ca321cf0659"
+    },
+    {
+      "path": "kb/checklists/single-stage.json",
+      "bytes": 7034,
+      "sha256": "a4329496ba280884ed89907e19ca66cf3c19a33a3af22c76fd55126e266feb91"
+    },
+    {
+      "path": "kb/checklists/switched-capacitor.json",
+      "bytes": 7717,
+      "sha256": "90a10c31818e3d41e44235777a77d52576c5be4aab69688cecc2b0d0838fdb5c"
+    },
+    {
+      "path": "kb/checklists/two-stage-miller.json",
+      "bytes": 6863,
+      "sha256": "8e7480752bfe9a404de479040432a952c80f5213a02556ca2b81ebef45aecf83"
+    },
+    {
+      "path": "kb/diagrams/analog-design-octagon.svg",
+      "bytes": 13865,
+      "sha256": "ee2b41dd110cc66db29bf3d2586fd25ccaf98c97b880da586339e0291da70448"
+    },
+    {
+      "path": "kb/diagrams/autozero-cds-offset.svg",
+      "bytes": 18285,
+      "sha256": "587feb5530e64b9644651bc2bfca1da9f1222f83ba3c14ca7ccdee74bcfe2ab0"
+    },
+    {
+      "path": "kb/diagrams/bandgap-reference-core.svg",
+      "bytes": 16487,
+      "sha256": "2db53759c124231d8bf88e341278146266d7b25b59f4292556e8c10b40493f91"
+    },
+    {
+      "path": "kb/diagrams/bootstrapped-switch.svg",
+      "bytes": 18341,
+      "sha256": "6322582e2c4340544337fa6d70800766679bdc6d80b0d95328b7fb16b0882ea9"
+    },
+    {
+      "path": "kb/diagrams/bottom-plate-sampling-sc.svg",
+      "bytes": 20236,
+      "sha256": "a77a27450103b84bf075ff65e587263bfce51eb803dbf447743e8d4020ebbe80"
+    },
+    {
+      "path": "kb/diagrams/cascode-ahuja-compensation.svg",
+      "bytes": 20603,
+      "sha256": "f113d4328793a3a7ee5f4e46ed669678794991cd0eba0505ee679fce156716a0"
+    },
+    {
+      "path": "kb/diagrams/cascode-shielding.svg",
+      "bytes": 14742,
+      "sha256": "691ee82aab1e34e849546be219b76a4711d74c26632210e930608f68880f4f42"
+    },
+    {
+      "path": "kb/diagrams/charge-pump-type2-pll.svg",
+      "bytes": 18014,
+      "sha256": "cb6403f292aa4a395e8a6179d6a7c296b3887e9185b023aa82b970251c1bb63e"
+    },
+    {
+      "path": "kb/diagrams/cmfb-sensing-networks.svg",
+      "bytes": 22158,
+      "sha256": "b415d0a49eceebd822d8ee4ab8421448eda897e432193edcdefab6aaa6a1698c"
+    },
+    {
+      "path": "kb/diagrams/cmos-ldo-regulator.svg",
+      "bytes": 18323,
+      "sha256": "e6c3befe09b21c719eaf2be8c4b28bfc9aff78cf50b0199fb4dc69e7c8bcf57f"
+    },
+    {
+      "path": "kb/diagrams/common-centroid-multifinger.svg",
+      "bytes": 13647,
+      "sha256": "8ac934b663a08448caa1fed3e3174c6c51d5f44c0234b17d9c93840743f26a61"
+    },
+    {
+      "path": "kb/diagrams/cs-loads-comparison.svg",
+      "bytes": 20094,
+      "sha256": "4aec5983a5fcae2cd3eeda8b2aa5f4f956da943afa2724667e0f524036458764"
+    },
+    {
+      "path": "kb/diagrams/cs-source-degeneration.svg",
+      "bytes": 16189,
+      "sha256": "32c6ce9e44b0a02c1de93f52117bd3a3b0e5536e46fc41a1cdd31228da7175a7"
+    },
+    {
+      "path": "kb/diagrams/current-mirrors-evolution.svg",
+      "bytes": 30583,
+      "sha256": "1e1b51c7fc86b6ba7375bf76e658ff913011cdc2539d7846874c3f22a705ad1a"
+    },
+    {
+      "path": "kb/diagrams/diagrams-manifest.json",
+      "bytes": 20480,
+      "sha256": "40290da7f71ba034a98b93eaba2a8a18764496103205a4ffe641689606935e0b"
+    },
+    {
+      "path": "kb/diagrams/diff-pair-half-circuit.svg",
+      "bytes": 21831,
+      "sha256": "5a95d5200807ec2510c59a7d90dad523660e5f9e2219192469f01d19b55316dc"
+    },
+    {
+      "path": "kb/diagrams/diffpair-mirror-pole-doublet.svg",
+      "bytes": 19669,
+      "sha256": "cd6c8149e7a8ebbd1aeb0e3662ef28d5345efa89c32ee46d4f35e2f32aa2ae8d"
+    },
+    {
+      "path": "kb/diagrams/feedback-four-topologies.svg",
+      "bytes": 22038,
+      "sha256": "9753ebf6c8b18d5b5c9f580e5aba2f67791b679ac63eed90d23e886cb4093692"
+    },
+    {
+      "path": "kb/diagrams/five-transistor-ota.svg",
+      "bytes": 18984,
+      "sha256": "6b726ea53f99f4adf15b49eee8df5cde840ef63bc90b595288f9b444ff4eeef7"
+    },
+    {
+      "path": "kb/diagrams/folded-cascode-ota.svg",
+      "bytes": 28357,
+      "sha256": "81088b29e7692cd546741cc00c9c9ced0cfe2cce01dfe880f56ca66522bc7e4c"
+    },
+    {
+      "path": "kb/diagrams/gain-boosted-cascode.svg",
+      "bytes": 14463,
+      "sha256": "bc823165b4303ea612be9f0167df2e484f911e3f352aadb94c6ca74113deed03"
+    },
+    {
+      "path": "kb/diagrams/gilbert-cell.svg",
+      "bytes": 20528,
+      "sha256": "9d1f6683af52635bed6b427679bd9d7109ed167d09eb732613e2ac30ca4f4839"
+    },
+    {
+      "path": "kb/diagrams/latchup-and-guard-rings.svg",
+      "bytes": 16000,
+      "sha256": "3e75109b4e847f73a1f30ecbc61a37044b3ce53a1ac4a800c42224b492885a5a"
+    },
+    {
+      "path": "kb/diagrams/low-voltage-sub1v-bandgap.svg",
+      "bytes": 22351,
+      "sha256": "941a9380b747123a7e4f5539b4bd81a7e062b1f71ab5790245357b381ba288ed"
+    },
+    {
+      "path": "kb/diagrams/middlebrook-stb-loop-probe.svg",
+      "bytes": 17968,
+      "sha256": "1b64281c16c8d131dab600120e69c11f61b3d0c5c1b24108f59544ca1dded77d"
+    },
+    {
+      "path": "kb/diagrams/miller-effect-rhp-zero.svg",
+      "bytes": 20256,
+      "sha256": "236a2e0baee2c14a3866d6e7c26f6a110d70ded0e8d06593a4b02b980fd63f3f"
+    },
+    {
+      "path": "kb/diagrams/mos-noise-input-referred.svg",
+      "bytes": 16658,
+      "sha256": "de759cf952cc73b1ebb748f93097b8b510f0a27b04d1d3d8a6785428ded31381"
+    },
+    {
+      "path": "kb/diagrams/mos-small-signal-caps.svg",
+      "bytes": 15896,
+      "sha256": "fd0dc8d94a838e73e9ce3eb2baac263b14cc3f5a54de2c8b8b45156bd08758c8"
+    },
+    {
+      "path": "kb/diagrams/mos-switch-charge-injection.svg",
+      "bytes": 20408,
+      "sha256": "e288013b6d2d2413c30d763c4c5664a10a9eec2ea1e44f5c93b2e49c4a6320aa"
+    },
+    {
+      "path": "kb/diagrams/nyquist-polar-stability.svg",
+      "bytes": 9486,
+      "sha256": "fdc444f81d11f5adc56e543f6de59ea19eef6f58f778fee35f8861662cddb21d"
+    },
+    {
+      "path": "kb/diagrams/pelgrom-mismatch-duality.svg",
+      "bytes": 19161,
+      "sha256": "5955811d905d83e80f4bb9c41d05c312a274638d98d718a2325bcd280ed79427"
+    },
+    {
+      "path": "kb/diagrams/pole-splitting-locus.svg",
+      "bytes": 13256,
+      "sha256": "c1453eed91fc5069468037cc2983bc97f2f7a91e456246a32642e55c700567e7"
+    },
+    {
+      "path": "kb/diagrams/ring-and-lc-oscillators.svg",
+      "bytes": 22985,
+      "sha256": "908e3248445229379bd5d2242ada8081dbd54ec36c07fcbcad2fb8b78d997aef"
+    },
+    {
+      "path": "kb/diagrams/short-channel-iv-gmid.svg",
+      "bytes": 11104,
+      "sha256": "936e28d180967bfd1ad6ba518eb4a2ff501e593692d62f2a8aa7e9e596da82f6"
+    },
+    {
+      "path": "kb/diagrams/source-follower-and-cg.svg",
+      "bytes": 16275,
+      "sha256": "999af232e5a3be0b5ab7fe40a8eb8a25b9ec4a81a67258c2ee5b8ee2585e457f"
+    },
+    {
+      "path": "kb/diagrams/supply-independent-bias-startup.svg",
+      "bytes": 22607,
+      "sha256": "e41623171b145649fc988f23bfde91b12e035b8d84d5c2e1f3b4a519ad3b949a"
+    },
+    {
+      "path": "kb/diagrams/telescopic-cascode-opamp.svg",
+      "bytes": 23846,
+      "sha256": "c2886f1a696cfc51e601e4bc3189cb7eca3981c73fbb84702c744932fee44e70"
+    },
+    {
+      "path": "kb/diagrams/two-stage-miller-opamp.svg",
+      "bytes": 24186,
+      "sha256": "fd94da476a0586f6e401a30908ec2dd046df733231c2733520341dbe40634534"
+    },
+    {
+      "path": "kb/diagrams/upgrade-evolution-map.svg",
+      "bytes": 26154,
+      "sha256": "df96ea0f69246919613f673e1f39898eaaca8c09ea46c2d7dcbae3b715141c64"
+    },
+    {
+      "path": "kb/glossary/terms-vi-en.json",
+      "bytes": 1336450,
+      "sha256": "0ad0a5e60e754efc7414441900e3c302f16b22453964fa1137a45852d6c8b59d"
+    },
+    {
+      "path": "kb/graph/edges.jsonl",
+      "bytes": 52076,
+      "sha256": "99c1e8cfabe632b2ae20423a945897f44abcc88dce0c5eae097cf889f144d81f"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/concept-diffpair-mirror-pole-doublet.md",
+      "bytes": 22149,
+      "sha256": "3246c2e3bef69e671d4245577f5228d39cb154e8873f259676d1c1d33ec1106c"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/concept-feedback-four-topologies.md",
+      "bytes": 24417,
+      "sha256": "0fe5e21700186123269375ae7bcc28f617c21b2a1e0357b1bb39e68ea76c9c7a"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/concept-high-freq-cs-cg-cascode.md",
+      "bytes": 19209,
+      "sha256": "8a691456a27357c0911cabef4c95cf40c930655939390bad4b0340a0a8726aea"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/concept-source-follower-inductive-zout.md",
+      "bytes": 19484,
+      "sha256": "f984e8d31a9c8bb06ccab863bee4dec693e92baee74df86c4987e8041280f65d"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-miller-theorem-and-rhp-zero.md",
+      "bytes": 20249,
+      "sha256": "9d6cd0cdc3cd8a3e4f6afc07896d3a70667eb6dee63edf258012673306fe918c"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-mos-thermal-and-flicker-noise.md",
+      "bytes": 23018,
+      "sha256": "edc2bc8b99672e610c96a49e35db79475fb574e286c3b517de3c98a319e49f4c"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-stage-and-mirror-noise-rules.md",
+      "bytes": 23247,
+      "sha256": "8def63eda75a6e7d5235b253d9546e47de21cd654efbebaa86c8d675e6c08d7e"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/tech-bode-blackman-middlebrook-stb.md",
+      "bytes": 24031,
+      "sha256": "6da6dad0b593d7897812b8665fcdadc0109a9d686a36c0570d3941cf603c1f50"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/tech-feedback-two-port-loading.md",
+      "bytes": 24923,
+      "sha256": "690316a7f2dd4e0d6f32599e02e84eaf81e3eab89bb432e45ae05dd715eddf75"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/tech-input-referred-noise-procedure.md",
+      "bytes": 22954,
+      "sha256": "bebff281dd3db63b00bdc680dcdcf2cf9780420264f16831360c6f338164cb42"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/tech-zvtc-and-eet-bandwidth.md",
+      "bytes": 21490,
+      "sha256": "82a6d4ba9a484d9c70dd9ef4a81870858f7e006b27945ad28af4155866deba84"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-analog-design-octagon.md",
+      "bytes": 26354,
+      "sha256": "42d07ee43c619859ee0d76e680f900a5de1bb8a3555501ef52d60ccaab232235"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-mos-capacitances-small-signal.md",
+      "bytes": 26382,
+      "sha256": "55ffdc0b8affc2c0497693d83bb181ebb809bbbefa05ee0a0da035f8024fa26a"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-mos-operating-regions.md",
+      "bytes": 24898,
+      "sha256": "33eabe940cb7da56478b096b668d103fa12bd44727b5601977d3071bf84c3f1d"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-mos-transconductance-and-body-effect.md",
+      "bytes": 24819,
+      "sha256": "2d16015121d7506db29620b3334b39d39acce810889cd9f60938848f09d730eb"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-process-corners-and-temperature.md",
+      "bytes": 24169,
+      "sha256": "a0f537f68d980267a75e8f0298cfac0f8618c9b098e864bc2e5bda21086dee5c"
+    },
+    {
+      "path": "kb/nodes/foundations/law-short-channel-effects.md",
+      "bytes": 25875,
+      "sha256": "f24f3afa689c0f84fd34355b74ca1a7ba392db12b3dd7682d41db5198e8ed500"
+    },
+    {
+      "path": "kb/nodes/foundations/tech-channel-length-and-opamp-scaling.md",
+      "bytes": 28671,
+      "sha256": "061dc7341eeb84543bda55294cd45c82593f1a6a4e085c9546ff049fecdb40b7"
+    },
+    {
+      "path": "kb/nodes/foundations/tech-nanometer-vdsmin-gmid-sizing.md",
+      "bytes": 24665,
+      "sha256": "cbe99a6a89e2cc32d09f912d0d7e563d7afabc54ec2fdd800eda18f75332ed3b"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/law-cmos-wells-and-latchup-guard-rings.md",
+      "bytes": 33856,
+      "sha256": "24a090acecaf8a289ce227f35d9acdea8471bc36d03b4e8b39f831ac15a2d717"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/law-differential-nonlinearity-and-feedback.md",
+      "bytes": 31503,
+      "sha256": "d5a4464c4e017378d764b913c4fec84b7a20740057ca1829dbafe21592978e03"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/law-pelgrom-mismatch-and-sizing-duality.md",
+      "bytes": 29254,
+      "sha256": "0281de8a0f00c8f726b4d2f740e0723a1061d68334cea5d519bfdf22e9d269ac"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-common-centroid-sti-wpe-layout.md",
+      "bytes": 34328,
+      "sha256": "e191e7d3863302ae2244efc42d463105c6d8acf40f5d7a64cfb3955a0a6f3e6d"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-dynamic-offset-cancellation-az-cds.md",
+      "bytes": 30747,
+      "sha256": "760f0f27f2af1d6c435b7f775f0df70a78ab54480ecadc78e4e4e2c988635c14"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/concept-opamp-performance-contract.md",
+      "bytes": 20249,
+      "sha256": "2769c3213e4b2777d6a2d3cc478f9b7b8cb317e87c09cba913b531e7393fca99"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/concept-opamp-psrr-and-noise.md",
+      "bytes": 23663,
+      "sha256": "7f9b30c9b4a2fc19f3c2daa89047e303cfddcc03cd74e0d9cce17cb0fb4b7f00"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/concept-opamp-topology-comparison-and-swing.md",
+      "bytes": 22110,
+      "sha256": "392c43e88a878ce467f0a377d777c5991cb7712a227ade410e3e2f0e79e97a41"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/law-multipole-phase-margin.md",
+      "bytes": 22930,
+      "sha256": "cd97898239800788b0c4be3a36f20395aefb132cebf582b45803e12d37f25ec8"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-common-mode-feedback-cmfb.md",
+      "bytes": 23205,
+      "sha256": "4758fc5748dc7a62e5b4ab6bc6d111a19b03e267267923412d1a9c334471d4bd"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-miller-pole-splitting.md",
+      "bytes": 19337,
+      "sha256": "361a22d3f22999c488ce1813b7a45191d3b0974828c866b1f7e22c48b8283cb1"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-miller-rhp-zero-nulling-and-cascode-comp.md",
+      "bytes": 22183,
+      "sha256": "2f38ff93c8b75fd0cace0f324f8931d64455aa7feb61d184e92a6938025bbf41"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-nyquist-stability-criterion.md",
+      "bytes": 24288,
+      "sha256": "5384ba8d73f270826830715bd16a7828556abe8597960f1fb0ccd29284542150"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-slew-rate-and-class-ab-opamps.md",
+      "bytes": 24266,
+      "sha256": "9a787ead2a4a2e1fe27f6eafd7e0d7d037e8dcaef4009e787a767e9cb88d2c15"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/topo-folded-cascode-ota.md",
+      "bytes": 21699,
+      "sha256": "2d93df4bd7488700010ed775ab549a57c670073b69e1748059d68cdbb05290f5"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/topo-gain-boosted-cascode.md",
+      "bytes": 22170,
+      "sha256": "4b1c6781a0ece9e142473a7d1212744985a8d16a7e209fc2851de2fc1db1bd23"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/topo-telescopic-cascode-opamp.md",
+      "bytes": 20558,
+      "sha256": "03c57e7c543ada096b36b0b3e15b4e6718111d97b191179d3089c021d26e6393"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/topo-two-stage-opamp.md",
+      "bytes": 21834,
+      "sha256": "e77d7f694b07a7b95e680839e6e8944c0b17c1eb43f515741dde3a414765001a"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/law-ctat-ptat-temperature-cancellation.md",
+      "bytes": 20131,
+      "sha256": "13b6272d8827a3979c861f8f45f1a53a022d46c1f46ca9b89485e8ad322b2fe8"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/tech-ptat-current-and-constant-gm.md",
+      "bytes": 20250,
+      "sha256": "51883ab65df549bd4fd2082f8691dc8a65a084134613404f519cdead138e3bef"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/tech-supply-independent-bias-and-startup.md",
+      "bytes": 22051,
+      "sha256": "4ddf00b25000b4d74c955528eb4f86ec419e50045df4da2f8125e8597319d8b4"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/topo-bandgap-reference-core.md",
+      "bytes": 22152,
+      "sha256": "5fb55e1c49e8a0721f7597ce1f3b655edad0e496a9866526e007cf83e4a9922e"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/topo-cmos-ldo-regulator.md",
+      "bytes": 24617,
+      "sha256": "f6cdfb562ca5f6cc2fff4eba3dae61793c2d06dad62767efb25b661958a121bd"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/topo-low-voltage-sub1v-bandgap.md",
+      "bytes": 23049,
+      "sha256": "bd12d5eaf4f05202cff0fb850507bfd05171b85bc912dde0cbdf18ed4b612ed7"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/concept-pll-nonidealities-spurs-jitter.md",
+      "bytes": 28233,
+      "sha256": "373214eddc3f3ea7a7f07398b340f851575d878e4a1d01df2a5671737bba5767"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/tech-charge-injection-and-bottom-plate-sampling.md",
+      "bytes": 27590,
+      "sha256": "34336f9477fcfb234b54318f97990b92e954b45b927245fc2a6daa3fd6b62ea2"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/tech-switched-capacitor-cmfb.md",
+      "bytes": 26761,
+      "sha256": "e06675f10f0877d62bf78962a0cda6a71148f75e774c6cd7a3b9af200abfb9cd"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-bootstrapped-sampling-switch.md",
+      "bytes": 26089,
+      "sha256": "a9d70600508699eb3c8371d4f15268469961e9123559d26925fefa2d4c6bdfb7"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-charge-pump-type2-pll.md",
+      "bytes": 25097,
+      "sha256": "e3c6fc91bded3edfa1aab8ad94621315d4e2bc79e684269560a914323f24366a"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-lc-cross-coupled-and-colpitts.md",
+      "bytes": 26497,
+      "sha256": "dc278437c31f3003306df8fd30112b1ed7096adf92085d16d971cbfa5250db8b"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-mos-and-cmos-sampling-switches.md",
+      "bytes": 25411,
+      "sha256": "9863a3caf78518f4cabd23cbd547f8d526477a4c10d4cb6965f598a80bed997c"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-ring-oscillator.md",
+      "bytes": 25849,
+      "sha256": "626c1f47b994592a61fe59914de1e509ca400e7c4634c7d5f0d61a0ecc05117c"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-switched-capacitor-amplifiers-integrators.md",
+      "bytes": 26222,
+      "sha256": "0e5c555a303fe40f81308fb74d3d2750d28008351db8d0362a3b214d76f07b5b"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-type1-simple-pll.md",
+      "bytes": 27653,
+      "sha256": "6998dbc53b279bb9e2dcbb5d65ab246f9a18190a1eeb9e2e5a2bf41617828700"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-vco-tuning-and-phase-noise.md",
+      "bytes": 25373,
+      "sha256": "fb380443719a51a75b70312fe23bd5bd3bc7500b4d931a60d8fb9fa1db66e9ca"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/concept-cm-response-and-cmrr.md",
+      "bytes": 27277,
+      "sha256": "ddef20a253106561a75a873051ee3279f9624619f050112c62efd1dc4efe5703"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/tech-stage-biasing-rules.md",
+      "bytes": 27105,
+      "sha256": "a2986f5d90b917b4ca50473357ff2b171e4bdd0ec4c08191a1ea2aaf81f65257"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-basic-current-mirror.md",
+      "bytes": 24464,
+      "sha256": "594b2609a72007fe4d671aa8c75a6e78068a852c843b4601e7609ca21f7818eb"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-basic-differential-pair.md",
+      "bytes": 27426,
+      "sha256": "1d9863f87cdd308da73087d06460a9010659d9d590f596c68e931dbc8cfb7fdd"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-cascode-current-mirror.md",
+      "bytes": 22594,
+      "sha256": "d062d5146b55b4744a86149e6faf53a353dd47094420aedc6415568042de0b08"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-cascode-stage.md",
+      "bytes": 28920,
+      "sha256": "8e575adf9dbbc1a8095df38ddddd58c59c5df26237e57f48e6ea9bd0e940e2a6"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-common-gate-stage.md",
+      "bytes": 27715,
+      "sha256": "abddacfa3586de92d3a79a649c9c031a5ff6b64bc920b350d6432c3d129ad1d5"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-cs-current-source-and-active-load.md",
+      "bytes": 28384,
+      "sha256": "575ae9632c265e2d589ca4217a6f5d0ac70b179bf2d0d876606ff993476803bf"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-cs-resistive-and-diode-load.md",
+      "bytes": 29021,
+      "sha256": "69cd6b634571af9920ddbf17d4093f897fe73519d8aaf0f05232394124646f85"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-cs-source-degeneration.md",
+      "bytes": 27162,
+      "sha256": "e7e83b3fef221488774666d16949e741c803e35273b9b2f4b79fec3e9df4f9bf"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-degenerated-diffpair-and-gilbert.md",
+      "bytes": 23941,
+      "sha256": "64f0099f3f256dc7a8a30b1da6377f8b01ac992a65a45e28ac9df0b5b649f3f0"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-five-transistor-ota.md",
+      "bytes": 25956,
+      "sha256": "6fbcd77173e2909aa4f9b8e1543ebcfcf3b24492da0961d0cce38c4cc16e884b"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-lvccml-wide-swing-mirror.md",
+      "bytes": 25202,
+      "sha256": "16f281cdcf3925964eec9592159cbc6b36f57e3363aa6dfe7d141290a0ff090b"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-source-follower.md",
+      "bytes": 27587,
+      "sha256": "dcb9b38d8bcc6e9c5570fb1c18d2c5a46c91576a95e098edb2f01e9dd5748061"
+    },
+    {
+      "path": "kb/router-index.json",
+      "bytes": 539559,
+      "sha256": "17fd10f4ddda164ebfdbe59184d0151f2b6e3e8c93706bcfaa3ccce7ecf6d3bd"
+    }
+  ]
+}

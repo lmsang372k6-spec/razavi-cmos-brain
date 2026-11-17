@@ -1,0 +1,82 @@
+{
+  "checklist_id": "layout-and-matching",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Độ Cân xứng Pelgrom, Chống Latch-Up và Bố cục Vật lý (Analog Layout & Matching)",
+  "applies_to": [
+    "law-differential-nonlinearity-and-feedback",
+    "law-pelgrom-mismatch-and-sizing-duality",
+    "tech-dynamic-offset-cancellation-az-cds",
+    "law-cmos-wells-and-latchup-guard-rings",
+    "tech-common-centroid-sti-wpe-layout"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-LAY-01",
+      "name": "Định luật Đối ngẫu Định cỡ Pelgrom giữa Cặp Vi sai Đầu vào và Gương dòng / Tải chủ động",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Cặp vi sai đầu vào (cần khử lệch áp V_OS): diện tích W*L lớn + V_OV nhỏ (gm/ID cao); Gương dòng & tải chủ động (cần khử lệch dòng Delta_I/I và giảm nhiễu/offset quy đổi): diện tích W*L lớn, L dài + V_OV lớn (gm/ID thấp sao cho gm_load / gm_in << 1)",
+      "why_vi": "Áp dụng nhầm một công thức chung cho mọi transistor là lỗi kinh điển nhất! Trong gương dòng, Delta_ID/ID = gm/ID * Delta_VTH + Delta_beta/beta, nên tăng gm/ID (giảm V_OV) sẽ nhân bội sai số dòng và đẩy hệ số quy đổi offset (gm_load/gm_in)*Delta_VTH_load của cặp vi sai tăng vọt!",
+      "cadence_check": "Kiểm tra bảng Operating Point: `gm/ID` của cặp đầu vào nằm ở vùng `15..22 V^-1`, trong khi `gm/ID` của gương dòng/tải nguồn dòng nằm ở vùng `5..9 V^-1` với `L >= 3*L_min`; xác nhận lại bằng `montecarlo` mismatch.",
+      "related_nodes": [
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "law-stage-and-mirror-noise-rules",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-LAY-02",
+      "name": "Đối xứng Tâm chung (Common-Centroid ABBA), Cùng hướng Dòng chảy và Ngón giả Biên (Dummy Strips) chống STI/WPE",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi cặp vi sai, gương dòng chính xác, mảng BJT/điện trở/tụ điện lập tỉ số phải: (1) dùng chung đơn vị kích thước cố định, (2) cùng hướng dòng chảy (không xoay 90 độ hay lật ngược chiều S->D nếu nhạy bất đối xứng cấy ion xiên), (3) bố trí 1D đan xen / 2D tâm chung ABBA, (4) có >= 1-2 ngón giả (dummy poly/OD nối VSS/VDD) ở hai đầu dãy và cách mép giếng n >= khoảng an toàn WPE",
+      "why_vi": "Gradient độ dày oxit và nhiệt độ tuyến tính trên mặt đế chỉ bị triệt tiêu khi trọng tâm hình học của hai linh kiện trùng khít nhau. Trong khi đó ở 90nm/65nm/45nm, ứng suất cơ học rãnh cách ly nông (STI / LOD) và tán xạ ion từ mép giếng (WPE) làm biến dạng mạnh VTH và độ linh động của các ngón nằm sát rìa vùng khuếch tán và sát biên n-well.",
+      "cadence_check": "Kiểm tra trực quan trên Virtuoso Layout XL và chạy trích xuất ký sinh sau layout (`PEX` / `LPE` có bật mô hình LOD `sa, sb` và WPE `sca, scb, scc`), đảm bảo offset hệ thống tại góc TT bằng `< 0.1 mV`.",
+      "related_nodes": [
+        "tech-common-centroid-sti-wpe-layout",
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    },
+    {
+      "id": "CHK-LAY-03",
+      "name": "Chia đa ngón (Multi-Finger Folding) và nối cực cổng hai đầu cho transistor rộng nhằm hạ điện trở cổng RG và tụ CDB",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Chia chiều rộng W thành M ngón (W_finger ~ 1..5 um, ưu tiên M chẵn) và nối tiếp xúc kim loại ở hai đầu cực cổng để giảm RG theo 1/(12*M^2) đồng thời chia sẻ vùng S/D giảm gần một nửa C_DB",
+      "why_vi": "Một dải cổng poly dài duy nhất có điện trở phân bố lớn, vừa sinh nhiễu nhiệt 4*k*T*RG cộng thẳng vào ngõ vào vừa tạo cực ký sinh tần số cao; gấp thành M ngón chẵn giúp giảm mạnh RG và giảm điện dung tiếp giáp cực máng xuống đế.",
+      "cadence_check": "Kiểm tra tham số CDF `fingers (nf)` vs `multiplier (m)` để trình trích xuất tính đúng diện tích/chu vi chung `AD, PD, AS, PS`, và kiểm tra nhiễu nhiệt cổng trong mô phỏng `noise` sau `PEX`.",
+      "related_nodes": [
+        "tech-common-centroid-sti-wpe-layout",
+        "concept-mos-capacitances-small-signal",
+        "law-mos-thermal-and-flicker-noise"
+      ]
+    },
+    {
+      "id": "CHK-LAY-04",
+      "name": "Mật độ tiếp xúc đế/giếng dày đặc và Vòng bảo vệ (Guard Rings) ngăn chặn kích hoạt SCR Latch-Up và Xuyên nhiễu Đế",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi giếng n có tiếp xúc n+ nối VDD_well và mọi vùng đế p có tiếp xúc p+ nối VSS dày đặc để R_well * I_inj < 0.5 V (beta_NPN * beta_PNP loop < 1); bắt buộc bao vòng bảo vệ kép (double guard ring) quanh mạch I/O, phần tử truyền công suất LDO, khối số/xung nhịp và tách biệt khối tương tự nhạy cảm",
+      "why_vi": "Cấu trúc CMOS chứa thyristor SCR ký sinh gồm PNP dọc/ngang và NPN ngang. Dòng phun vượt mức tại chân I/O hoặc quá độ chuyển mạch chảy qua điện trở đế R_sub và điện trở giếng R_well sẽ phân cực thuận tiếp giáp gốc-phát kích hoạt hồi tiếp dương Latch-up gây chập cháy nguồn VDD-VSS.",
+      "cadence_check": "Chạy kiểm tra luật thiết kế `DRC` (Assura / Calibre / PVS) đạt `0 latch-up tap spacing violations` và dùng đường cấp đất Kelvin riêng cho vòng bảo vệ nhiễu không chung với đất tín hiệu tương tự.",
+      "related_nodes": [
+        "law-cmos-wells-and-latchup-guard-rings",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-LAY-05",
+      "name": "Tuân thủ luật Hiệu ứng Anten (Antenna Rule) bảo vệ oxit cổng mỏng và khử sụt áp/cảm kháng dây hàn chân vỏ (Star Kelvin & Bondwire L*di/dt)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Tỉ số diện tích kim loại / diện tích cổng kết nối trong từng bước khắc plasma tuân thủ luật Antenna (dùng cầu nhảy lên tầng kim loại trên cùng hoặc diode bảo vệ phân cực ngược); đường đất/nguồn khối tương tự nối hình sao (Star/Kelvin routing) về pad riêng tách khỏi dòng dI/dt của bộ đệm số, kèm mô hình cuộn cảm dây hàn L_bond trong mô phỏng",
+      "why_vi": "Trong quá trình khắc ion phản ứng (RIE), vệt kim loại dài nối trực tiếp vào cực cổng thu thập điện tích plasma đánh thủng hoặc làm suy biến tuổi thọ oxit cổng mỏng 90nm/65nm/45nm; còn khi đóng gói thực tế, dây hàn vàng/đồng có L_bond ~ 1-3 nH sinh nhiễu dội đất L*dI/dt hàng trăm mV nếu dùng chung chân đất với mạch chuyển mạch.",
+      "cadence_check": "Xác nhận `0 Antenna DRC violations` và luôn đóng gói mô hình chân vỏRLC (`L_bond, C_pad, R_pkg`) vào testbench cấp cao nhất trước khi tape-out.",
+      "related_nodes": [
+        "law-cmos-wells-and-latchup-guard-rings",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    }
+  ]
+}

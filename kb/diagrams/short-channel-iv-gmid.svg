@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="580" viewBox="0 0 1060 580">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1056" height="576" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1048 2 Q 1058 2 1058 12 L 1058 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1058" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="88" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="62" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.11 &amp; 17</text>
+  <text x="116" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Short-Channel I–V (Velocity Sat &amp; DIBL) vs gm/ID Sizing Curve</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Đặc tuyến I–V Kênh ngắn (Bão hòa Vận tốc &amp; DIBL) và Đường cong Định cỡ gm/ID (Ch.11 &amp; Ch.17)</text>
+  <rect x="22" y="74" width="492" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="22" y="74" width="492" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="34" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Long-Channel Square-Law vs Nanometer Short-Channel I–V</text>
+  <line x1="68" y1="483" x2="481" y2="483" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="68" y1="483" x2="68" y2="130" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="473" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">VDS</text>
+  <text x="76" y="142" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">ID</text>
+  <path d="M 68 483 Q 130 333 203 163" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,4"/>
+  <text x="210" y="167" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#059669" text-anchor="start" font-weight="bold">VDS,min locus</text>
+  <path d="M 68 483 Q 88.9 455 106 455 L 448 455" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <path d="M 68 483 Q 102.1 391 130 391 L 448 391" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <path d="M 68 483 Q 115.30000000000001 295 154 295 L 448 295" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <path d="M 68 483 Q 128.5 175 178 175 L 448 175" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <path d="M 68 483 Q 86.7 437 102 437 L 448 411" fill="none" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="453" y="415" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="start" font-weight="bold">VGS1</text>
+  <path d="M 68 483 Q 95.5 373 118 373 L 448 342" fill="none" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="453" y="346" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="start" font-weight="bold">VGS2</text>
+  <path d="M 68 483 Q 104.30000000000001 309 134 309 L 448 273" fill="none" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="453" y="277" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="start" font-weight="bold">VGS3</text>
+  <path d="M 68 483 Q 113.1 245 150 245 L 448 204" fill="none" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="453" y="208" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="start" font-weight="bold">VGS4</text>
+  <line x1="82" y1="514" x2="110" y2="514" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="6,4"/>
+  <text x="118" y="518" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="start">Square-Law: quadratic ΔID ∝ (VGS−VTH)^2</text>
+  <line x1="82" y1="536" x2="110" y2="536" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <text x="118" y="540" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#dc2626" text-anchor="start">Short-Channel: linear ΔID (vsat) + DIBL finite ro slope</text>
+  <rect x="536" y="74" width="502" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="536" y="74" width="502" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="548" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Transconductance Efficiency gm/ID &amp; fT vs Inversion Region</text>
+  <line x1="585" y1="483" x2="988" y2="483" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="585" y1="483" x2="585" y2="130" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="980" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">Inversion Level: VGS − VTH  [or log ID/(W/L)]</text>
+  <text x="593" y="142" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">gm / ID  [V⁻¹]</text>
+  <line x1="980" y1="483" x2="980" y2="130" stroke="#d97706" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="973" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#d97706" text-anchor="end" font-weight="bold">fT (Speed)</text>
+  <rect x="710" y="145" width="115" height="338" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" fill-opacity="0.65"/>
+  <text x="767" y="315" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="middle" font-weight="bold">Moderate Inv.</text>
+  <text x="767" y="331" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="middle">Sweet Spot</text>
+  <text x="647" y="315" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#475569" text-anchor="middle">Weak Inv.</text>
+  <text x="917" y="315" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#475569" text-anchor="middle">Strong Inv.</text>
+  <polyline points="595,198.33 604.38,200.24 613.75,202.5 623.12,205.16 632.5,208.3 641.88,211.96 651.25,216.21 660.62,221.12 670,226.75 679.38,233.14 688.75,240.32 698.12,248.29 707.5,257.05 716.88,266.52 726.25,276.61 735.62,287.21 745,298.14 754.38,309.22 763.75,320.26 773.12,331.08 782.5,341.49 791.88,351.35 801.25,360.54 810.62,368.99 820,376.65 829.38,383.51 838.75,389.59 848.12,394.92 857.5,399.57 866.88,403.58 876.25,407.02 885.62,409.96 895,412.45 904.38,414.56 913.75,416.35 923.12,417.84 932.5,419.1 941.88,420.15 951.25,421.04 960.62,421.77 970,422.38" fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="603" y="175" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="start" font-weight="bold">gm/ID ≈ 1/(ζ·VT) ≈ 26 V⁻¹</text>
+  <polyline points="595,471 604.38,468.6 613.75,464.09 623.12,458.35 632.5,451.77 641.88,444.64 651.25,437.16 660.62,429.5 670,421.77 679.38,414.09 688.75,406.52 698.12,399.11 707.5,391.91 716.88,384.95 726.25,378.24 735.62,371.8 745,365.62 754.38,359.72 763.75,354.08 773.12,348.71 782.5,343.58 791.88,338.71 801.25,334.07 810.62,329.65 820,325.45 829.38,321.45 838.75,317.65 848.12,314.03 857.5,310.59 866.88,307.31 876.25,304.19 885.62,301.22 895,298.38 904.38,295.68 913.75,293.1 923.12,290.64 932.5,288.29 941.88,286.05 951.25,283.9 960.62,281.85 970,279.89" fill="none" stroke="#d97706" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7,3"/>
+  <text x="860" y="215" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#d97706" text-anchor="start" font-weight="bold">fT ≈ gm/(2π·Cgg)</text>
+  <text x="558" y="518" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Input Diff-Pair: High gm/ID (14–22 V⁻¹) -&gt; max Gm/Power &amp; low VOS</text>
+  <text x="558" y="538" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Current Mirrors / Loads: Low gm/ID (5–9 V⁻¹) -&gt; low noise &amp; tight matching</text>
+</svg>

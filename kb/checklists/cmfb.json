@@ -1,0 +1,96 @@
+{
+  "checklist_id": "cmfb",
+  "title_vi": "Bảng kiểm cấu trúc Mạch Hồi tiếp Chế độ Chung (CMFB) cho Bộ khuếch đại Vi sai Hoàn toàn Một Tầng & Hai Tầng",
+  "applies_to": [
+    "topo-telescopic-cascode-opamp",
+    "topo-folded-cascode-ota",
+    "topo-two-stage-opamp",
+    "topo-gain-boosted-cascode",
+    "tech-common-mode-feedback-cmfb",
+    "tech-switched-capacitor-cmfb"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-CM-01",
+      "name": "Explicit CMFB loop present for every high-impedance differential stage",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Every differential stage loaded by high-impedance current sources (both single-stage cascode OTAs and EACH high-Z stage of a fully-differential two-stage op-amp) has a well-defined negative-polarity CMFB loop",
+      "why_vi": "Bất kỳ sai lệch dòng tĩnh nano-ampe nào giữa nguồn dòng PMOS phía trên và nguồn dòng NMOS phía dưới nhân với trở kháng ra hàng trăm kOhm–MOhm sẽ đẩy cả hai ngõ ra vi sai chạm cứng VDD hoặc GND mà vòng hồi tiếp vi sai bên ngoài không thể phát hiện.",
+      "cadence_check": "Kiểm tra DC OP tại Vin_diff = 0 trên cả 5 góc (đặc biệt FS và SF): Vout_CM = (V(out+) + V(out-))/2 phải nằm sát VREF_CM (sai lệch < +-30..50 mV) và mọi transistor giữ region == 2.",
+      "related_nodes": [
+        "tech-common-mode-feedback-cmfb",
+        "topo-telescopic-cascode-opamp",
+        "topo-folded-cascode-ota",
+        "topo-two-stage-opamp"
+      ]
+    },
+    {
+      "id": "CHK-CM-02",
+      "name": "CM sensing network preserves differential open-loop gain and remains linear across full differential swing",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Resistive sensor satisfies R_CM >> Rout_diff (or uses buffered/SC-CMFB); source-follower or triode-MOS sensor stays unclipped and in deep triode at peak differential swing +-Vout_max",
+      "why_vi": "Điện trở R_CM nhỏ nối xuống đất ảo vi sai làm sập độ lợi vi sai; trong khi bộ đệm theo nguồn bị tắt hoặc MOSFET cảm nhận rời vùng triode sâu khi biên độ vi sai lớn sẽ biến tín hiệu vi sai thành dịch chuyển chế độ chung phi tuyến (DM-to-CM distortion).",
+      "cadence_check": "So sánh độ lợi vi sai trước và sau khi gắn CMFB (< 10% suy giảm); quét dc Vin_diff tạo biên độ ra cực đại và kiểm tra Vout_CM không bị trôi cong vọt quá giới hạn headroom.",
+      "related_nodes": [
+        "tech-common-mode-feedback-cmfb",
+        "tech-switched-capacitor-cmfb"
+      ]
+    },
+    {
+      "id": "CHK-CM-03",
+      "name": "Independent Common-Mode loop stability (PM_CM >= 60 deg) and adequate CM bandwidth",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "CMFB loop achieves PM_CM >= 60 deg (nominal) / >= 52 deg (PVT), GM_CM >= 10 dB, and GBW_CM >= 0.25 * GBW_DM without uncompensated R_CM * C_in,err lag poles",
+      "why_vi": "Rất nhiều Op-Amp ổn định tuyệt đối trên đường vi sai nhưng tự dao động dữ dội ở chế độ chung do cực trễ của điện trở cảm nhận lớn R_CM ghép với tụ cổng bộ so sánh CM hoặc do vòng CMFB bọc qua quá nhiều tầng không bù!",
+      "cadence_check": "Đặt iprobe trên dây điều khiển CM đơn đầu (hoặc diffstbprobe ở mode=comm) chạy stb qua mọi góc PVT và giá trị CL; nếu dùng R_CM lớn, mắc song song tụ truyền thẳng C_CM tạo LHP zero bù pha.",
+      "related_nodes": [
+        "tech-common-mode-feedback-cmfb",
+        "tech-bode-blackman-middlebrook-stb",
+        "law-multipole-phase-margin"
+      ]
+    },
+    {
+      "id": "CHK-CM-04",
+      "name": "Two-stage fully-differential op-amps avoid uncompensated 3-pole global CMFB loops",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Two-stage fully-differential op-amps either use two dedicated local CMFB loops (Stage 1 + Stage 2) or compensate the global CMFB path via Miller Cc + feedforward capacitor with verified Nyquist/stb margin",
+      "why_vi": "Đóng một vòng CMFB duy nhất từ ngõ ra Tầng 2 qua bộ khuếch đại lỗi quay về nguồn dòng Tầng 1 nhốt tới 3 cực trở kháng cao bên trong một vòng lặp, cực kỳ dễ đảo pha và dao động chế độ chung.",
+      "cadence_check": "Kiểm tra stb riêng cho từng vòng CMFB của Tầng 1 và Tầng 2, đồng thời bơm xung nhiễu chế độ chung trong tran xác nhận cả nút liên tầng lẫn nút ngõ ra dập tắt nhanh không rung.",
+      "related_nodes": [
+        "tech-common-mode-feedback-cmfb",
+        "topo-two-stage-opamp"
+      ]
+    },
+    {
+      "id": "CHK-CM-05",
+      "name": "Split current-source control range prevents startup lock-up and limits CM loop gain-capacitance loading",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Current sources controlled by CMFB are split into fixed bias portion (~70-80%) plus CMFB-adjusted portion (~20-30%) still wide enough to cover worst-case FS/SF current mismatch",
+      "why_vi": "Để bộ khuếch đại lỗi CMFB lái 100% chiều rộng cổng nguồn dòng tải lớn làm tăng vọt tụ tải cực phụ trong vòng CMFB và dễ đẩy toàn bộ Op-Amp vào trạng thái khóa tắt dòng bằng 0 khi mới bật nguồn VDD.",
+      "cadence_check": "Chạy tran quét nguồn PWL VDD từ 0 V lên VDD ở cả góc FS và SF, kiểm tra Vout_CM tự hội tụ êm về VREF_CM mà không kẹt ở 0 V hay VDD.",
+      "related_nodes": [
+        "tech-common-mode-feedback-cmfb",
+        "tech-supply-independent-bias-and-startup"
+      ]
+    },
+    {
+      "id": "CHK-CM-06",
+      "name": "Auxiliary Gain-Boosting amplifiers in fully-differential OTAs have proper CM definition",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Every differential auxiliary amplifier A_aux in a gain-boosted cascode has its own output common-mode level pinned to the target cascode gate bias Vb1 / Vb2 via local CMFB",
+      "why_vi": "Nếu dùng OTA phụ vi sai hoàn toàn để tăng cường độ lợi mà quên khóa mức đồng pha ngõ ra của chính OTA phụ đó, cổng cascode chính sẽ trôi chạm nguồn làm sập toàn bộ tầng cascode chính!",
+      "cadence_check": "Kiểm tra điện áp DC đồng pha tại cặp ngõ ra của từng OTA phụ khớp đúng Vb_cascode thiết kế và kiểm tra stb mode=comm của cả hai OTA phụ.",
+      "related_nodes": [
+        "topo-gain-boosted-cascode",
+        "tech-common-mode-feedback-cmfb"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="590" viewBox="0 0 1080 590">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="586" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.10</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Miller Compensation: Bode Pole Splitting &amp; s-Plane Rz Zero Locus</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Bù Miller: Tách Cực trên Giản đồ Bode &amp; Quỹ đạo Cực–Zero theo Điện trở Rz (Ch.10 §10.5)</text>
+  <rect x="18" y="74" width="515" height="492" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="515" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Bode Magnitude Response: Pole Splitting</text>
+  <rect x="549" y="74" width="513" height="492" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="549" y="74" width="513" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="561" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Complex s-Plane Pole &amp; Rz Zero Trajectories</text>
+  <line x1="68" y1="384" x2="504" y2="384" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="68" y1="384" x2="68" y2="126" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="496" y="402" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">log ω  [rad/s]</text>
+  <text x="76" y="138" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">|A(jω)|  [dB]</text>
+  <line x1="68" y1="324" x2="490" y2="324" stroke="#94a3b8" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="5,4"/>
+  <text x="60" y="328" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="end">0 dB</text>
+  <polyline points="68,168 243,168 303,206 423,366" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <text x="250" y="160" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#475569" text-anchor="start">ωp1,0</text>
+  <text x="312" y="202" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#475569" text-anchor="start">ωp2,0 (Uncomp)</text>
+  <polyline points="68,168 126,168 354,324 413,366 463,380" fill="none" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="383,344 476,344" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+  <text x="428" y="336" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Rz=0: RHP ωz!</text>
+  <line x1="236" y1="184" x2="136" y2="184" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="186" y="200" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Split Left</text>
+  <line x1="313" y1="226" x2="408" y2="226" stroke="#059669" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="360" y="242" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#059669" text-anchor="middle" font-weight="bold">Split Right</text>
+  <circle cx="126" cy="168" r="3.5" fill="#2563eb"/>
+  <text x="126" y="157" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="middle" font-weight="bold">ωp1'</text>
+  <circle cx="354" cy="324" r="3.5" fill="#2563eb"/>
+  <text x="344" y="314" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#2563eb" text-anchor="end" font-weight="bold">GBW = gm1/Cc</text>
+  <circle cx="413" cy="366" r="3.5" fill="#059669"/>
+  <text x="422" y="372" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="start" font-weight="bold">ωp2' ≈ gm6/CL</text>
+  <rect x="36" y="422" width="478" height="128" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="428" x2="39" y2="544" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="440" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.1" fill="#1d4ed8" text-anchor="start" font-weight="bold">Why ωp2 Moves UP Physically (§10.5.2)</text>
+  <text x="48" y="457" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• At high ω, Miller Cc shorts Gate and Drain of M6!</text>
+  <text x="48" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• M6 becomes DIODE-CONNECTED -&gt; output impedance drops</text>
+  <text x="48" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">  from R2 = ro6||ro7 down to 1/gm6 -&gt; ωp2' ≈ gm6 / CL!</text>
+  <text x="48" y="505" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Phase Margin ≥ 60° requires ωp2' ≥ √3·GBW (~2.2x with zeros).</text>
+  <line x1="585" y1="255" x2="1032" y2="255" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="865" y1="392" x2="865" y2="118" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="1028" y="273" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="end" font-weight="bold">σ (Re)</text>
+  <text x="873" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="start" font-weight="bold">jω (Im)</text>
+  <text x="720" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="middle" font-weight="bold">LHP (Stable)</text>
+  <text x="955" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#dc2626" text-anchor="middle" font-weight="bold">RHP (Lag!)</text>
+  <line x1="780" y1="250" x2="790" y2="260" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="780" y1="260" x2="790" y2="250" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="785" y="275" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#94a3b8" text-anchor="middle" font-weight="bold">p1,0</text>
+  <line x1="725" y1="250" x2="735" y2="260" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="725" y1="260" x2="735" y2="250" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="730" y="275" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#94a3b8" text-anchor="middle" font-weight="bold">p2,0</text>
+  <line x1="831" y1="250" x2="841" y2="260" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="831" y1="260" x2="841" y2="250" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="836" y="243" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#2563eb" text-anchor="middle" font-weight="bold">p1'</text>
+  <line x1="630" y1="250" x2="640" y2="260" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="630" y1="260" x2="640" y2="250" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="635" y="243" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#2563eb" text-anchor="middle" font-weight="bold">p2'</text>
+  <line x1="792" y1="249" x2="828" y2="249" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <line x1="720" y1="249" x2="646" y2="249" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <circle cx="952" cy="255" r="5.5" fill="#ffffff" stroke="#dc2626" stroke-width="2.2"/>
+  <text x="952" y="242" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#dc2626" text-anchor="middle" font-weight="bold">z0 (+gm6/Cc)</text>
+  <text x="952" y="275" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#dc2626" text-anchor="middle">Rz = 0</text>
+  <line x1="962" y1="252" x2="1018" y2="252" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="4,3" marker-end="url(#arr-amber)"/>
+  <text x="995" y="227" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#d97706" text-anchor="middle">Rz-&gt;1/gm6 (z-&gt;∞)</text>
+  <line x1="588" y1="283" x2="632" y2="263" stroke="#059669" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="4,3" marker-end="url(#arr-bias)"/>
+  <circle cx="635" cy="255" r="8.5" fill="none" stroke="#059669" stroke-width="2.1"/>
+  <text x="650" y="293" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#059669" text-anchor="start" font-weight="bold">LHP z cancels p2'!</text>
+  <rect x="568" y="422" width="476" height="128" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <line x1="571" y1="428" x2="571" y2="544" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="580" y="440" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.1" fill="#047857" text-anchor="start" font-weight="bold">Exact Nulling Resistor Tuning Law (Eq. 10.38–10.41)</text>
+  <text x="580" y="457" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• s_zero = +1 / [Cc · (1/gm6 − Rz)]</text>
+  <text x="580" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Rz = 1 / gm6              -&gt; Moves RHP zero to ∞</text>
+  <text x="580" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Rz = (CL + Cc)/(gm6·Cc)   -&gt; Places LHP zero right on ωp2'!</text>
+  <text x="580" y="505" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Implement Rz with triode MOSFET biased by replica diode M!</text>
+</svg>

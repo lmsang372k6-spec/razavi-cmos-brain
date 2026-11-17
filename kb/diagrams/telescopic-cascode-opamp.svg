@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="620" viewBox="0 0 1060 620">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1056" height="616" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1048 2 Q 1058 2 1058 12 L 1058 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1058" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.09</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Fully-Differential Telescopic Cascode Operational Amplifier</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Bộ Khuếch đại Thuật toán Cascode Lồng Vi sai Toàn phần (Telescopic Op-Amp — Ch.09 §9.2)</text>
+  <line x1="750" y1="22" x2="766" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="771" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="832" y1="22" x2="848" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="853" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="938" y1="22" x2="954" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="959" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="22" y="74" width="548" height="524" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="22" y="74" width="548" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="34" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">5-Transistor Vertical Stack Topology (M1–M9)</text>
+  <line x1="215" y1="118" x2="215" y2="109" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="202" y1="109" x2="228" y2="109" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="215" y="104" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <line x1="385" y1="118" x2="385" y2="109" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="372" y1="109" x2="398" y2="109" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="385" y="104" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <polyline points="215,134 215,146 203,146" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="205,146 211.5,142.5 211.5,149.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="203,170 215,170 215,182" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="203" y1="143" x2="203" y2="173" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="198" y1="146" x2="198" y2="170" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="194.5" cy="158" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.7"/>
+  <line x1="185" y1="158" x2="191.5" y2="158" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="223" y="162" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">M7</text>
+  <polyline points="385,134 385,146 397,146" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="395,146 388.5,142.5 388.5,149.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="397,170 385,170 385,182" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="397" y1="143" x2="397" y2="173" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="402" y1="146" x2="402" y2="170" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="405.5" cy="158" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.7"/>
+  <line x1="415" y1="158" x2="408.5" y2="158" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="377" y="162" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="end" font-weight="bold">M8</text>
+  <line x1="215" y1="118" x2="215" y2="134" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="118" x2="385" y2="134" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="125" y1="158" x2="185" y2="158" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="121" cy="158" r="3.4" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <text x="113" y="162" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#d97706" text-anchor="end" font-weight="bold">VCMFB</text>
+  <line x1="415" y1="158" x2="475" y2="158" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="479" cy="158" r="3.4" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <text x="487" y="162" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#d97706" text-anchor="start" font-weight="bold">VCMFB</text>
+  <polyline points="215,208 215,220 203,220" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="205,220 211.5,216.5 211.5,223.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="203,244 215,244 215,256" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="203" y1="217" x2="203" y2="247" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="198" y1="220" x2="198" y2="244" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="194.5" cy="232" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.7"/>
+  <line x1="185" y1="232" x2="191.5" y2="232" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="223" y="236" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">M5</text>
+  <polyline points="385,208 385,220 397,220" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="395,220 388.5,216.5 388.5,223.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="397,244 385,244 385,256" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="397" y1="217" x2="397" y2="247" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="402" y1="220" x2="402" y2="244" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="405.5" cy="232" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.7"/>
+  <line x1="415" y1="232" x2="408.5" y2="232" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="377" y="236" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="end" font-weight="bold">M6</text>
+  <line x1="215" y1="182" x2="215" y2="208" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="182" x2="385" y2="208" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="125" y1="232" x2="185" y2="232" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="121" cy="232" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="113" y="236" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">Vb2</text>
+  <line x1="415" y1="232" x2="475" y2="232" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="479" cy="232" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="487" y="236" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="start" font-weight="bold">Vb2</text>
+  <line x1="215" y1="256" x2="215" y2="316" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="256" x2="385" y2="316" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="215" cy="286" r="3.5" fill="#2563eb"/>
+  <circle cx="385" cy="286" r="3.5" fill="#2563eb"/>
+  <line x1="125" y1="286" x2="215" y2="286" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="121" cy="286" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="113" y="290" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vout−</text>
+  <line x1="385" y1="286" x2="475" y2="286" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="479" cy="286" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="487" y="290" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout+</text>
+  <polyline points="215,316 215,328 203,328" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="203,352 215,352 215,364" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="213,352 206.5,348.5 206.5,355.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="203" y1="325" x2="203" y2="355" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="197" y1="328" x2="197" y2="352" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="185" y1="340" x2="197" y2="340" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="223" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">M3</text>
+  <polyline points="385,316 385,328 397,328" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="397,352 385,352 385,364" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="387,352 393.5,348.5 393.5,355.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="397" y1="325" x2="397" y2="355" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="403" y1="328" x2="403" y2="352" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="415" y1="340" x2="403" y2="340" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="377" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="end" font-weight="bold">M4</text>
+  <line x1="125" y1="340" x2="185" y2="340" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="121" cy="340" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="113" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">Vb1</text>
+  <line x1="415" y1="340" x2="475" y2="340" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="479" cy="340" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="487" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="start" font-weight="bold">Vb1</text>
+  <polyline points="215,390 215,402 203,402" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="203,426 215,426 215,438" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="213,426 206.5,422.5 206.5,429.5" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="203" y1="399" x2="203" y2="429" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="197" y1="402" x2="197" y2="426" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="185" y1="414" x2="197" y2="414" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="223" y="411" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="start" font-weight="bold">M1</text>
+  <text x="223" y="426" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">gm1</text>
+  <polyline points="385,390 385,402 397,402" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="397,426 385,426 385,438" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="387,426 393.5,422.5 393.5,429.5" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="397" y1="399" x2="397" y2="429" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="403" y1="402" x2="403" y2="426" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="415" y1="414" x2="403" y2="414" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="377" y="411" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="end" font-weight="bold">M2</text>
+  <text x="377" y="426" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="end">gm2</text>
+  <line x1="215" y1="364" x2="215" y2="390" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="364" x2="385" y2="390" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="125" y1="414" x2="185" y2="414" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="121" cy="414" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="113" y="418" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin+</text>
+  <line x1="415" y1="414" x2="475" y2="414" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="479" cy="414" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="487" y="418" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vin−</text>
+  <polyline points="215,438 215,456 385,456 385,438" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="300" cy="456" r="3.5" fill="#059669"/>
+  <polyline points="300,474 300,486 288,486" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="288,510 300,510 300,522" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="298,510 291.5,506.5 291.5,513.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="288" y1="483" x2="288" y2="513" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="282" y1="486" x2="282" y2="510" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="270" y1="498" x2="282" y2="498" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="308" y="502" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">M9 (ISS)</text>
+  <line x1="300" y1="456" x2="300" y2="474" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="215" y1="498" x2="270" y2="498" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="211" cy="498" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="203" y="502" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">Vb0</text>
+  <line x1="300" y1="522" x2="300" y2="542" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="300" y1="542" x2="300" y2="549" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="289" y1="549" x2="311" y2="549" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="293" y1="553.5" x2="307" y2="553.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="297" y1="558" x2="303" y2="558" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <text x="300" y="582" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">5 Stacked Saturated MOSFETs -&gt; Single Current Branch per Side!</text>
+  <rect x="590" y="76" width="448" height="168" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="593" y1="82" x2="593" y2="238" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="602" y="94" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.3" fill="#1d4ed8" text-anchor="start" font-weight="bold">1. Gain, Speed &amp; Power Advantage (§9.2.1)</text>
+  <text x="602" y="111" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• Differential Voltage Gain:</text>
+  <text x="602" y="127" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  |Adm| ≈ gm1 · [ (gm3·ro3·ro1) || (gm5·ro5·ro7) ]</text>
+  <text x="602" y="143" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• Highest Speed &amp; Lowest Power of Cascode Op-Amps:</text>
+  <text x="602" y="159" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  - Only 2 current branches (ISS total) vs 4 in Folded</text>
+  <text x="602" y="175" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  - Nondominant pole at NMOS M3 source (high gm3/Cx!)</text>
+  <text x="602" y="191" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  - Lowest thermal noise: only M1,2 and M7,8 contribute!</text>
+  <rect x="590" y="260" width="448" height="162" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="593" y1="266" x2="593" y2="416" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="602" y="278" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.3" fill="#b45309" text-anchor="start" font-weight="bold">2. Headroom Stack Penalty (5·VDS,min)</text>
+  <text x="602" y="295" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• Peak-to-Peak Single-Side Swing:</text>
+  <text x="602" y="311" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  Vout,swing = VDD − (VDS,min1 + VDS,min3 + |VDS,min5|</text>
+  <text x="602" y="327" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">                      + |VDS,min7| + VDS,min9)</text>
+  <text x="602" y="343" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">             = VDD − 5 · VDS,min</text>
+  <text x="602" y="359" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• Differential p-p swing = 2 · (VDD − 5·VDS,min).</text>
+  <rect x="590" y="438" width="448" height="160" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <line x1="593" y1="444" x2="593" y2="592" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+  <text x="602" y="456" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.3" fill="#b91c1c" text-anchor="start" font-weight="bold">3. TRAP: Cannot Short Input to Output! (Fig. 9.5)</text>
+  <text x="602" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• If Vout is shorted directly to Vin (unity-gain buffer):</text>
+  <text x="602" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  - M1 stays in sat ONLY if Vout ≤ VDS1 + VTH1 -&gt; narrow!</text>
+  <text x="602" y="505" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  - M3 stays in sat ONLY if Vout ≥ Vb1 − VTH3</text>
+  <text x="602" y="521" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">• Result: Unity-gain DC feedback fails unless switched-cap</text>
+  <text x="602" y="537" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#0f172a" text-anchor="start">  level shifting is used -&gt; Upgrade to Folded-Cascode!</text>
+</svg>

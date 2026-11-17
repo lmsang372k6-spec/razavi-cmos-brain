@@ -1,0 +1,602 @@
+{
+  "version": "2026.11.18.1",
+  "generator": "tools/generate_diagrams.py",
+  "total_diagrams": 38,
+  "diagrams": [
+    {
+      "index": 1,
+      "filename": "analog-design-octagon.svg",
+      "path": "kb/diagrams/analog-design-octagon.svg",
+      "title_vi": "Bát giác Thiết kế Mạch Tương tự — Mạng Đánh đổi Đa chiều (Razavi Ch.01 §1.4)",
+      "title_en": "Analog Design Octagon (8-Axis Coupled Trade-Off Web)",
+      "chapter": "Ch.01",
+      "chapters": [
+        1
+      ],
+      "width": 1040,
+      "height": 590,
+      "geometry_elements": 52,
+      "text_elements": 38
+    },
+    {
+      "index": 2,
+      "filename": "mos-small-signal-caps.svg",
+      "path": "kb/diagrams/mos-small-signal-caps.svg",
+      "title_vi": "Mô hình Tín hiệu nhỏ Tần số cao Đầy đủ của MOSFET (gm·vgs, gmb·vbs, ro & 5 Tụ Ký sinh)",
+      "title_en": "MOSFET Complete High-Frequency Small-Signal Model",
+      "chapter": "Ch.02",
+      "chapters": [
+        2
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 85,
+      "text_elements": 37
+    },
+    {
+      "index": 3,
+      "filename": "short-channel-iv-gmid.svg",
+      "path": "kb/diagrams/short-channel-iv-gmid.svg",
+      "title_vi": "Đặc tuyến I–V Kênh ngắn (Bão hòa Vận tốc & DIBL) và Đường cong Định cỡ gm/ID (Ch.11 & Ch.17)",
+      "title_en": "Short-Channel I–V (Velocity Sat & DIBL) vs gm/ID Sizing Curve",
+      "chapter": "Ch.11 & 17",
+      "chapters": [
+        11,
+        17
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 34,
+      "text_elements": 25
+    },
+    {
+      "index": 4,
+      "filename": "cs-loads-comparison.svg",
+      "path": "kb/diagrams/cs-loads-comparison.svg",
+      "title_vi": "So sánh Tầng Nguồn chung (CS): Tải Điện trở, Tải Nối Diode và Tải Nguồn dòng (Ch.03 §3.3)",
+      "title_en": "Common-Source (CS) Stage: Load Topologies Comparison",
+      "chapter": "Ch.03",
+      "chapters": [
+        3
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 105,
+      "text_elements": 45
+    },
+    {
+      "index": 5,
+      "filename": "cs-source-degeneration.svg",
+      "path": "kb/diagrams/cs-source-degeneration.svg",
+      "title_vi": "Tầng CS Suy biến Cực nguồn: Tuyến tính hóa Gm và Khuếch đại Trở kháng ra Rout (Ch.03 §3.3.6)",
+      "title_en": "CS Stage with Source Degeneration: Linearization & Rout Boost",
+      "chapter": "Ch.03",
+      "chapters": [
+        3
+      ],
+      "width": 1040,
+      "height": 580,
+      "geometry_elements": 83,
+      "text_elements": 34
+    },
+    {
+      "index": 6,
+      "filename": "source-follower-and-cg.svg",
+      "path": "kb/diagrams/source-follower-and-cg.svg",
+      "title_vi": "So sánh Mạch Bám nguồn (Source Follower) và Tầng Cổng chung (Common-Gate) (Ch.03 §3.4–3.5)",
+      "title_en": "Source Follower (Common-Drain) vs Common-Gate (CG) Stage",
+      "chapter": "Ch.03",
+      "chapters": [
+        3
+      ],
+      "width": 1040,
+      "height": 580,
+      "geometry_elements": 85,
+      "text_elements": 34
+    },
+    {
+      "index": 7,
+      "filename": "cascode-shielding.svg",
+      "path": "kb/diagrams/cascode-shielding.svg",
+      "title_vi": "Tầng Cascode Lồng (Telescopic): Cơ chế Che chắn Cực máng & Nâng Rout ≈ gm·ro² (Ch.03 §3.6)",
+      "title_en": "Telescopic Cascode Stage: Drain-Voltage Shielding & Rout ≈ gm·ro²",
+      "chapter": "Ch.03",
+      "chapters": [
+        3
+      ],
+      "width": 1040,
+      "height": 580,
+      "geometry_elements": 60,
+      "text_elements": 38
+    },
+    {
+      "index": 8,
+      "filename": "diff-pair-half-circuit.svg",
+      "path": "kb/diagrams/diff-pair-half-circuit.svg",
+      "title_vi": "Cặp Vi sai Cơ bản, Đất Ảo (Virtual Ground) và Phân rã Nửa mạch Vi sai / Đồng pha (Ch.04 §4.2–4.3)",
+      "title_en": "Differential Pair, Virtual Ground & DM / CM Half-Circuit Decomposition",
+      "chapter": "Ch.04",
+      "chapters": [
+        4
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 111,
+      "text_elements": 47
+    },
+    {
+      "index": 9,
+      "filename": "gilbert-cell.svg",
+      "path": "kb/diagrams/gilbert-cell.svg",
+      "title_vi": "Ô nhân Tương tự Bốn Góc phần tư / Khuếch đại Độ lợi Biến thiên Gilbert (Ch.04 §4.5)",
+      "title_en": "Gilbert Variable-Gain Amplifier & Four-Quadrant Multiplier Cell",
+      "chapter": "Ch.04",
+      "chapters": [
+        4
+      ],
+      "width": 1040,
+      "height": 600,
+      "geometry_elements": 108,
+      "text_elements": 43
+    },
+    {
+      "index": 10,
+      "filename": "current-mirrors-evolution.svg",
+      "path": "kb/diagrams/current-mirrors-evolution.svg",
+      "title_vi": "Tiến hóa Gương dòng: Cơ bản -> Cascode -> Cascode Điện áp thấp Dải rộng LVCCML (Ch.05 §5.1–5.2)",
+      "title_en": "Current Mirror Evolution: Basic -> Cascode -> Low-Voltage Wide-Swing (LVCCML)",
+      "chapter": "Ch.05",
+      "chapters": [
+        5
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 192,
+      "text_elements": 50
+    },
+    {
+      "index": 11,
+      "filename": "five-transistor-ota.svg",
+      "path": "kb/diagrams/five-transistor-ota.svg",
+      "title_vi": "Mạch Khuếch đại Hỗ dẫn 5 Transistor (5T-OTA: Cặp Vi sai Tải Gương dòng Tích cực — Ch.04 & Ch.05 §5.3)",
+      "title_en": "Five-Transistor OTA (Diff-Pair with Active Current-Mirror Load)",
+      "chapter": "Ch.04 & 05",
+      "chapters": [
+        4,
+        5
+      ],
+      "width": 1040,
+      "height": 580,
+      "geometry_elements": 88,
+      "text_elements": 45
+    },
+    {
+      "index": 12,
+      "filename": "miller-effect-rhp-zero.svg",
+      "path": "kb/diagrams/miller-effect-rhp-zero.svg",
+      "title_vi": "Tầng CS có Tụ nối chéo Cgd: Hiệu ứng Nhân tụ Miller và Zero Nửa mặt phẳng Phải (Ch.06 §6.1–6.2)",
+      "title_en": "CS Stage with Floating Cgd: Miller Multiplication & RHP Zero",
+      "chapter": "Ch.06",
+      "chapters": [
+        6
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 114,
+      "text_elements": 39
+    },
+    {
+      "index": 13,
+      "filename": "diffpair-mirror-pole-doublet.svg",
+      "path": "kb/diagrams/diffpair-mirror-pole-doublet.svg",
+      "title_vi": "Cặp Vi sai Tải Tích cực: Cực Nút Gương ωm và Cặp Cực–Zero Sát nhau (Doublet — Ch.06 §6.6)",
+      "title_en": "Active-Load Diff-Pair: Mirror Pole ωm & Pole-Zero Doublet",
+      "chapter": "Ch.06",
+      "chapters": [
+        6
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 109,
+      "text_elements": 39
+    },
+    {
+      "index": 14,
+      "filename": "mos-noise-input-referred.svg",
+      "path": "kb/diagrams/mos-noise-input-referred.svg",
+      "title_vi": "Mô hình Nhiễu Nhiệt & Nhiễu 1/f của MOSFET và Quy đổi Mạng Hai cửa Nhiễu Ngõ vào (Ch.07 §7.2–7.3)",
+      "title_en": "MOS Thermal & 1/f Noise Model and Input-Referred (Vn², In²) Two-Port",
+      "chapter": "Ch.07",
+      "chapters": [
+        7
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 84,
+      "text_elements": 36
+    },
+    {
+      "index": 15,
+      "filename": "feedback-four-topologies.svg",
+      "path": "kb/diagrams/feedback-four-topologies.svg",
+      "title_vi": "Bốn Cấu trúc Hồi tiếp Chuẩn theo Quy ước Cảm nhận Ngõ ra – Hồi về Ngõ vào (Ch.08 §8.2)",
+      "title_en": "Four Feedback Topologies (Razavi Sense–Return Naming Convention)",
+      "chapter": "Ch.08",
+      "chapters": [
+        8
+      ],
+      "width": 1080,
+      "height": 620,
+      "geometry_elements": 112,
+      "text_elements": 48
+    },
+    {
+      "index": 16,
+      "filename": "middlebrook-stb-loop-probe.svg",
+      "path": "kb/diagrams/middlebrook-stb-loop-probe.svg",
+      "title_vi": "Mở vòng Hồi tiếp Chuẩn xác: Hiệu ứng Tải, Tiêm Kép Middlebrook & Đầu dò Spectre STB (Ch.08 §8.5–8.8)",
+      "title_en": "Breaking the Feedback Loop: Loading, Middlebrook & Spectre STB Probe",
+      "chapter": "Ch.08",
+      "chapters": [
+        8
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 80,
+      "text_elements": 44
+    },
+    {
+      "index": 17,
+      "filename": "telescopic-cascode-opamp.svg",
+      "path": "kb/diagrams/telescopic-cascode-opamp.svg",
+      "title_vi": "Bộ Khuếch đại Thuật toán Cascode Lồng Vi sai Toàn phần (Telescopic Op-Amp — Ch.09 §9.2)",
+      "title_en": "Fully-Differential Telescopic Cascode Operational Amplifier",
+      "chapter": "Ch.09",
+      "chapters": [
+        9
+      ],
+      "width": 1060,
+      "height": 620,
+      "geometry_elements": 124,
+      "text_elements": 51
+    },
+    {
+      "index": 18,
+      "filename": "folded-cascode-ota.svg",
+      "path": "kb/diagrams/folded-cascode-ota.svg",
+      "title_vi": "Bộ Khuếch đại Hỗ dẫn Cascode Gập: Bất biến KCL Nút Gập (Ifold > Itail/2) & Che chắn (Ch.09 §9.2.4)",
+      "title_en": "Folded-Cascode OTA: Fold-Node KCL (Ifold > Itail/2) & Cascode Shields",
+      "chapter": "Ch.09",
+      "chapters": [
+        9
+      ],
+      "width": 1080,
+      "height": 620,
+      "geometry_elements": 154,
+      "text_elements": 58
+    },
+    {
+      "index": 19,
+      "filename": "two-stage-miller-opamp.svg",
+      "path": "kb/diagrams/two-stage-miller-opamp.svg",
+      "title_vi": "Op-Amp CMOS Hai Tầng Bù Tần số Miller (Cc nối tiếp Điện trở Triệt Zero Rz — Ch.09 §9.3 & Ch.10 §10.5)",
+      "title_en": "Two-Stage CMOS Op-Amp with Miller Compensation (Cc + Nulling Rz)",
+      "chapter": "Ch.09 & 10",
+      "chapters": [
+        9,
+        10
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 133,
+      "text_elements": 47
+    },
+    {
+      "index": 20,
+      "filename": "gain-boosted-cascode.svg",
+      "path": "kb/diagrams/gain-boosted-cascode.svg",
+      "title_vi": "Tầng Cascode Khuếch đại Độ lợi (Regulated Cascode — Vòng Hồi tiếp Bộ Khuếch đại Phụ Ch.09 §9.4)",
+      "title_en": "Regulated / Gain-Boosted Cascode Stage (Auxiliary Feedback Loop)",
+      "chapter": "Ch.09",
+      "chapters": [
+        9
+      ],
+      "width": 1040,
+      "height": 580,
+      "geometry_elements": 62,
+      "text_elements": 36
+    },
+    {
+      "index": 21,
+      "filename": "cmfb-sensing-networks.svg",
+      "path": "kb/diagrams/cmfb-sensing-networks.svg",
+      "title_vi": "Mạng Cảm biến & Hồi tiếp Chế độ chung (CMFB): Điện trở, MOS Vùng Triode và Tụ Chuyển mạch (Ch.09 §9.7)",
+      "title_en": "Common-Mode Feedback (CMFB): Resistive, Triode-MOS & Switched-Cap",
+      "chapter": "Ch.09 & 13",
+      "chapters": [
+        9,
+        13
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 103,
+      "text_elements": 56
+    },
+    {
+      "index": 22,
+      "filename": "pole-splitting-locus.svg",
+      "path": "kb/diagrams/pole-splitting-locus.svg",
+      "title_vi": "Bù Miller: Tách Cực trên Giản đồ Bode & Quỹ đạo Cực–Zero theo Điện trở Rz (Ch.10 §10.5)",
+      "title_en": "Miller Compensation: Bode Pole Splitting & s-Plane Rz Zero Locus",
+      "chapter": "Ch.10",
+      "chapters": [
+        10
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 46,
+      "text_elements": 38
+    },
+    {
+      "index": 23,
+      "filename": "cascode-ahuja-compensation.svg",
+      "path": "kb/diagrams/cascode-ahuja-compensation.svg",
+      "title_vi": "Bù Tần số qua Nhánh Cascode (Ahuja): Chặn Đường Truyền thẳng RHP Zero & Đẩy Cao ωp2 (Ch.10 §10.7)",
+      "title_en": "Cascode (Ahuja) Compensation: Blocking RHP Feedforward Zero",
+      "chapter": "Ch.10",
+      "chapters": [
+        10
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 106,
+      "text_elements": 44
+    },
+    {
+      "index": 24,
+      "filename": "nyquist-polar-stability.svg",
+      "path": "kb/diagrams/nyquist-polar-stability.svg",
+      "title_vi": "Biểu đồ Cực Nyquist: Hệ Ổn định, Mất ổn định & Ổn định Có điều kiện quanh (−1, j0) (Ch.10 §10.8)",
+      "title_en": "Nyquist Polar Stability Plot: Stable, Unstable & Conditionally Stable Loops",
+      "chapter": "Ch.10",
+      "chapters": [
+        10
+      ],
+      "width": 1060,
+      "height": 580,
+      "geometry_elements": 26,
+      "text_elements": 27
+    },
+    {
+      "index": 25,
+      "filename": "supply-independent-bias-startup.svg",
+      "path": "kb/diagrams/supply-independent-bias-startup.svg",
+      "title_vi": "Mạch Phân cực Độc lập Nguồn cấp (Constant-Gm) kèm Mạch Khởi động Thoát Điểm Chết I=0 (Ch.12 §12.1–12.2)",
+      "title_en": "Constant-Gm Supply-Independent Bias Loop WITH Startup Circuit",
+      "chapter": "Ch.12",
+      "chapters": [
+        12
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 123,
+      "text_elements": 44
+    },
+    {
+      "index": 26,
+      "filename": "bandgap-reference-core.svg",
+      "path": "kb/diagrams/bandgap-reference-core.svg",
+      "title_vi": "Mạch Tham chiếu Vùng cấm CMOS Kinh điển: Bù nhiệt CTAT + PTAT & Bẫy Khuếch đại Offset VOS (Ch.12 §12.3)",
+      "title_en": "Classic CMOS Bandgap Reference: CTAT + PTAT & Op-Amp Offset Trap",
+      "chapter": "Ch.12",
+      "chapters": [
+        12
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 76,
+      "text_elements": 38
+    },
+    {
+      "index": 27,
+      "filename": "low-voltage-sub1v-bandgap.svg",
+      "path": "kb/diagrams/low-voltage-sub1v-bandgap.svg",
+      "title_vi": "Mạch Tham chiếu Vùng cấm Phân số Dưới 1V theo Chế độ Dòng (Banba — Razavi Ch.12 §12.7 Fig. 12.33)",
+      "title_en": "Low-Voltage Sub-1V Current-Mode Bandgap Reference (Banba / Razavi §12.7)",
+      "chapter": "Ch.12",
+      "chapters": [
+        12
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 116,
+      "text_elements": 46
+    },
+    {
+      "index": 28,
+      "filename": "cmos-ldo-regulator.svg",
+      "path": "kb/diagrams/cmos-ldo-regulator.svg",
+      "title_vi": "Bộ Ổn áp Sụt áp Thấp CMOS (LDO): Linh kiện Truyền PMOS, Cực Tải, Zero ESR & Đường PSRR (Ch.08/10/12)",
+      "title_en": "CMOS Low-Dropout (LDO) Regulator: Poles, ESR Zero & PSRR Path",
+      "chapter": "Ch.08/10/12",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 85,
+      "text_elements": 43
+    },
+    {
+      "index": 29,
+      "filename": "mos-switch-charge-injection.svg",
+      "path": "kb/diagrams/mos-switch-charge-injection.svg",
+      "title_vi": "Công tắc Lấy mẫu MOS: Phun Điện tích Kênh dẫn, Xuyên nhiễu Xung nhịp & Công tắc Giả (Ch.13 §13.2)",
+      "title_en": "MOS Sampling Switch: Charge Injection, Clock Feedthrough & Dummy Fix",
+      "chapter": "Ch.13",
+      "chapters": [
+        13
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 114,
+      "text_elements": 38
+    },
+    {
+      "index": 30,
+      "filename": "bottom-plate-sampling-sc.svg",
+      "path": "kb/diagrams/bottom-plate-sampling-sc.svg",
+      "title_vi": "Lấy mẫu Tấm Đáy (Xung sớm φ1e) & Bộ Khuếch đại Tụ Chuyển mạch Không nhạy Tụ Ký sinh (Ch.13 §13.2.4–13.3)",
+      "title_en": "Bottom-Plate Sampling (φ1e Early Clock) & Parasitic-Insensitive SC Amp",
+      "chapter": "Ch.13",
+      "chapters": [
+        13
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 116,
+      "text_elements": 38
+    },
+    {
+      "index": 31,
+      "filename": "bootstrapped-switch.svg",
+      "path": "kb/diagrams/bootstrapped-switch.svg",
+      "title_vi": "Công tắc Lấy mẫu Tự nâng Áp Cổng (Bootstrapped Switch: Giữ VGS = VDD Hằng số — Ch.13 §13.2)",
+      "title_en": "Constant-VGS Bootstrapped Sampling Switch Topology",
+      "chapter": "Ch.13",
+      "chapters": [
+        13
+      ],
+      "width": 1060,
+      "height": 590,
+      "geometry_elements": 98,
+      "text_elements": 37
+    },
+    {
+      "index": 32,
+      "filename": "ring-and-lc-oscillators.svg",
+      "path": "kb/diagrams/ring-and-lc-oscillators.svg",
+      "title_vi": "Bộ Dao động Vòng 3 Tầng (Ring Oscillator) và Bộ Dao động VCO Cộng hưởng LC Chéo (Ch.15 §15.2–15.4)",
+      "title_en": "3-Stage CMOS Ring Oscillator vs Cross-Coupled LC-Tank VCO",
+      "chapter": "Ch.15",
+      "chapters": [
+        15
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 125,
+      "text_elements": 48
+    },
+    {
+      "index": 33,
+      "filename": "charge-pump-type2-pll.svg",
+      "path": "kb/diagrams/charge-pump-type2-pll.svg",
+      "title_vi": "Vòng Khóa Pha Bơm Điện tích Loại II: PFD + CP + Bộ lọc Rp/C1/C2 + VCO + Bộ chia N (Ch.16 §16.2)",
+      "title_en": "Charge-Pump Type-II Phase-Locked Loop (PFD + CP + Rp/C1/C2 LPF + VCO + ÷N)",
+      "chapter": "Ch.16",
+      "chapters": [
+        16
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 81,
+      "text_elements": 46
+    },
+    {
+      "index": 34,
+      "filename": "pelgrom-mismatch-duality.svg",
+      "path": "kb/diagrams/pelgrom-mismatch-duality.svg",
+      "title_vi": "Định luật Bất đối xứng Pelgrom & Quy tắc Đối ngẫu Định cỡ: Cặp Vi sai vs Gương dòng (Ch.14 §14.2)",
+      "title_en": "Pelgrom Mismatch Law & The Fundamental CMOS Sizing Duality",
+      "chapter": "Ch.14",
+      "chapters": [
+        14
+      ],
+      "width": 1080,
+      "height": 590,
+      "geometry_elements": 104,
+      "text_elements": 37
+    },
+    {
+      "index": 35,
+      "filename": "autozero-cds-offset.svg",
+      "path": "kb/diagrams/autozero-cds-offset.svg",
+      "title_vi": "Tự Chỉnh Không (Auto-Zeroing) & Lấy mẫu Kép Tương quan (CDS): Khử Offset & Nhiễu 1/f (Ch.14 §14.2.2)",
+      "title_en": "Auto-Zeroing & Correlated Double Sampling (CDS): Offset & 1/f Cancellation",
+      "chapter": "Ch.14",
+      "chapters": [
+        14
+      ],
+      "width": 1080,
+      "height": 580,
+      "geometry_elements": 104,
+      "text_elements": 34
+    },
+    {
+      "index": 36,
+      "filename": "latchup-and-guard-rings.svg",
+      "path": "kb/diagrams/latchup-and-guard-rings.svg",
+      "title_vi": "Mặt cắt Bán dẫn CMOS: Cơ chế Khóa cứng Ký sinh SCR (Latch-Up) & Vòng Bảo vệ Guard Ring (Ch.18 §18.8)",
+      "title_en": "CMOS Parasitic NPN–PNP Thyristor (SCR) Latch-Up & Guard Rings",
+      "chapter": "Ch.18 & 19",
+      "chapters": [
+        18,
+        19
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 61,
+      "text_elements": 44
+    },
+    {
+      "index": 37,
+      "filename": "common-centroid-multifinger.svg",
+      "path": "kb/diagrams/common-centroid-multifinger.svg",
+      "title_vi": "Layout Chia Ngón (Multi-Finger) & Đối xứng Trọng tâm Chung ABBA Kèm Dải Giả Dummy/STI/WPE (Ch.19 §19.2)",
+      "title_en": "Multi-Finger Folded Gate & 2D ABBA Common-Centroid Layout (+ Dummies)",
+      "chapter": "Ch.19",
+      "chapters": [
+        19
+      ],
+      "width": 1080,
+      "height": 600,
+      "geometry_elements": 52,
+      "text_elements": 36
+    },
+    {
+      "index": 38,
+      "filename": "upgrade-evolution-map.svg",
+      "path": "kb/diagrams/upgrade-evolution-map.svg",
+      "title_vi": "Bản đồ Tổng thể Tiến hóa Cấu trúc Vi mạch Tương tự CMOS qua 19 Chương Sách Razavi",
+      "title_en": "Razavi CMOS Knowledge Brain: 19-Chapter Circuit Upgrade & Evolution Map",
+      "chapter": "Ch.01–19",
+      "chapters": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "width": 1160,
+      "height": 680,
+      "geometry_elements": 71,
+      "text_elements": 93
+    }
+  ]
+}

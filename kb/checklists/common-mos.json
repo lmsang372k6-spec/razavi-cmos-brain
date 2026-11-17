@@ -1,0 +1,123 @@
+{
+  "checklist_id": "common-mos",
+  "title_vi": "Bảng kiểm bất biến vật lý, phân cực vùng hoạt động và an toàn linh kiện MOSFET nền tảng",
+  "applies_to": [
+    "all-cmos-circuits",
+    "amplifiers",
+    "current-mirrors",
+    "opamps",
+    "references",
+    "switches"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-MOS-01",
+      "name": "Reverse-biased source/drain-to-bulk junctions (No unintended forward-biased body diode)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "NMOS p-bulk tied to lowest potential (VSS/GND) or isolated p-well <= VS; PMOS n-well tied to highest potential (VDD) or local source VS (never VBS > +0.3 V or VSB_pmos < -0.3 V)",
+      "why_vi": "Cực thân nối sai điện thế làm phân cực thuận diode tiếp giáp nguồn/máng–đế, gây rò dòng khổng lồ xuống đế bán dẫn và kích hoạt thyristor chốt ký sinh (latch-up).",
+      "cadence_check": "Kiểm tra kết nối net cực B trên schematic và xác minh |OP(M, \"ibs\")| < 1 nA, |OP(M, \"ibd\")| < 1 nA trong dcOpInfo qua mọi góc PVT.",
+      "related_nodes": [
+        "concept-mos-operating-regions",
+        "concept-mos-transconductance-and-body-effect",
+        "law-cmos-wells-and-latchup-guard-rings"
+      ]
+    },
+    {
+      "id": "CHK-MOS-02",
+      "name": "Operating region matches intended functional role (Saturation vs Triode)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Amplifying transconductors, current sources, and cascode shields satisfy region == 2 (or intentional weak-inversion saturation region == 3 with |VDS| >= 4*VT) and |VDS| - |Vdsat| >= 50 mV across output swing",
+      "why_vi": "Khi |VDS| rơi xuống dưới điểm gối VDS,min (region == 1, vùng triode), hỗ dẫn gm sụt giảm và điện trở ra ro sập hàng chục lần làm mất độ lợi và hỏng khả năng sao chép dòng.",
+      "cadence_check": "Đọc OP(M, \"region\") == 2 và kiểm tra biên độ bão hòa abs(OP(M, \"vds\")) - abs(OP(M, \"vdsat\")) >= 50mV không chỉ tại điểm tĩnh mà dọc toàn bộ quét dc đầu vào/đầu ra.",
+      "related_nodes": [
+        "concept-mos-operating-regions",
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "law-short-channel-effects"
+      ]
+    },
+    {
+      "id": "CHK-MOS-03",
+      "name": "Terminal Safe Operating Area (SOA) oxide and hot-carrier voltage limits",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "max(|VGS|, |VGD|, |VGB|, |VDS|) <= V_SOA_max of chosen oxide flavor (core thin-oxide vs I/O thick-oxide) during DC, AC peaks, and power-up transients",
+      "why_vi": "Điện áp vượt định mức làm đánh thủng điện môi oxit cổng mỏng (tox ~ 1.2–2 nm) hoặc gây xuyên thủng / suy thoái hạt tải nóng vĩnh viễn.",
+      "cadence_check": "Bật Spectre Device Check / Assert SOA trong phân tích dc và tran (kể cả xung khởi động VDD ramp ở góc FF, VDD_max).",
+      "related_nodes": [
+        "concept-mos-transconductance-and-body-effect",
+        "law-short-channel-effects",
+        "topo-bootstrapped-sampling-switch"
+      ]
+    },
+    {
+      "id": "CHK-MOS-04",
+      "name": "Transconductance-to-current ratio obeys subthreshold thermodynamic ceiling",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Requested gm / ID < 1 / (zeta * VT) (~25-28 V^-1 at 300 K); practical moderate/strong inversion sizing stays within 5 V^-1 <= gm / ID <= 22 V^-1",
+      "why_vi": "Sự dẫn mũ dưới ngưỡng khóa trần vật lý gm <= ID/(zeta*VT); cố ép W quá lớn để đòi gm vượt trần này chỉ làm tăng vọt tụ ký sinh CGS, CGD mà không tăng được gm.",
+      "cadence_check": "Kiểm tra tỷ số OP(M, \"gm\") / abs(OP(M, \"id\")) và đối chiếu tần số chuyển tiếp fT = gm / (2*pi*abs(cgg)) >= 5..10 * GBW.",
+      "related_nodes": [
+        "concept-mos-transconductance-and-body-effect",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-MOS-05",
+      "name": "No floating DC gate nodes without deterministic DC bias path",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Every MOSFET gate has a deterministic DC potential path (or periodic switched reset); AC-coupled or capacitive-feedback gates include high-value bias resistor or reset switch",
+      "why_vi": "Cực cổng thả nổi về mặt DC sẽ tích điện tích ngẫu nhiên hoặc bị dòng rò xuyên hầm cổng ở 65nm/45nm kéo trôi sát VDD hoặc GND làm khóa cứng mạch.",
+      "cadence_check": "Chạy lệnh Check & Save + kiểm tra cảnh báo floating node / high-impedance DC path trong log Spectre topology check.",
+      "related_nodes": [
+        "tech-stage-biasing-rules",
+        "tech-channel-length-and-opamp-scaling"
+      ]
+    },
+    {
+      "id": "CHK-MOS-06",
+      "name": "Multi-finger folding and CDF callback synchronization for wide transistors",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Wide devices (W >> W_finger_unit) are folded into even/unit fingers (nf >= 2, W_f ~ 0.5-4 um) and PDK CDF callbacks are triggered so ad, as, pd, ps, nrd, nrs reflect shared drain/source junctions",
+      "why_vi": "Vẽ 1 ngón quá rộng làm tăng gấp đôi tụ tiếp giáp cực máng CDB và làm bùng nổ điện trở cổng RG gây nhiễu nhiệt; sửa W/nf mà không chạy CDF callback làm sai lệch hoàn toàn tụ ký sinh trong mô phỏng.",
+      "cadence_check": "Kiểm tra thuộc tính nf, m, ad, pd trên instance và gọi PasCdfFormInit / CDF callback SKILL trước khi xuất netlist Spectre.",
+      "related_nodes": [
+        "concept-mos-capacitances-small-signal",
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-MOS-07",
+      "name": "Selective channel-length assignment for intrinsic gain gm*ro vs speed fT",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Minimum L_min is reserved for high-speed switches or low-Cin paths; current sources, mirrors, and output-impedance-setting cascodes use L >= 2*L_min..8*L_min so gm*ro meets stage gain target",
+      "why_vi": "Ở 90nm/65nm/45nm, DIBL làm gm*ro tại L_min tụt xuống chỉ còn 6–12; dùng L_min tràn lan cho gương dòng và tải tích cực làm sập độ lợi DC và tăng sai lệch dòng.",
+      "cadence_check": "Đo trực tiếp OP(M, \"gm\") / OP(M, \"gds\") tại điểm phân cực và dọc dải quét Vout để xác minh gm*ro đạt yêu cầu thiết kế.",
+      "related_nodes": [
+        "law-short-channel-effects",
+        "tech-channel-length-and-opamp-scaling"
+      ]
+    },
+    {
+      "id": "CHK-MOS-08",
+      "name": "Full PVT corner and temperature envelope verification beyond nominal TT",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Operating point margins, gain, bandwidth, and stability hold across {TT, FF, SS, FS, SF} x {VDD_min, VDD_max} x {T_min, T_max} plus passive RC corners",
+      "why_vi": "Biến thiên ngược dấu giữa độ linh động mu(T) và điện áp ngưỡng VTH(T) cùng góc lệch chéo FS/SF dễ dàng đánh gãy khoảng dự trữ điện áp hoặc dự trữ pha dù góc TT đạt chuẩn.",
+      "cadence_check": "Chạy ma trận Corners trong ADE Explorer/Assembler cho dcOp, ac/stb và tran trước khi nghiệm thu.",
+      "related_nodes": [
+        "concept-process-corners-and-temperature",
+        "concept-analog-design-octagon"
+      ]
+    }
+  ]
+}

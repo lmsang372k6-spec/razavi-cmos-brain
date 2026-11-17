@@ -1,0 +1,118 @@
+{
+  "checklist_id": "feedback-and-stb",
+  "title_vi": "Bảng kiểm cấu trúc vòng hồi tiếp, tải mạng hai cửa, đầu dò Spectre STB & tiêu chuẩn ổn định đa cực / Nyquist",
+  "applies_to": [
+    "law-miller-theorem-and-rhp-zero",
+    "tech-zvtc-and-eet-bandwidth",
+    "concept-source-follower-inductive-zout",
+    "tech-input-referred-noise-procedure",
+    "concept-feedback-four-topologies",
+    "tech-feedback-two-port-loading",
+    "tech-bode-blackman-middlebrook-stb",
+    "concept-opamp-performance-contract",
+    "topo-gain-boosted-cascode",
+    "tech-common-mode-feedback-cmfb",
+    "law-multipole-phase-margin",
+    "tech-miller-pole-splitting",
+    "tech-miller-rhp-zero-nulling-and-cascode-comp",
+    "tech-nyquist-stability-criterion",
+    "topo-cmos-ldo-regulator"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-FB-01",
+      "name": "Unambiguous negative-feedback DC polarity around every active loop",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "DC phase of Spectre stb loopGain at f_min (1 Hz) equals 0 deg (with loopGain convention 1 + T(s)) and |T(0)| > 1; walk-around sign inversion count matches series/shunt return port",
+      "why_vi": "Nếu gắn thêm một tầng nguồn chung đảo pha (như transistor công suất PMOS trong LDO hoặc tầng 2 Op-Amp) mà quên tráo cực vi sai đầu vào, hồi tiếp âm biến thành hồi tiếp dương làm mạch chốt cứng lên VDD hoặc GND ngay ở DC.",
+      "cadence_check": "Chạy stb từ 1 Hz đến 100 GHz, kiểm tra phase(getData(\"loopGain\" ?result \"stb-stb\")) tại 1 Hz bằng 0 deg (nếu bằng +-180 deg là ngược cực tính hồi tiếp!).",
+      "related_nodes": [
+        "concept-feedback-four-topologies",
+        "tech-bode-blackman-middlebrook-stb",
+        "topo-cmos-ldo-regulator"
+      ]
+    },
+    {
+      "id": "CHK-FB-02",
+      "name": "Closed-loop Middlebrook/Hurst probe (iprobe / diffstbprobe) used instead of 1 GH / 1 GF loop break",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Loop transmission T(s) is measured in closed-loop DC equilibrium using analogLib/iprobe or diffstbprobe placed inside the major loop and strictly outside all local minor loops (e.g., outside Miller Cc loop)",
+      "why_vi": "Cắt vòng bằng L = 1 GH, C = 1 GF phá hủy hiệu ứng tải hai cửa chiều về (loading effects) và chặn thành phần truyền ngược T_rev, dẫn đến kết quả GBW và Phase Margin ảo lạc quan hơn thực tế từ 5 đến 30 độ.",
+      "cadence_check": "Xác minh netlist không chứa L/C khổng lồ giả tạo để cắt vòng; đặt iprobe nối tiếp cổng vào bộ khuếch đại lỗi (hoặc diffstbprobe cho mạch vi sai) và chạy phân tích stb.",
+      "related_nodes": [
+        "tech-feedback-two-port-loading",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-FB-03",
+      "name": "Phase Margin (PM >= 60 deg nominal, >= 52 deg PVT) and Gain Margin (GM >= 10 dB) across load & beta extremes",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "PM >= 60 deg (nominal TT) and >= 52 deg (all PVT corners + PEX), GM >= 10 dB, and minimum Nyquist vector distance min_w |1 + T(jw)| >= 0.5 at worst-case feedback factor beta_max and worst-case load CL",
+      "why_vi": "Dự trữ pha thấp gây vọt đỉnh cộng hưởng vòng kín |Y/X| = 1/[2*beta*sin(PM/2)] và rung tắt chậm miền thời gian; riêng PM không bắt được gai cộng hưởng tần số cao nếu không kiểm tra đồng thời GM và khoảng cách tới điểm (-1, 0).",
+      "cadence_check": "Quét stb qua 5 góc (TT, FF, SS, FS, SF) x (-40°C, 27°C, 125°C) tại beta lớn nhất và cả CL_min lẫn CL_max; kiểm tra phaseMargin, gainMargin và ymin(mag(1 + loopGain)) >= 0.5.",
+      "related_nodes": [
+        "law-multipole-phase-margin",
+        "tech-nyquist-stability-criterion"
+      ]
+    },
+    {
+      "id": "CHK-FB-04",
+      "name": "Defined DC bias path on every capacitive feedback summing node",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Every high-impedance MOSFET gate driven by a capacitive feedback divider (C1, C2) has an explicit DC bias / periodic reset switch / high-value pseudo-resistor setting Vin_CM within ICMR",
+      "why_vi": "Mạng phân áp thuần tụ điện mở mạch hoàn toàn ở DC khiến nút cổng trừ bị thả nổi (floating node); điện tích kẹt lúc chế tạo và dòng rò cổng sẽ đẩy cổng chạm biên nguồn làm mất phân cực.",
+      "cadence_check": "Chạy kiểm tra tô-pô floating node của Spectre (checklimit / info nodes) và xác minh điện áp DC tại nút trừ hội tụ độc lập với điều kiện đầu ic.",
+      "related_nodes": [
+        "concept-feedback-four-topologies",
+        "concept-opamp-performance-contract",
+        "topo-switched-capacitor-amplifiers-integrators"
+      ]
+    },
+    {
+      "id": "CHK-FB-05",
+      "name": "Feedback network loading and input-capacitance pole beta(s) accounted for",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Resistive feedback R1+R2 does not collapse output stage gain (R1+R2 >> Rout_open or included in loaded A_open), and pole 1/[(R1||R2)*Cin] is well above GBW or compensated by lead capacitor CF",
+      "why_vi": "Điện trở hồi tiếp nhỏ hút dòng tải sụt độ lợi tầng ra, trong khi điện trở hồi tiếp lớn kết hợp tụ cổng Cin tạo thêm một cực trễ ngay trên đường hồi tiếp beta(s) ăn mòn dự trữ pha.",
+      "cadence_check": "So sánh độ lợi DC khi có và không có mạng R1+R2; kiểm tra pha của nút hồi tiếp VF/Vout trong ac/stb, nếu trễ pha đáng kể gần GBW thì gắn tụ bù song song R2 sao cho R2*CF = R1*Cin.",
+      "related_nodes": [
+        "tech-feedback-two-port-loading",
+        "concept-opamp-performance-contract"
+      ]
+    },
+    {
+      "id": "CHK-FB-06",
+      "name": "Nyquist polar check and large-signal recovery verified for multipole / multiple-180-crossing loops",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Whenever phase crosses -180 deg more than once, or open-loop poles exist at s = 0 / RHP, Cauchy-Nyquist encirclement Z = N + P == 0 is verified along with large-signal overload recovery",
+      "why_vi": "Đồ thị Bode chẩn đoán sai hệ ổn định có điều kiện (conditionally stable); hơn nữa khi quá tải hoặc slewing làm giảm độ lợi hiệu dụng, đường cong Nyquist co lại có thể nuốt điểm (-1, 0) gây dao động chu kỳ giới hạn biên độ lớn.",
+      "cadence_check": "Vẽ đồ thị Nyquist trong Spectre stb quanh (-1, 0) và chạy tran với xung quá tải biên độ tối đa nối tiếp xung nhỏ để xác nhận mạch thoát slewing êm không tự dao động.",
+      "related_nodes": [
+        "tech-nyquist-stability-criterion",
+        "topo-gain-boosted-cascode",
+        "topo-charge-pump-type2-pll"
+      ]
+    },
+    {
+      "id": "CHK-FB-07",
+      "name": "Total integrated noise evaluated at output before referring to input, including feedback resistor noise",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Integrated RMS noise is computed from output PSD int S_v,out(f) df divided by midband closed-loop gain squared (never integrating unbounded input-referred PSD to infinity), with 4kT(R1||R2) budgeted",
+      "why_vi": "Hồi tiếp âm không bao giờ cải thiện SNR của mạng lý tưởng, còn điện trở mạng hồi tiếp cộng thẳng nhiễu nhiệt 4kT(R1||R2) vào ngõ vào; tích phân trực tiếp đường in tới tần số vô cùng sẽ phân kỳ vô nghĩa.",
+      "cadence_check": "Trong Spectre noise, tích phân getData(\"out\" ?result \"noise\")^2 trên băng thông quan tâm rồi chia cho |A_cl|^2, và kiểm tra đóng góp % của R1, R2 trong Noise Summary.",
+      "related_nodes": [
+        "tech-input-referred-noise-procedure",
+        "concept-feedback-four-topologies"
+      ]
+    }
+  ]
+}

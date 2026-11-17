@@ -1,0 +1,96 @@
+{
+  "checklist_id": "oscillator-and-pll",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ Dao động (Ring / LC VCO) và Vòng Khóa Pha (PLL)",
+  "applies_to": [
+    "topo-ring-oscillator",
+    "topo-lc-cross-coupled-and-colpitts",
+    "topo-vco-tuning-and-phase-noise",
+    "topo-type1-simple-pll",
+    "topo-charge-pump-type2-pll",
+    "concept-pll-nonidealities-spurs-jitter"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-PLL-01",
+      "name": "Điều kiện khởi振 Barkhausen với dự trữ độ lợi vòng >= 2x-3x và tránh chốt cứng DC (Latch-up)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Ring đơn cực: số tầng N lẻ >= 3 với A0_stage >= 2 (vòng vi sai N chẵn bắt buộc tráo chéo dây 1 cặp để hồi tiếp DC âm); LC Cross-Coupled: gm_active * Rp_tank >= 2..3 tại góc SS và nhiệt độ cực trị",
+      "why_vi": "Vòng 2 tầng đơn cực có hồi tiếp dương ngay tại DC nên tự khóa chặt vào mức logic 1/0 thay vì dao động; trong khi cuộn cảm tích hợp trên chip có hệ số phẩm chất Q thấp khiến Rp sụt giảm mạnh ở nhiệt độ cao — nếu chỉ thiết kế gm*Rp = 1.05 ở TT, VCO sẽ câm hoàn toàn ở SS, 125 °C.",
+      "cadence_check": "Chạy `stb` hoặc đo dẫn nạp âm `Re{Y_in(jw0)}` song song với khung cộng hưởng ở mọi góc PVT + `tran` khởi động chỉ từ nhiễu nhỏ với tùy chọn `method=traponly` hoặc `maxstep <= T_osc/40` (tránh giảm chấn số của thuật toán Gear làm tắt dao động giả!).",
+      "related_nodes": [
+        "topo-ring-oscillator",
+        "topo-lc-cross-coupled-and-colpitts"
+      ]
+    },
+    {
+      "id": "CHK-PLL-02",
+      "name": "Bắt buộc có điện trở nối tiếp Rp tạo LHP Zero ổn định cho hai cực tại gốc tọa độ của Charge-Pump PLL Type-II",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mạng lọc vòng Type-II CP-PLL phải chứa R_p nối tiếp C_1 tạo zero wz = 1/(Rp * C1) < w_loop_ugbw VÀ tụ lọc gợn song song C_2 thỏa mãn C_2 <= C_1 / 10 .. C_1 / 5",
+      "why_vi": "Tổ hợp PFD + Bơm điện tích + tụ tích phân C1 tạo cực thứ nhất tại s = 0, cộng với bản chất tích phân pha KVCO/s của VCO tạo cực thứ hai ngay tại s = 0! Nếu thiếu Rp, vòng hở có góc pha -180 độ ở mọi tần số và dao động tự kích 100%; ngược lại nếu chọn C2 quá lớn gần bằng C1, cực bậc ba wp3 = (C1+C2)/(Rp*C1*C2) sẽ nuốt mất dự trữ pha do wz tạo ra.",
+      "cadence_check": "Lập mô hình hàm truyền vòng hở pha `L(s) = (Ip / (2*pi)) * Z_LF(s) * (KVCO / (M * s))` kiểm chứng `Phase Margin >= 55-60 deg` với cực đại pha đặt đúng tại tần số cắt vòng `w_c` trên mọi mã dải tần và góc PVT.",
+      "related_nodes": [
+        "topo-charge-pump-type2-pll",
+        "law-multipole-phase-margin"
+      ]
+    },
+    {
+      "id": "CHK-PLL-03",
+      "name": "Giới hạn băng thông vòng PLL nhỏ hơn <= f_REF / 10 và kiểm tra đúng cực tính điều khiển Vcont",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "f_ugbw_loop <= f_REF / 10 VÀ dấu của PFD/CP khớp với dấu của KVCO (ví dụ nếu tăng Vcont làm tăng f_VCO thì f_REF > f_DIV phải bơm dòng UP nạp tăng Vcont)",
+      "why_vi": "PFD-CP là hệ lấy mẫu rời rạc theo cạnh xung tham chiếu f_REF. Nếu băng thông vòng tiến gần f_REF, xấp xỉ thời gian liên tục sụp đổ và trễ lấy mẫu làm vòng mất ổn định; còn nếu nối ngược cực tính UP/DN so với dấu KVCO (đặc biệt hay nhầm ở LC-VCO dùng varactor PMOS có KVCO âm!), Vcont sẽ bị đẩy kịch sàn VDD hoặc GND.",
+      "cadence_check": "Quét đặc tuyến `f_osc(Vcont)` bằng SpectreRF `pss` xác nhận dấu và độ biến thiên `KVCO = df_osc/dVcont` trước khi đấu chân `UP/DN` của PFD.",
+      "related_nodes": [
+        "topo-vco-tuning-and-phase-noise",
+        "topo-type1-simple-pll",
+        "topo-charge-pump-type2-pll"
+      ]
+    },
+    {
+      "id": "CHK-PLL-04",
+      "name": "Độ trễ đường đặt lại (Reset Delay) trong PFD triệt tiêu vùng chết (Dead Zone) quanh sai pha bằng 0",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "T_reset_pulse >= t_rise_CP + t_on_min_switch sao cho tại Delta_phi = 0 cả dòng UP và DN đều bật đủ biên độ trong xung hẹp đối xứng",
+      "why_vi": "Nếu xung đặt lại cổng AND trong PFD quá nhanh khiến xung UP/DN tại lân cận khóa pha ngắn hơn thời gian đóng mở của công tắc bơm điện tích, độ lợi tách pha tụt về 0 tạo 'vùng chết' (dead zone) làm pha VCO trôi tự do và jitter tăng vọt.",
+      "cadence_check": "Quét sai lệch thời gian hai ngõ vào PFD `Delta_t` từ `-200 ps` tới `+200 ps` (bước `2 ps`) trong `tran`, tích phân điện tích thực bơm ra `Q_net(Delta_t)` xác nhận độ dốc tuyến tính liên tục đi qua đúng `Delta_t = 0` không bị gãy khúc phẳng.",
+      "related_nodes": [
+        "concept-pll-nonidealities-spurs-jitter",
+        "topo-charge-pump-type2-pll"
+      ]
+    },
+    {
+      "id": "CHK-PLL-05",
+      "name": "Cân bằng dòng UP/DN của Bơm điện tích trên dải Vcont và chia dải tần số thô/tinh để hạ KVCO",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "|I_UP(Vcont) - I_DN(Vcont)| / I_CP < 1%-2% trên dải khóa Vcont VÀ dùng mảng tụ chuyển mạch số (coarse bank) để giảm KVCO liên tục mà vẫn phủ kín PVT",
+      "why_vi": "Lệch dòng UP/DN và chia sẻ điện tích khi bật xung đồng thời lúc đã khóa tạo gợn chu kỳ trên Vcont, bị điều biến FM qua KVCO thành các vạch phổ giả tham chiếu (reference spurs +-f_REF); đồng thời KVCO quá lớn ở nguồn thấp biến mọi nhiễu trên Vcont thành nhiễu pha khổng lồ.",
+      "cadence_check": "Quét `dc` điện áp `Vcont` đo độ lệch `I_UP - I_DN` (dùng op-amp replica + cascode cho CP), và chạy `pss` + `pnoise` kiểm tra phổ nhiễu pha VCO cũng như biên độ spur tham chiếu `dBc`.",
+      "related_nodes": [
+        "topo-vco-tuning-and-phase-noise",
+        "concept-pll-nonidealities-spurs-jitter",
+        "topo-lvccml-wide-swing-mirror"
+      ]
+    },
+    {
+      "id": "CHK-PLL-06",
+      "name": "Tối ưu điểm cắt băng thông vòng theo tính đối ngẫu lọc nhiễu pha (Input Low-Pass vs VCO High-Pass)",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Chọn f_loop gần giao điểm mật độ phổ nhiễu pha quy đổi của nhánh chuẩn/PFD/CP/Divider N^2 * S_phi,ref(f) với mật độ phổ nhiễu pha tự do của VCO S_phi,VCO(f)",
+      "why_vi": "PLL lọc thông thấp nhiễu từ thạch anh, PFD, CP và bộ chia tần nhưng lại lọc thông cao nhiễu pha của chính VCO! Nếu mở băng thông quá rộng khi PFD/CP ồn (hoặc hệ số chia N lớn) sẽ đưa nhiễu CP tràn ra ngõ ra; ngược lại nếu bóp băng thông quá hẹp khi dùng Ring-VCO ồn sẽ không nén nổi nhiễu pha gần sóng mang của VCO.",
+      "cadence_check": "Trích xuất phổ nhiễu từng khối từ SpectreRF `pnoise` đưa vào mô hình miền tần số của PLL để tích phân jitter RMS tổng thể trước khi chốt `Ip, Rp, C1, C2`.",
+      "related_nodes": [
+        "concept-pll-nonidealities-spurs-jitter",
+        "topo-vco-tuning-and-phase-noise",
+        "topo-charge-pump-type2-pll"
+      ]
+    }
+  ]
+}

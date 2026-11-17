@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="580" viewBox="0 0 1060 580">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1056" height="576" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1048 2 Q 1058 2 1058 12 L 1058 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1058" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.07</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">MOS Thermal &amp; 1/f Noise Model and Input-Referred (Vn², In²) Two-Port</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Mô hình Nhiễu Nhiệt &amp; Nhiễu 1/f của MOSFET và Quy đổi Mạng Hai cửa Nhiễu Ngõ vào (Ch.07 §7.2–7.3)</text>
+  <line x1="750" y1="22" x2="766" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="771" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="832" y1="22" x2="848" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="853" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="938" y1="22" x2="954" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="959" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="20" y="74" width="500" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="20" y="74" width="500" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="32" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Physical Noisy MOSFET &amp; PSD Corner fc</text>
+  <rect x="540" y="74" width="500" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="540" y="74" width="500" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="552" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Rigorous Input-Referred Noise Two-Port</text>
+  <line x1="275" y1="128" x2="275" y2="188" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="275" cy="124" r="3.4" fill="#ffffff" stroke="#0f172a" stroke-width="1.9"/>
+  <text x="275" y="116" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="bold">Drain (D)</text>
+  <circle cx="275" cy="152" r="3.5" fill="#d97706"/>
+  <circle cx="82" cy="212" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="74" y="216" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Gate (G)</text>
+  <line x1="140" y1="212" x2="149" y2="212" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="175" y1="212" x2="184" y2="212" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="162" cy="212" r="13" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <line x1="164" y1="212" x2="170" y2="212" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="167" y1="209" x2="167" y2="215" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="154" y1="212" x2="160" y2="212" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="162" y="196" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#dc2626" text-anchor="middle" font-weight="bold">Vn,1/f²</text>
+  <line x1="86" y1="212" x2="140" y2="212" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="184" y1="212" x2="245" y2="212" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="275,188 275,200 263,200" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="263,224 275,224 275,236" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="273,224 266.5,220.5 266.5,227.5" fill="#0f172a" stroke="#0f172a" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="263" y1="197" x2="263" y2="227" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="257" y1="200" x2="257" y2="224" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="245" y1="212" x2="257" y2="212" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="241" y="209" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="end" font-weight="bold">M1</text>
+  <text x="241" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="end">Noiseless Core</text>
+  <polyline points="275,152 385,152 385,188" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="385" y1="188" x2="385" y2="198" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="226" x2="385" y2="236" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="385" cy="212" r="14" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <line x1="385" y1="204" x2="385" y2="219" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="403" y="209" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="start" font-weight="bold">In,th²</text>
+  <text x="403" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">4kTγ·gm</text>
+  <polyline points="385,236 385,272 275,272" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="275" y1="236" x2="275" y2="296" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="275" cy="272" r="3.5" fill="#d97706"/>
+  <circle cx="275" cy="300" r="3.4" fill="#ffffff" stroke="#0f172a" stroke-width="1.9"/>
+  <text x="275" y="316" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="bold">Source (S)</text>
+  <line x1="78" y1="500" x2="471" y2="500" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="78" y1="500" x2="78" y2="352" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="463" y="518" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">log f [Hz]</text>
+  <text x="86" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">Input PSD Sv(f) [V²/Hz]</text>
+  <line x1="96" y1="372" x2="293" y2="486" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,4"/>
+  <line x1="96" y1="458" x2="443" y2="458" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,4"/>
+  <path d="M 96 370 L 213 438 Q 253 458 308 458 L 443 458" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="244" y1="458" x2="244" y2="500" stroke="#475569" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3,3"/>
+  <text x="244" y="516" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="middle" font-weight="bold">fc (1/f corner)</text>
+  <text x="124" y="386" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#dc2626" text-anchor="start" font-weight="bold">K / (Cox·W·L·f)</text>
+  <text x="323" y="448" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#d97706" text-anchor="start" font-weight="bold">4kTγ / gm (Thermal)</text>
+  <line x1="595" y1="236" x2="595" y2="246" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="595" y1="274" x2="595" y2="284" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="595" cy="260" r="14" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <path d="M 588 260 Q 591.5 253 595 260 T 602 260" fill="none" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="577" y="264" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="end" font-weight="bold">Vsig</text>
+  <polyline points="631,186 639,186 642,180 647,192 652,180 658,192 663,180 668,192 671,186 679,186" fill="none" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="655" y="175" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#0f172a" text-anchor="middle" font-weight="bold">ZS (RS)</text>
+  <polyline points="595,236 595,186 631,186" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="723" y1="186" x2="732" y2="186" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="758" y1="186" x2="767" y2="186" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="745" cy="186" r="13" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <line x1="747" y1="186" x2="753" y2="186" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="750" y1="183" x2="750" y2="189" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="737" y1="186" x2="743" y2="186" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="745" y="170" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#dc2626" text-anchor="middle" font-weight="bold">Vn,in²</text>
+  <line x1="679" y1="186" x2="723" y2="186" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="767" y1="186" x2="855" y2="186" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="812" cy="186" r="3.5" fill="#d97706"/>
+  <line x1="812" y1="226" x2="812" y2="236" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="812" y1="264" x2="812" y2="274" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="812" cy="250" r="14" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <line x1="812" y1="242" x2="812" y2="257" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="794" y="254" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="end" font-weight="bold">In,in²</text>
+  <line x1="812" y1="186" x2="812" y2="226" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <rect x="855" y="162" width="125" height="146" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="917.5" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" font-weight="bold">Noiseless</text>
+  <text x="917.5" y="242" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" font-weight="bold">Two-Port</text>
+  <text x="917.5" y="260" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#475569" text-anchor="middle">Gain Av(s)</text>
+  <line x1="980" y1="220" x2="1010" y2="220" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="1014" cy="220" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="1022" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <polyline points="595,284 595,314 855,314" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="812" y1="274" x2="812" y2="314" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="812" cy="314" r="3.5" fill="#0f172a"/>
+  <line x1="700" y1="314" x2="700" y2="321" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="689" y1="321" x2="711" y2="321" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="693" y1="325.5" x2="707" y2="325.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="697" y1="330" x2="703" y2="330" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="700" cy="314" r="3.5" fill="#0f172a"/>
+  <rect x="560" y="356" width="460" height="186" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="563" y1="362" x2="563" y2="536" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="572" y="374" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="start" font-weight="bold">Two-Step Procedure &amp; Why In,in² Matters (§7.3)</text>
+  <text x="572" y="391" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">1. Short input (ZS = 0): Measure Vn,out² -&gt; Vn,in² = Vn,out² / |Av0|²</text>
+  <text x="572" y="407" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">2. Open input  (ZS = ∞): Measure Vn,out² -&gt; In,in² = Vn,out² / |Ztrans|²</text>
+  <text x="572" y="439" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">• For finite source impedance ZS (assuming low correlation):</text>
+  <text x="572" y="455" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">  Vn,tot,in² ≈ Vn,in² + |ZS|² · In,in² + 4kT·Re(ZS)</text>
+  <text x="572" y="471" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">• Low-f MOSFET gate: In,in² ≈ 0, UNLESS ω·Cgs·|ZS| is significant!</text>
+  <text x="572" y="487" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">• 1-Pole Noise Bandwidth:  BWn = (π / 2) · f-3dB ≈ 1.57 · f-3dB</text>
+</svg>

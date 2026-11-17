@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="580" viewBox="0 0 1040 580">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1036" height="576" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1028 2 Q 1038 2 1038 12 L 1038 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1038" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.03</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Source Follower (Common-Drain) vs Common-Gate (CG) Stage</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">So sánh Mạch Bám nguồn (Source Follower) và Tầng Cổng chung (Common-Gate) (Ch.03 §3.4–3.5)</text>
+  <line x1="730" y1="22" x2="746" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="751" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="812" y1="22" x2="828" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="833" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="918" y1="22" x2="934" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="939" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="22" y="74" width="486" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="22" y="74" width="486" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="34" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Source Follower (Voltage Buffer / Level Shifter)</text>
+  <rect x="532" y="74" width="486" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="532" y="74" width="486" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="544" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Common-Gate Stage (Current Buffer / High-Freq)</text>
+  <line x1="245" y1="140" x2="245" y2="131" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="232" y1="131" x2="258" y2="131" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="245" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <polyline points="245,191 245,203 233,203" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="233,227 245,227 245,239" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="243,227 236.5,223.5 236.5,230.5" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="233" y1="200" x2="233" y2="230" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="227" y1="203" x2="227" y2="227" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="215" y1="215" x2="227" y2="215" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="233" y1="215" x2="259" y2="215" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="253" y="212" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="start" font-weight="bold">M1</text>
+  <text x="253" y="227" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">gm1, gmb1</text>
+  <line x1="245" y1="140" x2="245" y2="191" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="259,215 281,215 281,236" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="281" y1="236" x2="281" y2="243" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="270" y1="243" x2="292" y2="243" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="274" y1="247.5" x2="288" y2="247.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="278" y1="252" x2="284" y2="252" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="165" y1="215" x2="215" y2="215" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="161" cy="215" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="153" y="219" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <line x1="245" y1="239" x2="245" y2="320" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="245" cy="280" r="3.5" fill="#2563eb"/>
+  <line x1="245" y1="280" x2="333" y2="280" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="337" cy="280" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="345" y="284" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <polyline points="245,320 245,332 233,332" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="233,356 245,356 245,368" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="243,356 236.5,352.5 236.5,359.5" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="233" y1="329" x2="233" y2="359" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="227" y1="332" x2="227" y2="356" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="215" y1="344" x2="227" y2="344" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="253" y="341" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">M2 (ISS)</text>
+  <text x="253" y="356" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">ro2</text>
+  <line x1="177" y1="344" x2="215" y2="344" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="173" cy="344" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="165" y="348" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">Vb</text>
+  <line x1="245" y1="368" x2="245" y2="402" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="245" y1="402" x2="245" y2="409" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="234" y1="409" x2="256" y2="409" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="238" y1="413.5" x2="252" y2="413.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="242" y1="418" x2="248" y2="418" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="44" y="430" width="442" height="114" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="47" y1="436" x2="47" y2="538" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="56" y="448" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.1" fill="#1d4ed8" text-anchor="start" font-weight="bold">Source Follower Properties (§3.4)</text>
+  <text x="56" y="465" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Av = gm1 / (gm1 + gmb1 + 1/(ro1 || ro2 || RL)) &lt; 1</text>
+  <text x="56" y="481" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• High Rin (∞ at DC), Low Rout ≈ 1/(gm1 + gmb1) || ro1 || ro2</text>
+  <text x="56" y="497" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Caveat: Body effect η = gmb1/gm1 attenuates gain &amp; adds</text>
+  <text x="56" y="513" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">  nonlinearity; poor heavy resistive current driver.</text>
+  <line x1="775" y1="134" x2="775" y2="125" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="762" y1="125" x2="788" y2="125" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="775" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <polyline points="775,154 775,162 781,165 769,170 781,175 769,181 781,186 769,191 775,194 775,202" fill="none" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="786" y="182" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">RD</text>
+  <line x1="775" y1="134" x2="775" y2="154" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="775" y1="202" x2="775" y2="250" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="775" cy="224" r="3.5" fill="#2563eb"/>
+  <line x1="775" y1="224" x2="857" y2="224" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="861" cy="224" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="869" y="228" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <polyline points="775,250 775,262 763,262" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="763,286 775,286 775,298" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="773,286 766.5,282.5 766.5,289.5" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="763" y1="259" x2="763" y2="289" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="757" y1="262" x2="757" y2="286" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="745" y1="274" x2="757" y2="274" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="783" y="271" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="start" font-weight="bold">M1</text>
+  <text x="783" y="286" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">gm1, gmb1, ro1</text>
+  <line x1="705" y1="274" x2="745" y2="274" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="701" cy="274" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="693" y="278" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">Vb (AC GND)</text>
+  <line x1="775" y1="298" x2="775" y2="344" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="775" cy="322" r="3.5" fill="#2563eb"/>
+  <line x1="691" y1="322" x2="775" y2="322" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="687" cy="322" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="679" y="326" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <line x1="775" y1="344" x2="775" y2="354" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="775" y1="382" x2="775" y2="392" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="775" cy="368" r="14" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <line x1="775" y1="360" x2="775" y2="375" stroke="#059669" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="793" y="372" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">ISS</text>
+  <line x1="775" y1="392" x2="775" y2="404" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="775" y1="404" x2="775" y2="411" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="764" y1="411" x2="786" y2="411" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="768" y1="415.5" x2="782" y2="415.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="772" y1="420" x2="778" y2="420" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="554" y="430" width="442" height="114" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <line x1="557" y1="436" x2="557" y2="538" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="566" y="448" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.1" fill="#047857" text-anchor="start" font-weight="bold">Common-Gate Properties (§3.5)</text>
+  <text x="566" y="465" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Non-inverting Gain: Av ≈ +(gm1 + gmb1)·RD  (if ro1 -&gt; ∞)</text>
+  <text x="566" y="481" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Exact Input Z: Rin = (RD + ro1) / [1 + (gm1 + gmb1)·ro1]</text>
+  <text x="566" y="497" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">  -&gt; Low Rin ≈ 1/(gm1+gmb1) ONLY if RD &lt;&lt; ro1! (High if I-load!)</text>
+  <text x="566" y="513" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Zero Miller Cgd multiplication (gate is AC grounded).</text>
+</svg>

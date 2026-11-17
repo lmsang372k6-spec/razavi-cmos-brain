@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="580" viewBox="0 0 1060 580">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1056" height="576" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1048 2 Q 1058 2 1058 12 L 1058 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1058" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.10</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Nyquist Polar Stability Plot: Stable, Unstable &amp; Conditionally Stable Loops</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Biểu đồ Cực Nyquist: Hệ Ổn định, Mất ổn định &amp; Ổn định Có điều kiện quanh (−1, j0) (Ch.10 §10.8)</text>
+  <rect x="20" y="74" width="540" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="20" y="74" width="540" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="32" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">Polar Loop Transmission βH(jω) Plane (ω: 0 -&gt; +∞)</text>
+  <circle cx="355" cy="290" r="155" fill="none" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5,4"/>
+  <text x="447" y="144" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#475569" text-anchor="middle">|βH| = 1 (0 dB)</text>
+  <line x1="65" y1="290" x2="535" y2="290" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="355" y1="525" x2="355" y2="108" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="530" y="280" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="end" font-weight="bold">Re{βH}</text>
+  <text x="365" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="start" font-weight="bold">Im{βH}</text>
+  <circle cx="200" cy="290" r="5.5" fill="#dc2626" stroke="#ffffff" stroke-width="1.8"/>
+  <text x="190" y="278" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#dc2626" text-anchor="end" font-weight="bold">(−1, j0)</text>
+  <path d="M 505 290 C 505 440, 300 405, 300 290 C 300 262, 343 276, 355 290" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="413" y="408" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#059669" text-anchor="start" font-weight="bold">1. Unconditionally Stable</text>
+  <path d="M 520 290 C 520 505, 130 455, 130 290 C 130 235, 295 255, 355 290" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+  <text x="145" y="435" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#dc2626" text-anchor="start" font-weight="bold">2. Unstable (Encircles −1)</text>
+  <path d="M 515 290 C 495 485, 100 410, 110 290 C 117 218, 250 222, 240 290 C 233 326, 310 318, 355 290" fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="180" y="218" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="start" font-weight="bold">3. Conditionally Stable Pocket</text>
+  <rect x="580" y="76" width="460" height="162" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="583" y1="82" x2="583" y2="232" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="592" y="94" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#1d4ed8" text-anchor="start" font-weight="bold">1. Cauchy Principle &amp; Nyquist Criterion (§10.8)</text>
+  <text x="592" y="111" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Closed-Loop RHP Poles:   Z = N + P</text>
+  <text x="592" y="127" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  - P = open-loop RHP poles of βH(s)  (usually P = 0)</text>
+  <text x="592" y="143" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  - N = net clockwise encirclements of (−1, j0) as ω: −∞ -&gt; +∞</text>
+  <text x="592" y="159" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Stability Requirement: Z = 0  (so N = 0 when P = 0!).</text>
+  <text x="592" y="175" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Mirror Im{βH(−jω)} = −Im{βH(+jω)} across the Real axis!</text>
+  <rect x="580" y="252" width="460" height="156" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <line x1="583" y1="258" x2="583" y2="402" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+  <text x="592" y="270" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#b91c1c" text-anchor="start" font-weight="bold">2. Why Bode Plots Fail on Multipole Loops!</text>
+  <text x="592" y="287" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Curve 3 crosses ∠βH = −180° at |βH| &gt; 1 (looks unstable</text>
+  <text x="592" y="303" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  by naive Bode rule!), yet phase recovers &gt; −180° before</text>
+  <text x="592" y="319" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  |βH| drops through 0 dB -&gt; N = 0 encirclements (STABLE)!</text>
+  <text x="592" y="335" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Danger: Dropping loop gain (slewing / startup saturation)</text>
+  <text x="592" y="351" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  shrinks Curve 3 so (−1, j0) gets encircled -&gt; OSCILLATES!</text>
+  <rect x="580" y="422" width="460" height="136" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <line x1="583" y1="428" x2="583" y2="552" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="592" y="440" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#047857" text-anchor="start" font-weight="bold">3. Handling Origin Poles (Type-II PLL / Integrators)</text>
+  <text x="592" y="457" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Each pole at s = 0 adds a clockwise semicircle of ∞ radius</text>
+  <text x="592" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">  in the s-plane indent detour -&gt; 90° phase shift at ω = 0+.</text>
+  <text x="592" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#0f172a" text-anchor="start">• Always inspect Spectre STB Nyquist plot alongside Bode PM/GM!</text>
+</svg>

@@ -1,0 +1,93 @@
+{
+  "checklist_id": "ldo-regulator",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ Ổn áp Tuyến tính Sụt áp Thấp CMOS (CMOS LDO)",
+  "applies_to": [
+    "topo-cmos-ldo-regulator"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-LDO-01",
+      "name": "Cực tính đúng của ngõ vào Bộ khuếch đại sai lệch (Error Amplifier) theo loại transistor truyền",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "PMOS CS pass (đảo pha cổng -> VOUT): VFB nối vào ngõ vào (+), VREF nối vào ngõ vào (-); NMOS SF pass (không đảo pha cổng -> VOUT): VFB nối vào (-), VREF nối vào (+)",
+      "why_vi": "Phần tử truyền PMOS mắc nguồn chung tạo thêm một lần đảo pha 180 độ trong vòng hồi tiếp. Nối nhầm VFB vào ngõ vào đảo (-) như bộ đệm op-amp thông thường sẽ biến LDO thành mạch chốt dương khóa cứng VOUT lên VIN hoặc xuống GND.",
+      "cadence_check": "Chạy `dc` operating point và `stb` với `iprobe` trong nhánh hồi tiếp: xác nhận VOUT bám đúng `VREF * (1 + RFB1/RFB2)` và pha vòng tại DC bắt đầu từ `0 deg` (theo quy ước return ratio âm).",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "concept-feedback-four-topologies",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-LDO-02",
+      "name": "Dự trữ pha bền vững trên toàn bộ 3-4 thập kỷ dòng tải và cửa sổ ESR của tụ ngõ ra",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Phase Margin >= 45 deg (khuyến nghị >= 55 deg) và Gain Margin >= 10 dB với mọi I_load thuộc [0, I_max] và mọi R_ESR thuộc [R_ESR,min, R_ESR,max]",
+      "why_vi": "Trở kháng ra r_O của phần tử truyền thay đổi hàng nghìn lần từ không tải đến đầy tải làm cực ngõ ra quét ngang 3-4 thập kỷ tần số: External-cap LDO dễ mất ổn định nhất ở tải nặng hoặc R_ESR quá nhỏ/quá lớn, còn Capless LDO dễ dao động nhất ở không tải khi gm_pass sụt nhỏ.",
+      "cadence_check": "Quét tham số `stb` trên lưới logarit `Iload = {0, 10u, 100u, 1m, 10m, Imax}` x `RESR` x 5 góc PVT; kiểm tra thêm đồ thị Nyquist nếu có cặp cực-zero bù phức tạp.",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "law-multipole-phase-margin",
+        "tech-miller-rhp-zero-nulling-and-cascode-comp",
+        "tech-nyquist-stability-criterion"
+      ]
+    },
+    {
+      "id": "CHK-LDO-03",
+      "name": "Khoảng dự trữ sụt áp Dropout ở tải cực đại và góc chậm nhất (SS)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Tại VIN = VOUT_nom + V_DO_spec và I_load = I_max (góc SS, T_max): M_pass vẫn ở vùng bão hòa (|VDS_pass| >= |VDS,min|) và ngõ ra Error Amp chưa chạm biên triode (V_G_pass >= VDS,min_EA_out)",
+      "why_vi": "Nếu W_pass định cỡ thiếu khiến M_pass rơi sâu vào vùng triode hoặc ép ngõ ra Error Amp chạm sàn VSS để đòi thêm V_SG, độ lợi vòng sụp đổ làm mất khả năng điều chỉnh tải và khiến PSRR tụt về 0 dB.",
+      "cadence_check": "Chạy `dc` quét `VIN` giảm dần tại `Iload = Imax` ở góc `SS, 125 °C` và `SS, -40 °C`; đo `OP(\"/M_pass\" \"region\") == 2` và `AC PSRR` ngay tại biên `VIN = VOUT + V_DO`.",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-LDO-04",
+      "name": "Tham chiếu AC nút cổng PMOS Pass bám theo VIN để bảo vệ PSRR (Cấm gắn tụ từ cổng PMOS xuống đất)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Không tồn tại tụ bù hay tụ lọc nối trực tiếp từ cực cổng M_pass (PMOS) xuống GND; tầng lái cổng M_pass phải tham chiếu nguồn lên chính VIN để delta_v_G ≈ delta_v_IN",
+      "why_vi": "Cực nguồn PMOS pass gắn vào VIN nên dòng ra bị điều khiển bởi v_SG = v_IN - v_G. Nếu nút cổng bị ghim AC xuống đất, toàn bộ gợn nhiễu trên VIN biến trực tiếp thành v_SG và được khuếch đại thẳng xuống VOUT phá hủy PSRR.",
+      "cadence_check": "Chạy mô phỏng `xf` hoặc `ac` với nguồn nhiễu `v_in_ac = 1` từ `10 Hz` đến `100 MHz`; kiểm tra biên độ truyền sang `V(G_pass)` bám sát `1 V/V` (đồng pha) trong dải băng thông.",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "concept-opamp-psrr-and-noise"
+      ]
+    },
+    {
+      "id": "CHK-LDO-05",
+      "name": "Dòng rò tải tối thiểu (Bleeder / Divider Current) lớn hơn dòng rò tắt I_off của M_pass ở 125 °C",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "I_bleed_min = VOUT / (RFB1 + RFB2) > 5 * I_off_pass(FF, 125C, VGS = 0)",
+      "why_vi": "Ở tiến trình 90nm/65nm/45nm, transistor PMOS truyền có tổng chiều rộng hàng milimet sinh ra dòng rò dưới ngưỡng I_off đáng kể ở góc FF, 125 °C. Nếu cầu phân áp quá lớn làm I_div < I_off, khi tải ngoài ngắt (I_load = 0), VOUT sẽ tự trôi vọt lên sát VIN!",
+      "cadence_check": "Chạy `dc` tại `Iload = 0`, góc `FF, 125 °C, VIN_max`: xác nhận `VOUT` giữ đúng mức danh định và `|ID(M_pass)| == I_div`.",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "law-short-channel-effects",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-LDO-06",
+      "name": "Sụt áp bước nhảy tải (Load-Step Undershoot) và đường cảm nhận Kelvin Sense tại chân tải",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Delta_V_undershoot = (Delta_I_load * t_resp / Cout) + Delta_I_load * R_ESR <= V_droop_spec VÀ đỉnh RFB1 lấy tín hiệu Kelvin ngay tại tâm tải tiêu thụ",
+      "why_vi": "Khi dòng tải tăng đột ngột, tụ Cout phải gánh toàn bộ dòng thiếu hụt trong suốt thời gian trễ vòng kín và thời gian nạp/xả tụ cổng C_G_pass khổng lồ. Ngoài ra điện trở kim loại nối M_pass ra tải nếu nằm ngoài vòng hồi tiếp sẽ gây sụt áp DC trực tiếp.",
+      "cadence_check": "Mô phỏng `tran` xung tải `Imin <-> Imax` (cạnh `100 ns`) sau trích xuất ký sinh `PEX` đường kim loại nguồn/ra, kiểm tra sụt áp đỉnh và không có rung chu kỳ kéo dài.",
+      "related_nodes": [
+        "topo-cmos-ldo-regulator",
+        "tech-slew-rate-and-class-ab-opamps",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="680" viewBox="0 0 1160 680">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1156" height="676" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1148 2 Q 1158 2 1158 12 L 1158 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1158" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="74" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="55" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.01–19</text>
+  <text x="102" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Razavi CMOS Knowledge Brain: 19-Chapter Circuit Upgrade &amp; Evolution Map</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Bản đồ Tổng thể Tiến hóa Cấu trúc Vi mạch Tương tự CMOS qua 19 Chương Sách Razavi</text>
+  <rect x="18" y="72" width="1124" height="106" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3" fill-opacity="0.45"/>
+  <text x="30" y="91" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">1. Device &amp; Single-Stage Core (Ch.1–3, 11, 17)</text>
+  <rect x="30" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="99" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Square-Law MOS</text>
+  <text x="99" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.02 Vov</text>
+  <line x1="171" y1="133" x2="211" y2="133" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="191" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">vsat/DIBL</text>
+  <rect x="216" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="285" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Short-Ch gm/ID</text>
+  <text x="285" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.11/17 VDS,min</text>
+  <line x1="357" y1="133" x2="397" y2="133" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="377" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Gain</text>
+  <rect x="402" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="471" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">CS Amplifiers</text>
+  <text x="471" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.03 RD/Diode/I</text>
+  <line x1="543" y1="133" x2="583" y2="133" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="563" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Linear/HF</text>
+  <rect x="588" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="657" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Degenerated / CG</text>
+  <text x="657" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.03 Rout Boost</text>
+  <line x1="729" y1="133" x2="769" y2="133" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="749" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Rout↑</text>
+  <rect x="774" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="843" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Telescopic Casc</text>
+  <text x="843" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.03 gm·ro²</text>
+  <line x1="915" y1="133" x2="955" y2="133" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="935" y="126" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">+Aaux</text>
+  <rect x="960" y="102" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="1029" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Gain-Boost Casc</text>
+  <text x="1029" y="147" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.09 (gm·ro)³</text>
+  <rect x="18" y="190" width="1124" height="106" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3" fill-opacity="0.45"/>
+  <text x="30" y="209" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">2. Current Mirrors, Biasing, Bandgap &amp; LDO (Ch.5, 12)</text>
+  <rect x="30" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="99" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Basic Mirror</text>
+  <text x="99" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.05 CLM err</text>
+  <line x1="171" y1="251" x2="211" y2="251" stroke="#059669" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="191" y="244" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#059669" text-anchor="middle" font-weight="bold">Rout↑</text>
+  <rect x="216" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="285" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Cascode Mirror</text>
+  <text x="285" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.05 VTH+2Vov!</text>
+  <line x1="357" y1="251" x2="397" y2="251" stroke="#059669" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="377" y="244" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#059669" text-anchor="middle" font-weight="bold">Save VTH!</text>
+  <rect x="402" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="471" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">LVCCML Mirror</text>
+  <text x="471" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.05 2·VDS,min!</text>
+  <line x1="543" y1="251" x2="583" y2="251" stroke="#059669" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="563" y="244" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#059669" text-anchor="middle" font-weight="bold">Self-Bias</text>
+  <rect x="588" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="657" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Const-Gm + Start</text>
+  <text x="657" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.12 gm=2../RS</text>
+  <line x1="729" y1="251" x2="769" y2="251" stroke="#059669" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="749" y="244" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#059669" text-anchor="middle" font-weight="bold">Zero-TC</text>
+  <rect x="774" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="843" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">1.25V Bandgap</text>
+  <text x="843" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.12 CTAT+PTAT</text>
+  <line x1="915" y1="251" x2="955" y2="251" stroke="#059669" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="935" y="244" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#059669" text-anchor="middle" font-weight="bold">VDD≤1V</text>
+  <rect x="960" y="220" width="138" height="62" rx="7" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+  <text x="1029" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Sub-1V BGR &amp; LDO</text>
+  <text x="1029" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.12/08/10</text>
+  <rect x="18" y="308" width="1124" height="106" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3" fill-opacity="0.45"/>
+  <text x="30" y="327" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">3. Differential Pairs &amp; Op-Amp Architectures (Ch.4, 9)</text>
+  <rect x="30" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="99" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Basic Diff-Pair</text>
+  <text x="99" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.04 Virt GND</text>
+  <line x1="171" y1="369" x2="211" y2="369" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="191" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Linear/VGA</text>
+  <rect x="216" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="285" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Gilbert / Deg DP</text>
+  <text x="285" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.04 VGA/Mult</text>
+  <line x1="357" y1="369" x2="397" y2="369" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="377" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">SE Gain</text>
+  <rect x="402" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="471" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">5T Active OTA</text>
+  <text x="471" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.05 gm(ro2||4)</text>
+  <line x1="543" y1="369" x2="583" y2="369" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="563" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Casc Av↑</text>
+  <rect x="588" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="657" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Telescopic OTA</text>
+  <text x="657" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.09 Fast/5·Vov</text>
+  <line x1="729" y1="369" x2="769" y2="369" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="749" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Wide ICMR</text>
+  <rect x="774" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="843" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Folded-Cascode</text>
+  <text x="843" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.09 Ifold&gt;It/2</text>
+  <line x1="915" y1="369" x2="955" y2="369" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="935" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#2563eb" text-anchor="middle" font-weight="bold">Swing↑</text>
+  <rect x="960" y="338" width="138" height="62" rx="7" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="1029" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Two-Stage + CMFB</text>
+  <text x="1029" y="383" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.09 Max Swing!</text>
+  <rect x="18" y="426" width="1124" height="106" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3" fill-opacity="0.45"/>
+  <text x="30" y="445" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">4. Frequency, Noise, Feedback &amp; Compensation (Ch.6–8, 10)</text>
+  <rect x="30" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="99" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Miller &amp; Doublet</text>
+  <text x="99" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.06 +gm/Cgd</text>
+  <line x1="171" y1="487" x2="211" y2="487" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="191" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#d97706" text-anchor="middle" font-weight="bold">SNR Budget</text>
+  <rect x="216" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="285" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Vn², In² Noise</text>
+  <text x="285" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.07 4kTγgm,1/f</text>
+  <line x1="357" y1="487" x2="397" y2="487" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="377" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#d97706" text-anchor="middle" font-weight="bold">Close Loop</text>
+  <rect x="402" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="471" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">4-Topo Feedback</text>
+  <text x="471" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.08 Sense-Ret</text>
+  <line x1="543" y1="487" x2="583" y2="487" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="563" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#d97706" text-anchor="middle" font-weight="bold">Exact T(s)</text>
+  <rect x="588" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="657" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Middlebrook STB</text>
+  <text x="657" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.08 iprobe</text>
+  <line x1="729" y1="487" x2="769" y2="487" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="749" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#d97706" text-anchor="middle" font-weight="bold">Comp 2-Stg</text>
+  <rect x="774" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="843" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Pole Split + Rz</text>
+  <text x="843" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.10 LHP Zero!</text>
+  <line x1="915" y1="487" x2="955" y2="487" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="935" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#d97706" text-anchor="middle" font-weight="bold">Kill RHP z</text>
+  <rect x="960" y="456" width="138" height="62" rx="7" fill="#ffffff" stroke="#d97706" stroke-width="1.8"/>
+  <text x="1029" y="482" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Ahuja &amp; Nyquist</text>
+  <text x="1029" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.10 Heavy CL</text>
+  <rect x="18" y="544" width="1124" height="106" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3" fill-opacity="0.45"/>
+  <text x="30" y="563" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">5. Sampled-Data, PLLs, Mismatch &amp; Physical IC (Ch.13–16, 18–19)</text>
+  <rect x="30" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="99" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Pelgrom Duality</text>
+  <text x="99" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.14 VOS vs ΔI</text>
+  <line x1="171" y1="605" x2="211" y2="605" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="191" y="598" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Physical</text>
+  <rect x="216" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="285" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">ABBA + GuardRing</text>
+  <text x="285" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.18/19 Layout</text>
+  <line x1="357" y1="605" x2="397" y2="605" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="377" y="598" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Zero Qinj</text>
+  <rect x="402" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="471" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Bottom-Plate SC</text>
+  <text x="471" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.13 φ1e Rule</text>
+  <line x1="543" y1="605" x2="583" y2="605" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="563" y="598" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Low-VDD/1/f</text>
+  <rect x="588" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="657" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Bootstrap + CDS</text>
+  <text x="657" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.13/14 VGS=VDD</text>
+  <line x1="729" y1="605" x2="769" y2="605" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="749" y="598" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Generate f</text>
+  <rect x="774" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="843" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Ring &amp; LC VCO</text>
+  <text x="843" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.15 gm·Rp≥1</text>
+  <line x1="915" y1="605" x2="955" y2="605" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="935" y="598" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="middle" font-weight="bold">Lock Phase</text>
+  <rect x="960" y="574" width="138" height="62" rx="7" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="1029" y="600" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">Type-II CP-PLL</text>
+  <text x="1029" y="619" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">Ch.16 Rp·C1 Zero</text>
+</svg>

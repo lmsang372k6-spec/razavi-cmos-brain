@@ -1,0 +1,98 @@
+{
+  "checklist_id": "folded-cascode",
+  "title_vi": "Bảng kiểm cấu trúc Bộ khuếch đại Cascode Gập (Folded-Cascode OTA) & Tăng cường Độ lợi (Gain-Boosted Cascode)",
+  "applies_to": [
+    "topo-folded-cascode-ota",
+    "topo-gain-boosted-cascode",
+    "concept-high-freq-cs-cg-cascode",
+    "tech-slew-rate-and-class-ab-opamps",
+    "concept-opamp-psrr-and-noise"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-FC-01",
+      "name": "Fold-node KCL current invariant and slewing margin (Ifold > Itail/2, ideally >= 1.0*Itail)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "I_fold > 0.5 * I_tail across all PVT/mismatch corners (recommended I_fold = 1.0..1.2 * I_tail or fold-node clamp diodes added when I_fold < I_tail)",
+      "why_vi": "Nếu I_fold <= I_tail/2, dòng tĩnh nhánh cascode I_cas = I_fold - I_tail/2 bằng 0 làm tắt toàn bộ tầng cascode ở DC; nếu 0.5*I_tail < I_fold < I_tail, khi bước nhảy lớn lái trọn I_tail về một bên thì nút gập sập áp đẩy cặp đầu vào và nguồn đuôi chìm vào vùng triode gây trễ phục hồi quá kích (overdrive recovery).",
+      "cadence_check": "Kiểm tra OP(M_cas, \"id\") >= 0.35 * OP(M_tail, \"id\") ở mọi góc PVT (đặc biệt FS, SF) và chạy tran xung biên độ lớn quan sát điện áp nút gập V(X), V(Y) không bị sập chạm đất/VDD.",
+      "related_nodes": [
+        "topo-folded-cascode-ota",
+        "tech-slew-rate-and-class-ab-opamps"
+      ]
+    },
+    {
+      "id": "CHK-FC-02",
+      "name": "Low-voltage wide-swing cascode biasing (LVCCML) on both NMOS and PMOS output stacks",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Cascode gate biases Vb_casN and Vb_casP set |VDS| of bottom current-source/folding devices to VDS,min + margin (~150-220 mV) without diode-stacking VTH loss, preserving VDD - 4*VDS,min output swing",
+      "why_vi": "Nối diode chồng trực tiếp trên nhánh cascode làm mất trắng một điện áp ngưỡng VTH (~350-450 mV), bóp nghẹt biên độ ngõ ra trên nguồn cấp thấp <= 1.2 V.",
+      "cadence_check": "Kiểm tra OP của cả 4 tầng trên cột ngõ ra (M_fold, M_cas_sig, M_cas_load, M_src_load): abs(vds) - abs(vdsat) >= 50 mV tại tâm và quét dc đạo hàm độ lợi đạt A0_min trên toàn dải swing.",
+      "related_nodes": [
+        "topo-folded-cascode-ota",
+        "topo-lvccml-wide-swing-mirror",
+        "concept-opamp-topology-comparison-and-swing"
+      ]
+    },
+    {
+      "id": "CHK-FC-03",
+      "name": "Noise-aware gm/ID asymmetry between input pair and folding / load current sources",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "gm_fold << gm_in and gm_load << gm_in: input pair biased in moderate/weak inversion (high gm/ID), while folding and load current sources use strong inversion (low gm/ID, larger VDS,min, longer L)",
+      "why_vi": "Nguồn dòng gập mang dòng DC lớn nhất mạch và bơm thẳng nhiễu vào nút tín hiệu theo tỷ lệ 8*k*T*gamma*gm_fold / gm_in^2; nếu chọn cùng gm/ID với cặp đầu vào, riêng nguồn dòng gập sẽ sinh nhiễu gấp đôi cặp đầu vào!",
+      "cadence_check": "Kiểm tra OP(M_fold, \"gm\") <= 0.4 * OP(M_in, \"gm\") và xác nhận trong Spectre Noise Summary rằng cặp đầu vào chiếm tỷ trọng chính thay vì nguồn dòng gập.",
+      "related_nodes": [
+        "topo-folded-cascode-ota",
+        "law-stage-and-mirror-noise-rules",
+        "concept-opamp-psrr-and-noise",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-FC-04",
+      "name": "Fold-node nondominant pole omega_p,fold kept >= 2.5x..3x above closed-loop bandwidth",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "omega_p,fold ~ (gm_cas + gmb_cas) / C_X >= 2.5 * beta * GBW across PVT, with multi-finger shared-drain layout minimizing CDB_in + CDB_fold at node X",
+      "why_vi": "Nút gập X tập trung điện dung khuếch tán của ba transistor lớn (cặp vào, nguồn dòng gập và cascode); nếu dùng cascode PMOS kênh quá dài hoặc tải CL quá nhỏ làm GBW vọt cao tiệm cận omega_p,fold, dự trữ pha sẽ sụp đổ.",
+      "cadence_check": "Đọc phaseMargin trong stb tại giá trị tụ tải nhỏ nhất CL_min (trường hợp xấu nhất của Op-Amp 1 tầng!) ở góc FF/-40°C và SS/125°C.",
+      "related_nodes": [
+        "topo-folded-cascode-ota",
+        "concept-high-freq-cs-cg-cascode",
+        "law-multipole-phase-margin",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-FC-05",
+      "name": "Complementary input polarity and doublet window for Gain-Boosted (Regulated) Cascode auxiliaries",
+      "severity": "error",
+      "method": "semantic",
+      "invariant": "When gain-boosting is applied: NMOS-side auxiliary amp uses PMOS input pair (sensing ~VDS,min near GND), PMOS-side auxiliary amp uses NMOS input pair (sensing near VDD), and beta*omega_u,main < omega_u,aux < 0.5*omega_p2,main",
+      "why_vi": "Nút nguồn cascode nằm cách đường nguồn chỉ ~150 mV nên cặp đầu vào cùng cực tính sẽ tắt ngúm; đồng thời đặt băng thông mạch phụ dưới băng thông vòng kín sinh đuôi xác lập chậm do doublet, còn đặt quá cao chạm cực nút nội làm vòng phụ tự dao động!",
+      "cadence_check": "Chạy stb riêng cho từng vòng khuếch đại phụ A_aux (với CL chính gắn đầy đủ), kiểm tra PM_aux >= 60 deg, f_u,aux nằm đúng trong cửa sổ Bult & Geelen, và kiểm tra log10 settling error tới 0.01% trong tran.",
+      "related_nodes": [
+        "topo-gain-boosted-cascode",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-FC-06",
+      "name": "Clean AC ground on cascode bias gates and rail-referenced decoupling on current sources",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Cascode gate bias lines have low high-frequency impedance (or local decoupling to their respective reference rail: PMOS current-source gates decoupled to VDD, NMOS current-source gates decoupled to VSS)",
+      "why_vi": "Điện trở lớn nối tiếp cực cổng cascode sinh thành phần cảm kháng ở cực nguồn gây vọt lố tần số cao; nối nhầm tụ lọc cổng nguồn dòng PMOS xuống GND thay vì VDD sẽ biến nguồn dòng thành bộ khuếch đại nhiễu nguồn cấp làm sập PSRR+.",
+      "cadence_check": "Chạy phân tích xf đo PSRR+ và PSRR- từ 1 kHz tới 10 GHz kèm kiểm tra không có gai cộng hưởng trên đường Zout(f).",
+      "related_nodes": [
+        "concept-high-freq-cs-cg-cascode",
+        "concept-source-follower-inductive-zout",
+        "concept-opamp-psrr-and-noise"
+      ]
+    }
+  ]
+}

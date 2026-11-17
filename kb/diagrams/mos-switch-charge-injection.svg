@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="590" viewBox="0 0 1080 590">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="586" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.13</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">MOS Sampling Switch: Charge Injection, Clock Feedthrough &amp; Dummy Fix</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Công tắc Lấy mẫu MOS: Phun Điện tích Kênh dẫn, Xuyên nhiễu Xung nhịp &amp; Công tắc Giả (Ch.13 §13.2)</text>
+  <line x1="770" y1="22" x2="786" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="791" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="852" y1="22" x2="868" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="873" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="958" y1="22" x2="974" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="979" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="505" height="492" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="505" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) NMOS Turn-Off Charge Injection &amp; Feedthrough</text>
+  <rect x="543" y="74" width="519" height="492" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="543" y="74" width="519" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="555" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) CMOS Transmission Gate &amp; Dummy Switch (0.5·W)</text>
+  <circle cx="82" cy="235" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="74" y="239" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <polyline points="241,235 253,235 253,223" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="277,223 277,235 289,235" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="250" y1="223" x2="280" y2="223" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="253" y1="217" x2="277" y2="217" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="265" y1="205" x2="265" y2="217" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="277,233 273.5,227 280.5,227" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <text x="265" y="253" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">M1 (W / L)</text>
+  <line x1="86" y1="235" x2="241" y2="235" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="289" y1="235" x2="442" y2="235" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="446" cy="235" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="454" y="239" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <circle cx="392" cy="235" r="3.5" fill="#2563eb"/>
+  <line x1="265" y1="145" x2="265" y2="205" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="265" cy="141" r="3.4" fill="#ffffff" stroke="#7c3aed" stroke-width="1.9"/>
+  <text x="265" y="133" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#7c3aed" text-anchor="middle" font-weight="bold">CK (VDD -&gt; 0)</text>
+  <line x1="310" y1="175" x2="324" y2="175" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="324" y1="164" x2="324" y2="186" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="332" y1="164" x2="332" y2="186" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="332" y1="175" x2="346" y2="175" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <text x="328" y="160" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#dc2626" text-anchor="middle" font-weight="bold">W·Cov</text>
+  <polyline points="265,175 310,175" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+  <circle cx="265" cy="175" r="3.5" fill="#7c3aed"/>
+  <polyline points="346,175 365,175 365,235" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+  <circle cx="365" cy="235" r="3.5" fill="#dc2626"/>
+  <line x1="275" y1="263" x2="343" y2="263" stroke="#dc2626" stroke-width="2" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <line x1="255" y1="263" x2="187" y2="263" stroke="#475569" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-muted)"/>
+  <text x="265" y="283" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#dc2626" text-anchor="middle" font-weight="bold">Qch = −W·L·Cox·(VDD − Vin − VTH)</text>
+  <line x1="392" y1="300" x2="392" y2="314" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="381" y1="314" x2="403" y2="314" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="381" y1="322" x2="403" y2="322" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="392" y1="322" x2="392" y2="336" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="407" y="322" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">CH</text>
+  <line x1="392" y1="235" x2="392" y2="300" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="392" y1="346" x2="392" y2="353" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="381" y1="353" x2="403" y2="353" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="385" y1="357.5" x2="399" y2="357.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="389" y1="362" x2="395" y2="362" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="392" y1="336" x2="392" y2="346" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <rect x="36" y="386" width="468" height="162" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <line x1="39" y1="392" x2="39" y2="542" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="404" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#b91c1c" text-anchor="start" font-weight="bold">Two Turn-Off Error Mechanisms (§13.2.3)</text>
+  <text x="48" y="421" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">1. Channel Charge Injection (Signal-Dependent!):</text>
+  <text x="48" y="437" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   ΔVinj = −[W·L·Cox / (2·CH)] · (VDD − Vin − VTH(Vin))</text>
+  <text x="48" y="453" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   -&gt; Causes DC offset, gain error, AND VTH(Vin) nonlinearity!</text>
+  <text x="48" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">2. Clock Feedthrough (Overlap Capacitance):</text>
+  <text x="48" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">   ΔVft = −VDD · W·Cov / (W·Cov + CH)   (Signal-independent).</text>
+  <circle cx="585" cy="185" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="577" y="189" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <polyline points="696,162 708,162 708,150" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="732,150 732,162 744,162" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="705" y1="150" x2="735" y2="150" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="708" y1="144" x2="732" y2="144" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="720" y1="132" x2="720" y2="144" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="732,160 728.5,154 735.5,154" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="696,208 708,208 708,220" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="732,220 732,208 744,208" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="705" y1="220" x2="735" y2="220" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="708" y1="225" x2="732" y2="225" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="720" cy="228.5" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.7"/>
+  <line x1="720" y1="238" x2="720" y2="231.5" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="589,185 645,185 645,162 696,162" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="645,185 645,208 696,208" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="645" cy="185" r="3.5" fill="#2563eb"/>
+  <polyline points="744,162 795,162 795,185 842,185" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="744,208 795,208 795,185" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="795" cy="185" r="3.5" fill="#2563eb"/>
+  <circle cx="846" cy="185" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="854" y="189" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <text x="720" y="124" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#7c3aed" text-anchor="middle" font-weight="bold">CK</text>
+  <text x="720" y="254" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#7c3aed" text-anchor="middle" font-weight="bold">CK_bar</text>
+  <line x1="905" y1="233" x2="1038" y2="233" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="905" y1="233" x2="905" y2="117" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="1030" y="251" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">Vin</text>
+  <text x="913" y="129" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">Ron</text>
+  <path d="M 913 212 Q 980 206 1007 134" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,3"/>
+  <path d="M 927 134 Q 955 206 1023 212" fill="none" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,3"/>
+  <line x1="913" y1="218" x2="1023" y2="218" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <text x="969" y="212" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#dc2626" text-anchor="middle" font-weight="bold">Ron,TG = RN||RP</text>
+  <line x1="558" y1="276" x2="1046" y2="276" stroke="#e2e8f0" stroke-width="1.2" stroke-linecap="round"/>
+  <text x="566" y="298" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.4" fill="#0f172a" text-anchor="start" font-weight="bold">Half-Size Dummy Switch Charge Cancellation (Fig. 13.21):</text>
+  <circle cx="585" cy="385" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="577" y="389" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <polyline points="661,385 673,385 673,373" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="697,373 697,385 709,385" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="670" y1="373" x2="700" y2="373" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="673" y1="367" x2="697" y2="367" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="685" y1="355" x2="685" y2="367" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="697,383 693.5,377 700.5,377" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <text x="685" y="403" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">M1 (W / L)</text>
+  <polyline points="811,385 823,385 823,373" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="847,373 847,385 859,385" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="820" y1="373" x2="850" y2="373" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="823" y1="367" x2="847" y2="367" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="835" y1="355" x2="835" y2="367" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="847,383 843.5,377 850.5,377" fill="#059669" stroke="#059669" stroke-width="1" stroke-linejoin="round"/>
+  <text x="835" y="403" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#059669" text-anchor="middle" font-weight="bold">M2 (0.5·W / L)</text>
+  <line x1="589" y1="385" x2="661" y2="385" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="709" y1="385" x2="811" y2="385" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="859" y1="385" x2="995" y2="385" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="999" cy="385" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="1007" y="389" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <polyline points="802,385 802,412 868,412 868,385" fill="none" stroke="#059669" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="802" cy="385" r="3.5" fill="#059669"/>
+  <circle cx="868" cy="385" r="3.5" fill="#059669"/>
+  <circle cx="685" cy="336" r="3.4" fill="#ffffff" stroke="#7c3aed" stroke-width="1.9"/>
+  <text x="685" y="328" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#7c3aed" text-anchor="middle" font-weight="bold">CK</text>
+  <line x1="685" y1="340" x2="685" y2="355" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="835" cy="336" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="835" y="328" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="middle" font-weight="bold">CK_bar</text>
+  <line x1="835" y1="340" x2="835" y2="355" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="945" y1="432" x2="945" y2="446" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="934" y1="446" x2="956" y2="446" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="934" y1="454" x2="956" y2="454" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="945" y1="454" x2="945" y2="468" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="960" y="454" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">CH</text>
+  <circle cx="945" cy="385" r="3.5" fill="#2563eb"/>
+  <line x1="945" y1="385" x2="945" y2="432" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="945" y1="476" x2="945" y2="483" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="934" y1="483" x2="956" y2="483" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="938" y1="487.5" x2="952" y2="487.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="942" y1="492" x2="948" y2="492" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="945" y1="468" x2="945" y2="476" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="566" y="520" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• If M1's channel charge splits 50%/50%, M2 (W2 = 0.5·W1) turning ON</text>
+  <text x="566" y="540" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#475569" text-anchor="start">  absorbs ΔQ1 and cancels W·Cov feedthrough! (Imperfect if fast/asym -&gt; use Bottom-Plate!)</text>
+</svg>

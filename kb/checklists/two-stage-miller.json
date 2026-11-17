@@ -1,0 +1,98 @@
+{
+  "checklist_id": "two-stage-miller",
+  "title_vi": "Bảng kiểm cấu trúc Op-Amp Hai Tầng CMOS, Khớp Lệch Hệ thống DC, Bù Tách Cực Miller, Triệt RHP Zero & Bù Cascode Ahuja",
+  "applies_to": [
+    "topo-two-stage-opamp",
+    "concept-opamp-topology-comparison-and-swing",
+    "tech-slew-rate-and-class-ab-opamps",
+    "concept-opamp-psrr-and-noise",
+    "law-multipole-phase-margin",
+    "tech-miller-pole-splitting",
+    "tech-miller-rhp-zero-nulling-and-cascode-comp"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-2S-01",
+      "name": "Systematic input-offset cancellation via interstage current-density matching (VGS_stage2 = VDS_mirror1)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "In single-ended two-stage op-amps with active mirror Stage 1, L_in2 == L_mirror1 and (W/L)_in2 / (W/L)_mirror1 == I_D,stage2 / (I_SS / 2) so V_interstage_eq == V_diode_mirror1 across PVT",
+      "why_vi": "Nếu điện áp cổng–nguồn cân bằng của transistor khuếch đại Tầng 2 lệch khỏi điện áp cực máng nhánh diode Tầng 1, điều chế chiều dài kênh và DIBL tạo ra sai lệch dòng tĩnh biến thành điện áp lệch hệ thống V_OS,sys = Delta_V / A_v1 (hoặc đẩy tải Tầng 1 vào vùng triode!).",
+      "cadence_check": "Đóng vòng đệm độ lợi đơn vị ở góc danh định TT (tắt mismatch), kiểm tra OP(M_mirror_out, \"vds\") khớp sát OP(M_mirror_diode, \"vds\") trong phạm vi vài mV và |V(in+) - V(out)| < 0.3 mV.",
+      "related_nodes": [
+        "topo-two-stage-opamp",
+        "topo-five-transistor-ota",
+        "topo-basic-current-mirror"
+      ]
+    },
+    {
+      "id": "CHK-2S-02",
+      "name": "Pole-splitting ratio gm2 / CL places nondominant output pole >= 2.2x..3x above beta * GBW at CL_max",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "omega'_p2 ~ gm2 / (CL_max + CE) >= (2.2..3.0) * beta * (gm1 / Cc), verified specifically at MAXIMUM load capacitance CL_max and worst-case low-gm2 corner (SS, high T)",
+      "why_vi": "Ngược hẳn Op-Amp 1 tầng, trong Op-Amp 2 tầng bù Miller cực trội nằm ở Tầng 1 còn cực không trội nằm ở ngõ ra; tăng tụ tải CL kéo cực ngõ ra tụt xuống đè lên GBW gây mất dự trữ pha và dao động!",
+      "cadence_check": "Chạy stb tại CL = CL_max ở góc SS/125°C và SF/125°C với hệ số hồi tiếp lớn nhất beta_max, xác nhận phaseMargin >= 55 deg và gainMargin >= 10 dB.",
+      "related_nodes": [
+        "topo-two-stage-opamp",
+        "law-multipole-phase-margin",
+        "tech-miller-pole-splitting"
+      ]
+    },
+    {
+      "id": "CHK-2S-03",
+      "name": "Feedforward RHP zero (+gm2 / Cc) eliminated via PVT-tracking Rz or Cascode (Ahuja) compensation",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Direct Miller Cc includes either a PVT-tracking series nulling resistor Rz >= 1/gm2 across all corners (never a blind untracked resistor that drops < 1/gm2 at SS/125°C) or returns Cc through a cascode source node (Ahuja)",
+      "why_vi": "Tụ Miller thuần túy tạo đường truyền thẳng tần số cao sinh RHP zero tại +gm2/Cc vừa nâng biên độ +20 dB/dec vừa làm trễ pha thêm tới -90 deg, phá sập hoàn toàn dự trữ pha của Op-Amp CMOS.",
+      "cadence_check": "Chạy phân tích pz và stb qua mọi góc PVT: xác nhận không tồn tại điểm không phần thực dương (real(z) > 0) nằm dưới 5 * GBW; nếu dùng bù Ahuja, kiểm tra thêm gai cộng hưởng cực phức phía trên GBW đảm bảo gainMargin >= 10 dB.",
+      "related_nodes": [
+        "law-miller-theorem-and-rhp-zero",
+        "tech-miller-pole-splitting",
+        "tech-miller-rhp-zero-nulling-and-cascode-comp"
+      ]
+    },
+    {
+      "id": "CHK-2S-04",
+      "name": "Both positive and negative slew rates budgeted: min(ISS / Cc, I_stage2 / (Cc + CL))",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Stage-1 tail current ISS >= SR_spec * Cc AND Stage-2 bias current I_stage2 >= SR_spec * (Cc + CL_max) + margin (or Stage 2 upgraded to Class-AB push-pull for heavy CL)",
+      "why_vi": "Trong Op-Amp 2 tầng lớp A, một chiều sườn xung được Tầng 2 hỗ trợ đẩy mạnh, nhưng ở chiều ngược lại transistor khuếch đại Tầng 2 bị tắt nên nguồn dòng tải cố định của Tầng 2 phải tự mình nạp/xả đồng thời cả Cc lẫn CL!",
+      "cadence_check": "Chạy tran bước nhảy toàn dải lên và xuống với tải CL_max, đo riêng slewRate sườn lên (SR+) và sườn xuống (SR-) đều phải đạt chỉ tiêu.",
+      "related_nodes": [
+        "topo-two-stage-opamp",
+        "tech-slew-rate-and-class-ab-opamps"
+      ]
+    },
+    {
+      "id": "CHK-2S-05",
+      "name": "Proper bottom-plate orientation of Miller MIM/MOM capacitor Cc",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Bottom plate (higher substrate-parasitic terminal) of Cc connects to Stage-2 output Vout; cleaner top plate connects to high-impedance Stage-1 interstage node",
+      "why_vi": "Đấu ngược tấm đáy nhiều ký sinh vào nút liên tầng sẽ làm tăng điện dung ký sinh C1 (hạ thấp cực phụ tách cực) và bơm thẳng nhiễu đế bán dẫn vào cực cổng khuếch đại của Tầng 2!",
+      "cadence_check": "Kiểm tra chiều đấu chân cực tụ MIM/MOM trên schematic và kiểm tra ký sinh sau PEX tại nút liên tầng so với nút ngõ ra.",
+      "related_nodes": [
+        "tech-miller-pole-splitting",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-2S-06",
+      "name": "High-frequency PSRR degradation through Miller Cc evaluated against supply ripple budget",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "PSRR+ and PSRR- evaluated up to >= GBW; if supply connected to Stage-2 CS source exhibits unacceptable 0-dB high-frequency feedthrough via Cc, cascode/Ahuja compensation or supply decoupling/LDO is applied",
+      "why_vi": "Ở tần số cao tụ bù Cc nối tắt cực cổng và cực máng của transistor CS Tầng 2 thành diode bám chặt vào đường nguồn cực nguồn của nó, khiến PSRR của đường nguồn đó rơi thẳng về ~0 dB quanh GBW.",
+      "cadence_check": "Chạy phân tích xf (kèm Monte Carlo mismatch nếu vi sai hoàn toàn) vẽ PSRR+(f) và PSRR-(f) từ 100 Hz đến 1 GHz kiểm tra điểm đáy PSRR.",
+      "related_nodes": [
+        "concept-opamp-psrr-and-noise",
+        "tech-miller-rhp-zero-nulling-and-cascode-comp",
+        "topo-cmos-ldo-regulator"
+      ]
+    }
+  ]
+}

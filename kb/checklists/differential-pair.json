@@ -1,0 +1,101 @@
+{
+  "checklist_id": "differential-pair",
+  "title_vi": "Bảng kiểm cấu trúc cặp khuếch đại vi sai, 5T-OTA, đáp ứng chế độ chung & CMRR",
+  "applies_to": [
+    "topo-basic-differential-pair",
+    "concept-cm-response-and-cmrr",
+    "topo-degenerated-diffpair-and-gilbert",
+    "topo-five-transistor-ota",
+    "topo-telescopic-cascode-opamp",
+    "topo-folded-cascode-ota",
+    "topo-two-stage-opamp"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-DP-01",
+      "name": "Input Common-Mode Range (ICMR) keeps both input pair and tail current source in saturation",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "For NMOS-in: VGS_in + VDS,min_tail <= Vin_CM <= min(VDD - V_load_drop + VTH_in); for PMOS-in: max(V_load_floor - |VTH_in|) <= Vin_CM <= VDD - |VGS_in| - |VDS,min_tail|",
+      "why_vi": "Nếu Vin_CM tụt quá thấp (với NMOS-in), nguồn dòng đuôi mất VDS,min rơi vào triode làm sập CMRR và lệch dòng tĩnh; nếu Vin_CM dâng quá cao, cặp vi sai đầu vào bị kẹp VDS rơi vào triode làm sập độ lợi vi sai.",
+      "cadence_check": "Quét dc mức đồng pha VCM đầu vào trên toàn dải yêu cầu ở cả góc SS/-40°C (VGS lớn nhất) và FF/125°C, kiểm tra region == 2 cho cả cặp vào lẫn nguồn dòng đuôi.",
+      "related_nodes": [
+        "topo-basic-differential-pair",
+        "topo-five-transistor-ota",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-DP-02",
+      "name": "High tail current-source impedance RSS across frequency for CMRR and PSRR protection",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Tail source uses true high-ro current source (long-L or cascode mirror, never a small resistor) with minimized parasitic capacitance C_tail at the common-source node",
+      "why_vi": "Trở kháng nguồn đuôi RSS hữu hạn (và tụ ký sinh C_tail làm sụt Z_tail ở tần số cao) kết hợp với bất đối xứng tải hoặc gương dòng chủ động sẽ biến nhiễu đồng pha thành tín hiệu vi sai ngõ ra, đánh sập CMRR.",
+      "cadence_check": "Chạy phân tích ac với kích thích đồng pha (Vcm = 1 AC) và vi sai (Vdm = 1 AC) kèm Monte Carlo mismatch để đo CMRR(f) = 20*log10(|Adm(f)/Acm_to_dm(f)|).",
+      "related_nodes": [
+        "concept-cm-response-and-cmrr",
+        "topo-five-transistor-ota",
+        "topo-lvccml-wide-swing-mirror"
+      ]
+    },
+    {
+      "id": "CHK-DP-03",
+      "name": "Strict structural, sizing, and layout symmetry of differential branches",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "M1/M2 input devices and M3/M4 loads have identical W, L, nf, m, dummy environment, and symmetric parasitic routing; single-ended conversion (5T-OTA) accounts for systematic VDS asymmetry",
+      "why_vi": "Mọi bất đối xứng hình học hoặc điện áp cực máng tĩnh giữa hai nhánh không những sinh ra điện áp lệch không hệ thống (systematic offset), mà còn phá hủy khả năng triệt hài bậc chẵn (HD2) và hạ thấp CMRR.",
+      "cadence_check": "So sánh OP(M1, \"vds\") với OP(M2, \"vds\") tại Vin_diff = 0; trong 5T-OTA nối tiếp tầng 2, kiểm tra điều kiện khớp áp VGS_stage2 = VDS_diode_load để khử systematic offset.",
+      "related_nodes": [
+        "topo-basic-differential-pair",
+        "topo-five-transistor-ota",
+        "topo-two-stage-opamp",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-DP-04",
+      "name": "Sizing duality between input pair (high gm/ID) and active mirror load (low gm/ID, long L)",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "gm_in >> gm_load (input pair sized in moderate/weak inversion with large W*L; active mirror load sized in strong inversion with longer L)",
+      "why_vi": "Cả nhiễu nhiệt lẫn offset điện áp của cặp tải chủ động khi quy đổi về cổng đầu vào đều bị nhân với hệ số (gm_load / gm_in)^2 (cho nhiễu công suất) và (gm_load / gm_in) (cho ΔVTH tải)!",
+      "cadence_check": "Kiểm tra tỷ số OP(M_load, \"gm\") / OP(M_in, \"gm\") <= 0.3–0.5 và kiểm tra bảng Noise Summary trong Spectre xác nhận cặp đầu vào đóng góp phần chính yếu chứ không phải tải.",
+      "related_nodes": [
+        "topo-five-transistor-ota",
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "law-stage-and-mirror-noise-rules",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-DP-05",
+      "name": "Differential input linear range vs full tail-current steering clipping limit",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Peak open-loop differential input |Vin_diff_peak| stays well below sqrt(2)*Vov_eff (or sqrt(2)*Vov + I_SS*R_S with source degeneration) during linear operation",
+      "why_vi": "Khi |Vin_diff| chạm ngưỡng sqrt(2)*Vov, một nhánh bị ngắt hoàn toàn và toàn bộ dòng đuôi ISS dồn sang nhánh kia (clipping / slewing), làm hỗ dẫn vi sai sụt về 0.",
+      "cadence_check": "Quét dc Vin_diff từ -0.3 V đến +0.3 V, vẽ ID1, ID2 và đạo hàm Gm_eff = deriv(ID1 - ID2) để xác định bề rộng vùng tuyến tính thực tế.",
+      "related_nodes": [
+        "topo-basic-differential-pair",
+        "topo-degenerated-diffpair-and-gilbert",
+        "tech-slew-rate-and-class-ab-opamps"
+      ]
+    },
+    {
+      "id": "CHK-DP-06",
+      "name": "Active-mirror pole-zero doublet evaluated in high-speed single-ended 5T-OTA",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Mirror node pole omega_m ~ gm_load / (2*CGS_load + CDB) is kept well above closed-loop bandwidth or accounted for in settling-time tail analysis",
+      "why_vi": "Trong cặp vi sai tải gương dòng chủ động (5T-OTA), đường tín hiệu nửa mạch đi vòng qua nút gương tạo một cực tại omega_m và một zero tại 2*omega_m (cặp doublet), gây thành phần hàm mũ chậm trong đáp ứng quá độ.",
+      "cadence_check": "Chạy pz và tran bước nhảy nhỏ kiểm tra thành phần xác lập chậm (slow-settling tail) ở cửa sổ 0.1%–0.5% khi chọn L_load quá dài.",
+      "related_nodes": [
+        "topo-five-transistor-ota",
+        "concept-diffpair-mirror-pole-doublet"
+      ]
+    }
+  ]
+}

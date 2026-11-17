@@ -1,0 +1,97 @@
+{
+  "checklist_id": "current-mirror",
+  "title_vi": "Bảng kiểm cấu trúc gương dòng cơ bản, gương dòng cascode và gương dòng cascode áp thấp dải rộng (LVCCML)",
+  "applies_to": [
+    "topo-basic-current-mirror",
+    "topo-cascode-current-mirror",
+    "topo-lvccml-wide-swing-mirror",
+    "topo-five-transistor-ota",
+    "tech-stage-biasing-rules"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-CM-01",
+      "name": "Integer unit-cell / finger multiplicity scaling (M:N) with identical L and W_finger",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Reference and copy branches use identical L_drawn and identical unit finger width W_f; current ratio M:N is realized strictly by integer multiplicity m / nf, never by scaling L or non-proportional W",
+      "why_vi": "Đổi tỷ lệ dòng bằng cách sửa L hoặc bề rộng lẻ không nguyên làm sai lệch hoàn toàn hiệu ứng khuếch tán bên 2*LD, hiệu ứng kênh hẹp, RSCE halo và ứng suất STI, gây sai số sao chép dòng hệ thống lớn.",
+      "cadence_check": "Kiểm tra L và W_finger của transistor chuẩn và transistor sao chép bằng nhau tuyệt đối trên schematic; tỷ số chỉ đặt qua tham số m hoặc nf kèm dummy hai đầu khi layout.",
+      "related_nodes": [
+        "topo-basic-current-mirror",
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-CM-02",
+      "name": "Output compliance voltage respected (Vout >= VDS,min or 2*VDS,min for LVCCML)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Output branch drain-to-rail voltage stays above compliance limit (VDS,min for basic mirror; VTH + 2*VDS,min for standard diode-cascode; 2*VDS,min for LVCCML) across full signal swing",
+      "why_vi": "Khi điện áp nút ra hạ xuống dưới điện áp tuân thủ tối thiểu (compliance voltage), transistor gương hoặc cascode rời khỏi vùng bão hòa làm dòng sao chép sụt gãy đột ngột.",
+      "cadence_check": "Quét dc điện áp cực máng ngõ ra gương dòng từ 0 đến VDD, xác định điểm uốn mà dòng lệch quá 1–2% hoặc gds tăng vọt qua các góc SS/FF.",
+      "related_nodes": [
+        "topo-basic-current-mirror",
+        "topo-cascode-current-mirror",
+        "topo-lvccml-wide-swing-mirror"
+      ]
+    },
+    {
+      "id": "CHK-CM-03",
+      "name": "LVCCML cascode gate bias Vb window prevents bottom-mirror triode entry across PVT",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Vb = VGS_cas + VDS_mirror_actual maintains VDS_mirror >= VDS,min + margin (~50-80 mV) even under VTH/body-effect shift of cascode device at SS/-40°C and FF/125°C",
+      "why_vi": "Trong gương dòng cascode áp thấp dải rộng, hiệu ứng thân trên transistor cascode làm tăng VTH_cas; nếu nhánh tạo Vb (như diode 1/4 W/L mà không bù VTH_cas) đặt Vb hơi thấp, transistor gương đáy sẽ chìm vào vùng triode!",
+      "cadence_check": "Kiểm tra trực tiếp OP(M_bottom, \"region\") == 2 và abs(OP(M_bottom, \"vds\")) - abs(OP(M_bottom, \"vdsat\")) >= 40mV trên tất cả góc PVT.",
+      "related_nodes": [
+        "topo-lvccml-wide-swing-mirror",
+        "topo-cascode-current-mirror",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-CM-04",
+      "name": "Strong-inversion & long-channel sizing (Low gm/ID, Large L) for low noise and tight matching",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Current mirrors and active current-source loads use L >= 2..8 * L_min and strong inversion (low gm/ID, larger Vov within headroom budget) rather than minimum L or weak inversion",
+      "why_vi": "Theo định luật Pelgrom và quy tắc nhiễu Chương 7–14, sai số dòng tương đối tỷ lệ với (gm/ID)*Delta_VTH và nhiễu nhiệt cộng vào tín hiệu tỷ lệ thuận với gm_mirror; đặt gm/ID cao hoặc L ngắn cho gương dòng làm nổ cả sai lệch lẫn nhiễu!",
+      "cadence_check": "Kiểm tra OP(M_mirror, \"gm\")/abs(OP(M_mirror, \"id\")) thấp hơn rõ rệt cặp vi sai đầu vào, và chạy Monte Carlo mismatch kiểm tra sigma(Iout)/Iout.",
+      "related_nodes": [
+        "topo-basic-current-mirror",
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "law-stage-and-mirror-noise-rules"
+      ]
+    },
+    {
+      "id": "CHK-CM-05",
+      "name": "Systematic VDS mismatch suppression between reference diode and copy branch",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Either VDS_copy matches VDS_ref = VGS_ref (e.g. via replica drain clamping / op-amp / symmetric stage DC rule VGS6 = VDS4) or cascode shielding suppresses CLM/DIBL error",
+      "why_vi": "Gương dòng đơn có VDS nhánh chuẩn khóa ở VGS (~0.35–0.6 V) trong khi nhánh ra chịu VDS khác xa gây sai số hệ thống lambda*(VDS2 - VDS1) lên tới 10–25% ở công nghệ nanomet.",
+      "cadence_check": "So sánh tỷ số dòng thực tế OP(M_out, \"id\") / OP(M_ref, \"id\") tại góc TT với tỷ số hình học M:N; nếu sai lệch hệ thống > 2%, thêm cascode hoặc cân bằng VDS.",
+      "related_nodes": [
+        "topo-basic-current-mirror",
+        "topo-cascode-current-mirror",
+        "topo-two-stage-opamp"
+      ]
+    },
+    {
+      "id": "CHK-CM-06",
+      "name": "Avoid wasteful standard diode-stacked cascode mirror under low-VDD supplies",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "For VDD <= 1.2 V, high-Rout mirrors use LVCCML wide-swing biasing (consuming 2*VDS,min) instead of stacking two diode-connected devices (which wastes VTH + 2*VDS,min)",
+      "why_vi": "Chồng trực tiếp hai transistor nối diode làm nhánh chuẩn tiêu tốn 2*VGS = 2*VTH + 2*Vov và ép ngõ ra tốn tối thiểu VTH + 2*Vov, đánh mất oan uổng một điện áp ngưỡng VTH (~30–40% nguồn 1 V!).",
+      "cadence_check": "Rà soát cấu trúc nhánh chuẩn cascode trên schematic; nếu thấy hai diode nối tiếp dưới nguồn <= 1.2 V, chuyển sang LVCCML.",
+      "related_nodes": [
+        "topo-cascode-current-mirror",
+        "topo-lvccml-wide-swing-mirror"
+      ]
+    }
+  ]
+}

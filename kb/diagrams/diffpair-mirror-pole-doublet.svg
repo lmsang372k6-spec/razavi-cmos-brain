@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="580" viewBox="0 0 1060 580">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1056" height="576" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1048 2 Q 1058 2 1058 12 L 1058 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1058" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.06</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Active-Load Diff-Pair: Mirror Pole ωm &amp; Pole-Zero Doublet</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Cặp Vi sai Tải Tích cực: Cực Nút Gương ωm và Cặp Cực–Zero Sát nhau (Doublet — Ch.06 §6.6)</text>
+  <line x1="750" y1="22" x2="766" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="771" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="832" y1="22" x2="848" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="853" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="938" y1="22" x2="954" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="959" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="20" y="74" width="520" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="20" y="74" width="520" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="32" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Fast Direct Path vs Slow Mirror Path (CX)</text>
+  <rect x="558" y="74" width="482" height="484" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="558" y="74" width="482" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="570" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Doublet (ωm, 2·ωm) &amp; Slow Settling Tail</text>
+  <line x1="195" y1="134" x2="195" y2="125" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="182" y1="125" x2="208" y2="125" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="195" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <line x1="385" y1="134" x2="385" y2="125" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="372" y1="125" x2="398" y2="125" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="385" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <polyline points="195,172 195,184 207,184" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="205,184 198.5,180.5 198.5,187.5" fill="#d97706" stroke="#d97706" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="207,208 195,208 195,220" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="207" y1="181" x2="207" y2="211" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="212" y1="184" x2="212" y2="208" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="215.5" cy="196" r="3" fill="#ffffff" stroke="#d97706" stroke-width="1.7"/>
+  <line x1="225" y1="196" x2="218.5" y2="196" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="187" y="193" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="end" font-weight="bold">M3</text>
+  <text x="187" y="208" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="end">1/gm3</text>
+  <polyline points="385,172 385,184 373,184" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="375,184 381.5,180.5 381.5,187.5" fill="#d97706" stroke="#d97706" stroke-width="1" stroke-linejoin="round"/>
+  <polyline points="373,208 385,208 385,220" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="373" y1="181" x2="373" y2="211" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="368" y1="184" x2="368" y2="208" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="364.5" cy="196" r="3" fill="#ffffff" stroke="#d97706" stroke-width="1.7"/>
+  <line x1="355" y1="196" x2="361.5" y2="196" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="393" y="193" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="start" font-weight="bold">M4</text>
+  <text x="393" y="208" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">gm4=gm3</text>
+  <line x1="195" y1="134" x2="195" y2="172" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="134" x2="385" y2="172" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="225" y1="196" x2="355" y2="196" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="195,238 235,238 235,196" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="195" cy="238" r="3.5" fill="#d97706"/>
+  <circle cx="235" cy="196" r="3.5" fill="#d97706"/>
+  <circle cx="290" cy="196" r="3.5" fill="#dc2626"/>
+  <line x1="290" y1="124" x2="290" y2="138" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="279" y1="138" x2="301" y2="138" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="279" y1="146" x2="301" y2="146" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="290" y1="146" x2="290" y2="160" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <text x="305" y="146" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#dc2626" text-anchor="start" font-weight="bold">CX ≈ 2·Cgs3</text>
+  <line x1="290" y1="196" x2="290" y2="160" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="290" y1="124" x2="290" y2="115" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="277" y1="115" x2="303" y2="115" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="290" y="110" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#dc2626" text-anchor="middle" font-weight="bold">AC GND</text>
+  <line x1="195" y1="220" x2="195" y2="304" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="385" y1="220" x2="385" y2="304" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="385" cy="266" r="3.5" fill="#2563eb"/>
+  <line x1="385" y1="266" x2="488" y2="266" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="492" cy="266" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="500" y="270" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <circle cx="472" cy="266" r="3.5" fill="#0f172a"/>
+  <line x1="472" y1="374" x2="472" y2="388" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="461" y1="388" x2="483" y2="388" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="461" y1="396" x2="483" y2="396" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="472" y1="396" x2="472" y2="410" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="487" y="396" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">CL</text>
+  <line x1="472" y1="266" x2="472" y2="374" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="472" y1="418" x2="472" y2="425" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="461" y1="425" x2="483" y2="425" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="465" y1="429.5" x2="479" y2="429.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="469" y1="434" x2="475" y2="434" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="472" y1="410" x2="472" y2="418" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="195,304 195,316 183,316" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="183,340 195,340 195,352" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="193,340 186.5,336.5 186.5,343.5" fill="#d97706" stroke="#d97706" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="183" y1="313" x2="183" y2="343" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="177" y1="316" x2="177" y2="340" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="165" y1="328" x2="177" y2="328" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="203" y="325" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="start" font-weight="bold">M1</text>
+  <text x="203" y="340" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Slow Half</text>
+  <polyline points="385,304 385,316 397,316" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="397,340 385,340 385,352" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="387,340 393.5,336.5 393.5,343.5" fill="#2563eb" stroke="#2563eb" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="397" y1="313" x2="397" y2="343" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="403" y1="316" x2="403" y2="340" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="415" y1="328" x2="403" y2="328" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="377" y="325" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="end" font-weight="bold">M2</text>
+  <text x="377" y="340" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="end">Fast Half</text>
+  <line x1="131" y1="328" x2="165" y2="328" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="127" cy="328" r="3.4" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <text x="119" y="332" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#d97706" text-anchor="end" font-weight="bold">Vin+</text>
+  <line x1="415" y1="328" x2="423" y2="328" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="427" cy="328" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="435" y="332" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vin−</text>
+  <polyline points="195,352 195,384 385,384 385,352" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="290" cy="384" r="3.5" fill="#059669"/>
+  <line x1="290" y1="398" x2="290" y2="408" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="290" y1="436" x2="290" y2="446" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="290" cy="422" r="14" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <line x1="290" y1="414" x2="290" y2="429" stroke="#059669" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="308" y="426" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">ISS</text>
+  <line x1="290" y1="384" x2="290" y2="398" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="290" y1="452" x2="290" y2="459" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="279" y1="459" x2="301" y2="459" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="283" y1="463.5" x2="297" y2="463.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="287" y1="468" x2="293" y2="468" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="290" y1="446" x2="290" y2="452" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <rect x="38" y="468" width="484" height="76" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="41" y1="474" x2="41" y2="538" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="50" y="486" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.1" fill="#b45309" text-anchor="start" font-weight="bold">Two Parallel Feedforward Paths</text>
+  <text x="50" y="503" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Path 1 (Slow, Amber): M1 -&gt; Node X (pole ωm = gm3/CX) -&gt; M4 -&gt; Vout</text>
+  <text x="50" y="519" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="start">• Path 2 (Fast, Blue):  M2 -&gt; directly drives Vout (bypasses Node X!)</text>
+  <line x1="598" y1="293" x2="998" y2="293" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="598" y1="293" x2="598" y2="120" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="990" y="311" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">log ω</text>
+  <text x="606" y="132" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">|H(jω)| [dB]</text>
+  <polyline points="598,146 693,146 813,224 863,272 968,275" fill="none" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="693" cy="146" r="3.5" fill="#0f172a"/>
+  <text x="693" y="136" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="middle" font-weight="bold">ωp1</text>
+  <circle cx="813" cy="224" r="3.5" fill="#dc2626"/>
+  <text x="803" y="214" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#dc2626" text-anchor="end" font-weight="bold">ωm</text>
+  <circle cx="863" cy="272" r="3.5" fill="#059669"/>
+  <text x="873" y="266" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="start" font-weight="bold">ωz = 2·ωm</text>
+  <line x1="598" y1="435" x2="998" y2="435" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="598" y1="435" x2="598" y2="332" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="990" y="453" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">Time t</text>
+  <text x="606" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">Vout(t)</text>
+  <line x1="598" y1="355" x2="983" y2="355" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4,4"/>
+  <path d="M 598 435 Q 646 356 728 355 L 978 355" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,4"/>
+  <path d="M 598 435 Q 643 372 708 370 Q 828 358 978 356" fill="none" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="793" y="382" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#dc2626" text-anchor="start" font-weight="bold">Slow exp(−ωm·t) doublet tail!</text>
+  <rect x="576" y="462" width="446" height="84" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <line x1="579" y1="468" x2="579" y2="540" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+  <text x="588" y="480" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.9" fill="#b91c1c" text-anchor="start" font-weight="bold">Doublet Formula (Razavi Eq. 6.77)</text>
+  <text x="588" y="497" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">Gm(s) = (gm1 / 2) · [1 + 1/(1 + s/ωm)] = gm1 · (1 + s/(2ωm)) / (1 + s/ωm)</text>
+  <text x="588" y="513" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">ωm ≈ gm3 / (2·Cgs3 + Cdb1 + Cdb3)  -&gt; Keep ωm &gt;&gt; GBW for fast settling!</text>
+</svg>
