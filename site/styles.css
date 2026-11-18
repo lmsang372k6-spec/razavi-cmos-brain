@@ -141,12 +141,12 @@ kbd {
   position: sticky;
   top: 0;
   z-index: 40;
-  height: var(--topbar-h);
+  min-height: var(--topbar-h);
   display: grid;
-  grid-template-columns: auto minmax(240px, 1fr) auto;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
   align-items: center;
-  gap: 18px;
-  padding: 0 22px;
+  gap: 12px;
+  padding: 6px 18px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-hairline);
 }
@@ -244,15 +244,16 @@ kbd {
 .topbar-modes {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mode-tab {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 6px 11px;
+  padding: 5px 9px;
   border-color: transparent;
   color: var(--ink-secondary);
+  white-space: nowrap;
 }
 
 .mode-tab.is-active {
@@ -560,6 +561,7 @@ kbd {
 .badge-topology { background: var(--tag-blue-bg); color: var(--tag-blue-ink); }
 .badge-law, .badge-concept, .badge-physical_rule { background: var(--tag-green-bg); color: var(--tag-green-ink); }
 .badge-technique { background: var(--tag-amber-bg); color: var(--tag-amber-ink); }
+.badge-skill { background: var(--tag-purple-bg); color: var(--tag-purple-ink); }
 .badge-error, .badge-trap { background: var(--tag-red-bg); color: var(--tag-red-ink); }
 .badge-inv { background: var(--tag-purple-bg); color: var(--tag-purple-ink); }
 .badge-neutral {
@@ -1155,16 +1157,199 @@ kbd {
   font-size: 13px;
 }
 
-@media (max-width: 1180px) {
-  .reader-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .reader-toc {
-    display: none;
-  }
+/* v2 Exact Coordinate Jump Strip, 2D Coordinate Graph, Book Tree & GitHub Skills */
+.coord-hit-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-ink);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 22px;
 }
 
-@media (max-width: 920px) {
+.coord-hit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.coord-hit-card {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sub-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+}
+
+.sub-tab {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 13px;
+  border-color: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink-secondary);
+}
+
+.sub-tab.is-active {
+  background: var(--bg-surface);
+  color: var(--ink-primary);
+  border-color: var(--border-hairline);
+}
+
+/* 2D Coordinate Graph Toolbar & Neighborhood Highlighting */
+.graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-hairline);
+  background: var(--bg-surface);
+}
+
+.graph-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.graph-svg .g-node,
+.graph-svg .g-edge {
+  transition: opacity 140ms ease;
+}
+
+.graph-svg.has-focus .g-node:not(.is-neighbor) {
+  opacity: 0.14;
+}
+
+.graph-svg.has-focus .g-edge:not(.is-neighbor) {
+  opacity: 0.06;
+}
+
+.graph-svg.has-focus .g-edge.is-neighbor path {
+  stroke-width: 2.7px;
+}
+
+.graph-svg .g-node.is-center rect {
+  stroke-width: 2.6px;
+}
+
+/* Book Coordinate Navigator Tree & Equation Cards */
+.chapter-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.chapter-block-header {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  padding: 14px 20px;
+  background: var(--bg-surface);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.chapter-block-header:hover {
+  background: var(--bg-subtle);
+}
+
+.section-table {
+  border-top: 1px solid var(--border-hairline);
+}
+
+.section-row {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-hairline);
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.section-row:last-child {
+  border-bottom: none;
+}
+
+.eq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 14px;
+}
+
+.eq-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eq-card .math-display {
+  margin: 4px 0;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+/* GitHub Skills & Vetted Repo Cards */
+.repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 14px;
+}
+
+.repo-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.symptom-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+@media (max-width: 1220px) {
   .topbar {
     grid-template-columns: auto 1fr;
     height: auto;
@@ -1174,7 +1359,17 @@ kbd {
   .topbar-modes {
     grid-column: 1 / -1;
     overflow-x: auto;
+    padding-bottom: 2px;
   }
+  .reader-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .reader-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 920px) {
   .mobile-only {
     display: inline-grid;
   }
@@ -1198,6 +1393,10 @@ kbd {
   }
   .meta-bento {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .section-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
   }
   .markdown-body {
     padding: 20px 18px;

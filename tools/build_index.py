@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.1).
+"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.3).
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
 Builds:
   - kb/graph/edges.jsonl (when --merge-edges is passed)
-  - kb/router-index.json
-  - kb/manifest.json
+  - kb/router-index.json (with deterministic 2D coordinates & section_coords)
+  - kb/manifest.json (tracking all files under kb/, including coordinates/ & github-skills/)
 """
 import sys
 
@@ -23,7 +23,7 @@ from collections import defaultdict
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
-RELEASE_VERSION = "2026.11.18.1"
+RELEASE_VERSION = "2026.11.18.3"
 
 DOMAIN_METADATA = [
     {
@@ -65,17 +65,28 @@ DOMAIN_METADATA = [
         "id": "sampled-and-clocked",
         "layer": 6,
         "title_vi": "Tầng 6 · Mạch Tụ Chuyển mạch, Dao động & Vòng Khóa Pha PLL",
-        "title_en": "Switched-Capacitor Circuits, Oscillators & PLLs",
+        "title_en": "Switched-Capacitor Circuits, Comparators/ADCs, Oscillators & PLLs",
         "chapters": [13, 15, 16],
     },
     {
         "id": "nonideal-and-physical",
         "layer": 7,
         "title_vi": "Tầng 7 · Phi tuyến, Mismatch, Công nghệ & Bố cục Layout",
-        "title_en": "Nonlinearity, Pelgrom Mismatch, Latch-Up & Layout",
+        "title_en": "Nonlinearity, Pelgrom Mismatch, Latch-Up, Layout & ESD",
         "chapters": [14, 18, 19],
     },
+    {
+        "id": "eda-and-github-skills",
+        "layer": 8,
+        "title_vi": "Tầng 8 · Thực chiến GitHub Skills, SKILL/OCEAN & Spectre Testbenches",
+        "title_en": "Practical GitHub EDA Skills, Virtuoso SKILL/OCEAN & Spectre Testbenches",
+        "chapters": list(range(1, 20)),
+    },
 ]
+
+DOMAIN_CHAPTER_MAP = {
+    d["id"]: set(d["chapters"]) for d in DOMAIN_METADATA if d["id"] != "eda-and-github-skills"
+}
 
 CHAPTER_METADATA = [
     (1, "Introduction to Analog Design", "Nhập môn Thiết kế Mạch Tương tự"),
@@ -99,7 +110,6 @@ CHAPTER_METADATA = [
     (19, "Layout and Packaging", "Bố trí Hình học (Layout) và Đóng gói"),
 ]
 
-# Known chapter fallback SVG map in case any card omitted frontmatter 'diagram'
 CHAPTER_DEFAULT_DIAGRAM = {
     1: "../../diagrams/analog-design-octagon.svg",
     2: "../../diagrams/mos-small-signal-caps.svg",
@@ -139,6 +149,7 @@ FRONTMATTER_KEY_ORDER = [
     "summary",
     "diagram",
     "razavi_refs",
+    "github_refs",
     "glossary_codes",
     "process_agnostic",
     "roles",
@@ -146,6 +157,13 @@ FRONTMATTER_KEY_ORDER = [
     "limitations",
     "checklists",
 ]
+
+TRACK_LABELS = {
+    0: "laws_and_physics",
+    1: "circuit_topologies",
+    2: "sizing_and_compensation",
+    3: "github_eda_skills",
+}
 
 
 def fold_ascii(value):
@@ -225,10 +243,8 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
         meta["process_agnostic"] = True
         changed = True
 
-    # Resolve or assign diagram path
     diag = meta.get("diagram", "")
     if not diag:
-        # Check if body embeds a diagram
         m_img = re.search(r"!\[[^\]]*\]\((\.\./\.\./diagrams/[^)]+\.svg)\)", body)
         if m_img:
             diag = m_img.group(1)
@@ -243,14 +259,12 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
         meta["diagram"] = "../../diagrams/" + diag_base
         changed = True
 
-    # Filter glossary_codes if any code doesn't exist in glossary
     if valid_glossary_ids and isinstance(meta.get("glossary_codes"), list):
         filtered_codes = [c for c in meta["glossary_codes"] if c in valid_glossary_ids]
         if filtered_codes != meta["glossary_codes"]:
             meta["glossary_codes"] = filtered_codes
             changed = True
 
-    # Ensure checklists are valid
     if valid_checklists and isinstance(meta.get("checklists"), list):
         filtered_cl = [c for c in meta["checklists"] if c in valid_checklists]
         if not filtered_cl and "common-mos" in valid_checklists:
@@ -259,7 +273,6 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
             meta["checklists"] = filtered_cl
             changed = True
 
-    # Ensure diagram is embedded in body if completely absent
     if "../../diagrams/" not in body and meta.get("diagram"):
         caption = meta.get("title_vi") or meta.get("title_en") or meta["id"]
         lines = body.splitlines()
@@ -286,7 +299,7 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
 
 
 def has_cycle(adj):
-    state = {}  # 0=unvisited, 1=visiting, 2=done
+    state = {}
 
     def dfs(u):
         state[u] = 1
@@ -307,20 +320,23 @@ def has_cycle(adj):
 
 
 def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
+    """Merges edges.jsonl + all edges-*.jsonl shards (edges-exp-a, edges-exp-b, edges-gh, edges-d*)."""
     graph_dir = os.path.join(KB_ROOT, "graph")
     os.makedirs(graph_dir, exist_ok=True)
     frag_names = sorted(
         fn
         for fn in os.listdir(graph_dir)
-        if fn.startswith("edges-d") and fn.endswith(".jsonl")
+        if fn.startswith("edges-") and fn.endswith(".jsonl") and fn != "edges.jsonl"
     )
     out_path = os.path.join(graph_dir, "edges.jsonl")
 
-    raw_edges = []
-    sources_to_read = [os.path.join(graph_dir, fn) for fn in frag_names]
-    if not sources_to_read and os.path.isfile(out_path):
-        sources_to_read = [out_path]
+    sources_to_read = []
+    if os.path.isfile(out_path):
+        sources_to_read.append(out_path)
+    for fn in frag_names:
+        sources_to_read.append(os.path.join(graph_dir, fn))
 
+    raw_edges = []
     for src in sources_to_read:
         with open(src, "r", encoding="utf-8-sig") as f:
             for line_no, line in enumerate(f, 1):
@@ -328,7 +344,7 @@ def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
                 if not s:
                     continue
                 obj = json.loads(s)
-                raw_edges.append((src, line_no, obj))
+                raw_edges.append((os.path.basename(src), line_no, obj))
 
     merged = []
     seen_keys = set()
@@ -336,17 +352,16 @@ def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
     degree = defaultdict(int)
     dropped = []
 
-    for src, line_no, obj in raw_edges:
+    for src_name, line_no, obj in raw_edges:
         u = NODE_ID_ALIASES.get(obj.get("from", ""), obj.get("from", ""))
         v = NODE_ID_ALIASES.get(obj.get("to", ""), obj.get("to", ""))
-        rel = obj.get("rel", "relates_to")
+        rel = obj.get("rel", "governed_by")
         if u == v or u not in valid_node_ids or v not in valid_node_ids:
-            dropped.append((src, line_no, obj.get("from"), obj.get("to"), rel))
+            dropped.append((src_name, line_no, obj.get("from"), obj.get("to"), rel))
             continue
         key = (u, v, rel)
         if key in seen_keys:
             continue
-        # Prevent cycles in upgrades_to
         if rel == "upgrades_to":
             upgrades_adj[u].add(v)
             if has_cycle(upgrades_adj):
@@ -368,7 +383,6 @@ def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
         degree[u] += 1
         degree[v] += 1
 
-    # Guarantee 0 orphan nodes by linking any isolated node to concept-analog-design-octagon
     anchor = "concept-analog-design-octagon"
     if anchor in valid_node_ids:
         for nid in sorted(valid_node_ids):
@@ -397,7 +411,7 @@ def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
     return {
         "merged_count": len(merged),
         "dropped_invalid_or_self": len(dropped),
-        "dropped_details": dropped[:20],
+        "dropped_details": dropped[:25],
         "fragments_merged": frag_names,
         "fragments_deleted": frag_names if cleanup_fragments else [],
     }
@@ -449,7 +463,15 @@ def load_diagrams():
             raw = json.load(f)
         items = raw.get("diagrams", raw) if isinstance(raw, dict) else raw
         if isinstance(items, list):
-            return items
+            out = []
+            for item in items:
+                d_copy = dict(item)
+                if "file" not in d_copy and "filename" in d_copy:
+                    d_copy["file"] = d_copy["filename"]
+                if "viewBox" not in d_copy and "width" in d_copy and "height" in d_copy:
+                    d_copy["viewBox"] = f"0 0 {d_copy['width']} {d_copy['height']}"
+                out.append(d_copy)
+            return out
     out = []
     if os.path.isdir(diag_dir):
         for fn in sorted(os.listdir(diag_dir)):
@@ -464,6 +486,129 @@ def load_diagrams():
                 pass
             out.append({"file": fn, "path": f"kb/diagrams/{fn}", "viewBox": vb})
     return out
+
+
+def load_book_coordinates():
+    fp = os.path.join(KB_ROOT, "coordinates", "book-coordinates.json")
+    if not os.path.isfile(fp):
+        return {"sections": [], "equations": [], "index_terms": []}, defaultdict(list), defaultdict(list)
+    with open(fp, "r", encoding="utf-8-sig") as f:
+        data = json.load(f)
+    node_to_sections = defaultdict(list)
+    node_to_eqs = defaultdict(list)
+    for sec in data.get("sections", []):
+        sid = sec.get("section_id")
+        for nid in sec.get("primary_nodes", []):
+            if sid and sid not in node_to_sections[nid]:
+                node_to_sections[nid].append(sid)
+    for eq in data.get("equations", []):
+        eid = eq.get("eq_id") or eq.get("eq_num")
+        for nid in [eq.get("node_id")] + list(eq.get("related_nodes") or []):
+            if nid and eid and eid not in node_to_eqs[nid]:
+                node_to_eqs[nid].append(eid)
+    return data, node_to_sections, node_to_eqs
+
+
+def load_github_catalog():
+    fp = os.path.join(KB_ROOT, "github-skills", "catalog.json")
+    if not os.path.isfile(fp):
+        return {"repositories": []}
+    with open(fp, "r", encoding="utf-8-sig") as f:
+        return json.load(f)
+
+
+def section_sort_tuple(sec_str):
+    if not sec_str:
+        return (999, 999, 999)
+    m = re.search(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?", str(sec_str))
+    if not m:
+        return (999, 999, 999)
+    return (
+        int(m.group(1)),
+        int(m.group(2)) if m.group(2) is not None else 0,
+        int(m.group(3)) if m.group(3) is not None else 0,
+    )
+
+
+def assign_2d_coordinates(nodes):
+    """Assigns deterministic, collision-free 2D grid & pixel coordinates to every node.
+
+    X-axis (`grid_col` 1..20):
+      - Columns 1..19: Primary Razavi Chapter (Ch.01 .. Ch.19)
+      - Column 20: Cross-Chapter EDA Platform & Automation (SKILL, OCEAN, Verilog-A, PEX, CACE, Monte Carlo)
+    Y-axis (`grid_row` & `track`):
+      - 4 Functional Sub-track Swimlanes:
+        0: laws_and_physics (concept / law / physical_rule)
+        1: circuit_topologies (topology)
+        2: sizing_and_compensation (technique)
+        3: github_eda_skills (skill)
+    """
+    cells = [defaultdict(list) for _ in range(4)]
+
+    for node in nodes:
+        nid = node["id"]
+        kind = node.get("kind", "concept")
+        dom = node.get("domain", "")
+        is_skill = kind == "skill" or dom == "eda-and-github-skills" or nid.startswith("skill-")
+
+        if is_skill:
+            track_idx = 3
+            chs = node.get("chapters") or []
+            if (
+                re.search(r"ic617|ocean|veriloga|pex|cace|25-topology|montecarlo", nid)
+                or not chs
+                or len(chs) > 4
+            ):
+                col = 20
+            else:
+                col = int(chs[0])
+        else:
+            if kind == "topology":
+                track_idx = 1
+            elif kind == "technique":
+                track_idx = 2
+            else:
+                track_idx = 0
+            col = int(node["section_coords"]["primary_chapter"])
+
+        col = max(1, min(20, col))
+        cells[track_idx][col].append(node)
+
+    for t in range(4):
+        for col in cells[t]:
+            cells[t][col].sort(
+                key=lambda n: (section_sort_tuple(n["section_coords"]["primary_section"]), n["id"])
+            )
+
+    COL_W = 216
+    LEFT_PAD = 150
+    ROW_H = 58
+    LANE_PAD_TOP = 36
+    LANE_PAD_BOT = 20
+
+    cur_y = 74
+    global_row_offset = 0
+
+    for t in range(4):
+        max_rows = max((len(arr) for arr in cells[t].values()), default=0)
+        if max_rows == 0:
+            continue
+        lane_h = LANE_PAD_TOP + max_rows * ROW_H + LANE_PAD_BOT
+        for col, arr in sorted(cells[t].items()):
+            cx = LEFT_PAD + (col - 1) * COL_W
+            for r_idx, node in enumerate(arr):
+                cy = cur_y + LANE_PAD_TOP + r_idx * ROW_H + 22
+                grid_row = global_row_offset + r_idx + 1
+                node["coord_2d"] = {
+                    "x": cx,
+                    "y": cy,
+                    "grid_col": col,
+                    "grid_row": grid_row,
+                    "track": TRACK_LABELS[t],
+                    "track_index": t,
+                }
+        cur_y += lane_h + 14
+        global_row_offset += max_rows
 
 
 def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=False):
@@ -484,6 +629,8 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
 
     checklists = load_checklists()
     valid_checklists = {c["checklist_id"] for c in checklists}
+    coords_data, node_to_sections, node_to_eqs = load_book_coordinates()
+    catalog_data = load_github_catalog()
 
     nodes_root = os.path.join(KB_ROOT, "nodes")
     md_files = []
@@ -517,6 +664,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         domain_counts[domain] += 1
 
         refs = meta.get("razavi_refs") or []
+        github_refs = meta.get("github_refs") or []
         chapters = sorted(
             {
                 int(r["chapter"])
@@ -526,6 +674,43 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         )
         for ch in chapters:
             chapter_to_nodes[ch].append(nid)
+
+        # Determine primary chapter & section coordinates
+        dom_chs = DOMAIN_CHAPTER_MAP.get(domain, set())
+        primary_ch = chapters[0] if chapters else 1
+        primary_sec = ""
+        for r in refs:
+            if isinstance(r, dict) and int(r.get("chapter", 0)) in dom_chs:
+                primary_ch = int(r["chapter"])
+                primary_sec = str(r.get("section", ""))
+                break
+        if not primary_sec and refs and isinstance(refs[0], dict):
+            primary_sec = str(refs[0].get("section", ""))
+
+        ref_sections = [str(r.get("section", "")) for r in refs if isinstance(r, dict) and r.get("section")]
+        for extra_s in node_to_sections.get(nid, []):
+            if extra_s not in ref_sections:
+                ref_sections.append(extra_s)
+
+        ref_pages = [str(r.get("pages", "")) for r in refs if isinstance(r, dict) and r.get("pages")]
+        ref_eqs = []
+        for r in refs:
+            if isinstance(r, dict):
+                for eq in r.get("equations") or []:
+                    if str(eq) not in ref_eqs:
+                        ref_eqs.append(str(eq))
+        for extra_e in node_to_eqs.get(nid, []):
+            clean_e = str(extra_e).replace("Eq.", "")
+            if clean_e not in ref_eqs:
+                ref_eqs.append(clean_e)
+
+        section_coords = {
+            "primary_chapter": primary_ch,
+            "primary_section": primary_sec.split(",")[0].split("-")[0].strip() if primary_sec else f"{primary_ch}.1",
+            "sections": ref_sections,
+            "pages": ref_pages,
+            "equations": ref_eqs,
+        }
 
         invariants = sorted(set(re.findall(r"\[(INV-[A-Za-z0-9_-]+)\]", body)))
         traps = sorted(set(re.findall(r"\[(TRAP-[A-Za-z0-9_-]+)\]", body)))
@@ -550,9 +735,14 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             if gc in glossary_by_id
         )
         sections_str = " ".join(
-            f"ch{r.get('chapter','')} {r.get('section','')}"
+            f"ch{r.get('chapter','')} {r.get('section','')} {r.get('pages','')} {' '.join(str(x) for x in (r.get('equations') or []))}"
             for r in refs
             if isinstance(r, dict)
+        )
+        gh_str = " ".join(
+            f"{g.get('repo','')} {g.get('use','')}"
+            for g in github_refs
+            if isinstance(g, dict)
         )
 
         search_blob = " ".join(
@@ -570,40 +760,44 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
                 " ".join(invariants),
                 " ".join(traps),
                 sections_str,
+                gh_str,
                 gterms_text,
                 headings_extra,
             ]
         )
 
         rel_path = f"kb/nodes/{domain}/{nid}.md"
-        nodes.append(
-            {
-                "id": nid,
-                "kind": meta.get("kind", "concept"),
-                "domain": domain,
-                "title_vi": meta.get("title_vi", ""),
-                "title_en": meta.get("title_en", ""),
-                "summary": summary,
-                "diagram": meta.get("diagram", ""),
-                "razavi_refs": refs,
-                "chapters": chapters,
-                "glossary_codes": gcodes,
-                "process_agnostic": bool(meta.get("process_agnostic", True)),
-                "roles": roles,
-                "symptoms_addressed": symptoms,
-                "limitations": limitations,
-                "checklists": meta.get("checklists") or [],
-                "invariants": invariants,
-                "traps": traps,
-                "path": rel_path,
-                "raw_rel_path": rel_path,
-                "web_anchor": f"#node/{nid}",
-                "lines": len(all_lines),
-                "bytes": os.path.getsize(fp),
-                "sha256": sha256_file(fp),
-                "search_text": fold_ascii(search_blob),
-            }
-        )
+        node_entry = {
+            "id": nid,
+            "kind": meta.get("kind", "concept"),
+            "domain": domain,
+            "title_vi": meta.get("title_vi", ""),
+            "title_en": meta.get("title_en", ""),
+            "summary": summary,
+            "diagram": meta.get("diagram", ""),
+            "razavi_refs": refs,
+            "github_refs": github_refs,
+            "chapters": chapters,
+            "section_coords": section_coords,
+            "glossary_codes": gcodes,
+            "process_agnostic": bool(meta.get("process_agnostic", True)),
+            "roles": roles,
+            "symptoms_addressed": symptoms,
+            "limitations": limitations,
+            "checklists": meta.get("checklists") or [],
+            "invariants": invariants,
+            "traps": traps,
+            "path": rel_path,
+            "raw_rel_path": rel_path,
+            "web_anchor": f"#node/{nid}",
+            "lines": len(all_lines),
+            "bytes": os.path.getsize(fp),
+            "sha256": sha256_file(fp),
+            "search_text": fold_ascii(search_blob),
+        }
+        nodes.append(node_entry)
+
+    assign_2d_coordinates(nodes)
 
     valid_node_ids = {n["id"] for n in nodes}
     merge_info = None
@@ -641,15 +835,28 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             }
         )
 
+    skill_node_count = sum(1 for n in nodes if n["domain"] == "eda-and-github-skills" or n["kind"] == "skill")
+    razavi_node_count = len(nodes) - skill_node_count
+    book_section_count = len(coords_data.get("sections", []))
+    book_equation_count = len(coords_data.get("equations", []))
+    book_index_term_count = len(coords_data.get("index_terms", []))
+    github_repo_count = len(catalog_data.get("repositories") or catalog_data.get("repos") or [])
+
     router_index = {
         "schema": "razavi-cmos-brain.router-index.v1",
         "release": RELEASE_VERSION,
         "stats": {
             "node_count": len(nodes),
+            "razavi_node_count": razavi_node_count,
+            "skill_node_count": skill_node_count,
             "edge_count": edge_count,
             "checklist_count": len(checklists),
             "diagram_count": svg_count,
             "glossary_count": glossary_count,
+            "book_section_count": book_section_count,
+            "book_equation_count": book_equation_count,
+            "book_index_term_count": book_index_term_count,
+            "github_repo_count": github_repo_count,
         },
         "domains": domains_out,
         "chapters": chapters_out,
@@ -665,7 +872,6 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         json.dump(router_index, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    # Now compute SHA-256 + byte size of EVERY file under kb/ (excluding manifest.json itself)
     manifest_fp = os.path.join(KB_ROOT, "manifest.json")
     kb_files = []
     for root_dir, dirs, files in os.walk(KB_ROOT):
@@ -674,7 +880,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             full = os.path.join(root_dir, fn)
             if os.path.abspath(full) == os.path.abspath(manifest_fp):
                 continue
-            if fn.startswith("edges-d") and fn.endswith(".jsonl"):
+            if fn.startswith("edges-") and fn.endswith(".jsonl") and fn != "edges.jsonl":
                 continue
             rel = os.path.relpath(full, REPO_ROOT).replace("\\", "/")
             kb_files.append(
@@ -690,10 +896,15 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         "schema": "razavi-cmos-brain.manifest.v1",
         "release": RELEASE_VERSION,
         "node_count": len(nodes),
+        "razavi_node_count": razavi_node_count,
+        "skill_node_count": skill_node_count,
         "edge_count": edge_count,
         "diagram_count": svg_count,
         "checklist_count": len(checklists),
         "glossary_count": glossary_count,
+        "book_section_count": book_section_count,
+        "book_equation_count": book_equation_count,
+        "github_repo_count": github_repo_count,
         "file_count": len(kb_files),
         "files": kb_files,
     }
@@ -707,10 +918,15 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         "normalized_cards": normalized_count,
         "merge_info": merge_info,
         "node_count": len(nodes),
+        "razavi_node_count": razavi_node_count,
+        "skill_node_count": skill_node_count,
         "edge_count": edge_count,
         "diagram_count": svg_count,
         "checklist_count": len(checklists),
         "glossary_count": glossary_count,
+        "book_section_count": book_section_count,
+        "book_equation_count": book_equation_count,
+        "github_repo_count": github_repo_count,
         "manifest_files": len(kb_files),
     }
 
@@ -718,8 +934,8 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--normalize-cards", action="store_true", help="Normalize frontmatter keys & diagram refs in node cards")
-    parser.add_argument("--merge-edges", action="store_true", help="Merge edges-d*.jsonl into edges.jsonl")
-    parser.add_argument("--cleanup-fragments", action="store_true", help="Remove temporary edges-d*.jsonl after merge")
+    parser.add_argument("--merge-edges", action="store_true", help="Merge edges-*.jsonl shards into edges.jsonl")
+    parser.add_argument("--cleanup-fragments", action="store_true", help="Remove temporary edges-*.jsonl shards after merge")
     args = parser.parse_args()
     report = build_indices(
         normalize_cards=args.normalize_cards,

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="596" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.10</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Three-Stage Low-Voltage Op-Amp with Nested Miller Compensation (NMC)</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Op-Amp 3 Tầng Áp thấp &amp; Bù Miller Lồng nhau (Nested Miller / Multipath NMC — Ch.10)</text>
+  <line x1="770" y1="22" x2="786" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="791" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="852" y1="22" x2="868" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="873" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="958" y1="22" x2="974" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="979" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="610" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="610" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Nested Miller Topology (Outer Cm1 + Inner Cm2 + Feedforward gmf)</text>
+  <rect x="644" y="74" width="418" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="644" y="74" width="418" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="656" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Pole-Splitting Hierarchy &amp; Nanometer Gain Rescue</text>
+  <circle cx="48" cy="300" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="40" y="304" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <polygon points="95,268 95,332 165,300" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  <text x="122" y="304" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">+gm1</text>
+  <line x1="48" y1="300" x2="95" y2="300" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="165" y1="300" x2="265" y2="300" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="210" cy="300" r="3.5" fill="#dc2626"/>
+  <text x="210" y="322" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="middle" font-weight="bold">Node A</text>
+  <polygon points="265,268 265,332 335,300" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  <text x="292" y="304" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">+gm2</text>
+  <line x1="335" y1="300" x2="435" y2="300" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="380" cy="300" r="3.5" fill="#d97706"/>
+  <text x="380" y="322" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#0f172a" text-anchor="middle" font-weight="bold">Node B</text>
+  <polygon points="435,268 435,332 505,300" fill="#ecfdf5" stroke="#059669" stroke-width="2" stroke-linejoin="round"/>
+  <text x="462" y="304" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#059669" text-anchor="middle" font-weight="bold">-gm3</text>
+  <line x1="505" y1="300" x2="590" y2="300" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="590" cy="300" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="598" y="304" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <circle cx="535" cy="300" r="3.5" fill="#d97706"/>
+  <circle cx="555" cy="300" r="3.5" fill="#dc2626"/>
+  <line x1="572" y1="338" x2="572" y2="352" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="561" y1="352" x2="583" y2="352" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="561" y1="360" x2="583" y2="360" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="572" y1="360" x2="572" y2="374" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="557" y="360" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="end" font-weight="bold">CL</text>
+  <circle cx="572" cy="300" r="3.5" fill="#0f172a"/>
+  <line x1="572" y1="300" x2="572" y2="338" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="572" y1="374" x2="572" y2="381" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="561" y1="381" x2="583" y2="381" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="565" y1="385.5" x2="579" y2="385.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="569" y1="390" x2="575" y2="390" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="380,300 380,215 439,215" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="439" y1="215" x2="453" y2="215" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="453" y1="204" x2="453" y2="226" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="461" y1="204" x2="461" y2="226" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="461" y1="215" x2="475" y2="215" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="457" y="200" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d97706" text-anchor="middle" font-weight="bold">Cm2 (Inner Loop)</text>
+  <polyline points="475,215 535,215 535,300" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="210,300 210,145 364,145" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="364" y1="145" x2="378" y2="145" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="378" y1="134" x2="378" y2="156" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="386" y1="134" x2="386" y2="156" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="386" y1="145" x2="400" y2="145" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <text x="382" y="130" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#dc2626" text-anchor="middle" font-weight="bold">Cm1 (Outer Loop: ωu = gm1/Cm1)</text>
+  <polyline points="400,145 555,145 555,300" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="210,300 210,385 335,385" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <rect x="335" y="369" width="76" height="32" rx="5" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="373" y="389" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#7c3aed" text-anchor="middle" font-weight="bold">-gmf (MNMC)</text>
+  <polyline points="411,385 535,385 535,300" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3" marker-end="url(#arr-purple)"/>
+  <rect x="36" y="434" width="574" height="126" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="440" x2="39" y2="554" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="452" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="start" font-weight="bold">Why Nanometer Low-VDD Design Needs 3-Stage NMC</text>
+  <text x="48" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">• At 65nm/45nm (VDD ≤ 1.0 V, gm·ro ≈ 8–12), cascode stacking crushes output swing,</text>
+  <text x="48" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">  while a 2-stage op-amp reaches only (gm·ro)² ≈ 38–42 dB DC gain!</text>
+  <text x="48" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">• Three cascaded low-headroom CS stages achieve Av0 = (gm·ro)³ ≈ 60–75 dB</text>
+  <text x="48" y="517" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#0f172a" text-anchor="start">  with full rail-to-rail Vout swing (VDS,sat to VDD - VDS,sat)!</text>
+  <rect x="662" y="114" width="382" height="152" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="665" y1="120" x2="665" y2="260" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="674" y="132" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.9" fill="#b45309" text-anchor="start" font-weight="bold">1. Standard NMC Stability Dimensioning</text>
+  <text x="674" y="149" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• For 60° Phase Margin (Butterworth 3rd-order closed-loop):</text>
+  <text x="674" y="165" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  1) Outer unity-gain BW:   ω_u = gm1 / Cm1</text>
+  <text x="674" y="181" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  2) Inner loop pole:       ω_p2 = gm2 / Cm2 ≈ 2 · ω_u</text>
+  <text x="674" y="197" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  3) Output stage pole:     ω_p3 = gm3 / CL  ≥ 4 · ω_u</text>
+  <text x="674" y="213" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• Requires heavy gm3 (power hungry for large CL)!</text>
+  <rect x="662" y="282" width="382" height="140" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.3"/>
+  <line x1="665" y1="288" x2="665" y2="416" stroke="#6d28d9" stroke-width="3" stroke-linecap="round"/>
+  <text x="674" y="300" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.9" fill="#6d28d9" text-anchor="start" font-weight="bold">2. RHP Zero Trap &amp; Multipath Fix (MNMC / RNMC)</text>
+  <text x="674" y="317" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• Cm1 &amp; Cm2 create feedforward RHP zeros that degrade PM!</text>
+  <text x="674" y="333" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• Multipath gmf (or Reversed NMC taking Cm2 to cascode</text>
+  <text x="674" y="349" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  node instead of gate) cancels RHP zero &amp; relaxes gm3/gm1</text>
+  <text x="674" y="365" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  by 2x–5x for high-capacitance load driving!</text>
+  <rect x="662" y="438" width="382" height="122" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <line x1="665" y1="444" x2="665" y2="554" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="674" y="456" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.9" fill="#047857" text-anchor="start" font-weight="bold">3. Spectre STB Verification Contract</text>
+  <text x="674" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• Break outer feedback loop with iprobe -&gt; check PM ≥ 60°</text>
+  <text x="674" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">  AND Gain Margin GM ≥ 10 dB across CL_min .. CL_max!</text>
+  <text x="674" y="505" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#0f172a" text-anchor="start">• Check step response for zero hidden sub-loop ringing!</text>
+</svg>

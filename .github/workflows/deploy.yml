@@ -30,16 +30,21 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate Knowledge Brain integrity
-        run: python3 validators/validate_brain.py
+      - name: Validate Knowledge Brain integrity (8 domains, coordinates, GitHub catalog, SVGs, math & SHA-256)
+        run: python3 -B validators/validate_brain.py
 
-      - name: Assemble _site (Interactive Web App + Static Machine KB Endpoints)
+      - name: Validate Web UI JavaScript syntax
+        run: node --check site/app.js
+
+      - name: Assemble _site (Interactive Coordinate Web App + Static Machine KB Endpoints)
         run: |
           rm -rf _site
           mkdir -p _site
           cp -r site/* _site/
           cp -r kb _site/kb
           cp -r skills _site/skills
+          test -f _site/kb/coordinates/book-coordinates.json
+          test -f _site/kb/github-skills/catalog.json
           touch _site/.nojekyll
 
       - name: Configure GitHub Pages

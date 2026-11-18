@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="596" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="116" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="76" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">EDA · Ch.08/10</text>
+  <text x="144" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Cadence Spectre Loop Stability Verification: iprobe &amp; diffstbprobe</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Thiết lập Đo Ổn định Vòng Hồi tiếp trong Spectre: iprobe Đơn cực &amp; diffstbprobe Vi sai / CMFB (Layer 8 · Ch.08/10)</text>
+  <line x1="770" y1="22" x2="786" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="791" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="852" y1="22" x2="868" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="873" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="958" y1="22" x2="974" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="979" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="515" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="515" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Single-Ended Closed-Loop Testbench (analogLib/iprobe)</text>
+  <rect x="550" y="74" width="512" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="550" y="74" width="512" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="562" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Fully-Differential OTA: DM vs CMFB Loop (diffstbprobe)</text>
+  <polygon points="241,226 241,284 309,255" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="246.5" y1="242" x2="253.5" y2="242" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="250" y1="238.5" x2="250" y2="245.5" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="246.5" y1="268" x2="253.5" y2="268" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="271" y="259" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#2563eb" text-anchor="middle" font-weight="bold">DUT</text>
+  <circle cx="115" cy="242" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="107" y="246" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#059669" text-anchor="end" font-weight="bold">VCM,DC</text>
+  <line x1="115" y1="242" x2="241" y2="242" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="309" y1="255" x2="465" y2="255" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="465" cy="255" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="473" y="259" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">Vout</text>
+  <circle cx="405" cy="255" r="3.5" fill="#d97706"/>
+  <line x1="438" y1="297" x2="438" y2="311" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="427" y1="311" x2="449" y2="311" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="427" y1="319" x2="449" y2="319" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="438" y1="319" x2="438" y2="333" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="453" y="319" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">CL</text>
+  <circle cx="438" cy="255" r="3.5" fill="#0f172a"/>
+  <line x1="438" y1="255" x2="438" y2="297" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="438" y1="333" x2="438" y2="340" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="427" y1="340" x2="449" y2="340" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="431" y1="344.5" x2="445" y2="344.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="435" y1="349" x2="441" y2="349" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="328,162 336,162 339,156 344,168 349,156 355,168 360,156 365,168 368,162 376,162" fill="none" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="352" y="151" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d97706" text-anchor="middle" font-weight="bold">Z2 (RF / β)</text>
+  <polyline points="405,255 405,162 376,162" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="328" y1="162" x2="278" y2="162" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <rect x="186" y="144" width="92" height="36" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2.1"/>
+  <text x="232" y="166" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#dc2626" text-anchor="middle" font-weight="bold">STB iprobe</text>
+  <line x1="268" y1="136" x2="198" y2="136" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="233" y="128" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#dc2626" text-anchor="middle" font-weight="bold">Into High-Z Gate</text>
+  <polyline points="186,162 156,162 156,268 241,268" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="156" cy="268" r="3.5" fill="#d97706"/>
+  <polyline points="156,302 156,310 162,313 150,318 162,323 150,329 162,334 150,339 156,342 156,350" fill="none" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="145" y="330" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="end" font-weight="bold">Z1</text>
+  <line x1="156" y1="268" x2="156" y2="302" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="156" y1="350" x2="156" y2="357" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="145" y1="357" x2="167" y2="357" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="149" y1="361.5" x2="163" y2="361.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="153" y1="366" x2="159" y2="366" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="36" y="396" width="478" height="164" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="402" x2="39" y2="554" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="414" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#1d4ed8" text-anchor="start" font-weight="bold">Why Spectre `stb` Beats Classic Big-L / Big-C AC Breaks</text>
+  <text x="48" y="431" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• Never break DC bias with 1 GH / 1 GF ideal components (causes</text>
+  <text x="48" y="447" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  floating DC convergence error or alters exact bidirectional Z loading!).</text>
+  <text x="48" y="463" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• `stb` keeps loop 100% CLOSED during DC OpPoint, then evaluates exact</text>
+  <text x="48" y="479" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  Middlebrook voltage+current return ratio T(jω) at `probe=IPRB0`!</text>
+  <text x="48" y="495" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• Netlist:  `stb stb start=1 stop=100G dec=30 probe=IPRB0`</text>
+  <text x="48" y="511" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  Check: Phase Margin PM ≥ 60° &amp; Gain Margin GM ≥ 10 dB across PVT!</text>
+  <rect x="628" y="206" width="108" height="76" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="682" y="238" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">Fully-Diff</text>
+  <text x="682" y="256" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#2563eb" text-anchor="middle" font-weight="bold">OTA Core</text>
+  <line x1="736" y1="224" x2="985" y2="224" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="736" y1="264" x2="985" y2="264" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="985" cy="224" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="993" y="228" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#2563eb" text-anchor="start" font-weight="bold">Out+</text>
+  <circle cx="985" cy="264" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="993" y="268" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#2563eb" text-anchor="start" font-weight="bold">Out-</text>
+  <rect x="738" y="126" width="140" height="48" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2.1"/>
+  <text x="808" y="146" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#dc2626" text-anchor="middle" font-weight="bold">diffstbprobe</text>
+  <text x="808" y="163" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="middle" font-weight="bold">mode = diff | comm</text>
+  <circle cx="928" cy="224" r="3.5" fill="#d97706"/>
+  <circle cx="948" cy="264" r="3.5" fill="#d97706"/>
+  <polyline points="928,224 928,138 878,138" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="948,264 948,162 878,162" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="738,138 595,138 595,224 628,224" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="738,162 578,162 578,264 628,264" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="778" y="314" width="124" height="52" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.9"/>
+  <text x="840" y="336" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="middle" font-weight="bold">CMFB Sense</text>
+  <text x="840" y="353" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#475569" text-anchor="middle">&amp; Error Amp</text>
+  <circle cx="885" cy="224" r="3.5" fill="#059669"/>
+  <circle cx="865" cy="264" r="3.5" fill="#059669"/>
+  <line x1="885" y1="224" x2="885" y2="314" stroke="#059669" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="865" y1="264" x2="865" y2="314" stroke="#059669" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="654" y="322" width="92" height="34" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.9"/>
+  <text x="700" y="343" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#d97706" text-anchor="middle" font-weight="bold">IPRB_CMFB</text>
+  <line x1="778" y1="339" x2="746" y2="339" stroke="#059669" stroke-width="1.9" stroke-linecap="round"/>
+  <polyline points="654,339 636,339 636,298 682,298 682,282" fill="none" stroke="#059669" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr-bias)"/>
+  <rect x="568" y="396" width="476" height="164" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="571" y1="402" x2="571" y2="554" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="580" y="414" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#b45309" text-anchor="start" font-weight="bold">Dual-Loop Fully-Differential Stability Audit</text>
+  <text x="580" y="431" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">1. Differential Mode (`diffstbprobe` with `mode=diff`):</text>
+  <text x="580" y="447" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">   Verifies main signal feedback loop T_DM(jω), GBW_DM, and PM_DM ≥ 60°.</text>
+  <text x="580" y="463" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">2. Common-Mode Feedback Loop (`IPRB_CMFB` or `mode=comm`):</text>
+  <text x="580" y="479" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">   CMFB shares OTA output pole CL AND adds CM detector pole!</text>
+  <text x="580" y="495" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">   A ringing or unstable CMFB rail clips Out± even if T_DM looks perfect!</text>
+  <text x="580" y="511" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">   Rule: Verify PM_CMFB ≥ 55° &amp; GBW_CMFB ≈ (0.3 .. 1.0) · GBW_DM!</text>
+</svg>

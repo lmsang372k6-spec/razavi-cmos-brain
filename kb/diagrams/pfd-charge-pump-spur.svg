@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="600" viewBox="0 0 1080 600">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1076" height="596" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1068 2 Q 1078 2 1078 12 L 1078 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1078" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="58" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="47" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Ch.16</text>
+  <text x="86" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Tristate PFD Anti-Dead-Zone Reset, Charge-Pump Mismatch &amp; Reference Spurs</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Bộ Dò Pha–Tần PFD Chống Vùng Chết, Sai lệch Bơm Điện tích (Charge Pump) &amp; Tạp phổ Spur (Razavi Ch.16 §16.2)</text>
+  <line x1="770" y1="22" x2="786" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="791" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="852" y1="22" x2="868" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="873" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="958" y1="22" x2="974" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="979" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="560" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="560" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Tristate PFD (τ_rst Anti-Dead-Zone) + Charge Pump + 3rd-Order LF</text>
+  <rect x="595" y="74" width="467" height="504" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="595" y="74" width="467" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="607" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Why I_UP ≠ I_DN Creates Reference Spurs at f0 ± f_ref</text>
+  <circle cx="48" cy="162" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="40" y="166" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="end" font-weight="bold">f_ref</text>
+  <rect x="92" y="132" width="74" height="52" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="129" y="154" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#2563eb" text-anchor="middle" font-weight="bold">DFF_A</text>
+  <text x="129" y="172" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">D = VDD</text>
+  <line x1="48" y1="162" x2="92" y2="162" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="48" cy="292" r="3.4" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <text x="40" y="296" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#d97706" text-anchor="end" font-weight="bold">f_div</text>
+  <rect x="92" y="262" width="74" height="52" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+  <text x="129" y="284" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#d97706" text-anchor="middle" font-weight="bold">DFF_B</text>
+  <text x="129" y="302" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">D = VDD</text>
+  <line x1="48" y1="292" x2="92" y2="292" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <rect x="192" y="208" width="108" height="36" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="1.7"/>
+  <text x="246" y="230" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#dc2626" text-anchor="middle" font-weight="bold">AND + τ_rst</text>
+  <line x1="166" y1="158" x2="345" y2="158" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="246" y="150" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#2563eb" text-anchor="middle" font-weight="bold">UP</text>
+  <line x1="166" y1="288" x2="345" y2="288" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="246" y="306" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#d97706" text-anchor="middle" font-weight="bold">DN</text>
+  <circle cx="215" cy="158" r="3.5" fill="#2563eb"/>
+  <line x1="215" y1="158" x2="215" y2="208" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="275" cy="288" r="3.5" fill="#d97706"/>
+  <line x1="275" y1="288" x2="275" y2="244" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/>
+  <polyline points="192,226 129,226 129,184" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,3"/>
+  <line x1="129" y1="226" x2="129" y2="262" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3,3"/>
+  <line x1="365" y1="134" x2="365" y2="125" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="352" y1="125" x2="378" y2="125" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="365" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <line x1="365" y1="138" x2="365" y2="148" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="365" y1="176" x2="365" y2="186" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="365" cy="162" r="14" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <line x1="365" y1="154" x2="365" y2="169" stroke="#059669" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <text x="383" y="166" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="start" font-weight="bold">I_UP</text>
+  <line x1="365" y1="134" x2="365" y2="138" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="365,186 365,206" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="365" y1="206" x2="357" y2="220" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <polyline points="365,223 365,240" fill="none" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="365" y1="240" x2="357" y2="254" stroke="#d97706" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="365" y1="278" x2="365" y2="288" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="365" y1="316" x2="365" y2="326" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="365" cy="302" r="14" fill="#ffffff" stroke="#dc2626" stroke-width="1.9"/>
+  <line x1="365" y1="294" x2="365" y2="309" stroke="#dc2626" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="383" y="306" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#dc2626" text-anchor="start" font-weight="bold">I_DN</text>
+  <line x1="365" y1="257" x2="365" y2="278" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="365" y1="326" x2="365" y2="333" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="354" y1="333" x2="376" y2="333" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="358" y1="337.5" x2="372" y2="337.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="362" y1="342" x2="368" y2="342" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="365" cy="232" r="3.5" fill="#2563eb"/>
+  <line x1="365" y1="232" x2="552" y2="232" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="552" cy="232" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="552" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" font-weight="bold">Vctrl</text>
+  <circle cx="452" cy="232" r="3.5" fill="#059669"/>
+  <polyline points="452,250 452,258 458,261 446,266 458,271 446,277 458,282 446,287 452,290 452,298" fill="none" stroke="#059669" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="441" y="278" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="end" font-weight="bold">RP</text>
+  <line x1="452" y1="232" x2="452" y2="250" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="452" y1="316" x2="452" y2="330" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="441" y1="330" x2="463" y2="330" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="441" y1="338" x2="463" y2="338" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="452" y1="338" x2="452" y2="352" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="437" y="338" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#059669" text-anchor="end" font-weight="bold">C1</text>
+  <line x1="452" y1="298" x2="452" y2="316" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="452" y1="352" x2="452" y2="359" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="441" y1="359" x2="463" y2="359" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="445" y1="363.5" x2="459" y2="363.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="449" y1="368" x2="455" y2="368" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="518" cy="232" r="3.5" fill="#7c3aed"/>
+  <line x1="518" y1="284" x2="518" y2="298" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <line x1="507" y1="298" x2="529" y2="298" stroke="#7c3aed" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="507" y1="306" x2="529" y2="306" stroke="#7c3aed" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="518" y1="306" x2="518" y2="320" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <text x="533" y="299" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#7c3aed" text-anchor="start" font-weight="bold">C2</text>
+  <text x="533" y="314" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">≈C1/10</text>
+  <line x1="518" y1="232" x2="518" y2="284" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="518" y1="320" x2="518" y2="327" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="507" y1="327" x2="529" y2="327" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="511" y1="331.5" x2="525" y2="331.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="515" y1="336" x2="521" y2="336" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="36" y="386" width="524" height="174" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="392" x2="39" y2="554" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="404" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#1d4ed8" text-anchor="start" font-weight="bold">Dead-Zone Elimination vs 3rd-Order Loop Filter Synthesis</text>
+  <text x="48" y="421" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Dead-Zone Fix: Without reset delay τ_rst (~150–300 ps), ultra-narrow</text>
+  <text x="48" y="437" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  UP/DN pulses near Δφ = 0 fail to turn ON CP switches -&gt; VCO wanders freely!</text>
+  <text x="48" y="453" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">• Stabilizing Zero &amp; Ripple Pole:</text>
+  <text x="48" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  ω_z = 1 / (RP · C1)   stabilizes Type-II double integrator (2 poles at s=0);</text>
+  <text x="48" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start">  ω_p3 ≈ 1 / (RP · C2)  suppresses RP·I_CP voltage jumps (keep C2 ≤ C1/10)!</text>
+  <line x1="645" y1="299" x2="1028" y2="299" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="645" y1="299" x2="645" y2="126" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="1020" y="317" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">Frequency f</text>
+  <text x="653" y="138" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">P(f) dBc</text>
+  <text x="832.5" y="122" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="bold">PLL Output Spectrum Under ΔI = I_UP - I_DN</text>
+  <line x1="832" y1="299" x2="832" y2="146" stroke="#2563eb" stroke-width="3" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <text x="832" y="138" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.8" fill="#2563eb" text-anchor="middle" font-weight="bold">f0 = N · f_ref</text>
+  <path d="M 665 288 Q 795 278 826 190 M 838 190 Q 869 278 1000 288" fill="none" stroke="#475569" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+  <line x1="725" y1="299" x2="725" y2="212" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="725" y="203" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="middle" font-weight="bold">-f_ref Spur</text>
+  <line x1="940" y1="299" x2="940" y2="212" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round" marker-end="url(#arr-warn)"/>
+  <text x="940" y="203" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#dc2626" text-anchor="middle" font-weight="bold">+f_ref Spur</text>
+  <line x1="844" y1="212" x2="932" y2="212" stroke="#d97706" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3,3"/>
+  <text x="888" y="226" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#d97706" text-anchor="middle" font-weight="bold">P_spur (dBc)</text>
+  <rect x="612" y="344" width="432" height="216" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <line x1="615" y1="350" x2="615" y2="554" stroke="#b91c1c" stroke-width="3" stroke-linecap="round"/>
+  <text x="624" y="362" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.7" fill="#b91c1c" text-anchor="start" font-weight="bold">Quantitative Reference Spur Physics &amp; Fixes (§16.2)</text>
+  <text x="624" y="379" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• In steady-state lock, if I_UP ≠ I_DN, PFD shifts static phase Δφ_ss</text>
+  <text x="624" y="395" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  so net charge over T_ref is zero:  I_UP·t_UP = I_DN·t_DN.</text>
+  <text x="624" y="411" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• During every reset pulse τ_rst, ΔI = I_UP - I_DN injects periodic</text>
+  <text x="624" y="427" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  ripple ΔV_ctrl(f_ref) into KVCO, creating FM sidebands at f0 ± f_ref:</text>
+  <text x="624" y="443" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  P_spur ≈ 20·log10[ (KVCO · ΔV_ripple) / (2 · ω_ref) ] !</text>
+  <text x="624" y="459" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">• Fixes: Replica unity-gain op-amp biasing V_ctrl = V_replica to match</text>
+  <text x="624" y="475" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.1" fill="#0f172a" text-anchor="start">  I_UP = I_DN across V_ctrl range + dummy charge-cancellation switches!</text>
+</svg>

@@ -1,0 +1,138 @@
+{
+  "checklist_id": "comparator-and-sar-adc",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ So sánh Động Chốt Tái sinh (StrongARM / Miyahara) và Bộ Chuyển đổi SAR ADC",
+  "applies_to": [
+    "topo-dynamic-strongarm-and-miyahara-comparator",
+    "topo-sar-adc-charge-redistribution-architecture",
+    "topo-mos-and-cmos-sampling-switches",
+    "topo-bootstrapped-sampling-switch",
+    "tech-charge-injection-and-bottom-plate-sampling"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-SAR-01",
+      "name": "Hằng số thời gian tái sinh chốt dương (Regeneration Time Constant) đảm bảo tỷ lệ lỗi siêu ổn định (Metastability BER)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "exp( - T_decision_min / tau_reg ) <= BER_target * (V_FS / V_LSB) với tau_reg = C_latch / Gm_latch_eff tại góc SS, VDD_min và nhiệt độ xấu nhất",
+      "why_vi": "Khi hiệu điện áp đầu vào bộ so sánh tiến sát 0 V (dưới 0.01 LSB), bộ chốt ghép chéo cần nhiều hằng số thời gian hàm mũ tau_reg = C_L / gm để khuếch đại vi sai lên mức logic. Trong SAR ADC bất đồng bộ hoặc tốc độ cao, nếu T_decision / tau_reg < 25..30, xác suất rơi vào trạng thái lơ lửng siêu ổn định (metastability) làm lật sai các bit thấp sau đó và tạo gai lỗi mã (sparkle code).",
+      "cadence_check": "Trong Spectre `tran`, quét logarit bước nhảy đầu vào siêu nhỏ `Delta_Vin = 1 mV, 100 uV, 10 uV, 1 uV` tại góc `SS, VDD_min`, trích xuất độ dốc `d(T_clk_to_out)/d(ln(Delta_Vin))` để tìm chính xác `tau_reg` và suy ra `BER` ở tốc độ lấy mẫu danh định.",
+      "related_nodes": [
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "topo-sar-adc-charge-redistribution-architecture"
+      ]
+    },
+    {
+      "id": "CHK-SAR-02",
+      "name": "Kiểm soát nhiễu giật ngược cực cổng (Kickback Noise) từ sườn chuyển mạch chốt động sang giàn tụ C-DAC",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Sụt áp vi sai do dòng giật ngược C_GD * (dV_drain / dt) trên hai tấm đỉnh C-DAC phải đối xứng và suy giảm < 0.25 LSB trước thời điểm tích phân dòng mở cửa sổ quyết định của cặp đầu vào",
+      "why_vi": "Trong StrongARM và Miyahara latch, các nút cực máng/nguồn nội vọt biên độ lớn tới VDD trong vài chục picogiây; qua tụ ký sinh C_GD và C_GS của cặp vi sai đầu vào, xung điện tích lớn giật ngược ra giàn tụ C-DAC. Nếu trở kháng nhìn từ hai đầu vào dương/âm của bộ so sánh không đối xứng (ví dụ mạch đơn đầu hoặc chuyển mạch không cân bằng), xung giật ngược biến thành sai số điện áp vi sai làm méo INL!",
+      "cadence_check": "Mô phỏng bộ so sánh ghép trực tiếp với mạng `C-DAC` thực tế (không bao giờ test comparator bằng nguồn áp lý tưởng `vdc` trở kháng 0 Ohm!), quan sát nhiễu giật trên hai nút `Vdac_p, Vdac_n` qua từng nhịp so sánh bit.",
+      "related_nodes": [
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "topo-sar-adc-charge-redistribution-architecture",
+        "concept-mos-capacitances-small-signal"
+      ]
+    },
+    {
+      "id": "CHK-SAR-03",
+      "name": "Tránh trôi điện áp lệch động và trôi độ lợi tiền khuếch đại khi mức đồng pha V_CM giàn tụ biến thiên (Monotonic Switching Trap)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Nếu dùng thuật toán chuyển mạch đơn điệu (Monotonic Set-and-Down làm V_CM tụt dần từ VDD/2 về VSS/VDD), độ biến thiên |V_OS(V_CM_start) - V_OS(V_CM_end)| của bộ so sánh phải < 0.25 LSB!",
+      "why_vi": "Khác với chuyển mạch dựa trên V_CM giữ mức đồng pha cố định, chuyển mạch đơn điệu tiết kiệm 81% năng lượng tụ nhưng khiến điện áp đồng pha ngõ vào bộ so sánh dịch chuyển tới VDD/2 từ MSB xuống LSB! Sự dịch V_CM làm thay đổi điểm làm việc của cặp đầu vào bộ so sánh, biến điện áp lệch tĩnh thành điện áp lệch phụ thuộc mã (dynamic code-dependent offset) gây méo hài và hỏng INL!",
+      "cadence_check": "Chạy Monte Carlo `mismatch` đo `V_OS` của bộ so sánh tại cả `V_CM = VDD/2` (chu kỳ MSB) và `V_CM` cuối chuỗi (chu kỳ LSB); nếu độ lệch `Delta_V_OS` vượt `0.25 LSB`, bắt buộc chuyển sang cấu trúc `V_CM-based switching` hoặc dùng cặp đầu vào PMOS/NMOS cascode cách ly dòng đuôi.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "law-pelgrom-mismatch-and-sizing-duality"
+      ]
+    },
+    {
+      "id": "CHK-SAR-04",
+      "name": "Phân bổ ngân sách ba nguồn nhiễu căn bậc hai (kT/C lấy mẫu + Nhiễu nhiệt Bộ so sánh + Nhiễu VREF) dưới trần SNR mục tiêu",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "V_n_quant^2 + (2 * k * T / C_tot_single) + V_n_comp_rms^2 + V_n_ref_rms^2 <= (V_FS_rms / 10^(SNDR_target / 20))^2",
+      "why_vi": "Trong SAR ADC độ phân giải 10-14 bit, bộ so sánh động thường đóng góp nhiễu nhiệt quy về ngõ vào lớn ngang ngửa hoặc gấp đôi nhiễu lấy mẫu kT/C của giàn tụ vì thời gian tích phân tiền khuếch đại rất ngắn (băng thông nhiễu cực rộng!). Chọn C_tot quá lớn chỉ hạ kT/C mà bỏ quên nhiễu nhiệt của cặp đầu vào StrongARM/Miyahara sẽ vẫn rớt ENOB từ 1 đến 2 bit!",
+      "cadence_check": "Đo trực tiếp `V_n_comp_rms` của bộ so sánh bằng SpectreRF `pss + pnoise (sampled/jitter)` hoặc `Transient Noise` quét đường cong xác suất chuyển trạng thái CDF Gaussian để khớp hàm `erf` suy ra `sigma_n_comp` chính xác.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "law-mos-thermal-and-flicker-noise"
+      ]
+    },
+    {
+      "id": "CHK-SAR-05",
+      "name": "Định cỡ tụ đơn vị C_u và cầu chia tụ (Bridge Capacitor) đảm bảo DNL / INL < 0.5 LSB trên thống kê Monte Carlo và ký sinh PEX",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "3 * sigma(DNL_MSB) = 3 * sqrt(2^N - 1) * sigma(Delta_Cu / Cu) < 0.5 LSB; nếu dùng giàn cầu chia tách đôi (Split-Capacitor Bridge C_B), tụ ký sinh tấm đỉnh của nhánh LSB C_p,LSB phải được bù hoặc hiệu chỉnh số",
+      "why_vi": "Tại bước chuyển mã chính giữa (mid-code 011...1 -> 100...0), toàn bộ 2^(N-1) tụ đơn vị đổi trạng thái cùng lúc tạo bước nhảy DNL xấu nhất. Ngoài ra trong giàn cầu chia C_B để giảm diện tích mũ hai, điện dung ký sinh nối đất tại nút giữa nhánh LSB làm suy giảm trọng số toàn bộ khối LSB, tạo bước nhảy mất mã định kỳ nếu không trích xuất PEX để chỉnh lại giá trị C_B!",
+      "cadence_check": "Kiểm tra hệ số Pelgrom tụ MOM/MIM trong PDK để chốt `C_u_min`, bố trí giàn tụ đối xứng tâm chung 2D bọc vòng tụ giả (`dummy unit caps`), và bắt buộc chạy `PEX (C+CC)` toàn mảng C-DAC để kiểm tra trọng số nhị phân thực tế.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "concept-integrated-resistors-and-capacitors-cmos",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-SAR-06",
+      "name": "Độ tuyến tính công tắc lấy mẫu đầu vào (Bootstrapped Switch) vượt tối thiểu 10-12 dB trên mục tiêu SNDR ở tần số Nyquist",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "SFDR_sampler(f_in = f_s / 2) >= 6.02 * N_bits + 12 dB trên mọi góc PVT mà không vi phạm giới hạn điện áp đánh thủng oxit cổng SOA",
+      "why_vi": "Công tắc lấy mẫu đầu vào nhìn thấy toàn bộ biên độ tín hiệu liên tục tần số cao trước khi giữ mẫu: nếu Ron biến thiên theo Vin hoặc phun điện tích phụ thuộc tín hiệu, sóng hài HD3 sinh ra ngay trên tấm tụ không thể được khử bởi bất kỳ vòng hiệu chỉnh trọng số C-DAC nào phía sau!",
+      "cadence_check": "Chạy `tran` riêng cho mạch lấy mẫu `Bootstrapped Switch + C-DAC` với tần số vào sát Nyquist `f_in = (N_FFT/2 - 3)/N_FFT * f_s` (`errpreset=conservative`), lấy FFT tại thời điểm kết thúc pha lấy mẫu xác nhận `THD < -(6.02*N + 12) dB`.",
+      "related_nodes": [
+        "topo-bootstrapped-sampling-switch",
+        "topo-sar-adc-charge-redistribution-architecture",
+        "law-differential-imbalance-hd2-and-cm-nonlinearity"
+      ]
+    },
+    {
+      "id": "CHK-SAR-07",
+      "name": "Khả năng hồi phục sụt áp động trên đường tham chiếu VREF trong từng nhịp chuyển mạch trọng số bit lớn",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "|V_REF(t_end_bit_k) - V_REF_dc| < 0.25 * V_LSB với mọi bit k = MSB .. LSB (đặc biệt tại MSB-1 tiêu thụ xung điện tích cực đại từ VREF!)",
+      "why_vi": "Ở mỗi nhịp thử bit, giàn tụ C-DAC rút một gói điện tích tức thời từ VREF phụ thuộc vào mã tín hiệu đầu vào. Nếu tụ lọc VREF không đủ lớn hoặc bộ đệm VREF chưa kịp hồi phục về sai số < 0.25 LSB trước khi bộ so sánh chốt quyết định bit đó, các trọng số bit bị phụ thuộc chéo vào mã trước đó gây méo phi tuyến bậc cao và sập ENOB!",
+      "cadence_check": "Đưa mô hình đầy đủ của bộ đệm `VREF` (hoặc cuộn cảm dây hàn `L_bond` + tụ khử nhiễu trên chip `C_decap_ref`) vào mô phỏng quá độ SAR ADC, kiểm tra độ sụt và thời gian hồi phục của `VREF_P - VREF_N` tại từng cạnh chốt comparator.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-cmos-ldo-regulator",
+        "tech-esd-protection-padring-and-package-parasitics"
+      ]
+    },
+    {
+      "id": "CHK-SAR-08",
+      "name": "Ngân sách thời gian chu kỳ SAR (Tracking + N * Bit-Cycling) khép kín an toàn ở góc chậm nhất SS",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "T_sample >= T_track + sum_{k=1}^{N} (T_comp_max(k) + T_logic_SAR + T_CDAC_settle(k)) + T_margin tại góc (SS, VDD_min, T_worst)",
+      "why_vi": "Mỗi chu kỳ lấy mẫu phải chia sẻ giữa pha thu nhận đầu vào T_track và N vòng lặp nối tiếp (quyết định bộ so sánh + trễ thanh ghi SAR + nạp xả C-DAC qua công tắc tham chiếu). Ở góc SS và điện áp thấp, trễ cổng logic và Ron công tắc C-DAC tăng gấp 2 lần dễ làm vòng lặp thứ N tràn sang pha lấy mẫu kế tiếp!",
+      "cadence_check": "Mô phỏng `tran` toàn bộ chuỗi N bit của SAR ADC (có ký sinh `PEX` của C-DAC và đường điều khiển công tắc) ở góc `SS, VDD_min, -40 °C` và `125 °C`, xác nhận tín hiệu `EOC (End of Conversion)` luôn hoàn tất trước sườn bắt đầu pha lấy mẫu kế tiếp với dự trữ `>= 10% T_s`.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-SAR-09",
+      "name": "Lấy mẫu kết hợp nguyên tố cùng nhau (Coherent Prime-Bin FFT) khi đo SNDR, ENOB và SFDR tránh rò phổ",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "f_in / f_s = M_prime / N_FFT với GCD(M_prime, N_FFT) = 1, N_FFT = 2^K (ví dụ M_prime = 61 hoặc 127 cho N_FFT = 128 / 256), bỏ qua đúng các chu kỳ khởi tạo đầu tiên",
+      "why_vi": "Nếu chọn tỷ số f_in / f_s không tuần hoàn khép kín trên N_FFT điểm mẫu (hoặc M chẵn lặp lại chỉ vài mã lượng tử!), biến đổi FFT bị rò rỉ phổ nghiêm trọng (spectral leakage) nâng giả sàn nhiễu hoặc bỏ sót phần lớn các mức mã C-DAC.",
+      "cadence_check": "Thiết lập tham số testbench `f_in = (M_prime / N_FFT) * f_s`, chạy chính xác `(N_warmup + N_FFT)` chu kỳ với `strobeperiod = 1/f_s`, trích đúng `N_FFT` từ mã nhị phân ngõ ra để tính `SNDR, SFDR, THD, ENOB = (SNDR - 1.76) / 6.02` không cần cửa sổ Hanning.",
+      "related_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    }
+  ]
+}

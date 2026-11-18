@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Razavi CMOS Knowledge Brain · Bản đồ Tri thức Vi mạch Tương tự</title>
-  <meta name="description" content="Bản đồ tri thức cấu trúc, đồ thị nâng cấp mạch, bảng kiểm bất biến đa tiến trình và kho 2.200 thuật ngữ chuẩn CLB từ 19 chương sách Design of Analog CMOS Integrated Circuits (2nd Ed.) của Behzad Razavi.">
+  <title>Razavi CMOS Knowledge Brain · Bản đồ Tọa độ 19 Chương &amp; Kho GitHub EDA Skills</title>
+  <meta name="description" content="Bản đồ tri thức cấu trúc 134 thẻ (112 thẻ Razavi 19 chương + 22 thẻ thực chiến GitHub Analog/Cadence EDA Skills), 56 sơ đồ nguyên lý vector SVG, tra cứu tọa độ chính xác theo Mục/Trang/Phương trình/20_Index, đồ thị tọa độ 2D và 16 bảng kiểm bất biến đa tiến trình.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -20,7 +20,7 @@
         <span class="brand-monogram" aria-hidden="true">R</span>
         <span class="brand-text">
           <span class="brand-title">RAZAVI CMOS BRAIN</span>
-          <span class="brand-sub">19 Chapters · PDK-Agnostic Architecture Graph</span>
+          <span class="brand-sub">19 Chapters · Exact Coordinates · GitHub EDA Skills</span>
         </span>
       </a>
     </div>
@@ -30,17 +30,19 @@
         <circle cx="10.5" cy="10.5" r="6.5"></circle>
         <path d="M15.5 15.5L20 20"></path>
       </svg>
-      <input id="global-search" type="search" placeholder="Tra mạch, triệu chứng, phương trình, chương hoặc thuật ngữ (vd: guong dong dien ap thap, folded cascode, RHP zero)…" autocomplete="off" spellcheck="false" aria-label="Tìm kiếm toàn cục không dấu tiếng Việt và tiếng Anh">
+      <input id="global-search" type="search" placeholder="Tra tọa độ §9.2, Eq. 10.25, trang 342, 20_Index, mạch, triệu chứng hoặc GitHub skill…" autocomplete="off" spellcheck="false" aria-label="Tra cứu tọa độ mục, phương trình, trang sách, thuật ngữ không dấu và GitHub EDA skills">
       <div class="search-kbd-group">
         <button id="clear-search" class="clear-btn" type="button" hidden aria-label="Xóa từ khóa">Xóa</button>
         <kbd>Ctrl K</kbd>
       </div>
     </div>
 
-    <nav class="topbar-modes" aria-label="Chế độ hiển thị">
+    <nav class="topbar-modes" aria-label="Không gian làm việc">
       <button class="mode-tab is-active" type="button" data-mode="nodes">Thẻ Tri thức</button>
-      <button class="mode-tab" type="button" data-mode="graph">Đồ thị Tiến hóa</button>
-      <button class="mode-tab" type="button" data-mode="checklists">Bảng kiểm</button>
+      <button class="mode-tab" type="button" data-mode="graph">Đồ thị Tọa độ 2D</button>
+      <button class="mode-tab" type="button" data-mode="coords">Tọa độ Sách 19 Ch.</button>
+      <button class="mode-tab" type="button" data-mode="skills">GitHub Skills</button>
+      <button class="mode-tab" type="button" data-mode="checklists">Chẩn đoán &amp; Checklist</button>
       <button class="mode-tab" type="button" data-mode="glossary">Thuật ngữ CLB</button>
       <button id="theme-toggle" class="icon-btn" type="button" title="Chuyển chế độ Sáng / Tối" aria-label="Chuyển chế độ giao diện Sáng hoặc Tối">
         <svg id="icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" hidden><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2 12h2.5M19.5 12H22M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"/></svg>
@@ -50,23 +52,25 @@
   </header>
 
   <div class="app-shell">
-    <aside id="sidebar" class="sidebar" aria-label="Bộ lọc Kiến trúc và Chương sách">
+    <aside id="sidebar" class="sidebar" aria-label="Bộ lọc Kiến trúc, Chương sách và Vai trò">
       <div class="sidebar-section">
         <div class="sidebar-heading">
-          <span>PHÂN LOẠI VAI TRÒ</span>
+          <span>PHÂN LOẠI NGUỒN &amp; VAI TRÒ</span>
           <button id="reset-filters" class="link-btn" type="button" hidden>Đặt lại</button>
         </div>
         <div id="kind-filters" class="role-pills" role="group" aria-label="Lọc theo vai trò thẻ">
           <button class="pill is-active" type="button" data-kind="all">Tất cả</button>
+          <button class="pill" type="button" data-kind="razavi">Chỉ Lý thuyết Razavi</button>
+          <button class="pill" type="button" data-kind="skill">GitHub Skill</button>
           <button class="pill" type="button" data-kind="topology">Topology</button>
-          <button class="pill" data-kind="law-concept" type="button">Law / Concept</button>
-          <button class="pill" data-kind="technique" type="button">Technique</button>
+          <button class="pill" type="button" data-kind="law-concept">Law / Concept</button>
+          <button class="pill" type="button" data-kind="technique">Technique</button>
         </div>
       </div>
 
       <div class="sidebar-section">
         <div class="sidebar-heading">
-          <span>7 TẦNG KIẾN TRÚC</span>
+          <span>8 TẦNG KIẾN TRÚC &amp; EDA</span>
         </div>
         <ul id="domain-list" class="nav-list" role="list"></ul>
       </div>
@@ -80,20 +84,27 @@
 
       <div class="sidebar-section sidebar-footer">
         <div class="stat-grid" id="sidebar-stats">
-          <div><strong id="stat-nodes">68</strong><span>Thẻ sâu</span></div>
-          <div><strong id="stat-diagrams">38</strong><span>Sơ đồ SVG</span></div>
-          <div><strong id="stat-checklists">13</strong><span>Checklist</span></div>
+          <div><strong id="stat-nodes">134</strong><span>Thẻ sâu</span></div>
+          <div><strong id="stat-diagrams">56</strong><span>Sơ đồ SVG</span></div>
+          <div><strong id="stat-sections">130+</strong><span>Mục tọa độ</span></div>
+          <div><strong id="stat-repos">20+</strong><span>GitHub Repos</span></div>
+          <div><strong id="stat-checklists">16</strong><span>Checklist</span></div>
           <div><strong id="stat-glossary">2200</strong><span>Thuật ngữ</span></div>
         </div>
-        <p class="release-caption">Release <code id="release-version">2026.11.18.1</code> · API tĩnh <a id="raw-index-link" href="./kb/router-index.json" target="_blank" rel="noopener">router-index.json</a></p>
+        <p class="release-caption">
+          Release <code id="release-version">2026.11.18.3</code> · API tĩnh:
+          <a id="raw-index-link" href="./kb/router-index.json" target="_blank" rel="noopener">router</a> ·
+          <a id="raw-coords-link" href="./kb/coordinates/book-coordinates.json" target="_blank" rel="noopener">coords</a> ·
+          <a id="raw-catalog-link" href="./kb/github-skills/catalog.json" target="_blank" rel="noopener">skills</a>
+        </p>
       </div>
     </aside>
 
     <main id="main-stage" class="main-stage" tabindex="-1">
       <div id="loading-banner" class="status-card">
-        <p class="eyebrow">ĐANG KHỞI TẠO BỘ NÃO TRI THỨC</p>
-        <h2>Đang nạp chỉ mục định tuyến và đồ thị liên kết…</h2>
-        <p>Hệ thống tự động nhận diện đường dẫn cục bộ hoặc GitHub Pages.</p>
+        <p class="eyebrow">ĐANG KHỞI TẠO BỘ NÃO TRI THỨC TỌA ĐỘ</p>
+        <h2>Đang nạp chỉ mục định tuyến, tọa độ 19 chương và đồ thị 2D…</h2>
+        <p>Tự động nhận diện môi trường cục bộ hoặc GitHub Pages.</p>
       </div>
       <div id="view-container" hidden></div>
     </main>
@@ -104,7 +115,7 @@
     <div class="modal-frame">
       <header class="modal-header">
         <div>
-          <p class="eyebrow">SƠ ĐỒ NGUYÊN LÝ VECTOR (CHUẨN SÁCH RAZAVI 2ND ED.)</p>
+          <p class="eyebrow">SƠ ĐỒ NGUYÊN LÝ &amp; LƯU ĐỒ KIỂM CHỨNG VECTOR (RAZAVI 2ND ED. &amp; SPECTRE)</p>
           <h3 id="svg-modal-title">Schematic Viewer</h3>
         </div>
         <div class="modal-controls">

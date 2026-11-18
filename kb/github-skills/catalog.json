@@ -1,0 +1,755 @@
+{
+  "schema": "razavi-github-skills-catalog.v1",
+  "release": "2026.11.18.3",
+  "updated_at": "2026-11-18",
+  "title_vi": "Danh mục Kho Kỹ năng Thực chiến Analog IC, Cadence IC617, Spectre 15.1 & EDA trên GitHub (Đã Kiểm định)",
+  "title_en": "Vetted GitHub Open-Source Analog IC, Cadence Virtuoso IC617, Spectre 15.1 & EDA Skills Catalog",
+  "license_and_safety_policy": {
+    "redistribution_mode": "distilled-original-prose-and-pinned-links-only",
+    "upstream_execution": "never-auto-executed",
+    "ic617_baseline": "Cadence Virtuoso IC6.1.7 + MMSIM/Spectre 15.1 on RHEL 6.5 (system Python 2.6.6; external host Python 3.10+ for offline analysis)",
+    "notice": "Mọi kho mã nguồn dưới đây đã được xác minh tồn tại thực tế qua GitHub API tại đúng mã băm commit khóa cứng, rà soát giấy phép (SPDX) và đánh giá mức độ tương thích thực tế với Cadence IC617 + Spectre 15.1 + GPDK180/090/045. Chỉ chắt lọc quy trình kỹ thuật và mẫu kiểm chứng bằng văn phong gốc; tuyệt đối không sao chép nguyên văn mã chưa cấp phép."
+  },
+  "stats": {
+    "vetted_count": 31,
+    "filtered_out_count": 6,
+    "skill_card_count": 22
+  },
+  "categories": [
+    {
+      "id": "gm-id-sizing",
+      "title_vi": "Định cỡ Bảng tra gm/ID & Đặc tính Hóa Transistor Đa Tiến trình",
+      "title_en": "gm/ID Lookup-Table Sizing & PDK Characterization"
+    },
+    {
+      "id": "cadence-virtuoso-spectre-bridge",
+      "title_vi": "Tự động hóa Cadence Virtuoso SKILL, OA/CDF, OCEAN & Trình đọc Spectre PSF",
+      "title_en": "Cadence Virtuoso SKILL, OA/CDF, OCEAN & Spectre PSF Automation"
+    },
+    {
+      "id": "amplifier-sizing-and-diagnosis",
+      "title_vi": "Chẩn đoán Cây Lỗi Op-Amp/OTA & Lựa chọn Cấu trúc Khuếch đại",
+      "title_en": "Amplifier Topology Selection, Sizing & Root-Cause Fault Trees"
+    },
+    {
+      "id": "adc-dac-mixed-signal",
+      "title_vi": "Thiết kế, Mô phỏng & Hiệu chuẩn SAR ADC / So sánh Động / Mạch Tín hiệu Hỗn hợp",
+      "title_en": "SAR ADC, Dynamic Comparator & Mixed-Signal Verification"
+    },
+    {
+      "id": "veriloga-and-rf-noise",
+      "title_vi": "Mô hình Hành vi Verilog-A, VCO/PLL & Nhiễu Chu kỳ SpectreRF (PSS/PNoise)",
+      "title_en": "Verilog-A Behavioral Modeling, RF/PLL & SpectreRF PSS/PNoise"
+    },
+    {
+      "id": "analog-courseware-and-benchmarks",
+      "title_vi": "Giáo trình Thực hành Mạch Tương tự Mở, Quy chuẩn Sơ đồ & Bộ Đo kiểm Thiết kế",
+      "title_en": "Open Analog IC Courseware, Schematic Etiquette & Benchmarks"
+    },
+    {
+      "id": "analog-layout-generation",
+      "title_vi": "Tự động hóa Layout Tương tự, Đối xứng Tâm chung & Trích xuất Ký sinh PEX",
+      "title_en": "Automated Analog Layout, Symmetry Constraints & PEX"
+    },
+    {
+      "id": "characterization-and-signoff",
+      "title_vi": "Đặc tính hóa Theo Hợp đồng Datasheet (CACE), Đa Góc PVT & Monte Carlo",
+      "title_en": "Datasheet-Driven Characterization (CACE), PVT & Monte Carlo Sign-Off"
+    }
+  ],
+  "repositories": [
+    {
+      "id": "bmurmann-book-on-gm-id-design",
+      "repo": "bmurmann/Book-on-gm-ID-design",
+      "url": "https://github.com/bmurmann/Book-on-gm-ID-design",
+      "pinned_commit_or_branch": "9bc96fbcfc0d40a4acdacdde78af884ae8d4b22e",
+      "license": "AGPL-3.0",
+      "stars": 261,
+      "category": "gm-id-sizing",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Tương thích trực tiếp về mặt netlist Spectre (`techsweep.scs` cho BSIM4/PSP/BSIM-CMG chạy tốt trên Spectre 15.1 sau khi trỏ đúng đường dẫn model GPDK180/090/045 và section TT/NN). Phần hậu xử lý gốc viết bằng MATLAB (`look_up.m`, `look_upVGS.m`); nếu không có MATLAB trên RHEL 6.5 thì chuyển sang luồng Python `pygmid` hoặc OCEAN/PSF ASCII.",
+      "summary_vi": "Kho tài liệu và mã nguồn chuẩn mực đi kèm sách Systematic Design of Analog CMOS Circuits của GS. Boris Murmann (Stanford), cung cấp cấu hình quét đặc tính Spectre 4 chiều (L, VGS, VDS, VSB) và hàm nội suy tỷ số bất biến tiến trình gm/ID, gm/gds, fT, JD = ID/W.",
+      "key_techniques": [
+        "Quét ma trận 4 chiều (L, VGS, VDS, VSB) bằng Spectre DC + AC/Captab để trích xuất gm, gds, gmb, Cgg, Cgd, Cdd",
+        "Nội suy chéo tỷ số hàm mục tiêu (look_up mode 1/2/3) và giải ngược điện áp phân cực cổng look_upVGS",
+        "Định cỡ tách bạch vùng nghịch đảo (gm/ID) với chiều dài kênh L theo tích độ lợi nội tại gm/gds và tần số cắt fT"
+      ],
+      "linked_nodes": [
+        "skill-gm-id-lookup-table-sizing",
+        "skill-folded-cascode-and-gainboost-sizing-flow",
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "tech-nanometer-opamp-design-case-studies"
+      ]
+    },
+    {
+      "id": "dreoilin-pygmid",
+      "repo": "dreoilin/pygmid",
+      "url": "https://github.com/dreoilin/pygmid",
+      "pinned_commit_or_branch": "a9563980b30b84abbaf7870df05ee02aaa798654",
+      "license": "Apache-2.0",
+      "stars": 108,
+      "category": "gm-id-sizing",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Thư viện `Lookup` yêu cầu Python >= 3.8 + NumPy/SciPy (chạy trên máy trạm phân tích ngoài, không chạy bằng Python 2.6.6 mặc định của RHEL 6.5). Module `pygmid.sweep` khi ghép với Spectre 15.1 + GPDK090/045 bắt buộc vá 4 lỗi adapter: (1) đổi đơn vị nhiệt độ Kelvin `TEMP - 273.15` (cần truyền 300.15 cho 27 °C), (2) sửa bất đồng bộ ký tự phân tách `mn:ids` so với `mn.ids` trong bộ đọc PSF, (3) chặn nuốt ngoại lệ `CalledProcessError` trả mảng 0 câm lặng, và (4) giới hạn điện áp quét theo đúng cấp áp 1.0 V/1.2 V của linh kiện GPDK090/045.",
+      "summary_vi": "Bản hiện thực Python 3 mã nguồn mở (Apache-2.0) của bộ công cụ gm/ID Murmann, hỗ trợ nạp file LUT `.mat`/`.pkl`, nội suy đa chiều, trích xuất tham số EKV và cấu hình mẫu quét đặc tính GPDK090.",
+      "key_techniques": [
+        "Lớp Lookup Python hỗ trợ tra cứu vô hướng, vector và tỷ số đạo hàm bậc một (GM_ID, GM_GDS, GM_CGG, ID_W)",
+        "Trích xuất tham số vật lý EKV (hệ số độ dốc n, VT, mật độ dòng đặc trưng JS) từ dữ liệu mô phỏng thực",
+        "Hợp đồng kiểm định pilot grid nhỏ chống lỗi đơn vị Kelvin/Celsius và lỗi tên tín hiệu PSF trước khi quét toàn bộ PDK"
+      ],
+      "linked_nodes": [
+        "skill-gm-id-lookup-table-sizing",
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "law-short-channel-effects"
+      ]
+    },
+    {
+      "id": "arcadia-1-gmoverid-skill",
+      "repo": "Arcadia-1/gmoverid-skill",
+      "url": "https://github.com/Arcadia-1/gmoverid-skill",
+      "pinned_commit_or_branch": "8feb841f3684898d7aa44225b62e16263a501e3c",
+      "license": "NOASSERTION (README badge states MIT; no standalone LICENSE file — reference workflow only)",
+      "stars": 147,
+      "category": "gm-id-sizing",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Mã nguồn gốc hướng tới ngspice + PTM/SKY130 trên Python 3; để áp dụng trong Cadence IC617 + Spectre 15.1 cần thay lệnh `.op`/`.dc` ngspice bằng cú pháp Spectre `dc` + `captab` hoặc `save M0:oppoint` và đối chiếu quy ước dấu dòng PMOS.",
+      "summary_vi": "Gói kỹ năng hướng dẫn tác tử thiết kế mạch theo phương pháp gm/ID kết hợp kiểm chứng đường cong I-V, băng thông RC, so sánh điện dung ký sinh Cgs/Cgd/Cdb và nhiễu lấy mẫu kT/C miền thời gian.",
+      "key_techniques": [
+        "Đối chiếu trực quan đường cong gm/ID, ID/W và tự lợi gm/gds theo chiều dài kênh L ở công nghệ nanomet",
+        "Kiểm chứng chéo tổng điện dung cổng/máng trích từ điểm làm việc DC với phép đo băng thông AC mạch RC thử nghiệm",
+        "Mô phỏng kiểm chứng phân bố nhiễu nhiệt lấy mẫu kT/C trong miền quá độ"
+      ],
+      "linked_nodes": [
+        "skill-gm-id-lookup-table-sizing",
+        "skill-spectre-noise-dc-ac-tran-montecarlo",
+        "concept-mos-capacitances-small-signal"
+      ]
+    },
+    {
+      "id": "arcadia-1-virtuoso-bridge-lite",
+      "repo": "Arcadia-1/virtuoso-bridge-lite",
+      "url": "https://github.com/Arcadia-1/virtuoso-bridge-lite",
+      "pinned_commit_or_branch": "1f186abfbb3d658211743cd707f3156ed2f59a87",
+      "license": "MIT",
+      "stars": 1090,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Cung cấp daemon tương thích Python 2.7 (`ramic_bridge_daemon_27.py`) và tài liệu SKILL/Spectre cực kỳ thực chiến, nhưng một số API Maestro (`mae*`) và cờ `+preset=ax/cx` thuộc đời IC618 / Spectre 21.1+. Trên IC617 + Spectre 15.1 (RHEL 6.5 Python 2.6.6), dùng chế độ truyền thống `ocean`/`asi`, cờ `+aps` + `errpreset=conservative/moderate`, và kiểm tra kỹ ký tự thoát bus `\\<0\\>` trong PSF ASCII.",
+      "summary_vi": "Hạ tầng cầu nối mã nguồn mở (MIT) phổ biến nhất kết nối Python/Agent với Cadence Virtuoso và trình chạy Spectre độc lập: bao gồm hệ thống tham chiếu SKILL OA cho schematic/symbol/layout, trình quản lý mô phỏng song song và bộ phân tích PSF ASCII nghiêm ngặt.",
+      "key_techniques": [
+        "Quản lý chạy Spectre batch độc lập GUI với thư mục cô lập theo mã phiên, kiểm soát `save=selected` và `strobeoutput=strobeonly` giảm 1000x dung lượng PSF",
+        "Phát hiện các bẫy thực tế của Spectre: lỗi cờ `-param`, ràng buộc sớm biểu thức phụ thuộc trong `parameters`, bẫy `noiseruns=100` trong Transient Noise và suy giảm ENOB khi lạm dụng `+preset=lx/vx`",
+        "Đọc/ghi kết nối schematic OpenAccess, kiểm tra tham số instance và xuất netlist tự động qua SKILL/`si`"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-ocean-parametric-testbench-runner",
+        "skill-spectre-noise-dc-ac-tran-montecarlo",
+        "skill-spectre-pss-pac-pnoise-pstb"
+      ]
+    },
+    {
+      "id": "unihd-cag-skillbridge",
+      "repo": "unihd-cag/skillbridge",
+      "url": "https://github.com/unihd-cag/skillbridge",
+      "pinned_commit_or_branch": "48f625c0a1d92ec76976c5f1fd26594e0579bf51",
+      "license": "LGPL-3.0",
+      "stars": 356,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Server SKILL chạy bên trong Virtuoso được nhóm tác giả Đại học Heidelberg thiết kế hỗ trợ chính thức từ Cadence IC6.1.7 trở lên thông qua IPC Unix domain socket (`/tmp/skill-server-<id>.sock`). Tuy nhiên phía Python client yêu cầu Python >= 3.8, do đó trên máy RHEL 6.5 phải chạy client từ môi trường Python 3 tách biệt hoặc qua SSH forwarding socket, tuyệt đối không ghi đè Python 2.6.6 hệ thống.",
+      "summary_vi": "Thư viện giao tiếp hai chiều Python–SKILL thông qua IPC server gọn nhẹ của Đại học Heidelberg, ánh xạ trực tiếp hàm SKILL (`dbOpenCellViewByType`, `schCheck`, `cdfGetInstCDF`) và thuộc tính đối tượng `~>` sang đối tượng Python có gợi ý kiểu.",
+      "key_techniques": [
+        "Cầu nối IPC Unix socket phản hồi nhanh giữa tiến trình Virtuoso CIW và trình điều khiển Python bên ngoài",
+        "Ánh xạ tự động không gian tên hàm SKILL (`ws.db.open_cell_view_by_type`, `ws.sch.check`) và duyệt cây thuộc tính OpenAccess",
+        "Thực thi an toàn từng phiên làm việc có định danh workspace mà không cần sửa đổi `.cdsinit` toàn cục"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-ocean-parametric-testbench-runner"
+      ]
+    },
+    {
+      "id": "cascode-labs-virtue",
+      "repo": "cascode-labs/virtue",
+      "url": "https://github.com/cascode-labs/virtue",
+      "pinned_commit_or_branch": "6c202a287104cd34c77358927486c5311d477ecc",
+      "license": "MIT",
+      "stars": 60,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Phần thư viện chuẩn SKILL++ (`.ils`) dùng các hàm cốt lõi của Virtuoso tương thích tốt với IC617, nhưng phần đóng gói môi trường Conda/Python và plugin `skillbridge` yêu cầu Python >= 3.9; nên trích lọc mẫu kiểm thử đơn vị SKILL++ thay vì cài trọn bộ Conda lên RHEL 6.5.",
+      "summary_vi": "Khung phát triển kết hợp SKILL++ và Python cho Cadence Virtuoso (MIT), cung cấp thư viện chuẩn xử lý danh sách/bảng băm/đường dẫn và khung kiểm thử đơn vị tự động (unit-testing) cho mã nguồn SKILL.",
+      "key_techniques": [
+        "Tổ chức mã nguồn SKILL++ theo gói có tiền tố không gian tên rõ ràng tránh xung đột biến toàn cục trong CIW",
+        "Viết bài kiểm thử tự động xác nhận hàm biến đổi schematic/CDF trên cell thử nghiệm tạm trước khi chạm vào dữ liệu thiết kế",
+        "Quản lý cấu hình thư viện thiết kế bằng tệp đặc tả cấu trúc rõ ràng"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation"
+      ]
+    },
+    {
+      "id": "ebecheto-skill",
+      "repo": "ebecheto/Skill",
+      "url": "https://github.com/ebecheto/Skill",
+      "pinned_commit_or_branch": "0314dc92fbf7b4c02db8cc8e719c900e4e075a94",
+      "license": "MIT",
+      "stars": 173,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Viết hoàn toàn bằng SKILL truyền thống từ thời IC5141 chuyển tiếp lên IC615/IC617 OpenAccess, chạy trực tiếp trong CIW của Virtuoso IC617 không cần bất kỳ thư viện ngoài nào; cần rà soát tên lớp (layer-purpose pair) theo techfile PDK trước khi dùng hàm vẽ layout/via.",
+      "summary_vi": "Kho tổng hợp hàng chục kịch bản SKILL thực chiến tích lũy qua nhiều năm tape-out ASIC viện nghiên cứu hạt nhân/vi điện tử Pháp (IN2P3/CNRS): tạo bus pin tự động, sinh ma trận via, nối dây hàng loạt, chuyển đổi biểu diễn tín hiệu OCEAN và kiểm toán thuộc tính schematic.",
+      "key_techniques": [
+        "Tạo hàng loạt chân pin, nhãn dây (`schCreateWireLabel`) và ma trận via theo tọa độ hình học trong OpenAccess",
+        "Duyệt cây phân cấp thiết kế để thống kê/đồng bộ thuộc tính CDF và phát hiện chân lơ lửng",
+        "Các hàm tiện ích xử lý sóng OCEAN và xuất dữ liệu đo kiểm phục vụ hậu xử lý"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-analog-layout-common-centroid-matching"
+      ]
+    },
+    {
+      "id": "matthewlovequb-skill-tools",
+      "repo": "MatthewLoveQUB/SKILL_Tools",
+      "url": "https://github.com/MatthewLoveQUB/SKILL_Tools",
+      "pinned_commit_or_branch": "828f0e403a34e00c29d9764744e162a16e0e5344",
+      "license": "MIT",
+      "stars": 49,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Tương thích nguyên bản 100% với trình thông dịch SKILL/SKILL++ tích hợp sẵn trong Cadence Virtuoso IC617 và OCEAN mà không đòi hỏi Python hay gói ngoài.",
+      "summary_vi": "Bộ công cụ SKILL/SKILL++ gọn sạch (MIT) tập trung vào cấu trúc lập trình hàm, thao tác môi trường ADE/OCEAN, tính toán hình học layout và kiểm thử khẳng định (assertions) cho kịch bản tự động hóa Virtuoso.",
+      "key_techniques": [
+        "Khung kiểm thử khẳng định (unit test assertions) chạy trực tiếp trong phiên `virtuoso -nograph`",
+        "Hàm bao bọc thao tác biến thiết kế ADE và trích xuất dữ liệu mô phỏng an toàn chống giá trị `nil`",
+        "Các phép biến đổi hộp giới hạn (`bBox`) và căn chỉnh lưới chế tạo (`mfgGrid`) trong layout"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-ocean-parametric-testbench-runner"
+      ]
+    },
+    {
+      "id": "kwantaekim-cdl-gen",
+      "repo": "KwantaeKim/cdl_gen",
+      "url": "https://github.com/KwantaeKim/cdl_gen",
+      "pinned_commit_or_branch": "c6b6f263bc7909d39aa2cbb74e09cefc51645c21",
+      "license": "MIT",
+      "stars": 46,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Tệp `cdl_gen.il` và bảng ánh xạ `techmap.json` rất hữu ích để tham khảo tên chân/thuộc tính CDF của GPDK trên IC617; tuy nhiên phần sinh Python yêu cầu Python >= 3.9 và hàm `cdlgenPlaceSch` xóa trắng cellView đích trước khi vẽ lại — tuyệt đối chỉ chạy trên cell nháp tách biệt.",
+      "summary_vi": "Trình biên dịch mô tả mạch từ Python/JSON sang kịch bản SKILL tự động đặt linh kiện, đi dây schematic và tạo symbol trong Cadence Virtuoso (kèm mẫu mạch 5T-OTA hoàn chỉnh).",
+      "key_techniques": [
+        "Bảng ánh xạ độc lập công nghệ (`techmap.json`) chuyển đổi vai trò NMOS/PMOS và tham số W/L/nf sang tên thuộc tính CDF cụ thể của từng PDK",
+        "Quy trình sinh tọa độ đặt instance, tạo pin vào/ra (`schCreatePin`) và gắn nhãn mạng (`schCreateWireLabel`) tránh chồng chéo",
+        "Kiểm tra bắt buộc bằng `schCheck(cv)` ngay sau khi hoàn tất dựng sơ đồ tự động"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-5t-ota-root-cause-fault-tree"
+      ]
+    },
+    {
+      "id": "jpwang-ovo-analog-artist-skills",
+      "repo": "JPWang-OvO/analog-artist-skills",
+      "url": "https://github.com/JPWang-OvO/analog-artist-skills",
+      "pinned_commit_or_branch": "1e7cbfcf57382647efc0eb00296dcccd30be4213",
+      "license": "GPL-3.0",
+      "stars": 30,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Quy ước lưới tọa độ Virtuoso (`0.0625` inch/unit trên schematic và symbol), hướng xoay linh kiện (`R0`, `MY`, `R90`) và quy trình vẽ sơ đồ phân nhánh dòng từ trên xuống dưới hoàn toàn khớp với Schematic Editor L/XL của IC617.",
+      "summary_vi": "Bộ quy tắc hình học để vẽ sơ đồ nguyên lý (schematic) và ký hiệu khối (symbol) chuẩn mỹ thuật kỹ sư tương tự trong Cadence Virtuoso: dòng điện chảy từ VDD (đỉnh) xuống VSS (đáy), tín hiệu truyền từ trái sang phải, cặp vi sai đối xứng gương `R0`/`MY`.",
+      "key_techniques": [
+        "Căn chỉnh mọi chân linh kiện đúng bội số lưới `0.0625` của Virtuoso Schematic Editor để tránh lỗi hở mạch ngầm (`solder dot` / `off-grid pin`)",
+        "Quy tắc đặt hướng đối xứng `R0` và `MY` cho cặp vi sai, gương dòng và tầng cascode giúp đọc mạch tức thì",
+        "Kiểm tra hộp va chạm nhãn và khoảng cách tối thiểu giữa các nhánh dây song song trước khi xuất ảnh PNG"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "concept-analog-design-octagon"
+      ]
+    },
+    {
+      "id": "cdsgit-cdsgit",
+      "repo": "cdsgit/cdsgit",
+      "url": "https://github.com/cdsgit/cdsgit",
+      "pinned_commit_or_branch": "0eb849b5ef4044e9bf634ba8e2c570a77384425c",
+      "license": "GPL-2.0",
+      "stars": 163,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Viết bằng SKILL++ tích hợp menu trực tiếp vào Library Manager và cửa sổ Schematic/Layout của IC616/IC617 trên Linux; cần lưu ý quy tắc `.gitignore` đối với file khóa nhị phân `.cdslck` của OpenAccess.",
+      "summary_vi": "Thư viện tích hợp quản lý phiên bản Git trực tiếp vào Cadence Virtuoso, minh họa cách xử lý an toàn cấu trúc thư mục nhị phân OpenAccess (`data.dm`, `master.tag`, loại trừ `.cdslck` và thư mục kết quả mô phỏng lớn).",
+      "key_techniques": [
+        "Mẫu `.gitignore` chuẩn cho dự án OpenAccess của Cadence Virtuoso (loại bỏ `*.cdslck*`, `simulation/`, `*.raw/`, `ihnl/`, `map/`)",
+        "Đóng băng trạng thái cellView (`dbSave`, giải phóng khóa sửa) trước khi tạo mốc snapshot kiểm chứng",
+        "Tổ chức giao diện biểu mẫu `hiCreateAppForm` chuẩn xác trong SKILL++"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "kenkundert-psf-utils",
+      "repo": "KenKundert/psf_utils",
+      "url": "https://github.com/KenKundert/psf_utils",
+      "pinned_commit_or_branch": "67971463a7bfdbfdb362376374b68fef379c6f9e",
+      "license": "GPL-3.0-or-later (source file header)",
+      "stars": 81,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Đọc hoàn hảo định dạng PSF ASCII xuất từ Spectre 15.1 (`-format psfascii` hoặc chuyển đổi từ PSF nhị phân bằng công cụ `psf -i in -o out` đi kèm MMSIM 15.1), bao gồm cả DC OP, AC, Tran, Noise, PNoise, PZ và STB. Bản upstream yêu cầu Python >= 3.6 + `inform`/`quantiphy`/`numpy`; trên máy ảo RHEL 6.5 (Python 2.6.6) dùng trình đọc chuẩn nội bộ không phụ thuộc thư viện ngoài được thiết kế theo cùng đặc tả định dạng VALUE/PROP.",
+      "summary_vi": "Thư viện đọc tệp kết quả mô phỏng Spectre PSF ASCII chính thống do chính Ken Kundert (kiến trúc sư trưởng khai sinh Cadence Spectre & SpectreRF) biên soạn, xử lý chuẩn xác dữ liệu thực, phức, đơn vị vật lý và ký tự đặc biệt trong tên nút.",
+      "key_techniques": [
+        "Giải mã cấu trúc khối `HEADER` / `TYPE` / `SWEEP` / `TRACE` / `VALUE` của định dạng Parameter Storage Format (PSF) ASCII",
+        "Chuyển đổi tệp nhị phân `.raw` sang ASCII bằng tiện ích `psf` của Cadence MMSIM hoặc `simvisdbutil` cho dữ liệu AMS `.trn`",
+        "Truy xuất phổ mật độ nhiễu theo từng linh kiện đóng góp (`R1:thermal`, `M1:fn`, `M1:id`) và hàm truyền vòng phức từ `stb.stb`"
+      ],
+      "linked_nodes": [
+        "skill-ocean-parametric-testbench-runner",
+        "skill-spectre-noise-dc-ac-tran-montecarlo",
+        "skill-spectre-stb-diffstb-middlebrook",
+        "skill-spectre-pss-pac-pnoise-pstb"
+      ]
+    },
+    {
+      "id": "kenkundert-flicker-noise",
+      "repo": "KenKundert/flicker-noise",
+      "url": "https://github.com/KenKundert/flicker-noise",
+      "pinned_commit_or_branch": "b7da03b36dfe4190c27133507e70c3decb619eaf",
+      "license": "UNLICENSED (IEEE TCAD 2020 paper companion — reference methodology only)",
+      "stars": 28,
+      "category": "veriloga-and-rf-noise",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Các netlist mẫu `pnoise.scs` và `pnbsim.scs` chạy trực tiếp trên Spectre 15.1 (SpectreRF `pss` + `pnoise` + trình biên dịch Verilog-A AHDL). Đây là tài liệu chuẩn vàng để tránh lỗi mô hình hóa nhiễu nhấp nháy 1/f sai vật lý trong mạch chịu kích thích tuần hoàn.",
+      "summary_vi": "Kho mã minh họa bài báo kinh điển IEEE TCAD 2020 của Coram, McAndrew, Gullapalli & Ken Kundert về cách viết đúng hàm `flicker_noise()` điều biến theo điểm làm việc tức thời trong Verilog-A và cách kiểm định nhiễu gấp phổ BSIM4 bằng Spectre `pss` + `pnoise`.",
+      "key_techniques": [
+        "Phân biệt công thức điều biến công suất so với điều biến biên độ của nguồn nhiễu `flicker_noise()` dưới tín hiệu lớn chu kỳ (tránh tạo hài giả 1/f lên biên tần RF/VCO)",
+        "Thiết lập cặp phân tích `pss` + `pnoise` kiểm chứng sự phụ thuộc phân cực của nhiễu nhấp nháy BSIM4",
+        "Tự động hóa chuỗi chạy Spectre -> trích xuất `pnoise.raw/pnoise.pnoise` -> kiểm tra độ dốc 10 dB/decade"
+      ],
+      "linked_nodes": [
+        "skill-spectre-pss-pac-pnoise-pstb",
+        "skill-veriloga-mixed-signal-behavioral-models",
+        "skill-vco-ring-lc-phase-noise-kvco-tb",
+        "law-oscillator-phase-noise-leeson-and-isf"
+      ]
+    },
+    {
+      "id": "iic-jku-analog-circuit-design",
+      "repo": "iic-jku/analog-circuit-design",
+      "url": "https://github.com/iic-jku/analog-circuit-design",
+      "pinned_commit_or_branch": "6075ea0ebcf08f5c7f6033a84e9dd3c91450f5e1",
+      "license": "Apache-2.0",
+      "stars": 336,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Toàn bộ phương trình giải tích, phụ lục đo độ lợi vòng kín Middlebrook và quy trình định cỡ gm/ID hoàn toàn độc lập công cụ, chuyển dịch 1-đối-1 sang Cadence IC617 + Spectre `stb`/`dc`/`ac`/`noise` trên GPDK180/090/045.",
+      "summary_vi": "Giáo trình thiết kế vi mạch tương tự thực hành mã nguồn mở (Apache-2.0) của GS. Harald Pretl tại Viện Vi mạch Tích hợp Đại học Johannes Kepler Linz (JKU), trình bày mạch lạc từ tầng CS, cascode, gương dòng LV/Regulated, 5T-OTA, Folded-Cascode, Op-Amp hai tầng vi sai toàn phần + CMFB đến phương pháp tiêm kép Middlebrook.",
+      "key_techniques": [
+        "Chứng minh và thiết lập phép tiêm kép áp/dòng của Middlebrook giữ nguyên điểm làm việc DC lẫn trở kháng tải hai đầu vòng hồi tiếp",
+        "Quy trình định cỡ từng bước dựa trên gm/ID từ đặc tả tải CL, GBW, Slew Rate, ICMR và nhiễu đầu vào cho OTA cơ bản và OTA vi sai cải tiến",
+        "Phân tích nửa mạch chế độ chung (CM) và cách ghép bù Miller cho cả vòng vi sai lẫn vòng CMFB trong Op-Amp hai tầng"
+      ],
+      "linked_nodes": [
+        "skill-spectre-stb-diffstb-middlebrook",
+        "skill-folded-cascode-and-gainboost-sizing-flow",
+        "skill-cmfb-continuous-and-sc-testbench",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "iic-jku-radio-frequency-integrated-circuits",
+      "repo": "iic-jku/radio-frequency-integrated-circuits",
+      "url": "https://github.com/iic-jku/radio-frequency-integrated-circuits",
+      "pinned_commit_or_branch": "0799d7eaf9933e9384acda411a82b2a5d4693702",
+      "license": "Apache-2.0",
+      "stars": 59,
+      "category": "veriloga-and-rf-noise",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Lý thuyết và sơ đồ đo kiểm LC-VCO, varactor, hệ số phẩm chất Q khung cộng hưởng, nhiễu pha Leeson/ISF và vòng khóa pha tổng hợp tần số áp dụng trực tiếp cho SpectreRF (`pss`, `pnoise`, `pac`) trong MMSIM 15.1.",
+      "summary_vi": "Giáo trình thiết kế vi mạch tích hợp cao tần (RFIC) mở của nhóm GS. Harald Pretl (JKU, Apache-2.0), bổ trợ xuất sắc cho Chương 14–16 sách Razavi về nén điểm 1-dB/IIP3, dao động cộng hưởng LC, ngân hàng tụ chuyển mạch số + varactor và bộ tổng hợp tần số PLL.",
+      "key_techniques": [
+        "Phân tách tổn hao nối tiếp/song song của cuộn cảm trên chip và ngân hàng tụ chuyển mạch (Q-factor vs tuning range trade-off)",
+        "Quy trình đo hệ số khuếch đại điều chỉnh tần số KVCO và kiểm chứng điều kiện khởi động dao động âm trở qua các góc PVT",
+        "Ngân sách nhiễu pha trong dải (PFD/CP/Divider) và ngoài dải (VCO) của vòng khóa pha bơm điện tích"
+      ],
+      "linked_nodes": [
+        "skill-vco-ring-lc-phase-noise-kvco-tb",
+        "skill-pll-cp-loop-filter-lock-jitter-tb",
+        "skill-spectre-pss-pac-pnoise-pstb"
+      ]
+    },
+    {
+      "id": "iic-jku-circuit-designers-etiquette",
+      "repo": "iic-jku/Circuit-Designers-Etiquette",
+      "url": "https://github.com/iic-jku/Circuit-Designers-Etiquette",
+      "pinned_commit_or_branch": "e330aea62574e585e8d4c36e8770326ba4d286cc",
+      "license": "Apache-2.0",
+      "stars": 31,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Áp dụng 100% làm tiêu chuẩn kiểm duyệt sơ đồ nguyên lý (schematic review), đặt tên chân tín hiệu (`_n`/`_b`, `vdd`, `vss`, `ena`), dòng chảy điện thế/tín hiệu và chú thích thông số ngay trong Cadence Virtuoso IC617.",
+      "summary_vi": "Bộ quy tắc vàng (Apache-2.0) của GS. Harald Pretl về kỷ luật vẽ schematic, đặt tên mạng/chân điều khiển, bố trí khối phân cực, thiết bị dự phòng (dummy/spare cells) và kiểm tra chéo trước khi bàn giao layout.",
+      "key_techniques": [
+        "Quy tắc luồng điện thế nghiêm ngặt từ trên xuống (VDD ở đỉnh, VSS ở đáy) và luồng tín hiệu từ trái sang phải",
+        "Chuẩn hóa hậu tố tín hiệu tác động mức thấp, chân phân cực dòng (`ibias_...`) so với áp (`vbias_...`) tránh đấu nhầm gương dòng thành nguồn áp",
+        "Ghi chú rõ dòng tĩnh nhánh, tỷ số ghép kênh `W/L x M` và điểm áp nút kỳ vọng ngay trên schematic"
+      ],
+      "linked_nodes": [
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "iic-jku-iic-osic-tools",
+      "repo": "iic-jku/IIC-OSIC-TOOLS",
+      "url": "https://github.com/iic-jku/IIC-OSIC-TOOLS",
+      "pinned_commit_or_branch": "f15ef6a303ef3aa814c54e7006e82c965c6eba59",
+      "license": "Apache-2.0",
+      "stars": 1201,
+      "category": "characterization-and-signoff",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Môi trường Docker mã nguồn mở tham chiếu (Xschem, Ngspice, Xyce, Magic, KLayout, Netgen, CACE, pygmid, ADCToolbox) cho phép chạy kiểm chứng độc lập trên máy chủ ngoài khi VM Cadence IC617 đang tạm dừng, đồng thời đối chiếu quy trình DRC/LVS/PEX chuẩn công nghiệp.",
+      "summary_vi": "Hệ sinh thái công cụ thiết kế vi mạch tương tự/số mã nguồn mở tích hợp hoàn chỉnh nhất hiện nay (Apache-2.0, >1200 sao), đóng gói sẵn chuỗi mô phỏng, vẽ layout, trích xuất ký sinh RC và đặc tính hóa tự động CACE.",
+      "key_techniques": [
+        "Chuỗi kiểm chứng vật lý khép kín DRC -> LVS -> RC PEX -> Post-Layout Simulation đối ứng với Assura/PVS/Quantus QRC trong Cadence",
+        "Tích hợp sẵn CACE, pygmid và các công cụ hậu xử lý phổ Python phục vụ kiểm thử hồi quy mạch tương tự"
+      ],
+      "linked_nodes": [
+        "skill-post-layout-pex-drc-lvs-debug",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "jiyuanduan001-oss-llm-amplifier-sizing",
+      "repo": "jiyuanduan001-oss/LLM_Amplifier_Sizing",
+      "url": "https://github.com/jiyuanduan001-oss/LLM_Amplifier_Sizing",
+      "pinned_commit_or_branch": "2cbff780e74e84e93475879761311a7f94631e04",
+      "license": "MIT (AnalogAgent/LICENSE subtree)",
+      "stars": 43,
+      "category": "amplifier-sizing-and-diagnosis",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Cây chẩn đoán nguyên nhân gốc rễ (Fault Trees) trong nhánh `AnalogAgent/skills/analog-amplifier/` hoàn toàn độc lập trình mô phỏng và áp dụng cực tốt cho kết quả DC/AC/STB/Tran của Spectre 15.1 trên GPDK180/090/045. Lưu ý loại trừ backend SKY130 cứng và luôn kiểm chứng giả thuyết giải tích bằng mô phỏng thực tế (nhất là vùng cận triode của nguồn dòng đuôi làm công thức CMRR/PSRR sai lệch 15–20 dB).",
+      "summary_vi": "Kho mã chứa bộ tài liệu AnalogAgent (cấp phép MIT) với cây chẩn đoán lỗi có thứ tự ưu tiên chặt chẽ cho 5T-OTA và Op-Amp Hai tầng Bù Miller (TSM): sửa điểm làm việc bão hòa và khoảng dự trữ nguồn dòng đuôi trước, sau đó phân nhánh sửa Gain, GBW, PM, SR+/SR-, CMRR, PSRR+/PSRR-, Nhiễu và Mismatch.",
+      "key_techniques": [
+        "Quy tắc ưu tiên chẩn đoán 2 tầng: khôi phục vùng bão hòa (`VDS - Vdsat`) và kiểm tra hiệu suất sử dụng ngân sách công suất trước khi tinh chỉnh chỉ tiêu AC",
+        "Phát hiện điểm nghẽn liên thông của khoảng dự trữ nguồn dòng đuôi (< 100 mV) làm sụt đồng loạt CMRR, PSRR- và GBW do gds tăng dựng đứng",
+        "Phân tách hai đường truyền nhiễu nguồn âm PSRR- và hệ 4 nút PSRR+ kèm điều kiện triệt offset hệ thống cho Op-Amp hai tầng Miller"
+      ],
+      "linked_nodes": [
+        "skill-5t-ota-root-cause-fault-tree",
+        "skill-two-stage-miller-fault-tree",
+        "topo-five-transistor-ota",
+        "topo-two-stage-opamp"
+      ]
+    },
+    {
+      "id": "ampcopilot-amplifier-copilot",
+      "repo": "AmpCopilot/Amplifier-Copilot",
+      "url": "https://github.com/AmpCopilot/Amplifier-Copilot",
+      "pinned_commit_or_branch": "20f02d00002c39b1811a28b2684014db0860135d",
+      "license": "UNLICENSED (no repository LICENSE file — topological taxonomy & testbench structure reference only)",
+      "stars": 185,
+      "category": "amplifier-sizing-and-diagnosis",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Cấu trúc trạng thái ADE L (`spectre_state1/analyses.state`, `outputs.state`) và tổ chức testbench Spectre `.scs` tương thích trực tiếp với luồng ADE L / Spectre 15.1 của IC617. Tuyệt đối không chép thông số kích thước hay kỳ vọng hiệu năng từ công nghệ TSMC 22nm/40nm sang GPDK090/045.",
+      "summary_vi": "Danh mục hệ thống hóa 25 cấu trúc bộ khuếch đại CMOS từ 1 tầng (Telescopic, Folded-Cascode), 2 tầng (Miller, Cascode-Miller/SMCNR, Rail-to-Rail PN-input) đến 3 tầng tải tụ siêu lớn (NMC, NMCF, NMCNR, DFCFC, AFFC, PFC, SMC, ACBC, AZC, Class-AB) kèm mẫu biểu thức đo kiểm ADE.",
+      "key_techniques": [
+        "Phân loại chọn cấu trúc khuếch đại theo số tầng (1/2/3), cực tính đầu vào (N/P/Rail-to-Rail PN) và tỷ số tụ tải CL từ pF đến hàng nF",
+        "So sánh mạng bù tần số đa tầng nâng cao (NMC, DFCFC, AFFC, PFC, Cascode-Miller) khi gm*ro công nghệ nanomet quá thấp",
+        "Tổ chức bộ biểu thức đo tự động DC/AC/STB/Tran trong trạng thái ADE của Virtuoso"
+      ],
+      "linked_nodes": [
+        "skill-amplifier-25-topology-selector",
+        "tech-nested-miller-and-multipath-compensation",
+        "topo-rail-to-rail-complementary-input-stage"
+      ]
+    },
+    {
+      "id": "arcadia-1-veriloga-skills",
+      "repo": "Arcadia-1/veriloga-skills",
+      "url": "https://github.com/Arcadia-1/veriloga-skills",
+      "pinned_commit_or_branch": "7c5d3f03a162ee8131103e9551eee842424360bb",
+      "license": "UNLICENSED (no repository LICENSE file — IEEE Accellera Verilog-A LRM discipline reference only)",
+      "stars": 39,
+      "category": "veriloga-and-rf-noise",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Các quy tắc cú pháp chuẩn Accellera Verilog-A (`constants.vams`, `disciplines.vams`, toán tử đóng góp `<+`, `@(initial_step)`, `@(cross(...))`, `transition()`, `idtmod()`) biên dịch sạch 100% trên trình biên dịch AHDL của Spectre 15.1 / IC617.",
+      "summary_vi": "Tài liệu quy chuẩn viết mô hình hành vi Verilog-A chuẩn xác về mặt ngữ nghĩa giải hệ phương trình vi phân đại số (DAE), ngăn ngừa lỗi không hội tụ ma trận Jacobian, nhảy gián đoạn bước thời gian và lỗi trạng thái ẩn (`hidden state`) làm chặn đứng phân tích `pss`.",
+      "key_techniques": [
+        "Phân tách nghiêm ngặt phép gán biến trạng thái thủ tục (`=`) với phương trình đóng góp nhánh liên tục (`V(out) <+ transition(...)`)",
+        "Sử dụng `idtmod()` thay cho biến đếm pha rời rạc để mô hình VCO tự do chạy được phân tích trạng thái xác lập tuần hoàn `pss` không dính lỗi hidden state",
+        "Kiểm soát dung sai thời gian/biên độ trên `@(cross(expr, dir, ttol, vtol))` để bảo toàn độ chính xác jitter trong PFD/Comparator/ADC"
+      ],
+      "linked_nodes": [
+        "skill-veriloga-mixed-signal-behavioral-models",
+        "skill-spectre-pss-pac-pnoise-pstb",
+        "skill-pll-cp-loop-filter-lock-jitter-tb"
+      ]
+    },
+    {
+      "id": "arcadia-1-sar-adc-skills",
+      "repo": "Arcadia-1/sar-adc-skills",
+      "url": "https://github.com/Arcadia-1/sar-adc-skills",
+      "pinned_commit_or_branch": "27de09a34ea3ec6feb2ee2797d32dc673d35d1ad",
+      "license": "UNLICENSED (no repository LICENSE file — architectural budgeting & verification flow reference only)",
+      "stars": 19,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Quy trình xác minh phân kỳ 4 giai đoạn (Behavioral VA -> Block PSS/PNoise/THD -> Hybrid -> Full Transistor), thiết lập lấy mẫu mạch lạc (coherent sampling) và đo nhiễu bộ so sánh StrongArm bằng `pss` + `pnoise` (`noisetype=sampled`) tương thích với Spectre 15.1 (trên Spectre 15.1 cần kiểm tra tên tham số `noisetype=timedomain`/`sampled` tùy bản vá MMSIM 15.1).",
+      "summary_vi": "Cơ sở tri thức thiết kế hệ thống SAR ADC thực chiến từ phân bổ ngân sách nhiễu (lượng tử hóa + kT/C + nhiễu comparator + nhiễu nguồn LDO/VREF), công tắc tự nâng áp cổng (bootstrapped switch), mảng tụ CDAC vi sai, bộ so sánh động StrongArm có bù lệch đến logic bất đồng bộ.",
+      "key_techniques": [
+        "Phân bổ ngân sách công suất nhiễu tổng cho ADC N-bit và trích xuất nhiễu quy về ngõ vào của StrongArm bằng cả phương pháp Probit lẫn PSS+PNoise",
+        "Quy trình thay thế dần từng khối Verilog-A sang mức transistor để cô lập tức thì khối làm tụt ENOB > 0.3 bit",
+        "Phòng chống các lỗi kinh điển trong testbench Spectre: nhầm `mag` với `ampl` trên `vsource`, đảo thứ tự bus `[N:0]` MSB-first và mất trạng thái comparator khi thiếu chốt SR"
+      ],
+      "linked_nodes": [
+        "skill-sar-adc-cdac-coherent-fft-calibration",
+        "skill-comparator-kickback-offset-metastability-tb",
+        "skill-ldo-stability-load-line-psrr-tb",
+        "topo-sar-adc-charge-redistribution-architecture"
+      ]
+    },
+    {
+      "id": "arcadia-1-adctoolbox",
+      "repo": "Arcadia-1/ADCToolbox",
+      "url": "https://github.com/Arcadia-1/ADCToolbox",
+      "pinned_commit_or_branch": "372b714011db9c3f366bd0223d066e1fbde8dfb6",
+      "license": "NOASSERTION (Custom permissive LICENSE file present — see upstream LICENSE)",
+      "stars": 169,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Chạy hậu xử lý độc lập trên máy phân tích Python >= 3.10 đọc mảng mẫu xuất từ Spectre 15.1 PSF ASCII (`strobeperiod=1/Fs`) hoặc CSV của OCEAN; không yêu cầu kết nối trực tiếp vào tiến trình Virtuoso IC617.",
+      "summary_vi": "Bộ công cụ chuẩn hóa đo kiểm, phân tích phổ FFT, khớp hàm sin 4 tham số IEEE Std 1241, tính INL/DNL mật độ mã hình sin/dốc tuyến tính và hiệu chuẩn trọng số bit số (`calibrate_weight_sine`) cho bộ biến đổi ADC.",
+      "key_techniques": [
+        "Tính tần số lấy mẫu mạch lạc nguyên tố cùng nhau `Fin = (M / N) * Fs` qua `find_coherent_frequency` triệt tiêu hoàn toàn rò phổ",
+        "Trích xuất chuẩn xác ENOB, SNDR, SFDR, SNR, THD, NSD với loại trừ hài tự động và kiểm tra ranh giới tràn mã",
+        "Hiệu chuẩn trọng số bit cho SAR ADC có dư thừa (sub-radix-2) bằng bình phương tối thiểu tín hiệu sin và quy chuẩn lại toàn thang dBFS"
+      ],
+      "linked_nodes": [
+        "skill-sar-adc-cdac-coherent-fft-calibration",
+        "topo-sar-adc-charge-redistribution-architecture"
+      ]
+    },
+    {
+      "id": "arcadia-1-analog-agents",
+      "repo": "Arcadia-1/analog-agents",
+      "url": "https://github.com/Arcadia-1/analog-agents",
+      "pinned_commit_or_branch": "4d6bd218ceff60624d7ee62887787aa83daecdb4",
+      "license": "UNLICENSED (no repository LICENSE file — workflow & audit checklist methodology reference only)",
+      "stars": 92,
+      "category": "characterization-and-signoff",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Cấu trúc kiểm toán chéo giữa khâu khám phá kiến trúc, định cỡ gm/ID, mô phỏng xác minh và hậu kiểm sau layout (pre/post-layout audit) tương thích tốt ở cấp quy trình với Cadence IC617 + Spectre 15.1.",
+      "summary_vi": "Khung tổ chức quy trình thiết kế vi mạch tương tự chia tách vai trò rõ ràng giữa lựa chọn kiến trúc, định cỡ linh kiện, chạy xác minh độc lập và kiểm toán chéo chống tự sửa chỉ tiêu (anti-spec-tampering).",
+      "key_techniques": [
+        "Tách bạch khâu thiết kế định cỡ với khâu kiểm toán độc lập để ngăn lỗi đọc nhầm điểm cắt 0 dB hoặc bỏ sót góc PVT xấu nhất",
+        "Danh mục rà soát trước và sau trích xuất ký sinh layout (pre-layout vs post-layout PEX regression)"
+      ],
+      "linked_nodes": [
+        "skill-cace-spec-driven-characterization-contract",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    },
+    {
+      "id": "arcadia-1-circuits-and-systems-classroom",
+      "repo": "Arcadia-1/circuits-and-systems-classroom",
+      "url": "https://github.com/Arcadia-1/circuits-and-systems-classroom",
+      "pinned_commit_or_branch": "f377bd965e8acfef82b303cf807a210c064fc1a6",
+      "license": "MIT",
+      "stars": 60,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Các bài giải tích chuyên sâu về đo điện dung bằng AC, tính nhiễu bộ so sánh động, lấy mẫu kép tương quan (CDS), dịch mức tương quan (CLS) và khuếch đại đảo nổi (FIA) chuyển đổi trực tiếp thành testbench Spectre 15.1.",
+      "summary_vi": "Kho bài giảng tương tác và ghi chú giải tích sâu (MIT) cho các mạch tương tự và tín hiệu hỗn hợp hiện đại: phân tích 5T-OTA, phép đo điện dung tín hiệu nhỏ, tính tích phân nhiễu comparator, CDS/CLS và mạch khuếch đại tụ chuyển mạch tiết kiệm năng lượng.",
+      "key_techniques": [
+        "Thiết lập mạch đo điện dung vi phân `C(V)` bằng nguồn dòng/áp AC ở tần số chuẩn trong trình mô phỏng SPICE/Spectre",
+        "Giải tích hàm truyền nhiễu gấp phổ của Correlated Double Sampling (CDS) và nhiễu tích phân theo pha của bộ so sánh động"
+      ],
+      "linked_nodes": [
+        "skill-switched-capacitor-charge-injection-pac-tb",
+        "skill-comparator-kickback-offset-metastability-tb",
+        "tech-dynamic-offset-cancellation-az-cds"
+      ]
+    },
+    {
+      "id": "arcadia-1-razavi-bench",
+      "repo": "Arcadia-1/razavi-bench",
+      "url": "https://github.com/Arcadia-1/razavi-bench",
+      "pinned_commit_or_branch": "30e6a5e3657f9f7db2992c94d9bd88186e0fbd31",
+      "license": "NOASSERTION (Custom LICENSE file present — benchmark rubric reference only)",
+      "stars": 107,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Thang chấm điểm (evaluation rubric) và cấu trúc bài toán thiết kế lấy cảm hứng từ sách giáo khoa Razavi giúp chuẩn hóa hợp đồng đầu vào/đầu ra cho các testbench Spectre 15.1 trên GPDK.",
+      "summary_vi": "Bộ bài toán chuẩn hóa đánh giá năng lực thiết kế và phân tích mạch CMOS dựa trên hệ thống bài tập thiết kế kinh điển, nhấn mạnh tính nhất quán giữa tính toán lý thuyết và số đo mô phỏng thực tế.",
+      "key_techniques": [
+        "Định nghĩa thang đánh giá định lượng không mơ hồ cho độ lợi, băng thông, dự trữ pha, biên độ dao động và công suất",
+        "Kiểm tra tính hợp lệ vật lý của điểm làm việc trước khi chấm điểm các chỉ tiêu tín hiệu nhỏ"
+      ],
+      "linked_nodes": [
+        "skill-cace-spec-driven-characterization-contract",
+        "concept-opamp-performance-contract"
+      ]
+    },
+    {
+      "id": "efabless-cace",
+      "repo": "efabless/cace",
+      "url": "https://github.com/efabless/cace",
+      "pinned_commit_or_branch": "d71c8da5f8d8a5bfb4cfb2640714bdd374a9b84a",
+      "license": "Apache-2.0",
+      "stars": 59,
+      "category": "characterization-and-signoff",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Bản gốc CACE điều phối ngspice/Xyce qua tệp đặc tả YAML/datasheet trên Python >= 3.8; triết lý kiến trúc hợp đồng đặc tả (Spec-Driven Characterization Contract: định nghĩa ma trận điều kiện `VDD x Temp x Corner x MonteCarlo x Schematic/PEX` và ngưỡng `min/typ/max` tách rời khỏi netlist lõi) ánh xạ hoàn hảo sang bộ chạy OCEAN / ADE XL / Python PSF cho Cadence IC617 + Spectre 15.1.",
+      "summary_vi": "Circuit Automatic Characterization Engine (Apache-2.0) của Efabless — chuẩn công nghiệp mã nguồn mở về tự động hóa đo kiểm toàn diện khối IP tương tự theo đặc tả datasheet qua đa góc PVT, mismatch Monte Carlo và cả hai chế độ trước/sau trích xuất ký sinh layout.",
+      "key_techniques": [
+        "Biểu diễn hợp đồng đặc tả IP tương tự dưới dạng cấu trúc máy đọc được (`parameters`, `conditions`, `min/typ/max`, đơn vị vật lý và điều kiện đạt/trượt)",
+        "Tích tổ hợp tự động ma trận góc quy trình `{TT, FF, SS, FS, SF}` x nguồn cấp `{Vmin, Vnom, Vmax}` x nhiệt độ `{-40, 27, 125 °C}` và thống kê phân vị Monte Carlo",
+        "Chạy song song cùng một bộ testbench trên cả netlist nguyên lý (`schematic`) và netlist ký sinh (`rcx`/`pex`) để xuất bảng tổng hợp sign-off"
+      ],
+      "linked_nodes": [
+        "skill-cace-spec-driven-characterization-contract",
+        "skill-ocean-parametric-testbench-runner",
+        "skill-spectre-noise-dc-ac-tran-montecarlo",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    },
+    {
+      "id": "align-analoglayout-align-public",
+      "repo": "ALIGN-analoglayout/ALIGN-public",
+      "url": "https://github.com/ALIGN-analoglayout/ALIGN-public",
+      "pinned_commit_or_branch": "8d3cc2e9aa5511315203eb5cbfd00d2c88fdbd18",
+      "license": "BSD-3-Clause",
+      "stars": 405,
+      "category": "analog-layout-generation",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Chạy độc lập ngoài Virtuoso (Python 3 + C++) và xuất GDSII có thể nhập ngược vào Cadence IC617 qua `strmin` (Stream In) để kiểm tra DRC/LVS/PEX; đặc biệt hệ thống ràng buộc đối xứng hình học (`SymmetricBlocks`, `SameTemplate`, `Align`, `GuardRing`, `MultiConnection`) là khuôn mẫu chuẩn xác cho thiết kế layout tay lẫn tự động trong Virtuoso Layout XL.",
+      "summary_vi": "Hệ thống tổng hợp layout tương tự tự động từ netlist SPICE thuộc chương trình DARPA IDEA (ĐH Minnesota, Texas A&M & Intel, BSD-3-Clause), tự động nhận dạng cặp vi sai, gương dòng, mảng tụ để áp đặt ràng buộc đối xứng trục, tâm chung, dummy và vòng bảo vệ.",
+      "key_techniques": [
+        "Ngôn ngữ khai báo ràng buộc vật lý tường minh cho khối tương tự: đối xứng gương (`SymmetricBlocks`), ghép tâm chung, căn hàng cùng giếng và che chắn dây nhạy cảm (`ShieldNet`)",
+        "Tạo ô cơ sở tham số hóa (primitive generator) có ngón giả hai đầu bảo vệ khỏi hiệu ứng STI/LOD và đồng bộ chiều dòng chảy",
+        "Đi dây vi sai đối xứng cân bằng điện dung ký sinh và điện trở đường kim loại"
+      ],
+      "linked_nodes": [
+        "skill-analog-layout-common-centroid-matching",
+        "skill-post-layout-pex-drc-lvs-debug",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "magical-eda-magical",
+      "repo": "magical-eda/MAGICAL",
+      "url": "https://github.com/magical-eda/MAGICAL",
+      "pinned_commit_or_branch": "199ab0719f85f74c79bf85a556118b132988a5fe",
+      "license": "BSD-3-Clause",
+      "stars": 305,
+      "category": "analog-layout-generation",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Công cụ nghiên cứu đặt linh kiện và đi dây tương tự tự động (UT Austin, BSD-3-Clause) xuất GDSII nhập được vào IC617; đóng góp giá trị cao nhất về thuật toán trích xuất ràng buộc đối xứng từ phân tích độ nhạy mạch và đi dây vi sai `anaroute`.",
+      "summary_vi": "Khung sinh layout vi mạch tương tự tự động từ netlist chưa gán nhãn của ĐH Texas tại Austin (BSD-3-Clause), nổi bật với bộ sinh ràng buộc đối xứng tự động (`ConstGen`), đặt vị trí tôn trọng trục đối xứng (`IdeaPlaceEx`) và đi dây chi tiết nhận biết đối xứng (`anaroute`).",
+      "key_techniques": [
+        "Tự động suy luận cặp linh kiện cần đối xứng chặt và nút nội nhạy cảm với điện dung ký sinh cho OTA, Comparator và SAR CDAC",
+        "Đi dây đối xứng gương qua trục trung tâm giữ cân bằng C_wire và R_wire giữa hai nhánh vi sai P/N"
+      ],
+      "linked_nodes": [
+        "skill-analog-layout-common-centroid-matching",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    },
+    {
+      "id": "ucb-art-bag-framework",
+      "repo": "ucb-art/BAG_framework",
+      "url": "https://github.com/ucb-art/BAG_framework",
+      "pinned_commit_or_branch": "daf4b0aaa72f056c7b3c90a402812a07dba9b4d7",
+      "license": "BSD-3-Clause",
+      "stars": 175,
+      "category": "analog-layout-generation",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Berkeley Analog Generator (BAG) được phát triển nguyên gốc ngay trên nền cơ sở dữ liệu OpenAccess của Cadence Virtuoso IC6.1.7 (`cybag_oa`, SKILL server, chạy DRC/LVS/RCX và Spectre)! Đòi hỏi thiết lập plugin công nghệ (`TechInfo`, lưới đi dây TrackManager) riêng cho từng PDK nên tốn công khởi tạo ban đầu, nhưng phương pháp thiết kế hướng bộ sinh (generator-based design) và vòng lặp hậu kiểm PEX của BAG là chuẩn mực công nghiệp.",
+      "summary_vi": "Khung thiết kế vi mạch tương tự hướng bộ sinh tham số hóa của UC Berkeley (BSD-3-Clause), kết nối trực tiếp với OpenAccess của Cadence Virtuoso IC617 để đồng bộ sinh schematic, layout trên lưới kim loại chuẩn hóa (`AnalogBase`), chạy LVS/PEX và đóng vòng định cỡ theo ký sinh thực tế.",
+      "key_techniques": [
+        "Kiến trúc hàng transistor chuẩn hóa (`AnalogBase`): chia ngón đồng nhất, dải dummy cố định ở biên trên/dưới/trái/phải và vòng thu hạt dẫn nền tích hợp sẵn",
+        "Định cỡ khép kín có nhận thức ký sinh layout (parasitic-aware sizing loop) thay vì ước lượng mò điện dung dây nối",
+        "Giao thức tự động hóa trọn vòng Schematic -> Layout -> LVS -> QRC PEX -> Spectre Simulation trên IC617"
+      ],
+      "linked_nodes": [
+        "skill-analog-layout-common-centroid-matching",
+        "skill-post-layout-pex-drc-lvs-debug",
+        "skill-ic617-skill-sch-cdf-automation"
+      ]
+    },
+    {
+      "id": "laiyao1-analogcoder",
+      "repo": "laiyao1/AnalogCoder",
+      "url": "https://github.com/laiyao1/AnalogCoder",
+      "pinned_commit_or_branch": "591a865427bc1e271c8b1f3c88d8be13c350df4f",
+      "license": "MIT",
+      "stars": 213,
+      "category": "amplifier-sizing-and-diagnosis",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Mã nguồn gốc sinh mạch PySpice/ngspice trên Python 3 (AAAI 2025); cơ chế phản hồi chẩn đoán lỗi thực thi (`execution_error.md`, kiểm tra điểm làm việc DC trước khi đo AC/Tran và thư viện khối con đã xác thực) là mẫu tham chiếu tốt khi xây dựng bộ kiểm tra tự động cho netlist Spectre 15.1.",
+      "summary_vi": "Khung sinh và kiểm tra mạch tương tự bằng mã nguồn (MIT, AAAI 2025) sử dụng thư viện khối mạch con phân cấp kết hợp vòng lặp kiểm tra điểm phân cực DC và sửa lỗi đấu nối dựa trên phản hồi từ bộ mô phỏng.",
+      "key_techniques": [
+        "Tổ chức các khối mạch con đã xác thực cực tính chân (subcircuit decomposition) để tránh đấu ngược cổng/máng hoặc thiếu đường phân cực DC xuống đất",
+        "Phân loại lỗi mô phỏng tự động: lỗi cú pháp/nút treo (floating node), lỗi điểm làm việc DC (cutoff/triode) và lỗi lệch chỉ tiêu tần số"
+      ],
+      "linked_nodes": [
+        "skill-5t-ota-root-cause-fault-tree",
+        "skill-amplifier-25-topology-selector"
+      ]
+    },
+    {
+      "id": "srinivasnv0031-two-stage-cmos-opamp-gpdk090",
+      "repo": "SrinivasNv0031/two-stage-cmos-opamp-gpdk090",
+      "url": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090",
+      "pinned_commit_or_branch": "c5d568a2d08b07d92eba0b3279e70c140b9f477d",
+      "license": "MIT",
+      "stars": 0,
+      "category": "amplifier-sizing-and-diagnosis",
+      "quality_tier": "tier-3-case-study",
+      "ic617_compatibility": "Ví dụ tham khảo nhỏ gọn dùng trực tiếp tên linh kiện `gpdk090` và cú pháp Spectre `.scs` cơ bản chạy được trên Spectre 15.1; tuy nhiên chỉ dừng ở mô phỏng danh định (nominal AC/tran vòng hở), thiếu hoàn toàn `stb` đóng vòng, góc PVT `{FF, SS, FS, SF}`, Monte Carlo mismatch, nhiễu và hậu kiểm PEX — chỉ dùng làm ví dụ cú pháp nhập môn.",
+      "summary_vi": "Ví dụ học tập nhỏ (MIT) về Op-Amp CMOS hai tầng bù Miller trên GPDK090 với netlist Spectre tách riêng khối lõi và testbench AC vòng hở; được giữ lại với nhãn cảnh báo giới hạn rõ ràng để minh họa sự khác biệt giữa bài tập danh định và quy trình sign-off thực tế.",
+      "key_techniques": [
+        "Tách tệp netlist khối lõi (`two_stage_opamp_core.scs`) khỏi tệp kích thích đo kiểm (`tb_ac_open_loop.scs`) trên GPDK090",
+        "Minh họa điểm khởi đầu tối thiểu cần được nâng cấp lên đo `stb` đóng vòng và quét đa góc PVT"
+      ],
+      "linked_nodes": [
+        "skill-two-stage-miller-fault-tree",
+        "skill-spectre-stb-diffstb-middlebrook"
+      ]
+    }
+  ],
+  "filtered_out": [
+    {
+      "repo": "ashwith/pyMOSChar",
+      "reason_vi": "Loại bỏ khỏi luồng chạy thực tế: chỉ hỗ trợ Python 2.7 cũ, dùng lệnh nguy hiểm `os.system('rm -fr ...')` xóa thư mục không kiểm tra mã thoát của trình mô phỏng, và khóa cứng `temp=27` trong netlist Spectre bất chấp tham số nhiệt độ cấu hình."
+    },
+    {
+      "repo": "unnir/CadenceSKILL-Python",
+      "reason_vi": "Loại bỏ: kho mã IPC từ năm 2016 ngừng bảo trì, không có tệp giấy phép (UNLICENSED) và đã được thay thế hoàn toàn bởi kiến trúc Unix socket hiện đại của `unihd-cag/skillbridge`."
+    },
+    {
+      "repo": "fsabado/cadence-skill",
+      "reason_vi": "Loại bỏ: đoạn mã rời rạc từ năm 2016 không có giấy phép, thiếu kiểm tra an toàn CDF callback và không xử lý kiến trúc dữ liệu OpenAccess hiện hành."
+    },
+    {
+      "repo": "martinnl/daisyLayoutAssist",
+      "reason_vi": "Loại bỏ: ngừng phát triển từ năm 2018, không có giấy phép sử dụng và phụ thuộc môi trường nội bộ riêng không tái lập được trên IC617 + GPDK."
+    },
+    {
+      "repo": "Ramya-4104/Two-Stage-OTA-Analog-IC-Design-in-180nm-CMOS-Technology",
+      "reason_vi": "Loại bỏ: báo cáo bài tập môn học đơn lẻ (0 sao, không giấy phép, không có kiểm chứng STB/PVT/Monte Carlo hay tự động hóa tái sử dụng)."
+    },
+    {
+      "repo": "Amarkumar008/Pandas_Profiling-",
+      "reason_vi": "Loại bỏ: nhiễu từ khóa tìm kiếm ('EDA' = Exploratory Data Analysis trong khoa học dữ liệu bảng, hoàn toàn không liên quan đến Electronic Design Automation vi mạch)."
+    }
+  ]
+}

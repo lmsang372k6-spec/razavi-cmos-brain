@@ -1,12 +1,17 @@
 {
   "schema": "razavi-cmos-brain.manifest.v1",
-  "release": "2026.11.18.1",
-  "node_count": 68,
-  "edge_count": 112,
-  "diagram_count": 38,
-  "checklist_count": 13,
+  "release": "2026.11.18.3",
+  "node_count": 134,
+  "razavi_node_count": 112,
+  "skill_node_count": 22,
+  "edge_count": 319,
+  "diagram_count": 56,
+  "checklist_count": 16,
   "glossary_count": 2200,
-  "file_count": 123,
+  "book_section_count": 293,
+  "book_equation_count": 230,
+  "github_repo_count": 31,
+  "file_count": 212,
   "files": [
     {
       "path": "kb/checklists/bandgap-and-bias.json",
@@ -24,6 +29,11 @@
       "sha256": "75d85eb55e39d74b350d0755c8653c4d081f7163ee903895eb2e6ceb156dd2a5"
     },
     {
+      "path": "kb/checklists/comparator-and-sar-adc.json",
+      "bytes": 13208,
+      "sha256": "1ecf519a107067ac4172a945ba500658d3f4a98d0b3368e71bc34560e1a3b7d0"
+    },
+    {
       "path": "kb/checklists/current-mirror.json",
       "bytes": 6441,
       "sha256": "6b1deef0e305eda074b9430936134a5263f7ee5e92c46d55bb337fed9462772e"
@@ -32,6 +42,11 @@
       "path": "kb/checklists/differential-pair.json",
       "bytes": 6576,
       "sha256": "64841fb78ca350f9af37bf1e4224cdb35811cbc6a43be977803d959f1006017b"
+    },
+    {
+      "path": "kb/checklists/esd-pad-and-substrate.json",
+      "bytes": 14174,
+      "sha256": "3fc88df5704d1cf87960d26c296ac4781d2d5fd309c36027fbb3eeb511e7ef83"
     },
     {
       "path": "kb/checklists/feedback-and-stb.json",
@@ -64,6 +79,11 @@
       "sha256": "a4329496ba280884ed89907e19ca66cf3c19a33a3af22c76fd55126e266feb91"
     },
     {
+      "path": "kb/checklists/spectre-pss-pnoise.json",
+      "bytes": 13167,
+      "sha256": "0a8ccb34825334c73f844b5919242047528f2600a0529ad30ca3d6896018c02f"
+    },
+    {
       "path": "kb/checklists/switched-capacitor.json",
       "bytes": 7717,
       "sha256": "90a10c31818e3d41e44235777a77d52576c5be4aab69688cecc2b0d0838fdb5c"
@@ -72,6 +92,11 @@
       "path": "kb/checklists/two-stage-miller.json",
       "bytes": 6863,
       "sha256": "8e7480752bfe9a404de479040432a952c80f5213a02556ca2b81ebef45aecf83"
+    },
+    {
+      "path": "kb/coordinates/book-coordinates.json",
+      "bytes": 712390,
+      "sha256": "6fe142959b18dd9c319b88026feac62ea2f2154c5f664608a14b4e9ddbe75e65"
     },
     {
       "path": "kb/diagrams/analog-design-octagon.svg",
@@ -114,6 +139,11 @@
       "sha256": "cb6403f292aa4a395e8a6179d6a7c296b3887e9185b023aa82b970251c1bb63e"
     },
     {
+      "path": "kb/diagrams/chopper-stabilization-principle.svg",
+      "bytes": 13429,
+      "sha256": "c157c2b10a66c8faba634fc59c658d7319e5ddd584e2dffa6e4602d06cdeb2a7"
+    },
+    {
       "path": "kb/diagrams/cmfb-sensing-networks.svg",
       "bytes": 22158,
       "sha256": "b415d0a49eceebd822d8ee4ab8421448eda897e432193edcdefab6aaa6a1698c"
@@ -124,9 +154,19 @@
       "sha256": "e6c3befe09b21c719eaf2be8c4b28bfc9aff78cf50b0199fb4dc69e7c8bcf57f"
     },
     {
+      "path": "kb/diagrams/colpitts-and-quadrature-vco.svg",
+      "bytes": 17385,
+      "sha256": "42a4a911ee04bab13ae6f4d5f5d31d5d3086118318c3d4a9f47437cfb814b12e"
+    },
+    {
       "path": "kb/diagrams/common-centroid-multifinger.svg",
       "bytes": 13647,
       "sha256": "8ac934b663a08448caa1fed3e3174c6c51d5f44c0234b17d9c93840743f26a61"
+    },
+    {
+      "path": "kb/diagrams/constant-gm-self-bias.svg",
+      "bytes": 18318,
+      "sha256": "6e48b99d7028451eb9a604733cf904c18320ec3edd32b6b0ee24ddb1d1bde398"
     },
     {
       "path": "kb/diagrams/cs-loads-comparison.svg",
@@ -145,8 +185,13 @@
     },
     {
       "path": "kb/diagrams/diagrams-manifest.json",
-      "bytes": 20480,
-      "sha256": "40290da7f71ba034a98b93eaba2a8a18764496103205a4ffe641689606935e0b"
+      "bytes": 34904,
+      "sha256": "970be6c65cc18d597419ad57ab8f5a8c93be3b3f7f28ca2160313d6d46a7a971"
+    },
+    {
+      "path": "kb/diagrams/diff-pair-active-mirror.svg",
+      "bytes": 17632,
+      "sha256": "351f35ed51fb74ac20eac73235ac266b42655ed0527a1be22092d00aa3e2b043"
     },
     {
       "path": "kb/diagrams/diff-pair-half-circuit.svg",
@@ -157,6 +202,11 @@
       "path": "kb/diagrams/diffpair-mirror-pole-doublet.svg",
       "bytes": 19669,
       "sha256": "cd6c8149e7a8ebbd1aeb0e3662ef28d5345efa89c32ee46d4f35e2f32aa2ae8d"
+    },
+    {
+      "path": "kb/diagrams/esd-padring-cross-section.svg",
+      "bytes": 17185,
+      "sha256": "4ef3db5f1baf9a9df34fc3d354af749dcd4d98360373ebc03a808962bbb12a04"
     },
     {
       "path": "kb/diagrams/feedback-four-topologies.svg",
@@ -182,6 +232,11 @@
       "path": "kb/diagrams/gilbert-cell.svg",
       "bytes": 20528,
       "sha256": "9d1f6683af52635bed6b427679bd9d7109ed167d09eb732613e2ac30ca4f4839"
+    },
+    {
+      "path": "kb/diagrams/gmid-sizing-methodology.svg",
+      "bytes": 13678,
+      "sha256": "22741b7a1e369fae45844c28c5a2bb5894598e922388f298b5a7bda031761b3f"
     },
     {
       "path": "kb/diagrams/latchup-and-guard-rings.svg",
@@ -219,6 +274,16 @@
       "sha256": "e288013b6d2d2413c30d763c4c5664a10a9eec2ea1e44f5c93b2e49c4a6320aa"
     },
     {
+      "path": "kb/diagrams/nested-miller-3stage.svg",
+      "bytes": 15393,
+      "sha256": "0c32fe56d1f52fdc1724caa49b838f9fb4f96382817d3993fbac0788aa990865"
+    },
+    {
+      "path": "kb/diagrams/noise-stages-comparison.svg",
+      "bytes": 24724,
+      "sha256": "2a06b4ba4193616089906f66c1ededad1639bae0babee2ac6432e2ac2ce245a7"
+    },
+    {
       "path": "kb/diagrams/nyquist-polar-stability.svg",
       "bytes": 9486,
       "sha256": "fdc444f81d11f5adc56e543f6de59ea19eef6f58f778fee35f8861662cddb21d"
@@ -229,14 +294,39 @@
       "sha256": "5955811d905d83e80f4bb9c41d05c312a274638d98d718a2325bcd280ed79427"
     },
     {
+      "path": "kb/diagrams/pfd-charge-pump-spur.svg",
+      "bytes": 19324,
+      "sha256": "5c938ef775826ef0ceebc728289caf4aab6dd5c0101d1473740e9f25c30be41b"
+    },
+    {
       "path": "kb/diagrams/pole-splitting-locus.svg",
       "bytes": 13256,
       "sha256": "c1453eed91fc5069468037cc2983bc97f2f7a91e456246a32642e55c700567e7"
     },
     {
+      "path": "kb/diagrams/rail-to-rail-input-stage.svg",
+      "bytes": 18199,
+      "sha256": "186098bb5f65311184febafbd55747de1fde5f52a5e91b758d9a2f637272daca"
+    },
+    {
+      "path": "kb/diagrams/regulated-cascode-ssf.svg",
+      "bytes": 18150,
+      "sha256": "5de0395fecada51044fded55455b1ad2966d9d7788d047a6385323541e7b4fb0"
+    },
+    {
       "path": "kb/diagrams/ring-and-lc-oscillators.svg",
       "bytes": 22985,
       "sha256": "908e3248445229379bd5d2242ada8081dbd54ec36c07fcbcad2fb8b78d997aef"
+    },
+    {
+      "path": "kb/diagrams/sar-adc-cdac-architecture.svg",
+      "bytes": 16968,
+      "sha256": "e56afc9f853118c8c5a10093988da85c73c19cf3e7dc9783437e62ea313fcf97"
+    },
+    {
+      "path": "kb/diagrams/sc-parasitic-insensitive-integrator.svg",
+      "bytes": 20039,
+      "sha256": "50fa8f27ee8e01cc89a6b84a7847cc9e3fac556c850c18e9ed1044952818d379"
     },
     {
       "path": "kb/diagrams/short-channel-iv-gmid.svg",
@@ -249,6 +339,21 @@
       "sha256": "999af232e5a3be0b5ab7fe40a8eb8a25b9ec4a81a67258c2ee5b8ee2585e457f"
     },
     {
+      "path": "kb/diagrams/spectre-pss-pnoise-flow.svg",
+      "bytes": 14070,
+      "sha256": "6e9c86fcbcc0d773b215dbbb319450646ab9a28ee8aab5882afba3db3d0654b9"
+    },
+    {
+      "path": "kb/diagrams/spectre-stb-probe-setup.svg",
+      "bytes": 16461,
+      "sha256": "2ec024e6bba8cf304d6e4362bd8b3f28a434b93b784742551d53dcd7a172f6b6"
+    },
+    {
+      "path": "kb/diagrams/strongarm-dynamic-comparator.svg",
+      "bytes": 20187,
+      "sha256": "867663f3b21980df01e173e33e93e6d13f8eb0c54e1b608bc29fb89b990136ea"
+    },
+    {
       "path": "kb/diagrams/supply-independent-bias-startup.svg",
       "bytes": 22607,
       "sha256": "e41623171b145649fc988f23bfde91b12e035b8d84d5c2e1f3b4a519ad3b949a"
@@ -257,6 +362,11 @@
       "path": "kb/diagrams/telescopic-cascode-opamp.svg",
       "bytes": 23846,
       "sha256": "c2886f1a696cfc51e601e4bc3189cb7eca3981c73fbb84702c744932fee44e70"
+    },
+    {
+      "path": "kb/diagrams/tia-shunt-shunt-feedback.svg",
+      "bytes": 15622,
+      "sha256": "210b8da32a2550cca954f58ced04ecab64c225fc34693ab26461999651908125"
     },
     {
       "path": "kb/diagrams/two-stage-miller-opamp.svg",
@@ -269,14 +379,24 @@
       "sha256": "df96ea0f69246919613f673e1f39898eaaca8c09ea46c2d7dcbae3b715141c64"
     },
     {
+      "path": "kb/diagrams/wilson-current-mirror.svg",
+      "bytes": 17037,
+      "sha256": "2d073d24806f45060bf955e0d8075b71258934ec71fcdf45c65d982babeec71c"
+    },
+    {
+      "path": "kb/github-skills/catalog.json",
+      "bytes": 59135,
+      "sha256": "ef04d42bbec932af1cd1ea453eeff5fa0a55e5e17f1b15922aee474d22bd5d31"
+    },
+    {
       "path": "kb/glossary/terms-vi-en.json",
       "bytes": 1336450,
       "sha256": "0ad0a5e60e754efc7414441900e3c302f16b22453964fa1137a45852d6c8b59d"
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 52076,
-      "sha256": "99c1e8cfabe632b2ae20423a945897f44abcc88dce0c5eae097cf889f144d81f"
+      "bytes": 160375,
+      "sha256": "a948ee1dd48e4cbca9e4ba065b04caadd9bceb5e1782b3b4f4dbbad65e4a72f0"
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/concept-diffpair-mirror-pole-doublet.md",
@@ -299,6 +419,16 @@
       "sha256": "f984e8d31a9c8bb06ccab863bee4dec693e92baee74df86c4987e8041280f65d"
     },
     {
+      "path": "kb/nodes/dynamics-noise-feedback/law-cascode-and-cg-high-frequency-poles.md",
+      "bytes": 29555,
+      "sha256": "a4f017d4d9fb50fffd4b4d4b3e8159c0eaf4025edce8d85daf9a3bd91609e085"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-diff-pair-frequency-response-cmrr-rolloff.md",
+      "bytes": 28934,
+      "sha256": "2be98eef0f987e64ef91dd226bc7ed77782b7a0eaf4d6058d14cc98aeda68fdc"
+    },
+    {
       "path": "kb/nodes/dynamics-noise-feedback/law-miller-theorem-and-rhp-zero.md",
       "bytes": 20249,
       "sha256": "9d6cd0cdc3cd8a3e4f6afc07896d3a70667eb6dee63edf258012673306fe918c"
@@ -309,6 +439,21 @@
       "sha256": "edc2bc8b99672e610c96a49e35db79475fb574e286c3b517de3c98a319e49f4c"
     },
     {
+      "path": "kb/nodes/dynamics-noise-feedback/law-noise-bandwidth-and-snr-power-scaling.md",
+      "bytes": 35065,
+      "sha256": "c0dfec6adcc3c6518e613e334c6785d679c32251570c2b02a25986fb85cfd513"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-noise-in-diff-pairs-and-current-mirrors.md",
+      "bytes": 33957,
+      "sha256": "1f704e802484af7dc6ca69e7e13c119c0a9c734998f1807b0c522569a421ceb9"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/law-noise-in-single-stage-amplifiers.md",
+      "bytes": 39738,
+      "sha256": "3c29f238075ea3a8ee53c039e58eddbe9c0aec918f30bc3fc8c8f76bacc8fb9e"
+    },
+    {
       "path": "kb/nodes/dynamics-noise-feedback/law-stage-and-mirror-noise-rules.md",
       "bytes": 23247,
       "sha256": "8def63eda75a6e7d5235b253d9546e47de21cd654efbebaa86c8d675e6c08d7e"
@@ -317,6 +462,11 @@
       "path": "kb/nodes/dynamics-noise-feedback/tech-bode-blackman-middlebrook-stb.md",
       "bytes": 24031,
       "sha256": "6da6dad0b593d7897812b8665fcdadc0109a9d686a36c0570d3941cf603c1f50"
+    },
+    {
+      "path": "kb/nodes/dynamics-noise-feedback/tech-feedback-four-topologies-loading-examples.md",
+      "bytes": 33468,
+      "sha256": "bc6b68ac92ce53503173cc5bacf93b5a61868ea8b7439cb57cf1bc925b560856"
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/tech-feedback-two-port-loading.md",
@@ -334,6 +484,121 @@
       "sha256": "82a6d4ba9a484d9c70dd9ef4a81870858f7e006b27945ad28af4155866deba84"
     },
     {
+      "path": "kb/nodes/dynamics-noise-feedback/topo-transimpedance-amplifier-tia-feedback.md",
+      "bytes": 30069,
+      "sha256": "b78618d83075dc6abbd7c6835ebdcf64b19d2fc8c3b1caa7abaa0f77e09add5c"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-5t-ota-root-cause-fault-tree.md",
+      "bytes": 22029,
+      "sha256": "53ada98380670528aa8ab11136bafa5e31cba7d92aaa0a568b81a049b4a0370b"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-amplifier-25-topology-selector.md",
+      "bytes": 24857,
+      "sha256": "909c152c27391f97a649fc773057328eeaeb64500be77b7ae213bf453f4c9f4a"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-analog-layout-common-centroid-matching.md",
+      "bytes": 27455,
+      "sha256": "1c716243a58df03b37fa983dd68cfeb189758316ffb4edb5d927483c819348ee"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-bandgap-startup-curvature-montecarlo-tb.md",
+      "bytes": 23131,
+      "sha256": "59412fe96066dc72345867b781b7384d686fbe864dc4f0ddb7ce003973745074"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-cace-spec-driven-characterization-contract.md",
+      "bytes": 25161,
+      "sha256": "ee9c05d80b0ccab92c9dd97c3456dddb75816656fa214ed26837c777fd6805c8"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-cmfb-continuous-and-sc-testbench.md",
+      "bytes": 23720,
+      "sha256": "c699cca846207a27e3dfb0de963512c00e59c2d14ed2612e9f5bd009db832733"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-comparator-kickback-offset-metastability-tb.md",
+      "bytes": 24133,
+      "sha256": "367985ee1c658424b368d462085e5ab2d822f1500f88259f166554911c1545ed"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-folded-cascode-and-gainboost-sizing-flow.md",
+      "bytes": 28483,
+      "sha256": "abd691d0687fcfb164fcc4893ded294c1180aac22695ff51dc8948883e23e7e8"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-gm-id-lookup-table-sizing.md",
+      "bytes": 25331,
+      "sha256": "cc62d20b6a1261ef1b2714c2d3a42a28d6dfeb762bb577f214299d725d7cd755"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-ic617-skill-sch-cdf-automation.md",
+      "bytes": 21268,
+      "sha256": "1ab9f413d1073f7e2e13274e9fe61f4fba43d8ec3beab5de9b13229e826768b2"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-ldo-stability-load-line-psrr-tb.md",
+      "bytes": 26145,
+      "sha256": "3087f8ddd17530c84cb0767b14cc270ac4914d855087d143e51790f236119964"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-ocean-parametric-testbench-runner.md",
+      "bytes": 20284,
+      "sha256": "25454ad1e0161a18d4b1dadd5f24a97c1a059b997bad38e21cd7450956b249c5"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-pll-cp-loop-filter-lock-jitter-tb.md",
+      "bytes": 28160,
+      "sha256": "3b6ff8168263dce7d51a9471b128a2e3f966c874a73b43150243577e0634106c"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-post-layout-pex-drc-lvs-debug.md",
+      "bytes": 24671,
+      "sha256": "b749d266303a27ea31596e3d79fe0e1312290c1655330fc569fe91943eed496d"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-sar-adc-cdac-coherent-fft-calibration.md",
+      "bytes": 24511,
+      "sha256": "d7dd932aa4a41c96776447f53be7427ab019fbce9e6c1d89372d215dc8b8dc8e"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-spectre-noise-dc-ac-tran-montecarlo.md",
+      "bytes": 22348,
+      "sha256": "b09203599583caadb9befab6221de724c9ec26b2771960317fb3897cf9f015d1"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-spectre-pss-pac-pnoise-pstb.md",
+      "bytes": 21667,
+      "sha256": "e674b279da46915f5a6d55a34d3e360130bf39441aee22f1ef7b4ac788fe4cac"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-spectre-stb-diffstb-middlebrook.md",
+      "bytes": 25400,
+      "sha256": "b1d42959e470b0a24a362abda4515aac5b05ea84afb013c8664facb166420980"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-switched-capacitor-charge-injection-pac-tb.md",
+      "bytes": 29203,
+      "sha256": "27968fdcbaa1f890d281e2c5747902ffc5bf06a71594e2bfcd1074e5fdb29e42"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-two-stage-miller-fault-tree.md",
+      "bytes": 21839,
+      "sha256": "1556a1642fd8c1e4d8bb16147cea00a0ef8d9ccdaccd5ee7709c09677ede8713"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-vco-ring-lc-phase-noise-kvco-tb.md",
+      "bytes": 28437,
+      "sha256": "e1d7a4e8d2508303e91337543eeba23c42018001108ce6375bc9d61d56ced5e2"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-veriloga-mixed-signal-behavioral-models.md",
+      "bytes": 25292,
+      "sha256": "bedfba9215d73d2b6980bdd536dd50cfdb7f40e11a9e035544af32f9658b1dea"
+    },
+    {
       "path": "kb/nodes/foundations/concept-analog-design-octagon.md",
       "bytes": 26354,
       "sha256": "42d07ee43c619859ee0d76e680f900a5de1bb8a3555501ef52d60ccaab232235"
@@ -342,6 +607,11 @@
       "path": "kb/nodes/foundations/concept-mos-capacitances-small-signal.md",
       "bytes": 26382,
       "sha256": "55ffdc0b8affc2c0497693d83bb181ebb809bbbefa05ee0a0da035f8024fa26a"
+    },
+    {
+      "path": "kb/nodes/foundations/concept-mos-junction-and-gate-capacitances-regions.md",
+      "bytes": 27363,
+      "sha256": "44e4989f98b51ca4354c2c56546f6bb28583f7b1fbaf42fc71da478d978e33f0"
     },
     {
       "path": "kb/nodes/foundations/concept-mos-operating-regions.md",
@@ -359,6 +629,11 @@
       "sha256": "a0f537f68d980267a75e8f0298cfac0f8618c9b098e864bc2e5bda21086dee5c"
     },
     {
+      "path": "kb/nodes/foundations/concept-subthreshold-weak-inversion-operation.md",
+      "bytes": 30007,
+      "sha256": "db858ba34555e14c8d7c28623526e26ec7a4445900b400f808a37f286d05e15d"
+    },
+    {
       "path": "kb/nodes/foundations/law-short-channel-effects.md",
       "bytes": 25875,
       "sha256": "f24f3afa689c0f84fd34355b74ca1a7ba392db12b3dd7682d41db5198e8ed500"
@@ -374,9 +649,29 @@
       "sha256": "cbe99a6a89e2cc32d09f912d0d7e563d7afabc54ec2fdd800eda18f75332ed3b"
     },
     {
+      "path": "kb/nodes/nonideal-and-physical/concept-bsim4-and-finfet-nanometer-models.md",
+      "bytes": 28145,
+      "sha256": "cd9d92e76f4c6a0bdfc5966638d661f03b34143b5ee6972242a8aaeef4fad361"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/concept-cmos-fabrication-wells-and-process-steps.md",
+      "bytes": 26313,
+      "sha256": "ce967b123c23bbf3c6ff0b90533adc90f1a7600662794c10f29aeb7a95b0ca4d"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/concept-integrated-resistors-and-capacitors-cmos.md",
+      "bytes": 26193,
+      "sha256": "3629ce5a3d35d6ca69f270d1406121399f5cc1d9c7ae94294eb9e513e8a7c28f"
+    },
+    {
       "path": "kb/nodes/nonideal-and-physical/law-cmos-wells-and-latchup-guard-rings.md",
       "bytes": 33856,
       "sha256": "24a090acecaf8a289ce227f35d9acdea8471bc36d03b4e8b39f831ac15a2d717"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/law-differential-imbalance-hd2-and-cm-nonlinearity.md",
+      "bytes": 27566,
+      "sha256": "d57d228a98e233a7ab37a53084533bf8c2df6da471c86a4098c5529b440985f6"
     },
     {
       "path": "kb/nodes/nonideal-and-physical/law-differential-nonlinearity-and-feedback.md",
@@ -389,6 +684,11 @@
       "sha256": "0281de8a0f00c8f726b4d2f740e0723a1061d68334cea5d519bfdf22e9d269ac"
     },
     {
+      "path": "kb/nodes/nonideal-and-physical/tech-chopper-stabilization-vs-autozeroing.md",
+      "bytes": 28859,
+      "sha256": "35c344ebf4e57492af1df08d76d8927758db57cbe346243887a3accc22f38d53"
+    },
+    {
       "path": "kb/nodes/nonideal-and-physical/tech-common-centroid-sti-wpe-layout.md",
       "bytes": 34328,
       "sha256": "e191e7d3863302ae2244efc42d463105c6d8acf40f5d7a64cfb3955a0a6f3e6d"
@@ -397,6 +697,26 @@
       "path": "kb/nodes/nonideal-and-physical/tech-dynamic-offset-cancellation-az-cds.md",
       "bytes": 30747,
       "sha256": "760f0f27f2af1d6c435b7f775f0df70a78ab54480ecadc78e4e4e2c988635c14"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-esd-protection-padring-and-package-parasitics.md",
+      "bytes": 26128,
+      "sha256": "42c7d662732db205fa4c66a7d2247694825fa7babaae9d262f1224fa92d9c8ef"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-interconnect-rc-electromigration-and-ir-drop.md",
+      "bytes": 23977,
+      "sha256": "c4333c8dc77d6189243cc33137463e97fb31ee80cb20742d3e11827ce286bc2a"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-nanometer-opamp-design-case-studies.md",
+      "bytes": 31863,
+      "sha256": "14c7e6cf1fb635477b9f08646cf05123f93a411b5c1417805c5a62e9f80342c7"
+    },
+    {
+      "path": "kb/nodes/nonideal-and-physical/tech-substrate-noise-coupling-and-shielding.md",
+      "bytes": 24504,
+      "sha256": "7648d45f64096f3ad34ae301c18b7657d57cbf4930b227331f90b5479fdabbe4"
     },
     {
       "path": "kb/nodes/opamps-and-compensation/concept-opamp-performance-contract.md",
@@ -419,6 +739,11 @@
       "sha256": "cd97898239800788b0c4be3a36f20395aefb132cebf582b45803e12d37f25ec8"
     },
     {
+      "path": "kb/nodes/opamps-and-compensation/law-slewing-vs-linear-settling-time-budget.md",
+      "bytes": 29749,
+      "sha256": "41b27a272e4d24c120d02a062930e84a917c7fda7bafd8edff95bceb0f0566bc"
+    },
+    {
       "path": "kb/nodes/opamps-and-compensation/tech-common-mode-feedback-cmfb.md",
       "bytes": 23205,
       "sha256": "4758fc5748dc7a62e5b4ab6bc6d111a19b03e267267923412d1a9c334471d4bd"
@@ -434,9 +759,29 @@
       "sha256": "2f38ff93c8b75fd0cace0f324f8931d64455aa7feb61d184e92a6938025bbf41"
     },
     {
+      "path": "kb/nodes/opamps-and-compensation/tech-nested-miller-and-multipath-compensation.md",
+      "bytes": 26483,
+      "sha256": "d7087c33f40c7a1c82dc5750c798eeb97f88f3a6d583f90a48e887c20cac4e9c"
+    },
+    {
       "path": "kb/nodes/opamps-and-compensation/tech-nyquist-stability-criterion.md",
       "bytes": 24288,
       "sha256": "5384ba8d73f270826830715bd16a7828556abe8597960f1fb0ccd29284542150"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-opamp-psrr-plus-and-minus-analysis.md",
+      "bytes": 26751,
+      "sha256": "41577e95080d6b56d9624bf95fea8fba3b8302716425ccc5bc7d3ef19422af7e"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-opamp-step-by-step-sizing-procedure.md",
+      "bytes": 30443,
+      "sha256": "2ff48b9b1603102117e2251bd1c237b983f42b730bd295ef4d3dbc4313c1ce4b"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/tech-phase-margin-bode-to-step-overshoot-mapping.md",
+      "bytes": 27910,
+      "sha256": "51a11754fdabe6d78be531c898268f72acacfa8eac694b7457f130b3dad4ea33"
     },
     {
       "path": "kb/nodes/opamps-and-compensation/tech-slew-rate-and-class-ab-opamps.md",
@@ -449,9 +794,19 @@
       "sha256": "2d93df4bd7488700010ed775ab549a57c670073b69e1748059d68cdbb05290f5"
     },
     {
+      "path": "kb/nodes/opamps-and-compensation/topo-fully-differential-cmfb-topologies-comparison.md",
+      "bytes": 27736,
+      "sha256": "ffe2a8765a08f9d1699a07f548ce4febaa2e19f57e6c837c86fb9bfa279503c7"
+    },
+    {
       "path": "kb/nodes/opamps-and-compensation/topo-gain-boosted-cascode.md",
       "bytes": 22170,
       "sha256": "4b1c6781a0ece9e142473a7d1212744985a8d16a7e209fc2851de2fc1db1bd23"
+    },
+    {
+      "path": "kb/nodes/opamps-and-compensation/topo-rail-to-rail-complementary-input-stage.md",
+      "bytes": 31832,
+      "sha256": "ffa97fd52e1346043e34288caffbf257c2d13b9e21956d64f2b8787b42dde8ab"
     },
     {
       "path": "kb/nodes/opamps-and-compensation/topo-telescopic-cascode-opamp.md",
@@ -467,6 +822,11 @@
       "path": "kb/nodes/references-and-biasing/law-ctat-ptat-temperature-cancellation.md",
       "bytes": 20131,
       "sha256": "13b6272d8827a3979c861f8f45f1a53a022d46c1f46ca9b89485e8ad322b2fe8"
+    },
+    {
+      "path": "kb/nodes/references-and-biasing/tech-bandgap-curvature-compensation-and-speed.md",
+      "bytes": 26730,
+      "sha256": "e7c99d22069fb24a2b71a79406f2af7c91c50de96c45e5e833adc2151d3c53a9"
     },
     {
       "path": "kb/nodes/references-and-biasing/tech-ptat-current-and-constant-gm.md",
@@ -489,6 +849,11 @@
       "sha256": "f6cdfb562ca5f6cc2fff4eba3dae61793c2d06dad62767efb25b661958a121bd"
     },
     {
+      "path": "kb/nodes/references-and-biasing/topo-constant-gm-bias-and-supply-sensitivity.md",
+      "bytes": 25212,
+      "sha256": "b9d7417f845e6e1ffa408e88e5886fd47efd4e239d75c97d2183fd6de43ec30c"
+    },
+    {
       "path": "kb/nodes/references-and-biasing/topo-low-voltage-sub1v-bandgap.md",
       "bytes": 23049,
       "sha256": "bd12d5eaf4f05202cff0fb850507bfd05171b85bc912dde0cbdf18ed4b612ed7"
@@ -499,9 +864,24 @@
       "sha256": "373214eddc3f3ea7a7f07398b340f851575d878e4a1d01df2a5671737bba5767"
     },
     {
+      "path": "kb/nodes/sampled-and-clocked/law-oscillator-phase-noise-leeson-and-isf.md",
+      "bytes": 32552,
+      "sha256": "87210fb4ba71b37677235d8fc4f5889965e427d6066fc122f57ed0e02d9c98dd"
+    },
+    {
       "path": "kb/nodes/sampled-and-clocked/tech-charge-injection-and-bottom-plate-sampling.md",
       "bytes": 27590,
       "sha256": "34336f9477fcfb234b54318f97990b92e954b45b927245fc2a6daa3fd6b62ea2"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/tech-cp-pll-third-order-loop-filter-synthesis.md",
+      "bytes": 28211,
+      "sha256": "268ef2201c37c276214dbdb4983c7df27fe5d16234a1f742ce176e2aae94171e"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/tech-dll-delay-locked-loop-vs-pll.md",
+      "bytes": 28646,
+      "sha256": "0e1a67335204bdb966bdd3a1bf8c154b39acc7df443f9cedc7eea217830790b0"
     },
     {
       "path": "kb/nodes/sampled-and-clocked/tech-switched-capacitor-cmfb.md",
@@ -519,6 +899,21 @@
       "sha256": "e3c6fc91bded3edfa1aab8ad94621315d4e2bc79e684269560a914323f24366a"
     },
     {
+      "path": "kb/nodes/sampled-and-clocked/topo-colpitts-hartley-and-one-port-lc-oscillators.md",
+      "bytes": 33110,
+      "sha256": "31beb8b4c9abf6d0c00e0f07cfdbdbcf13405f2ba6c59bb6f4cb305d7cf2532c"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-dynamic-strongarm-and-miyahara-comparator.md",
+      "bytes": 29994,
+      "sha256": "98b0911da6fc5aacdd3f3896741b8747ef1d6dd3376470a5df7e54ad561f840c"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-frequency-synthesizer-integer-fractional-n.md",
+      "bytes": 27328,
+      "sha256": "4e45b89b7791f5d7d240bc54173030110bfc43e336aecc101b5270dedc1bb778"
+    },
+    {
       "path": "kb/nodes/sampled-and-clocked/topo-lc-cross-coupled-and-colpitts.md",
       "bytes": 26497,
       "sha256": "dc278437c31f3003306df8fd30112b1ed7096adf92085d16d971cbfa5250db8b"
@@ -529,14 +924,39 @@
       "sha256": "9863a3caf78518f4cabd23cbd547f8d526477a4c10d4cb6965f598a80bed997c"
     },
     {
+      "path": "kb/nodes/sampled-and-clocked/topo-pfd-deadzone-and-charge-pump-nonidealities.md",
+      "bytes": 31029,
+      "sha256": "8c5cba8693d3ae0da0f3053ba34e261cc00be9ac7a9628e9c2bd8aaf065afd4d"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-quadrature-vco-and-varactor-tuning.md",
+      "bytes": 30616,
+      "sha256": "9916a373544b7bdca9d73274269625a6e48065fbe315e09b00a90691fd734ec0"
+    },
+    {
       "path": "kb/nodes/sampled-and-clocked/topo-ring-oscillator.md",
       "bytes": 25849,
       "sha256": "626c1f47b994592a61fe59914de1e509ca400e7c4634c7d5f0d61a0ecc05117c"
     },
     {
+      "path": "kb/nodes/sampled-and-clocked/topo-sar-adc-charge-redistribution-architecture.md",
+      "bytes": 28788,
+      "sha256": "318305dab4e47d233771d13b500949944b0654414fd611201754272f279e2570"
+    },
+    {
       "path": "kb/nodes/sampled-and-clocked/topo-switched-capacitor-amplifiers-integrators.md",
       "bytes": 26222,
       "sha256": "0e5c555a303fe40f81308fb74d3d2750d28008351db8d0362a3b214d76f07b5b"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-switched-capacitor-integrator-parasitic-insensitive.md",
+      "bytes": 30577,
+      "sha256": "52d828dff6d168a7b24b2ccb0bc7d90366b2f1abaed78f768de87f26651d7f1c"
+    },
+    {
+      "path": "kb/nodes/sampled-and-clocked/topo-switched-capacitor-unity-and-multiplying-amps.md",
+      "bytes": 34646,
+      "sha256": "6ec2c856832a5bbf8445e8630b75c003c639e3dcd4889e306744a5d57cd16194"
     },
     {
       "path": "kb/nodes/sampled-and-clocked/topo-type1-simple-pll.md",
@@ -547,6 +967,11 @@
       "path": "kb/nodes/sampled-and-clocked/topo-vco-tuning-and-phase-noise.md",
       "bytes": 25373,
       "sha256": "fb380443719a51a75b70312fe23bd5bd3bc7500b4d931a60d8fb9fa1db66e9ca"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/concept-choice-of-transistor-configurations.md",
+      "bytes": 25663,
+      "sha256": "b80a31ce215d7ed353f522726dc092a0e75e79d2dc4dd9259a1617349c20659a"
     },
     {
       "path": "kb/nodes/stages-and-mirrors/concept-cm-response-and-cmrr.md",
@@ -599,9 +1024,24 @@
       "sha256": "e7e83b3fef221488774666d16949e741c803e35273b9b2f4b79fec3e9df4f9bf"
     },
     {
+      "path": "kb/nodes/stages-and-mirrors/topo-cs-triode-and-current-source-loads.md",
+      "bytes": 25698,
+      "sha256": "022b0fe10852470c90dbc31137a752f1f8d90f3dd7c1dd4bc75f5f5454a5b0f5"
+    },
+    {
       "path": "kb/nodes/stages-and-mirrors/topo-degenerated-diffpair-and-gilbert.md",
       "bytes": 23941,
       "sha256": "64f0099f3f256dc7a8a30b1da6377f8b01ac992a65a45e28ac9df0b5b649f3f0"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-diff-pair-active-current-mirror-load.md",
+      "bytes": 34355,
+      "sha256": "6920eea6b1689d9db9658f1e9fa2ae2fa29061e2397df22794937935f2a6df32"
+    },
+    {
+      "path": "kb/nodes/stages-and-mirrors/topo-diff-pair-with-degeneration-and-triode-loads.md",
+      "bytes": 33263,
+      "sha256": "9346bf2ac837ec2569f00e3e7a6d5bf92985a373dd769ab6783151c74436908a"
     },
     {
       "path": "kb/nodes/stages-and-mirrors/topo-five-transistor-ota.md",
@@ -614,14 +1054,24 @@
       "sha256": "16f281cdcf3925964eec9592159cbc6b36f57e3363aa6dfe7d141290a0ff090b"
     },
     {
+      "path": "kb/nodes/stages-and-mirrors/topo-regulated-cascode-super-source-follower.md",
+      "bytes": 25941,
+      "sha256": "f458dc9f88d7cdd7205bee622bd4ce477cd75fe575ab6b8ad0c7fda3e7ee332e"
+    },
+    {
       "path": "kb/nodes/stages-and-mirrors/topo-source-follower.md",
       "bytes": 27587,
       "sha256": "dcb9b38d8bcc6e9c5570fb1c18d2c5a46c91576a95e098edb2f01e9dd5748061"
     },
     {
+      "path": "kb/nodes/stages-and-mirrors/topo-wilson-and-regulated-current-mirrors.md",
+      "bytes": 31493,
+      "sha256": "c7008c65638ee1c229c1c49d729be47b06bba0b6429e58747203d5431297523b"
+    },
+    {
       "path": "kb/router-index.json",
-      "bytes": 539559,
-      "sha256": "17fd10f4ddda164ebfdbe59184d0151f2b6e3e8c93706bcfaa3ccce7ecf6d3bd"
+      "bytes": 1269191,
+      "sha256": "61836dcfd82b4b231bc0a6cf09af502a292b4c79d14ea6f67d1f0d17cacc291f"
     }
   ]
 }

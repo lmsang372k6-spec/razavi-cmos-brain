@@ -1,0 +1,134 @@
+{
+  "checklist_id": "esd-pad-and-substrate",
+  "title_vi": "Bảng kiểm Bảo vệ Xả Tĩnh điện ESD, Vòng Chân Pad, Xuyên Nhiễu Đế và Ký sinh Đóng gói (ESD, Padring, Substrate & Packaging)",
+  "applies_to": [
+    "tech-esd-protection-padring-and-package-parasitics",
+    "tech-substrate-noise-coupling-and-shielding",
+    "tech-interconnect-rc-electromigration-and-ir-drop",
+    "law-cmos-wells-and-latchup-guard-rings",
+    "concept-cmos-fabrication-wells-and-process-steps"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-ESD-01",
+      "name": "Mạng ESD hai bậc (Primary Dual-Diode + CDM Resistor + Secondary Gate Clamp) bảo vệ cực cổng oxit mỏng",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi chân tín hiệu nối thẳng vào cực cổng MOSFET lõi phải có: (1) Cặp diode ESD sơ cấp cỡ lớn sát pad kẹp lên VDD_ESD / VSS_ESD, (2) Điện trở hạn dòng nối tiếp R_CDM (~ 50..200 Ohm unsilicided poly), và (3) Cặp diode/clamp thứ cấp nhỏ sát cực cổng giữ V_gate < V_ox_breakdown dưới xung CDM siêu nhanh (< 1 ns)",
+      "why_vi": "Trong sự kiện nhiễm điện linh kiện (CDM), dòng xung đỉnh hàng ampe tăng vọt trong < 200 ps; riêng sụt áp điện trở kim loại và điện áp bật thuận của diode sơ cấp ngoài pad đã vọt lên 5-8 V, đủ đánh thủng tức thời oxit cổng mỏng 1.2-2 nm nếu thiếu điện trở chặn R_CDM và kẹp thứ cấp ngay sát cổng!",
+      "cadence_check": "Rà soát sơ đồ nối dây từ mọi chân `Analog_In / Control_Pin` vào mạch nội bộ; xác nhận không có cực cổng transistor lõi oxit mỏng nào đấu trực tiếp ra pad kim loại mà thiếu mạng `R_CDM + Secondary Clamp` và kiểm tra băng thông suy hao `R_CDM * C_in`.",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "law-cmos-wells-and-latchup-guard-rings",
+        "concept-bsim4-and-finfet-nanometer-models"
+      ]
+    },
+    {
+      "id": "CHK-ESD-02",
+      "name": "Khép kín đường thoát dòng xung ESD toàn phần giữa mọi tổ hợp chân thông qua Mạch Kẹp Nguồn Chủ động (RC Power Clamp)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Giữa mỗi cặp thanh nguồn VDD_x và VSS_x phải có mạch kẹp công suất chủ động (RC-triggered BigFET Power Clamp), và giữa các miền đất tách biệt (GNDA <-> GNDD) phải có cặp diode đối song song (back-to-back antiparallel ESD diodes)",
+      "why_vi": "Khi thử nghiệm phóng tĩnh điện HBM 2 kV (dòng đỉnh 1.33 A) dương vào một chân Analog_In so với chân đất số GNDD, dòng điện đi qua diode trên lên VDDA, qua Power Clamp xuống GNDA, rồi phải qua diode đối song song sang GNDD. Nếu quên Power Clamp hoặc quên diode nối giữa hai miền đất tách biệt, đường xả dòng bị đứt làm điện áp nổ vọt phá hủy mạch lõi!",
+      "cadence_check": "Chạy kiểm tra đường đi dòng ESD điểm-tới-điểm (`Calibre PERC` hoặc kiểm tra ma trận tổ hợp chân `Pin-to-Pin ESD Path Audit`), đồng thời mô phỏng `tran` bật nguồn nhanh `VDD ramp = 1 us` đảm bảo mạch `RC Power Clamp` (thường `tau_RC ~ 0.5..1 us`) không bị kích hoạt nhầm gây chập dòng khởi động!",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "law-cmos-wells-and-latchup-guard-rings"
+      ]
+    },
+    {
+      "id": "CHK-ESD-03",
+      "name": "Phân tách miền nguồn/đất Tương tự và Số (Split Analog/Digital Pads) tránh sụt áp và nhiễu dội dây hàn L*di/dt",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Khối tương tự nhạy cảm (Bandgap, LNA, VCO, ADC) dùng chân pad và dây hàn riêng (VDDA, GNDA) tách hoàn toàn trên chip khỏi bộ đệm I/O số và lõi logic (VDDD, GNDD), chỉ giao tiếp đất qua cặp diode ESD đối song song trên padring và chụm hình sao tại mặt phẳng đất bảng mạch PCB",
+      "why_vi": "Mỗi sợi dây hàn (bondwire) và chân vỏ mang điện cảm tự cảm L_bond ~ 2..10 nH (khoảng 1 nH/mm). Hàng trăm cổng số và bộ đệm I/O chuyển mạch đồng thời tạo dI/dt hàng tỷ A/s, sinh xung nhiễu dội nguồn/đất L*dI/dt từ vài chục đến vài trăm mV làm hỏng trực tiếp độ phân giải tương tự nếu dùng chung dây hàn!",
+      "cadence_check": "Kiểm tra sơ đồ `Padring` và chạy `Calibre LVS` với tùy chọn tách nhãn đất (`virtual connect` tắt hoặc dùng `metal resistor / antiparallel ESD cell`) xác nhận `GNDA` và `GNDD` không bị nối chập kim loại vô tình bên trong chip.",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "tech-substrate-noise-coupling-and-shielding"
+      ]
+    },
+    {
+      "id": "CHK-ESD-04",
+      "name": "Đồng bộ thế Đế bán dẫn với Đất Tương tự (Unison Substrate-GNDA Connection) và Cách ly Lồng Giếng N Sâu (Deep N-Well)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Trên đế p+ điện trở suất thấp, các tiếp xúc đế vùng tương tự nối chặt vào GNDA trên chip để V_sub và V_source_NMOS nảy đồng pha (V_SB = 0); với các mạch cực nhạy nhiễu đế (VCO, LNA, công tắc lấy mẫu), bọc trong giếng n sâu (Deep N-Well) nối VDDA sạch qua chân Kelvin riêng",
+      "why_vi": "Nhiễu chuyển mạch số truyền qua điện dung tiếp giáp C_DB xuống tấm đế p+ chung rồi điều chế ngưỡng V_TH của MOSFET tương tự thông qua hiệu ứng thân g_mb * v_bs (Razavi §19.3). Nếu nối tiếp xúc đế tương tự ra một dây hàn đất khác với cực nguồn GNDA, hiệu điện thế L_A*dI/dt đánh thẳng vào V_BS!",
+      "cadence_check": "Đưa mô hình điện cảm dây hàn `L_A, L_D, L_sub` và mạng điện trở đế vào testbench cấp cao nhất; kiểm tra nhiễu cặp vi sai `v(b) - v(s)` trong quá trình cổng số chuyển mạch và xác nhận giếng `DNW` luôn khóa ngược sạch sẽ.",
+      "related_nodes": [
+        "tech-substrate-noise-coupling-and-shielding",
+        "law-cmos-wells-and-latchup-guard-rings",
+        "concept-mos-transconductance-and-body-effect"
+      ]
+    },
+    {
+      "id": "CHK-ESD-05",
+      "name": "Giảm chấn cộng hưởng LC giữa Điện cảm Dây hàn Đóng gói và Tụ Khử Nhiễu Nguồn trên Chip (On-Chip Decap Damping)",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Hệ số phẩm chất cộng hưởng nguồn Q_pdn = (1 / R_esr_decap) * sqrt(L_pkg_eff / C_decap_onchip) <= 1.0..1.5 tại tần số f_res = 1 / (2 * pi * sqrt(L_pkg_eff * C_decap_onchip))",
+      "why_vi": "Gắn tụ lọc MOS lớn C_decap giữa VDD1 và GND1 trên chip giúp giữ hiệu điện thế nội ổn định, nhưng C_decap tạo thành khung cộng hưởng nối tiếp/song song với điện cảm dây hàn L_D + L_G! Nếu điện trở nối tiếp của tụ quá nhỏ (Q cao) và xung nhịp hoặc hài bao hình rơi trúng f_res (~ 50-300 MHz), gợn nhiễu nguồn sẽ bị KHUẾCH ĐẠI vọt lên thay vì bị lọc!",
+      "cadence_check": "Chạy quét trở kháng mạng phân phối nguồn `Z_PDN(f)` bằng Spectre `ac` (bơm nguồn dòng AC `1 A` giữa `VDD_int` và `GND_int` có gắn đầy đủ mô hình vỏ gói RLC): nếu xuất hiện đỉnh nhọn trở kháng lớn, chèn điện trở nối tiếp giảm chấn `R_damp` (hoặc định cỡ chiều dài kênh tụ MOS theo Eq. 18.4) để triệt đỉnh cộng hưởng.",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "concept-integrated-resistors-and-capacitors-cmos"
+      ]
+    },
+    {
+      "id": "CHK-ESD-06",
+      "name": "Tối ưu Điện dung Ký sinh Chân Pad + ESD cho Ngõ vào/ra Tần số Cao và Ghép đôi Chân Vi sai Đối xứng",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "C_total_pin = C_pad + C_ESD_diodes + C_pkg_pin nằm trong ngân sách cực ngõ vào/ngõ ra 1 / (2 * pi * R_source * C_total_pin) >= BW_target; các cặp tín hiệu vi sai đặt trên hai chân pad liền kề đối xứng kẹp giữa hai chân đất chắn (G-S+-S--G)",
+      "why_vi": "Một chân pad vuông đa lớp kim loại cộng hai diode ESD lớn có thể gây tải tụ từ 300 fF đến > 1.5 pF xuống đế có tổn hao. Ở tần số cao/RF, phải cắt vát 4 góc thành pad bát giác (Octagonal Pad giảm ~20% diện tích/chu vi, Razavi Fig. 19.51), chỉ dùng các tầng kim loại đỉnh kèm tấm chắn đất có khía rãnh và dùng diode ESD điện dung thấp; đồng thời bố trí cặp chân vi sai cạnh nhau để từ thông hỗ cảm L_m tự khử nhiễu chế độ chung.",
+      "cadence_check": "Trích xuất điện dung `PEX` của ô `Pad + ESD` và đặt đầy đủ mô hình hỗ cảm `K_mutual` giữa các dây hàn lân cận (Eq. 19.21) vào mô phỏng `ac / sp / tran` trước khi đóng băng sơ đồ chân (pinout).",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "tech-interconnect-rc-electromigration-and-ir-drop"
+      ]
+    },
+    {
+      "id": "CHK-ESD-07",
+      "name": "Tuân thủ Mật độ Dòng Di cư Điện tử (Electromigration J_max), Xẻ rãnh Kim loại Rộng (Slotting) và Giới hạn Sụt áp IR Drop",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "I_DC_branch <= W_metal * J_max_DC(T_max) VÀ N_vias >= ceil(I_DC_branch / I_max_per_via) với sụt áp dọc thanh nguồn/đất Delta_V_IR = I * R_sheet * (L / W) < 5..10 mV; các thanh kim loại quá rộng (> 10..20 um) phải xẻ rãnh dọc (metal slotting) theo luật ứng suất DRC",
+      "why_vi": "Ở nhiệt độ cao (110-125 °C), mật độ dòng điện một chiều vượt ngưỡng J_max (~ 0.5-2 mA/um) đẩy các nguyên tử kim loại trôi dạt tạo hốc đứt mạch (void) hoặc râu chập mạch (hillock). Đồng thời thanh kim loại quá rộng chịu ứng suất nhiệt làm bong tróc điện môi nếu không xẻ rãnh dọc theo chiều dòng chảy!",
+      "cadence_check": "Kiểm tra dòng trung bình `I_DC` và dòng hiệu dụng `I_RMS` lớn nhất trên mọi đường nguồn, đầu ra LDO và cuộn cảm VCO tại `125 °C`; tăng bề rộng dây, ghép song song nhiều tầng kim loại qua dàn đa lỗ thông (`via array`), và chạy `DRC Metal Slot / Density` đạt 0 lỗi.",
+      "related_nodes": [
+        "tech-interconnect-rc-electromigration-and-ir-drop",
+        "topo-cmos-ldo-regulator"
+      ]
+    },
+    {
+      "id": "CHK-ESD-08",
+      "name": "Che chắn Tĩnh điện Đường Dây Tương tự Nhạy cảm (Coplanar / Coaxial Shielding) và Cân bằng Trễ Phân tán RC (Wire Dispersion)",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "T_delay_wire = 0.5 * R_u * C_u * L^2 << T_edge_min; đường xung nhịp lấy mẫu và đường tín hiệu tương tự chạy tới mảng công tắc phải khớp chiều dài/hướng truyền, và các dây analog trở kháng cao đi gần đường số phải được kẹp hai đường đất chắn nối sạch (GND shield)",
+      "why_vi": "Chỉ cần điện dung xuyên âm 50 aF từ một dây xung nhịp 1 V cắt ngang hoặc chạy song song vào nút tương tự 10 fF đã gây nhiễu 5 mV (Razavi §19.2.7)! Ngoài ra độ trễ phân tán tỷ lệ bình phương chiều dài dây L^2 làm tù sườn xung nhịp (dispersion) và gây sai lệch thời điểm lấy mẫu (aperture skew) giữa các kênh.",
+      "cadence_check": "Chạy trích xuất ký sinh ghép chéo `PEX (R + C + CC)` ở cấp top-level, kiểm tra nhiễu xuyên âm từ mọi đường `CLK / DATA` sang các nút đầu vào tương tự/tham chiếu và xác nhận dây chắn đất được nối xuống `GNDA` sạch chứ không để lơ lửng!",
+      "related_nodes": [
+        "tech-interconnect-rc-electromigration-and-ir-drop",
+        "tech-substrate-noise-coupling-and-shielding"
+      ]
+    },
+    {
+      "id": "CHK-ESD-09",
+      "name": "Vòng Bảo vệ Kép Khép kín 360 Độ quanh Pad ESD / Bộ đệm I/O và Nối Đất Kelvin Riêng cho Vòng Thu Nhiễu",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi ô ESD và I/O Driver phải được bao kín 360 độ bởi vòng p+ nối VSS_ESD và vòng N-Well nối VDD_ESD theo chuẩn Latch-Up JEDEC (>= +-100 mA trigger current); vòng p+ guard ring bao quanh khối tương tự nhạy cảm phải nối về chân đất riêng (hoặc điểm sao tại pad) không đi chung nhánh kim loại đất tham chiếu nội",
+      "why_vi": "Các ô bảo vệ ESD và đệm ngõ ra là nguồn phun hạt tải thiểu số mạnh nhất toàn chip khi có quá áp chân vào/ra dưới -0.7 V hoặc trên VDD + 0.7 V. Nếu vòng thu nhiễu đế của khối tương tự lại đấu thẳng vào đường kim loại đất cảm nhận của Bandgap/OTA, dòng nhiễu thu gom được sẽ gây sụt áp I*R làm bẩn chính đất tham chiếu nội bộ!",
+      "cadence_check": "Kiểm tra mặt bằng vòng padring và ranh giới Analog/Digital bằng bộ luật `ESD / Latch-Up DRC` và xác minh đường đi dây Kelvin riêng biệt của các vòng `Guard Ring` trên Virtuoso Layout.",
+      "related_nodes": [
+        "tech-esd-protection-padring-and-package-parasitics",
+        "tech-substrate-noise-coupling-and-shielding",
+        "law-cmos-wells-and-latchup-guard-rings"
+      ]
+    }
+  ]
+}

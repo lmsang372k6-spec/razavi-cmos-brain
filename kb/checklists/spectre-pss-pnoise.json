@@ -1,0 +1,144 @@
+{
+  "checklist_id": "spectre-pss-pnoise",
+  "title_vi": "Bảng kiểm Phân tích Trạng thái Xác lập Tuần hoàn và Nhiễu Chu kỳ (SpectreRF PSS / PAC / PNoise / PSTB)",
+  "applies_to": [
+    "topo-switched-capacitor-unity-and-multiplying-amps",
+    "topo-switched-capacitor-integrator-parasitic-insensitive",
+    "tech-chopper-stabilization-vs-autozeroing",
+    "topo-colpitts-hartley-and-one-port-lc-oscillators",
+    "topo-quadrature-vco-and-varactor-tuning",
+    "law-oscillator-phase-noise-leeson-and-isf",
+    "topo-pfd-deadzone-and-charge-pump-nonidealities",
+    "topo-switched-capacitor-amplifiers-integrators",
+    "topo-vco-tuning-and-phase-noise"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-PSS-01",
+      "name": "Chọn đúng chế độ Driven vs Autonomous và tần số cơ bản ước lượng chung lớn nhất (Beat Frequency)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mạch có nguồn xung nhịp cưỡng bức (SC, Chopper, PFD/CP, Divider): chế độ Driven với f_beat = GCD(f_clk, f_in); Mạch tự dao động (Ring/LC VCO): bật Autonomous (oscillator mode) chỉ định đúng cặp nút vi sai dao động p/n và ước lượng f_est gần tần số thực",
+      "why_vi": "Mạch thay đổi định kỳ theo thời gian (LPTV) như tụ chuyển mạch, điều biến băm Chopper hay VCO không có điểm làm việc DC tĩnh để tuyến tính hóa bằng AC/Noise thường. Nếu khai báo sai tần số cơ bản f_beat hoặc quên bật chế độ Autonomous cho VCO, thuật toán Shooting/Harmonic Balance của PSS sẽ không hội tụ hoặc cắt cụt chu kỳ.",
+      "cadence_check": "Trong hộp thoại Spectre `pss`: kiểm tra `Beat Frequency` tự động khớp ước chung lớn nhất của mọi nguồn tuần hoàn; với VCO tự do, tích chọn `Oscillator`, trỏ tới hai nút khung cộng hưởng `Vout+ / Vout-` và đặt `tstab >= 50..200 * T_osc` để biên độ xác lập hoàn toàn.",
+      "related_nodes": [
+        "topo-colpitts-hartley-and-one-port-lc-oscillators",
+        "topo-quadrature-vco-and-varactor-tuning",
+        "topo-switched-capacitor-integrator-parasitic-insensitive"
+      ]
+    },
+    {
+      "id": "CHK-PSS-02",
+      "name": "Cấm dùng thuật toán tích phân giảm chấn số Gear bậc cao làm tắt giả hoặc làm đẹp giả nhiễu pha VCO",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "method = traponly (hoặc gear2only với maxstep <= T_osc / 50) VÀ errpreset = conservative cho mọi mô phỏng PSS/PNoise của bộ dao động LC/Ring và mạch SC chính xác cao",
+      "why_vi": "Phương pháp tích phân số Gear mặc định giới thiệu tổn hao số nhân tạo (numerical damping) tương đương mắc thêm điện trở dương song song vào khung LC Q cao, có thể dập tắt dao động thực hoặc làm sai lệch biên độ đỉnh và độ dốc qua điểm không (zero-crossing slope).",
+      "cadence_check": "Mở `pss Options -> Integration Method`: chọn `traponly` (cho LC-VCO) kèm `errpreset = conservative`, `reltol <= 1e-4`, và kiểm tra dạng sóng chu kỳ cuối của PSS đạt sai số khép vòng `< 1 uV`.",
+      "related_nodes": [
+        "topo-lc-cross-coupled-and-colpitts",
+        "topo-colpitts-hartley-and-one-port-lc-oscillators",
+        "law-oscillator-phase-noise-leeson-and-isf"
+      ]
+    },
+    {
+      "id": "CHK-PSS-03",
+      "name": "Đặt đủ số bậc hài (Harmonics / maxacfreq) để bắt trọn hiện tượng gập phổ nhiễu nhiệt băng rộng (Noise Folding)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "maxsideband >= ceil(5 * BW_thermal_switch_or_ota / f_clk) (thường >= 15..40 dải biên cho mạch SC / Auto-Zero / Comparator)",
+      "why_vi": "Trong mạch lấy mẫu tụ chuyển mạch (SC) và tự động khử lệch (Auto-Zeroing), nhiễu trắng trải rộng tới băng thông công tắc 1/(2*pi*Ron*Cs) gấp hàng chục lần f_clk bị gập toàn bộ về vùng Nyquist [0, f_clk/2] tạo tổng nhiễu kT/C. Nếu để mặc định maxsideband quá thấp (ví dụ 5-7), Spectre bỏ sót phần lớn các dải biên gập về, báo nhiễu thấp giả tạo tới 6-15 dB!",
+      "cadence_check": "Trong `pnoise`, tăng dần `Maximum sideband` (ví dụ `15 -> 30 -> 50`) cho tới khi nhiễu tích phân RMS hội tụ thay đổi `< 1%`, đảm bảo `maxacfreq` trong `pss` bao phủ tối thiểu `5x` băng thông RC của công tắc lấy mẫu.",
+      "related_nodes": [
+        "topo-switched-capacitor-unity-and-multiplying-amps",
+        "tech-chopper-stabilization-vs-autozeroing",
+        "topo-mos-and-cmos-sampling-switches"
+      ]
+    },
+    {
+      "id": "CHK-PSS-04",
+      "name": "Lấy mẫu nhiễu đúng thời điểm chốt cuối pha (Time-Domain / Sampled Strobe) thay vì đọc trung bình chu kỳ",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Chế độ pnoise = timedomain / sampled (jitter) với thời điểm lấy mẫu t_sample đặt ngay trước sườn ngắt của pha khuếch đại/giữ mẫu phi2 (tránh đặt trùng sườn chuyển mạch đang slewing)",
+      "why_vi": "Mạch SC Amplifier, SC Integrator và Comparator chỉ trao giá trị điện áp hợp lệ cho tầng sau tại thời điểm cuối pha xác lập (end of phi2), trong khi nửa chu kỳ còn lại ngõ ra đang đặt lại (reset) hoặc slewing mang nhiễu hoàn toàn khác. Đọc nhiễu trung bình cả chu kỳ sẽ trộn lẫn nhiễu pha reset với nhiễu pha giữ.",
+      "cadence_check": "Trong Spectre `pnoise`: bật `timedomain` (hoặc `sampled` phase), nhập chính xác tọa độ thời gian `t_strobe = T_end_phi2 - 50ps` quan sát từ đồ thị quá độ PSS và tích phân mật độ phổ từ `1 Hz` đến `f_clk / 2` (vì mọi dải trên `f_clk/2` đã gập vào dải cơ sở!).",
+      "related_nodes": [
+        "topo-switched-capacitor-unity-and-multiplying-amps",
+        "topo-switched-capacitor-integrator-parasitic-insensitive",
+        "topo-dynamic-strongarm-and-miyahara-comparator"
+      ]
+    },
+    {
+      "id": "CHK-PSS-05",
+      "name": "Phân tách đúng vùng dốc -30 dB/dec (1/f^3 upconverted flicker) và -20 dB/dec (1/f^2 thermal) của Nhiễu pha VCO",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Quét tần số bù Delta_f tương đối với hài cơ bản (Relative Harmonic = 1) từ 100 Hz đến 100 MHz theo thang logarit và kiểm tra góc giao cắt f_1/f^3 cùng bảng đóng góp nhiễu (Noise Summary) của cặp chéo so với nguồn dòng đuôi",
+      "why_vi": "Nhiễu nhấp nháy 1/f của nguồn dòng đuôi và cặp ghép chéo bị trộn tần qua bất đối xứng dạng sóng hoặc điều chế AM-PM varactor sinh vùng nhiễu pha 1/f^3 sát sóng mang, còn nhiễu nhiệt khung LC và kênh dẫn sinh vùng 1/f^2. Bảng đóng góp nhiễu tại hai điểm bù (ví dụ 10 kHz và 1 MHz) chỉ đích danh transistor nào đang làm hỏng jitter.",
+      "cadence_check": "Trong `pnoise` cho VCO: chọn `Noise Type = sources` (hoặc `pm` / `jitter`), đặt `Sweeptype = relative`, `Relative Harmonic = 1`, xuất đồ thị `L(Delta_f) [dBc/Hz]` và bảng `Print Noise Summary` tại cả `Delta_f = 10 kHz` (vùng 1/f^3) và `Delta_f = 1 MHz` (vùng 1/f^2).",
+      "related_nodes": [
+        "law-oscillator-phase-noise-leeson-and-isf",
+        "topo-quadrature-vco-and-varactor-tuning",
+        "topo-vco-tuning-and-phase-noise"
+      ]
+    },
+    {
+      "id": "CHK-PSS-06",
+      "name": "Đo hàm truyền rời rạc, băng thông và PSRR của mạch SC / Chopper bằng PAC hoặc PXF thay vì AC tĩnh",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Dùng phân tích `pac` (Periodic AC) để đo độ lợi truyền từ ngõ vào tới dải biên k=0 (SC) hoặc dải biên giải điều chế (Chopper), và dùng `pxf` (Periodic Transfer Function) để đo PSRR / CMRR có xét trộn tần xung nhịp",
+      "why_vi": "Trong mạch tụ chuyển mạch và mạch khuếch đại băm Chopper, các công tắc mở/đóng luân phiên khiến phân tích `ac` thông thường nhìn thấy mạch bị hở một nhánh! Ngược lại `pxf` bắt được chính xác cơ chế nhiễu nguồn cấp tại hài xung nhịp `n * f_chop` hoặc `n * f_clk` bị trộn tần thẳng xuống dải gốc DC!",
+      "cadence_check": "Sau `pss`, chạy `pac` (biên độ nguồn thử `pacmag = 1`) đọc dải biên `0` để kiểm chứng độ lợi `C1/C2` và hàm truyền `H(z)`, đồng thời chạy `pxf` hướng về ngõ ra xác lập để soi độ nhạy của `VDD` tại mọi hài `k * f_clk`.",
+      "related_nodes": [
+        "topo-switched-capacitor-unity-and-multiplying-amps",
+        "topo-switched-capacitor-integrator-parasitic-insensitive",
+        "tech-chopper-stabilization-vs-autozeroing"
+      ]
+    },
+    {
+      "id": "CHK-PSS-07",
+      "name": "Kiểm chứng ổn định vòng tuần hoàn cho SC-CMFB và Mạch Băm bằng phân tích PSTB (Periodic Stability)",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "Chèn `iprobe` / `diffstbprobe` vào vòng hồi tiếp chế độ chung tụ chuyển mạch (SC-CMFB) hoặc vòng hồi tiếp băm và chạy `pstb` đạt Phase Margin >= 55 deg, Gain Margin >= 10 dB trên chu kỳ xác lập",
+      "why_vi": "Vòng SC-CMFB thay đổi cấu trúc tải điện dung giữa hai pha phi1 và phi2 đồng thời có trễ giữ mẫu rời rạc; chỉ kiểm tra `stb` ở một trạng thái DC giả tạo sẽ bỏ lọt nguy cơ dao động chế độ chung ở nửa tần số xung nhịp f_clk/2.",
+      "cadence_check": "Đặt `iprobe` tại nhánh điều khiển cổng nguồn dòng đuôi/tải của vòng `SC-CMFB`, chạy `pss + pstb` qua các góc PVT để xác nhận dự trữ pha trung bình chu kỳ không suy biến.",
+      "related_nodes": [
+        "tech-switched-capacitor-cmfb",
+        "tech-common-mode-feedback-cmfb",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-PSS-08",
+      "name": "Định lượng vạch phổ giả tham chiếu (Reference Spurs) từ gợn Vcont của PFD + Bơm điện tích bằng PSS Spectrum",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "P_spur(+-f_ref) [dBc] = 20 * log10(Delta_Vcont_fref * K_VCO / (2 * w_ref)) <= Spur_spec_dBc dưới điều kiện lệch dòng UP/DN, lệch trễ PFD và dòng rò tụ lọc thực tế",
+      "why_vi": "Khi PLL đã khóa, sai lệch dòng UP/DN, xuyên xung nhịp công tắc và chia sẻ điện tích trong bơm điện tích tạo thành phần hài tuần hoàn tại bội số f_ref trên đường Vcont; qua độ nhạy K_VCO, gợn áp rất nhỏ (vài chục microvolt) đã sinh ra hai dải biên điều tần giả +-f_ref vượt ngưỡng cho phép của chuẩn thu phát vô tuyến.",
+      "cadence_check": "Chạy `pss` cho khối PFD + CP + Loop Filter ở trạng thái khóa (có áp đặt lệch `Vcont` gần biên dải tuân thủ), lấy biến đổi DFT phổ `Vcont(f)` tại `f_ref, 2*f_ref` rồi nhân hàm truyền điều tần VCO để kiểm chứng biên độ spur.",
+      "related_nodes": [
+        "topo-pfd-deadzone-and-charge-pump-nonidealities",
+        "tech-cp-pll-third-order-loop-filter-synthesis",
+        "topo-frequency-synthesizer-integer-fractional-n"
+      ]
+    },
+    {
+      "id": "CHK-PSS-09",
+      "name": "Quy đổi chính xác từ Phổ Nhiễu Pha L(Delta_f) sang Jitter Chu kỳ Tích phân theo Cửa sổ Băng thông Giao thức",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "sigma_t_rms = (1 / (2 * pi * f_0)) * sqrt( 2 * integral_{f_low}^{f_high} 10^(L(f)/10) df ) tính trên tổng nhiễu đóng vòng (PFD/CP/Ref đi qua hàm thông thấp + VCO đi qua hàm thông cao)",
+      "why_vi": "Tích phân phổ nhiễu pha tự do của VCO từ 0 Hz sẽ phân kỳ vô hạn vì dốc 1/f^2 và 1/f^3! Trong hệ thống thực, vòng khóa pha cắt bỏ nhiễu VCO dưới băng thông vòng f_loop, còn bộ khôi phục xung nhịp (CDR) phía thu định nghĩa cận dưới f_low và cận trên f_high của cửa sổ tích phân jitter.",
+      "cadence_check": "Kết hợp đường cong `pnoise` của PFD+CP (nhân `N^2 |H_cl(jf)|^2`) và đường cong `pnoise` của VCO (nhân `|1 - H_cl(jf)|^2`) để tính tích phân `RMS Phase Jitter [fs]` trên băng thông chuẩn (ví dụ `12 kHz .. 20 MHz`).",
+      "related_nodes": [
+        "law-oscillator-phase-noise-leeson-and-isf",
+        "tech-cp-pll-third-order-loop-filter-synthesis",
+        "topo-frequency-synthesizer-integer-fractional-n"
+      ]
+    }
+  ]
+}

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""1-Command Authoring, Rebuilding & Sync Helper for Razavi CMOS Knowledge Brain.
+"""1-Command Authoring, Rebuilding & Sync Helper for Razavi CMOS Knowledge Brain (2026.11.18.3).
 
 Pure Python 3 standard library. Zero external pip packages, zero bytecode clutter.
 
 Usage:
-  python tools/manage_kb.py status
-  python tools/manage_kb.py new-card <domain> <node-id> "<title_vi>" "<title_en>" --chapter <N>
-  python tools/manage_kb.py add-edge <from_id> <to_id> <rel> "<when>" "<cost>" "<ref>"
-  python tools/manage_kb.py rebuild [--export-bundle PATH]
+  python -B tools/manage_kb.py status
+  python -B tools/manage_kb.py new-card <domain> <node-id> "<title_vi>" "<title_en>" --chapter <N>
+  python -B tools/manage_kb.py add-edge <from_id> <to_id> <rel> "<when>" "<cost>" "<ref>"
+  python -B tools/manage_kb.py rebuild [--export-bundle PATH]
 """
 import argparse
 import gzip
@@ -30,8 +30,9 @@ VALID_DOMAINS = (
     "dynamics-noise-feedback",
     "opamps-and-compensation",
     "references-and-biasing",
-    "sampled-and-clocked",
+    "sampled-and-github-skills" if False else "sampled-and-clocked",
     "nonideal-and-physical",
+    "eda-and-github-skills",
 )
 
 VALID_RELS = (
@@ -64,16 +65,24 @@ def parse_frontmatter(md_text):
 def cmd_status():
     manifest_path = os.path.join(KB_DIR, "manifest.json")
     router_path = os.path.join(KB_DIR, "router-index.json")
-    manifest = json.load(open(manifest_path, "r", encoding="utf-8"))
-    router = json.load(open(router_path, "r", encoding="utf-8"))
+    with open(manifest_path, "r", encoding="utf-8") as mf:
+        manifest = json.load(mf)
+    with open(router_path, "r", encoding="utf-8") as rf:
+        router = json.load(rf)
+    stats = router.get("stats", {})
     print(json.dumps({
         "release": manifest.get("release"),
         "nodes": len(router.get("nodes", [])),
+        "razavi_nodes": stats.get("razavi_node_count"),
+        "skill_nodes": stats.get("skill_node_count"),
         "chapters_covered": len(router.get("chapters", [])),
         "edges": manifest.get("edge_count"),
         "checklists": len(router.get("checklists", [])),
         "diagrams": len(router.get("diagrams", [])),
         "glossary_terms": manifest.get("glossary_count"),
+        "book_sections": stats.get("book_section_count"),
+        "book_equations": stats.get("book_equation_count"),
+        "github_repos": stats.get("github_repo_count"),
         "tracked_kb_files": manifest.get("file_count", len(manifest.get("files", []))),
     }, ensure_ascii=False, indent=2))
     return 0
@@ -82,7 +91,17 @@ def cmd_status():
 def cmd_new_card(args):
     if args.domain not in VALID_DOMAINS:
         raise SystemExit(f"Invalid domain '{args.domain}'. Choose from: {', '.join(VALID_DOMAINS)}")
-    kind = "topology" if args.node_id.startswith("topo-") else ("law" if args.node_id.startswith("law-") else ("technique" if args.node_id.startswith("tech-") else "concept"))
+    if args.node_id.startswith("skill-") or args.domain == "eda-and-github-skills":
+        kind = "skill"
+    elif args.node_id.startswith("topo-"):
+        kind = "topology"
+    elif args.node_id.startswith("law-"):
+        kind = "law"
+    elif args.node_id.startswith("tech-"):
+        kind = "technique"
+    else:
+        kind = "concept"
+
     dest_dir = os.path.join(NODES_DIR, args.domain)
     os.makedirs(dest_dir, exist_ok=True)
     dest_path = os.path.join(dest_dir, f"{args.node_id}.md")
@@ -105,6 +124,16 @@ def cmd_new_card(args):
                 "equations": [],
             }
         ],
+    }
+    if kind == "skill":
+        frontmatter["github_refs"] = [
+            {
+                "repo": "owner/repo",
+                "url": "https://github.com/owner/repo",
+                "use": "Mô tả luồng kiểm chứng / tự động hóa thực chiến tham chiếu từ kho mã nguồn.",
+            }
+        ]
+    frontmatter.update({
         "glossary_codes": ["T003"],
         "process_agnostic": True,
         "roles": {
@@ -113,7 +142,7 @@ def cmd_new_card(args):
         "symptoms_addressed": ["describe-addressed-symptom"],
         "limitations": ["describe-key-limitation"],
         "checklists": ["common-mos"],
-    }
+    })
 
     template = (
         "---\n"
@@ -138,7 +167,7 @@ def cmd_new_card(args):
     with open(dest_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(template)
     print(f"Created template card: {dest_path}")
-    print("Fill all 6 sections (>=120 lines), then run: python tools/manage_kb.py rebuild")
+    print("Fill all 6 sections (>=120 lines), then run: python -B tools/manage_kb.py rebuild")
     return 0
 
 
@@ -172,14 +201,16 @@ def cmd_add_edge(args):
 
 
 def export_offline_bundle(dest_gz_path):
-    router = json.load(open(os.path.join(KB_DIR, "router-index.json"), "r", encoding="utf-8"))
+    with open(os.path.join(KB_DIR, "router-index.json"), "r", encoding="utf-8") as rf:
+        router = json.load(rf)
     diagrams_map = {d["file"]: d for d in router.get("diagrams", []) if "file" in d}
     nodes_payload = {}
     for n in router.get("nodes", []):
         nid = n["id"]
         rel_path = n.get("raw_rel_path") or n.get("path")
         full_md_path = os.path.join(ROOT, *rel_path.split("/"))
-        raw_md = open(full_md_path, "r", encoding="utf-8").read()
+        with open(full_md_path, "r", encoding="utf-8") as mf:
+            raw_md = mf.read()
         _, body = parse_frontmatter(raw_md)
         diag_file = os.path.basename(n.get("diagram", ""))
         nodes_payload[nid] = {
@@ -189,7 +220,7 @@ def export_offline_bundle(dest_gz_path):
         }
     bundle_obj = {
         "schema": "razavi-nodes-bundle.v1",
-        "release": router.get("release", "2026.11.18.1"),
+        "release": router.get("release", "2026.11.18.3"),
         "node_count": len(nodes_payload),
         "nodes": nodes_payload,
     }
@@ -211,7 +242,7 @@ def cmd_rebuild(args):
         raise SystemExit(r2)
     if args.export_bundle:
         export_offline_bundle(args.export_bundle)
-    print("Rebuild + full graph/math/SVG/checklist validation PASSED!")
+    print("Rebuild + full 8-domain/coordinate/GitHub-skills/math/SVG/checklist/graph validation PASSED!")
     return 0
 
 
@@ -221,7 +252,7 @@ def main():
 
     sub.add_parser("status", help="Show knowledge graph statistics")
 
-    p_new = sub.add_parser("new-card", help="Scaffold a new 6-block Razavi card")
+    p_new = sub.add_parser("new-card", help="Scaffold a new 6-block Razavi or Skill card")
     p_new.add_argument("domain", choices=VALID_DOMAINS)
     p_new.add_argument("node_id")
     p_new.add_argument("title_vi")

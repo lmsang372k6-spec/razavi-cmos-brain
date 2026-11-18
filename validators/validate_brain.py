@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain (release 2026.11.18.1).
+"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain (release 2026.11.18.3).
+
+Validates all 8 domains (112 Razavi cards + 22 GitHub Practical Skill cards), 56 vector SVGs,
+16 structural checklists, 2,200 CLB glossary terms, Exact Book Coordinates (`book-coordinates.json`),
+GitHub Skills Catalog (`catalog.json`), 2D coordinates, balanced LaTeX, and SHA-256 manifest integrity.
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
 """
@@ -18,6 +22,7 @@ from collections import defaultdict
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
+EXPECTED_RELEASE = "2026.11.18.3"
 
 EXPECTED_DOMAINS = {
     "foundations",
@@ -27,6 +32,7 @@ EXPECTED_DOMAINS = {
     "references-and-biasing",
     "sampled-and-clocked",
     "nonideal-and-physical",
+    "eda-and-github-skills",
 }
 
 REQUIRED_FRONTMATTER_KEYS = (
@@ -57,7 +63,6 @@ def sha256_file(path):
 
 
 def strip_code_blocks_and_spans(markdown_body):
-    # Remove fenced code blocks ```...```
     lines = markdown_body.splitlines()
     kept_lines = []
     in_fence = False
@@ -75,24 +80,19 @@ def strip_code_blocks_and_spans(markdown_body):
         if not in_fence:
             kept_lines.append(line)
     text = "\n".join(kept_lines)
-    # Remove inline backtick code spans `...`
     text = re.sub(r"`+[^`]*`+", "", text)
     return text
 
 
 def check_balanced_math(markdown_body):
     clean = strip_code_blocks_and_spans(markdown_body)
-    # Remove escaped \$
     clean = clean.replace(r"\$", "")
-    # Count $$ display blocks first
     double_parts = clean.split("$$")
     if (len(double_parts) - 1) % 2 != 0:
         return False, f"Unbalanced '$$' display math delimiters (count={len(double_parts)-1})"
-    # Outside display math blocks, check inline $ delimiters per paragraph/line
     outside = "\n".join(double_parts[0::2])
     single_count = outside.count("$")
     if single_count % 2 != 0:
-        # Locate offending line for clear diagnostics
         for idx, line in enumerate(outside.splitlines(), 1):
             if line.count("$") % 2 != 0:
                 return False, f"Unbalanced '$' inline math delimiter near non-code line {idx}: {line[:90]}"
@@ -146,7 +146,7 @@ def has_cycle(adj):
     return None
 
 
-def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, min_lines=120):
+def validate(expected_nodes=134, expected_diagrams=56, expected_checklists=16, min_lines=120):
     errors = []
     warnings = []
 
@@ -172,7 +172,7 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                 if code not in glossary_ids:
                     errors.append(f"Missing base CLB glossary term: {code}")
             if len(terms) < 2190:
-                errors.append(f"Expected >= 2190 glossary terms (2134 base + Ch.13-19), got {len(terms)}")
+                errors.append(f"Expected >= 2190 glossary terms, got {len(terms)}")
         except Exception as exc:
             errors.append(f"Glossary parse error: {exc}")
 
@@ -194,12 +194,25 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                 if not vb:
                     errors.append(f"SVG {fn} missing viewBox attribute")
                 elem_count = sum(1 for _ in root.iter())
-                if elem_count < 8:
+                if elem_count < 15:
                     errors.append(f"SVG {fn} is trivially small ({elem_count} XML elements)")
             except Exception as exc:
                 errors.append(f"SVG {fn} XML parse failure: {exc}")
         if expected_diagrams and len(svg_files) < expected_diagrams:
             errors.append(f"Expected >= {expected_diagrams} SVG diagrams, found {len(svg_files)}")
+        diag_man_fp = os.path.join(diag_dir, "diagrams-manifest.json")
+        if not os.path.isfile(diag_man_fp):
+            errors.append("Missing kb/diagrams/diagrams-manifest.json")
+        else:
+            try:
+                with open(diag_man_fp, "r", encoding="utf-8-sig") as f:
+                    dman = json.load(f)
+                if len(dman.get("diagrams", [])) != len(svg_files):
+                    errors.append(
+                        f"diagrams-manifest.json count ({len(dman.get('diagrams', []))}) != SVG files ({len(svg_files)})"
+                    )
+            except Exception as exc:
+                errors.append(f"diagrams-manifest.json parse error: {exc}")
 
     # 3. Checklists validation
     cl_dir = os.path.join(KB_ROOT, "checklists")
@@ -229,9 +242,34 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
         if expected_checklists and len(checklists) < expected_checklists:
             errors.append(f"Expected >= {expected_checklists} checklists, found {len(checklists)}")
 
-    # 4. Node Markdown Cards validation
+    # 4. Pre-load GitHub catalog repo set so skill cards can cross-check against it
+    catalog_fp = os.path.join(KB_ROOT, "github-skills", "catalog.json")
+    catalog_repos = set()
+    catalog_data = None
+    if not os.path.isfile(catalog_fp):
+        errors.append("Missing kb/github-skills/catalog.json")
+    else:
+        try:
+            with open(catalog_fp, "r", encoding="utf-8-sig") as f:
+                catalog_data = json.load(f)
+            if catalog_data.get("schema") != "razavi-github-skills-catalog.v1":
+                errors.append(f"catalog.json invalid schema: {catalog_data.get('schema')!r}")
+            repos_list = catalog_data.get("repositories") or catalog_data.get("repos") or []
+            if len(repos_list) < 20:
+                errors.append(f"catalog.json expected >= 20 vetted repos, found {len(repos_list)}")
+            for r in repos_list:
+                for rk in ("id", "repo", "url", "pinned_commit_or_branch", "license", "category", "quality_tier", "ic617_compatibility", "summary_vi", "key_techniques", "linked_nodes"):
+                    if rk not in r:
+                        errors.append(f"catalog.json repo {r.get('repo', '?')}: missing key {rk!r}")
+                if r.get("repo"):
+                    catalog_repos.add(r["repo"])
+        except Exception as exc:
+            errors.append(f"catalog.json parse error: {exc}")
+
+    # 5. Node Markdown Cards validation across all 8 domains
     nodes_root = os.path.join(KB_ROOT, "nodes")
     node_ids = set()
+    skill_node_ids = set()
     chapters_covered = set()
     if not os.path.isdir(nodes_root):
         errors.append("Missing kb/nodes/ directory")
@@ -240,8 +278,11 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
             d for d in os.listdir(nodes_root) if os.path.isdir(os.path.join(nodes_root, d))
         }
         missing_domains = EXPECTED_DOMAINS - present_domains
+        unexpected_domains = present_domains - EXPECTED_DOMAINS
         if missing_domains:
             errors.append(f"Missing domain folders: {sorted(missing_domains)}")
+        if unexpected_domains:
+            errors.append(f"Unexpected domain folders: {sorted(unexpected_domains)}")
 
         for dom in sorted(present_domains):
             dom_dir = os.path.join(nodes_root, dom)
@@ -285,7 +326,21 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                 if meta.get("process_agnostic") is not True:
                     errors.append(f"{rel}: process_agnostic must be true")
 
-                # Diagram resolution
+                # Validate github_refs on skill-* / eda-and-github-skills cards
+                if dom == "eda-and-github-skills" or meta.get("kind") == "skill" or str(nid).startswith("skill-"):
+                    skill_node_ids.add(nid)
+                    if meta.get("kind") != "skill":
+                        errors.append(f"{rel}: skill card must have kind='skill', got {meta.get('kind')!r}")
+                    gh_refs = meta.get("github_refs")
+                    if not isinstance(gh_refs, list) or not gh_refs:
+                        errors.append(f"{rel}: skill card must have non-empty 'github_refs' list")
+                    else:
+                        for gref in gh_refs:
+                            if not isinstance(gref, dict) or not gref.get("repo") or not gref.get("url") or not gref.get("use"):
+                                errors.append(f"{rel}: invalid github_refs entry {gref!r}")
+                            elif catalog_repos and gref["repo"] not in catalog_repos:
+                                errors.append(f"{rel}: github_refs repo {gref['repo']!r} not in catalog.json")
+
                 diag_rel = meta.get("diagram", "")
                 if not diag_rel:
                     errors.append(f"{rel}: empty 'diagram' field")
@@ -294,7 +349,6 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                     if not os.path.isfile(resolved_diag):
                         errors.append(f"{rel}: diagram path does not exist: {diag_rel}")
 
-                # Check inline markdown image links to diagrams
                 for img_link in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", body):
                     clean_link = img_link.strip().split()[0]
                     if "://" in clean_link:
@@ -303,7 +357,6 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                     if not os.path.isfile(resolved_img):
                         errors.append(f"{rel}: broken inline image path: {clean_link}")
 
-                # Check all 6 required H2 sections exist and have non-trivial content
                 sec_positions = []
                 for sec_num in range(1, 7):
                     m = re.search(rf"^##\s+{sec_num}\.\s+.+$", body, re.M)
@@ -318,17 +371,14 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                         if len(sec_body) < 80:
                             errors.append(f"{rel}: section ## {snum}. is stub/too short ({len(sec_body)} chars)")
 
-                # Balanced LaTeX math delimiters
                 math_ok, math_msg = check_balanced_math(body)
                 if not math_ok:
                     errors.append(f"{rel}: {math_msg}")
 
-                # Checklists existence
                 for cl_id in meta.get("checklists") or []:
                     if cl_id not in checklists:
                         errors.append(f"{rel}: references unknown checklist {cl_id!r}")
 
-                # Razavi refs
                 refs = meta.get("razavi_refs") or []
                 if not isinstance(refs, list) or not refs:
                     errors.append(f"{rel}: razavi_refs must be a non-empty list")
@@ -341,34 +391,102 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                             else:
                                 errors.append(f"{rel}: invalid chapter {ch} in razavi_refs")
 
-                # Glossary codes if present
                 for gc in meta.get("glossary_codes") or []:
                     if glossary_ids and gc not in glossary_ids:
                         errors.append(f"{rel}: unknown glossary code {gc!r}")
 
         if expected_nodes and len(node_ids) != expected_nodes:
             errors.append(f"Expected {expected_nodes} node cards, found {len(node_ids)}")
+        if len(skill_node_ids) < 22:
+            errors.append(f"Expected >= 22 skill-* cards in eda-and-github-skills, found {len(skill_node_ids)}")
         if expected_nodes and chapters_covered != set(range(1, 20)):
             missing_ch = sorted(set(range(1, 20)) - chapters_covered)
-            errors.append(f"Chapters missing across Razavi node cards: {missing_ch}")
+            errors.append(f"Chapters missing across node cards: {missing_ch}")
 
-    # Cross-check related_nodes in checklists now that node_ids is populated
+    # Cross-check related_nodes in checklists and linked_nodes in catalog.json
     for cid, cdata in checklists.items():
         for chk in cdata.get("checks") or []:
             for rn in chk.get("related_nodes") or []:
                 if node_ids and rn not in node_ids:
                     errors.append(f"Checklist {cid} check {chk.get('id')}: unknown related_node {rn!r}")
 
-    # 5. Knowledge Graph edges.jsonl validation
+    if catalog_data:
+        for r in catalog_data.get("repositories") or catalog_data.get("repos") or []:
+            for ln in r.get("linked_nodes") or []:
+                if node_ids and ln not in node_ids:
+                    errors.append(f"catalog.json repo {r.get('repo')}: unknown linked_node {ln!r}")
+
+    # 6. Book Coordinates validation (kb/coordinates/book-coordinates.json)
+    coords_fp = os.path.join(KB_ROOT, "coordinates", "book-coordinates.json")
+    sec_count = 0
+    eq_count = 0
+    idx_term_count = 0
+    if not os.path.isfile(coords_fp):
+        errors.append("Missing kb/coordinates/book-coordinates.json")
+    else:
+        try:
+            with open(coords_fp, "r", encoding="utf-8-sig") as f:
+                bcoords = json.load(f)
+            if bcoords.get("schema") != "razavi-book-coordinates.v1":
+                errors.append(f"book-coordinates.json unexpected schema: {bcoords.get('schema')!r}")
+            b_chapters = bcoords.get("chapters") or []
+            if len(b_chapters) != 19:
+                errors.append(f"book-coordinates.json expected 19 chapters, got {len(b_chapters)}")
+            for ch_obj in b_chapters:
+                for nid in ch_obj.get("node_ids") or []:
+                    if node_ids and nid not in node_ids:
+                        errors.append(f"book-coordinates.json ch.{ch_obj.get('chapter')}: unknown node_id {nid!r}")
+
+            b_sections = bcoords.get("sections") or []
+            sec_count = len(b_sections)
+            if sec_count < 130:
+                errors.append(f"book-coordinates.json expected >= 130 sections, got {sec_count}")
+            for s_obj in b_sections:
+                if not s_obj.get("section_id") or not s_obj.get("chapter"):
+                    errors.append(f"book-coordinates.json section missing section_id/chapter: {s_obj!r}")
+                for nid in s_obj.get("primary_nodes") or []:
+                    if node_ids and nid not in node_ids:
+                        errors.append(
+                            f"book-coordinates.json section {s_obj.get('section_id')}: unknown primary_node {nid!r}"
+                        )
+
+            b_eqs = bcoords.get("equations") or []
+            eq_count = len(b_eqs)
+            if eq_count < 180:
+                errors.append(f"book-coordinates.json expected >= 180 equations, got {eq_count}")
+            for e_obj in b_eqs:
+                if not e_obj.get("eq_id") or not e_obj.get("latex"):
+                    errors.append(f"book-coordinates.json equation missing eq_id/latex: {e_obj!r}")
+                nid_primary = e_obj.get("node_id")
+                if nid_primary and node_ids and nid_primary not in node_ids:
+                    errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown node_id {nid_primary!r}")
+                for rn in e_obj.get("related_nodes") or []:
+                    if node_ids and rn not in node_ids:
+                        errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown related_node {rn!r}")
+
+            b_idx = bcoords.get("index_terms") or []
+            idx_term_count = len(b_idx)
+            if idx_term_count < 300:
+                errors.append(f"book-coordinates.json expected >= 300 index_terms, got {idx_term_count}")
+            for it_obj in b_idx:
+                for mn in it_obj.get("mapped_nodes") or []:
+                    if node_ids and mn not in node_ids:
+                        errors.append(f"book-coordinates.json index term {it_obj.get('term_en')!r}: unknown mapped_node {mn!r}")
+        except Exception as exc:
+            errors.append(f"book-coordinates.json parse error: {exc}")
+
+    # 7. Knowledge Graph edges.jsonl validation
     graph_dir = os.path.join(KB_ROOT, "graph")
     edges_fp = os.path.join(graph_dir, "edges.jsonl")
     edge_count = 0
     if not os.path.isdir(graph_dir):
         errors.append("Missing kb/graph/ directory")
     else:
-        leftover_frags = [
-            fn for fn in os.listdir(graph_dir) if fn.startswith("edges-d") and fn.endswith(".jsonl")
-        ]
+        leftover_frags = sorted(
+            fn
+            for fn in os.listdir(graph_dir)
+            if fn.startswith("edges-") and fn.endswith(".jsonl") and fn != "edges.jsonl"
+        )
         if leftover_frags:
             errors.append(f"Temporary edge fragments still present in kb/graph/: {leftover_frags}")
 
@@ -377,6 +495,7 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
         else:
             degree = defaultdict(int)
             upgrades_adj = defaultdict(list)
+            seen_edges = set()
             with open(edges_fp, "r", encoding="utf-8-sig") as f:
                 for line_no, line in enumerate(f, 1):
                     s = line.strip()
@@ -394,10 +513,16 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                     if not u or not v or not rel:
                         errors.append(f"edges.jsonl:{line_no}: missing from/to/rel")
                         continue
+                    if u == v:
+                        errors.append(f"edges.jsonl:{line_no}: self-loop on {u!r}")
                     if u not in node_ids:
                         errors.append(f"edges.jsonl:{line_no}: broken 'from' node {u!r}")
                     if v not in node_ids:
                         errors.append(f"edges.jsonl:{line_no}: broken 'to' node {v!r}")
+                    ekey = (u, v, rel)
+                    if ekey in seen_edges:
+                        errors.append(f"edges.jsonl:{line_no}: duplicate edge {ekey!r}")
+                    seen_edges.add(ekey)
                     degree[u] += 1
                     degree[v] += 1
                     if rel == "upgrades_to":
@@ -411,7 +536,7 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
             if cyc:
                 errors.append(f"Cycle detected in 'upgrades_to' subgraph: {' -> '.join(cyc)}")
 
-    # 6. Router Index & Manifest SHA-256 validation
+    # 8. Router Index & Manifest SHA-256 validation
     router_fp = os.path.join(KB_ROOT, "router-index.json")
     manifest_fp = os.path.join(KB_ROOT, "manifest.json")
     if not os.path.isfile(router_fp):
@@ -420,8 +545,27 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
         try:
             with open(router_fp, "r", encoding="utf-8-sig") as f:
                 ridx = json.load(f)
-            if len(ridx.get("nodes", [])) != len(node_ids):
+            if ridx.get("release") != EXPECTED_RELEASE:
+                errors.append(f"router-index.json unexpected release: {ridx.get('release')!r}")
+            rnodes = ridx.get("nodes", [])
+            if len(rnodes) != len(node_ids):
                 errors.append("router-index.json node count out of sync with kb/nodes/")
+            if len(ridx.get("domains", [])) != 8:
+                errors.append(f"router-index.json expected 8 domains, got {len(ridx.get('domains', []))}")
+            seen_grid_cells = {}
+            for rn in rnodes:
+                c2d = rn.get("coord_2d")
+                if not isinstance(c2d, dict) or "grid_col" not in c2d or "grid_row" not in c2d:
+                    errors.append(f"router-index.json node {rn.get('id')}: missing coord_2d")
+                else:
+                    cell = (c2d["grid_col"], c2d["grid_row"])
+                    if cell in seen_grid_cells:
+                        errors.append(
+                            f"router-index.json duplicate 2D grid cell {cell}: {seen_grid_cells[cell]} vs {rn.get('id')}"
+                        )
+                    seen_grid_cells[cell] = rn.get("id")
+                if not isinstance(rn.get("section_coords"), dict):
+                    errors.append(f"router-index.json node {rn.get('id')}: missing section_coords")
         except Exception as exc:
             errors.append(f"router-index.json parse error: {exc}")
 
@@ -431,7 +575,7 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
         try:
             with open(manifest_fp, "r", encoding="utf-8-sig") as f:
                 man = json.load(f)
-            if man.get("release") != "2026.11.18.1":
+            if man.get("release") != EXPECTED_RELEASE:
                 errors.append(f"manifest.json unexpected release: {man.get('release')!r}")
             recorded = {}
             for entry in man.get("files", []):
@@ -445,6 +589,9 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
                         errors.append(f"manifest.json byte size mismatch: {p}")
                     if sha256_file(abs_p) != entry.get("sha256"):
                         errors.append(f"manifest.json SHA-256 mismatch: {p}")
+            for req_rel in ("kb/coordinates/book-coordinates.json", "kb/github-skills/catalog.json"):
+                if req_rel not in recorded:
+                    errors.append(f"manifest.json missing required file: {req_rel}")
             for root_dir, dirs, files in os.walk(KB_ROOT):
                 dirs[:] = [d for d in dirs if d != "__pycache__"]
                 for fn in files:
@@ -460,12 +607,19 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
     return {
         "ok": len(errors) == 0,
         "summary": {
+            "release": EXPECTED_RELEASE,
             "nodes": len(node_ids),
+            "razavi_nodes": len(node_ids) - len(skill_node_ids),
+            "skill_nodes": len(skill_node_ids),
             "chapters_covered": len(chapters_covered),
             "diagrams_svg": len(svg_files),
             "checklists": len(checklists),
             "edges": edge_count,
             "glossary_terms": len(glossary_ids),
+            "book_sections": sec_count,
+            "book_equations": eq_count,
+            "book_index_terms": idx_term_count,
+            "github_repos": len(catalog_repos),
         },
         "errors": errors,
         "warnings": warnings,
@@ -474,9 +628,9 @@ def validate(expected_nodes=68, expected_diagrams=38, expected_checklists=13, mi
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--expected-nodes", type=int, default=68)
-    parser.add_argument("--expected-diagrams", type=int, default=38)
-    parser.add_argument("--expected-checklists", type=int, default=13)
+    parser.add_argument("--expected-nodes", type=int, default=134)
+    parser.add_argument("--expected-diagrams", type=int, default=56)
+    parser.add_argument("--expected-checklists", type=int, default=16)
     parser.add_argument("--min-lines", type=int, default=120)
     args = parser.parse_args()
 
