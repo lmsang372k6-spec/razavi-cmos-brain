@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.3).
+"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.4).
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
-Builds:
-  - kb/graph/edges.jsonl (when --merge-edges is passed)
-  - kb/router-index.json (with deterministic 2D coordinates & section_coords)
-  - kb/manifest.json (tracking all files under kb/, including coordinates/ & github-skills/)
+Builds across all 10 knowledge & EDA domains:
+  - kb/graph/edges.jsonl (when --merge-edges is passed; cleans temporary edges-*.jsonl shards)
+  - kb/router-index.json (with deterministic 22-column 2D coordinates, section_coords & 7-stage cycle tags)
+  - kb/manifest.json (tracking all files under kb/, including coordinates/, checklists/ & github-skills/)
 """
 import sys
 
@@ -23,7 +23,7 @@ from collections import defaultdict
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
-RELEASE_VERSION = "2026.11.18.3"
+RELEASE_VERSION = "2026.11.18.4"
 
 DOMAIN_METADATA = [
     {
@@ -76,16 +76,40 @@ DOMAIN_METADATA = [
         "chapters": [14, 18, 19],
     },
     {
-        "id": "eda-and-github-skills",
+        "id": "power-management-ic",
         "layer": 8,
-        "title_vi": "Tầng 8 · Thực chiến GitHub Skills, SKILL/OCEAN & Spectre Testbenches",
-        "title_en": "Practical GitHub EDA Skills, Virtuoso SKILL/OCEAN & Spectre Testbenches",
+        "title_vi": "Tầng 8 · Quản lý Nguồn PMIC: Capless LDO, Buck, Boost, Buck-Boost & Bảo vệ",
+        "title_en": "PMIC Power Management: Capless LDO, Buck, Boost, Buck-Boost & Protections",
+        "chapters": [2, 8, 10, 12, 13, 18, 19],
+    },
+    {
+        "id": "ams-filters-and-system",
+        "layer": 9,
+        "title_vi": "Tầng 9 · Bộ lọc Liên tục, DAC, ΔΣ/Pipeline ADC, AFE & Kiến trúc Hệ thống",
+        "title_en": "Continuous-Time Filters, DAC, ΔΣ/Pipeline ADC, Precision AFE & Chip Architecture",
+        "chapters": [4, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 19],
+    },
+    {
+        "id": "eda-and-github-skills",
+        "layer": 10,
+        "title_vi": "Tầng 10 · Chu trình Tối ưu Khép kín Cadence IC617, SpectreRF & GitHub Skills",
+        "title_en": "Closed-Loop Cadence IC617, SpectreRF, gm/ID & Pareto Optimization Skills",
         "chapters": list(range(1, 20)),
     },
 ]
 
+RAZAVI_CORE_DOMAINS = {
+    "foundations",
+    "stages-and-mirrors",
+    "dynamics-noise-feedback",
+    "opamps-and-compensation",
+    "references-and-biasing",
+    "sampled-and-clocked",
+    "nonideal-and-physical",
+}
+
 DOMAIN_CHAPTER_MAP = {
-    d["id"]: set(d["chapters"]) for d in DOMAIN_METADATA if d["id"] != "eda-and-github-skills"
+    d["id"]: set(d["chapters"]) for d in DOMAIN_METADATA if d["id"] in RAZAVI_CORE_DOMAINS
 }
 
 CHAPTER_METADATA = [
@@ -132,12 +156,19 @@ CHAPTER_DEFAULT_DIAGRAM = {
     19: "../../diagrams/common-centroid-multifinger.svg",
 }
 
+DOMAIN_DEFAULT_DIAGRAM = {
+    "power-management-ic": "../../diagrams/synchronous-buck-converter.svg",
+    "ams-filters-and-system": "../../diagrams/deltasigma-ciff-modulator.svg",
+    "eda-and-github-skills": "../../diagrams/closed-loop-cadence-codex-flow.svg",
+}
+
 NODE_ID_ALIASES = {
     "topo-telescopic-cascode-ota": "topo-telescopic-cascode-opamp",
     "topo-two-stage-miller-opamp": "topo-two-stage-opamp",
     "topo-gain-boosted-folded-cascode": "topo-gain-boosted-cascode",
     "tech-miller-nulling-resistor": "tech-miller-rhp-zero-nulling-and-cascode-comp",
     "trap-rhp-feedforward-zero": "law-miller-theorem-and-rhp-zero",
+    "skill-hierarchical-chip-spec-budgeting-and-bias-distribution": "tech-hierarchical-chip-spec-budgeting-and-interfaces",
 }
 
 FRONTMATTER_KEY_ORDER = [
@@ -164,6 +195,58 @@ TRACK_LABELS = {
     2: "sizing_and_compensation",
     3: "github_eda_skills",
 }
+
+DESIGN_CYCLE_METADATA = [
+    {
+        "stage": 1,
+        "id": "1_spec_and_kb",
+        "title_vi": "1 · Tra cứu KB & Bất biến Cấu trúc",
+        "title_en": "KB Lookup, Topology Selection & Structural Checklists",
+        "tool": "kb_lookup.py + checklists/*.json",
+    },
+    {
+        "stage": 2,
+        "id": "2_hierarchical_budget",
+        "title_vi": "2 · Phân bổ Chỉ tiêu & Hợp đồng Giao tiếp",
+        "title_en": "Top-Down Spec Budgeting & Block Interface Contracts",
+        "tool": "spec.json + project.json blocks[]",
+    },
+    {
+        "stage": 3,
+        "id": "3_gmid_physics_sizing",
+        "title_vi": "3 · Định cỡ Vật lý gm/ID (< 5 ms)",
+        "title_en": "PDK gm/ID Lookup-Table Inverse Sizing",
+        "tool": "gpdk_techsweep.py + gmid_lut.py",
+    },
+    {
+        "stage": 4,
+        "id": "4_schematic_and_veriloga",
+        "title_vi": "4 · Dựng Schematic OA & Mô hình Verilog-A",
+        "title_en": "Virtuoso IC617 Live Bridge & Behavioral Shell",
+        "tool": "ic617_live_bridge.il + ic617_client.py",
+    },
+    {
+        "stage": 5,
+        "id": "5_spectre_psf_audit",
+        "title_vi": "5 · Kiểm toán OP Vùng Bão hòa & Vòng STB/PSTB",
+        "title_en": "Spectre Simulation & Automated PSF OP/Waveform Audit",
+        "tool": "cadence_exec.py + psf_audit.py",
+    },
+    {
+        "stage": 6,
+        "id": "6_pareto_optimization",
+        "title_vi": "6 · Ma trận Độ nhạy & Tối ưu Vùng Tin cậy Pareto",
+        "title_en": "Sensitivity Jacobian & Constrained Trust-Region Optimization",
+        "tool": "sizing_opt.py",
+    },
+    {
+        "stage": 7,
+        "id": "7_pvt_mc_pex_signoff",
+        "title_vi": "7 · Nghiệm thu Đa góc PVT, Monte Carlo & Hậu Layout PEX",
+        "title_en": "Worst-Case PVT, Pelgrom Monte Carlo & Post-Layout PEX Signoff",
+        "tool": "psf_audit.py + CACE Signoff",
+    },
+]
 
 
 def fold_ascii(value):
@@ -219,7 +302,7 @@ def order_frontmatter(meta):
     return ordered
 
 
-def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
+def normalize_card_file(md_path, valid_checklists, valid_glossary_ids, catalog_repos=None):
     with open(md_path, "r", encoding="utf-8-sig") as f:
         raw_text = f.read()
     meta, body, _ = split_frontmatter(raw_text, md_path)
@@ -248,6 +331,8 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
         m_img = re.search(r"!\[[^\]]*\]\((\.\./\.\./diagrams/[^)]+\.svg)\)", body)
         if m_img:
             diag = m_img.group(1)
+        elif expected_domain in DOMAIN_DEFAULT_DIAGRAM:
+            diag = DOMAIN_DEFAULT_DIAGRAM[expected_domain]
         else:
             refs = meta.get("razavi_refs") or []
             first_ch = refs[0].get("chapter", 1) if refs and isinstance(refs[0], dict) else 1
@@ -258,6 +343,34 @@ def normalize_card_file(md_path, valid_checklists, valid_glossary_ids):
         diag_base = os.path.basename(diag)
         meta["diagram"] = "../../diagrams/" + diag_base
         changed = True
+
+    if "github_refs" in meta and isinstance(meta["github_refs"], list):
+        norm_gh = []
+        for entry in meta["github_refs"]:
+            if isinstance(entry, str) and entry.strip():
+                rname = entry.strip()
+                norm_gh.append({
+                    "repo": rname,
+                    "url": f"https://github.com/{rname}",
+                    "use": "Tham chiếu kiến trúc mạch và quy trình kiểm chứng mã nguồn mở đã kiểm định",
+                })
+            elif isinstance(entry, dict) and entry.get("repo"):
+                rname = str(entry["repo"]).strip()
+                norm_entry = dict(entry)
+                norm_entry["repo"] = rname
+                if not norm_entry.get("url"):
+                    norm_entry["url"] = f"https://github.com/{rname}"
+                if not norm_entry.get("use"):
+                    norm_entry["use"] = "Tham chiếu kiến trúc mạch và quy trình kiểm chứng mã nguồn mở đã kiểm định"
+                norm_gh.append(norm_entry)
+        if catalog_repos and (expected_domain != "eda-and-github-skills" and meta.get("kind") != "skill"):
+            # Keep all catalog-matched entries on theory cards; drop non-catalog typos if at least one valid remains
+            in_cat = [g for g in norm_gh if g["repo"] in catalog_repos]
+            if in_cat and len(in_cat) != len(norm_gh):
+                norm_gh = in_cat
+        if norm_gh != meta["github_refs"]:
+            meta["github_refs"] = norm_gh
+            changed = True
 
     if valid_glossary_ids and isinstance(meta.get("glossary_codes"), list):
         filtered_codes = [c for c in meta["glossary_codes"] if c in valid_glossary_ids]
@@ -319,8 +432,8 @@ def has_cycle(adj):
     return False
 
 
-def merge_edge_fragments(valid_node_ids, cleanup_fragments=False):
-    """Merges edges.jsonl + all edges-*.jsonl shards (edges-exp-a, edges-exp-b, edges-gh, edges-d*)."""
+def merge_edge_fragments(valid_node_ids, cleanup_fragments=True):
+    """Merges edges.jsonl + all edges-*.jsonl shards (edges-pmic-a/b, edges-ams-a/b, edges-gh-v3, etc.)."""
     graph_dir = os.path.join(KB_ROOT, "graph")
     os.makedirs(graph_dir, exist_ok=True)
     frag_names = sorted(
@@ -530,12 +643,44 @@ def section_sort_tuple(sec_str):
     )
 
 
-def assign_2d_coordinates(nodes):
-    """Assigns deterministic, collision-free 2D grid & pixel coordinates to every node.
+def assign_design_cycle_stages(node):
+    """Tags every card with its applicable stage(s) in the 7-Stage Optimal Design Cycle."""
+    nid = node["id"]
+    kind = node.get("kind", "concept")
+    dom = node.get("domain", "")
+    stages = set()
 
-    X-axis (`grid_col` 1..20):
-      - Columns 1..19: Primary Razavi Chapter (Ch.01 .. Ch.19)
-      - Column 20: Cross-Chapter EDA Platform & Automation (SKILL, OCEAN, Verilog-A, PEX, CACE, Monte Carlo)
+    if nid in ("concept-analog-design-octagon", "skill-25-topology-selection-decision-matrix") or kind in ("concept", "law"):
+        stages.add(1)
+    if kind == "topology":
+        stages.add(1)
+        stages.add(4)
+    if re.search(r"budget|interface|central-bias-hub|protections-por-uvlo|cace", nid):
+        stages.add(2)
+    if re.search(r"gmid|gm-id|vdsmin|sizing|scaling|step-by-step-sizing|current-mirrors|pelgrom", nid):
+        stages.add(3)
+    if re.search(r"ic617|schematic|veriloga|averaged-veriloga|startup|cmfb", nid):
+        stages.add(4)
+    if re.search(r"stb|pss|pnoise|pstb|psf|ocean|middlebrook|nyquist|phase-margin|compensat|type2|type3|slope-comp", nid):
+        stages.add(5)
+    if re.search(r"closed-loop-sizing|pareto|slewing-vs-linear|octagon|tradeoff|charge-pump-dcdc|hs-bootstrap", nid):
+        stages.add(6)
+    if re.search(r"pvt|montecarlo|layout|pex|latchup|esd|mismatch|substrate|interconnect|cace|protections", nid) or dom == "nonideal-and-physical":
+        stages.add(7)
+
+    if not stages:
+        stages.add(1 if kind != "skill" else 5)
+    return sorted(stages)
+
+
+def assign_2d_coordinates(nodes):
+    """Assigns deterministic, collision-free 2D grid & pixel coordinates across 22 columns.
+
+    X-axis (`grid_col` 1..22):
+      - Columns 1..19: Primary Razavi Chapter (Ch.01 .. Ch.19) + Chapter-specific Skill Testbenches
+      - Column 20: Layer 8 · PMIC Power Management (Buck, Boost, 4-SW Buck-Boost, Capless LDO, POR/UVLO/OCP)
+      - Column 21: Layer 9 · AMS Filters, Data Converters (DAC, ΔΣ, Pipeline), Precision AFE & Bias Hub
+      - Column 22: Layer 10 · Cross-Chapter Closed-Loop Cadence IC617, PSF Audit, gm/ID LUT & Pareto Optimization
     Y-axis (`grid_row` & `track`):
       - 4 Functional Sub-track Swimlanes:
         0: laws_and_physics (concept / law / physical_rule)
@@ -551,15 +696,38 @@ def assign_2d_coordinates(nodes):
         dom = node.get("domain", "")
         is_skill = kind == "skill" or dom == "eda-and-github-skills" or nid.startswith("skill-")
 
-        if is_skill:
+        if dom == "power-management-ic":
+            col = 20
+            if is_skill:
+                track_idx = 3
+            elif kind == "topology":
+                track_idx = 1
+            elif kind == "technique":
+                track_idx = 2
+            else:
+                track_idx = 0
+        elif dom == "ams-filters-and-system":
+            col = 21
+            if is_skill:
+                track_idx = 3
+            elif kind == "topology":
+                track_idx = 1
+            elif kind == "technique":
+                track_idx = 2
+            else:
+                track_idx = 0
+        elif is_skill:
             track_idx = 3
             chs = node.get("chapters") or []
             if (
-                re.search(r"ic617|ocean|veriloga|pex|cace|25-topology|montecarlo", nid)
+                re.search(
+                    r"ic617|ocean|psf|techsweep|gmid-lut|gm-id-lookup|closed-loop-sizing|veriloga|pex|cace|25-topology|montecarlo|layout-common-centroid",
+                    nid,
+                )
                 or not chs
                 or len(chs) > 4
             ):
-                col = 20
+                col = 22
             else:
                 col = int(chs[0])
         else:
@@ -571,7 +739,7 @@ def assign_2d_coordinates(nodes):
                 track_idx = 0
             col = int(node["section_coords"]["primary_chapter"])
 
-        col = max(1, min(20, col))
+        col = max(1, min(22, col))
         cells[track_idx][col].append(node)
 
     for t in range(4):
@@ -611,7 +779,7 @@ def assign_2d_coordinates(nodes):
         global_row_offset += max_rows
 
 
-def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=False):
+def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=True):
     glossary_fp = os.path.join(KB_ROOT, "glossary", "terms-vi-en.json")
     glossary_count = 0
     valid_glossary_ids = set()
@@ -631,6 +799,11 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
     valid_checklists = {c["checklist_id"] for c in checklists}
     coords_data, node_to_sections, node_to_eqs = load_book_coordinates()
     catalog_data = load_github_catalog()
+    catalog_repos = {
+        r["repo"]
+        for r in (catalog_data.get("repositories") or catalog_data.get("repos") or [])
+        if isinstance(r, dict) and r.get("repo")
+    }
 
     nodes_root = os.path.join(KB_ROOT, "nodes")
     md_files = []
@@ -646,7 +819,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
     normalized_count = 0
     if normalize_cards:
         for fp in md_files:
-            if normalize_card_file(fp, valid_checklists, valid_glossary_ids):
+            if normalize_card_file(fp, valid_checklists, valid_glossary_ids, catalog_repos=catalog_repos):
                 normalized_count += 1
 
     nodes = []
@@ -675,7 +848,6 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         for ch in chapters:
             chapter_to_nodes[ch].append(nid)
 
-        # Determine primary chapter & section coordinates
         dom_chs = DOMAIN_CHAPTER_MAP.get(domain, set())
         primary_ch = chapters[0] if chapters else 1
         primary_sec = ""
@@ -685,6 +857,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
                 primary_sec = str(r.get("section", ""))
                 break
         if not primary_sec and refs and isinstance(refs[0], dict):
+            primary_ch = int(refs[0].get("chapter", primary_ch))
             primary_sec = str(refs[0].get("section", ""))
 
         ref_sections = [str(r.get("section", "")) for r in refs if isinstance(r, dict) and r.get("section")]
@@ -740,9 +913,8 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             if isinstance(r, dict)
         )
         gh_str = " ".join(
-            f"{g.get('repo','')} {g.get('use','')}"
+            f"{g.get('repo','')} {g.get('use','')}" if isinstance(g, dict) else str(g)
             for g in github_refs
-            if isinstance(g, dict)
         )
 
         search_blob = " ".join(
@@ -795,6 +967,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             "sha256": sha256_file(fp),
             "search_text": fold_ascii(search_blob),
         }
+        node_entry["design_stages"] = assign_design_cycle_stages(node_entry)
         nodes.append(node_entry)
 
     assign_2d_coordinates(nodes)
@@ -837,6 +1010,10 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
 
     skill_node_count = sum(1 for n in nodes if n["domain"] == "eda-and-github-skills" or n["kind"] == "skill")
     razavi_node_count = len(nodes) - skill_node_count
+    razavi_core_node_count = sum(1 for n in nodes if n["domain"] in RAZAVI_CORE_DOMAINS)
+    pmic_node_count = domain_counts.get("power-management-ic", 0)
+    ams_node_count = domain_counts.get("ams-filters-and-system", 0)
+    eda_domain_node_count = domain_counts.get("eda-and-github-skills", 0)
     book_section_count = len(coords_data.get("sections", []))
     book_equation_count = len(coords_data.get("equations", []))
     book_index_term_count = len(coords_data.get("index_terms", []))
@@ -847,6 +1024,11 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         "release": RELEASE_VERSION,
         "stats": {
             "node_count": len(nodes),
+            "domain_count": len(domains_out),
+            "razavi_core_node_count": razavi_core_node_count,
+            "pmic_node_count": pmic_node_count,
+            "ams_node_count": ams_node_count,
+            "eda_domain_node_count": eda_domain_node_count,
             "razavi_node_count": razavi_node_count,
             "skill_node_count": skill_node_count,
             "edge_count": edge_count,
@@ -858,6 +1040,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
             "book_index_term_count": book_index_term_count,
             "github_repo_count": github_repo_count,
         },
+        "design_cycle": DESIGN_CYCLE_METADATA,
         "domains": domains_out,
         "chapters": chapters_out,
         "nodes": nodes,
@@ -895,7 +1078,12 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
     manifest = {
         "schema": "razavi-cmos-brain.manifest.v1",
         "release": RELEASE_VERSION,
+        "domain_count": len(domains_out),
         "node_count": len(nodes),
+        "razavi_core_node_count": razavi_core_node_count,
+        "pmic_node_count": pmic_node_count,
+        "ams_node_count": ams_node_count,
+        "eda_domain_node_count": eda_domain_node_count,
         "razavi_node_count": razavi_node_count,
         "skill_node_count": skill_node_count,
         "edge_count": edge_count,
@@ -917,7 +1105,12 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
         "release": RELEASE_VERSION,
         "normalized_cards": normalized_count,
         "merge_info": merge_info,
+        "domain_count": len(domains_out),
         "node_count": len(nodes),
+        "razavi_core_node_count": razavi_core_node_count,
+        "pmic_node_count": pmic_node_count,
+        "ams_node_count": ams_node_count,
+        "eda_domain_node_count": eda_domain_node_count,
         "razavi_node_count": razavi_node_count,
         "skill_node_count": skill_node_count,
         "edge_count": edge_count,
@@ -934,13 +1127,15 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Fa
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--normalize-cards", action="store_true", help="Normalize frontmatter keys & diagram refs in node cards")
-    parser.add_argument("--merge-edges", action="store_true", help="Merge edges-*.jsonl shards into edges.jsonl")
-    parser.add_argument("--cleanup-fragments", action="store_true", help="Remove temporary edges-*.jsonl shards after merge")
+    parser.add_argument("--merge-edges", action="store_true", help="Merge edges-*.jsonl shards into edges.jsonl and remove shards")
+    parser.add_argument("--cleanup-fragments", action="store_true", help="Backward-compatible alias (shards are cleaned automatically on --merge-edges)")
+    parser.add_argument("--keep-fragments", action="store_true", help="Keep edges-*.jsonl shards on disk after --merge-edges")
     args = parser.parse_args()
+    cleanup = not args.keep_fragments
     report = build_indices(
         normalize_cards=args.normalize_cards,
         merge_edges=args.merge_edges,
-        cleanup_fragments=args.cleanup_fragments,
+        cleanup_fragments=cleanup,
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))
 

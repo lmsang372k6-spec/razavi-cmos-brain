@@ -1,0 +1,144 @@
+{
+  "checklist_id": "continuous-time-filters",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ lọc Liên tục Thời gian (Active-RC, Sallen-Key, Tow-Thomas, Gm-C), Tự Hiệu chỉnh Tần số PVT và Bộ Đệm Lái Tụ Lấy mẫu",
+  "applies_to": [
+    "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+    "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+    "topo-instrumentation-amp-3opamp-and-chopper-cfia",
+    "topo-analog-mux-and-adc-track-hold-drivers",
+    "topo-relaxation-rc-sawtooth-and-crystal-oscillators",
+    "topo-schmitt-trigger-and-hysteresis-comparators"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-CTF-01",
+      "name": "Dự trữ băng thông Op-Amp chống vọt đỉnh hệ số phẩm chất (Q-Enhancement) và tự kích trong bộ lọc Active-RC / Tow-Thomas",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "omega_u = 2*pi*GBW >= (25 .. 40) * Q * omega_0 trên mọi góc PVT (sao cho 2*Q*omega_0 / omega_u <= 0.05..0.08), HOẶC bắt buộc gắn tụ bù sớm pha thụ động C_lead = 2 / (omega_u * R) song song nhánh tích phân",
+      "why_vi": "Trong vòng hai bộ tích phân Active-RC (như Tow-Thomas hay KHN biquad), băng thông đơn vị hữu hạn omega_u của mỗi Op-Amp tạo độ trễ pha ký sinh -omega/omega_u quanh tần số cực omega_0. Hai bộ tích phân nối vòng cộng dồn độ trễ -2*omega_0/omega_u làm mẫu số hệ số phẩm chất thực tế sụt thành 1/Q_eff = 1/Q - 2*omega_0/omega_u: khi omega_u <= 2*Q*omega_0 ở góc SS/125°C, Q_eff vọt ra vô cùng rồi đổi dấu âm biến bộ lọc thành mạch dao động hình sin!",
+      "cadence_check": "Chạy Spectre `ac` và `pz` trên toàn bộ các góc `SS/125C`, `SS/-40C`, `TT/27C`, `FF/-40C`; đo đỉnh biên độ tại `f_0` đối chiếu hàm truyền lý tưởng (`|Delta_Q / Q| < 5%`) và xác nhận mọi cặp cực phức đều nằm sâu bên trái trục ảo (`Re{p_k} < 0`).",
+      "related_nodes": [
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "law-multipole-phase-margin",
+        "tech-phase-margin-bode-to-step-overshoot-mapping"
+      ]
+    },
+    {
+      "id": "CHK-CTF-02",
+      "name": "Chặn đường truyền xuyên dải chắn tần số cao (Stopband Feedthrough Zero) qua tụ hồi tiếp dương của cấu trúc Sallen-Key",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Nếu dùng bộ lọc Sallen-Key làm mạch chống chồng phổ (AAF) trước ADC, suy hao thực tế tại f >= f_s / 2 phải >= A_stop_spec khi tính cả trở kháng ra vòng kín Z_out,CL(jw) tăng dần của Op-Amp (bắt buộc chèn mắt RC thụ động R_pre*C_pre nếu f_s/2 > 0.3*GBW)",
+      "why_vi": "Trong cấu trúc Sallen-Key, tụ hồi tiếp dương C1 nối trực tiếp từ nút nội trung gian ra ngõ ra Op-Amp. Ở tần số cao vượt quá băng thông vòng kín của Op-Amp, độ lợi vòng tụt xuống dưới 1 làm trở kháng ra Z_out,CL(jw) bật tăng từ vài Ohm lên hàng kOhm (mang tính cảm kháng), biến C1 thành cầu truyền thẳng tín hiệu cao tần từ đầu vào vọt qua đầu Op-Amp ra tải, khiến đáp ứng dải chắn ngừng giảm rồi ngóc đầu tăng ngược +20 dB/dec!",
+      "cadence_check": "Quét `ac` bộ lọc Sallen-Key từ `DC` đến `10 * f_s` với mô hình transistor đầy đủ của Op-Amp (tuyệt đối không dùng VCVS lý tưởng `R_out = 0`), kiểm tra sàn suy hao cực tiểu trong vùng chồng phổ `[f_s - f_bw, k*f_s + f_bw]`.",
+      "related_nodes": [
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "concept-source-follower-inductive-zout",
+        "tech-feedback-two-port-loading"
+      ]
+    },
+    {
+      "id": "CHK-CTF-03",
+      "name": "Thứ tự ghép tầng hệ số phẩm chất Q tăng dần và chuẩn hóa dải động chuẩn L-vô-cùng (Dynamic Range Scaling) cho bộ lọc bậc cao",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Chuỗi ghép nối tiếp N/2 mắt Biquad phải xếp Q_1 < Q_2 < ... < Q_(N/2) từ đầu vào tới đầu ra (mắt bậc 1 hoặc Q thấp nhất đứng đầu lọc bỏ nhiễu chặn ngoài dải) VÀ chuẩn hóa tụ/trở sao cho max_omega |V_node,k(jw) / V_in(jw)| = 0 dB tại mọi ngõ ra Op-Amp trung gian",
+      "why_vi": "Nếu đặt mắt Biquad có Q cao (như cặp cực biên của Chebyshev Q = 4..8) ngay ở tầng đầu tiên, tín hiệu nhiễu chặn lớn nằm gần mép dải hoặc thành phần xung bước nhảy sẽ bị nhân vọt lên Q lần làm bão hòa xén ngõ ra Op-Amp thứ nhất ngay cả khi ngõ ra cuối bộ lọc vẫn nhỏ; ngược lại nếu một nút nội có độ lợi đỉnh << 0 dB, tín hiệu tại đó bị dìm sâu xuống sàn nhiễu nhiệt làm hỏng SNR toàn chuỗi.",
+      "cadence_check": "Chạy `ac` xuất đường cong biên độ của TẤT CẢ các nút ngõ ra Op-Amp trung gian `V(vo1), V(vo2), ..., V(vout)` trên cùng một đồ thị; xác nhận đỉnh cao nhất của từng nút xấp xỉ bằng nhau (`+-0.5 dB`) và không tầng nào xén sớm khi quét biên độ `hb`/`tran` hai tông.",
+      "related_nodes": [
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "law-noise-bandwidth-and-snr-power-scaling",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    },
+    {
+      "id": "CHK-CTF-04",
+      "name": "Kiểm soát độ dịch pha thừa (Excess Phase Lag) của bộ hỗ dẫn Gm chống tự kích ở bộ lọc Gm-C và Gyrator tần số cao",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Tại tần số cắt omega_0, độ trễ pha thừa |Delta_phi(omega_0)| = omega_0 / omega_p,int + omega_0 * C_GD / Gm của bộ tích phân Gm-C phải thỏa mãn 2 * Q * |Delta_phi(omega_0)| < 0.08 (hoặc được bù khử bởi điện trở/MOS vùng triode nối tiếp tụ tích phân R_z*C = |Delta_phi|/omega_0)",
+      "why_vi": "Một bộ tích phân Gm-C lý tưởng phải giữ góc pha đúng -90 độ tại omega_0. Mọi cực nút nội (nút cascode, nút suy biến nguồn) và zero nửa mặt phẳng phải qua C_GD đều cộng thêm pha trễ âm làm dẫn nạp của cuộn cảm chủ động Gyrator xuất hiện phần thực ĐIỆN TRỞ ÂM -R_neg song song khung cộng hưởng, đẩy Q_eff tăng vọt mất kiểm soát hoặc tự dao động ở góc SS.",
+      "cadence_check": "Mắc bộ hỗ dẫn `Gm` tải tụ tích phân `C_int` chạy `ac` đo góc pha `phase(I_out / V_in)` hoặc `phase(V_int / V_in)` ngay tại `f_0` sau trích xuất ký sinh `PEX`: xác nhận sai lệch khỏi `-90.0 deg` nhỏ hơn `< 0.3 deg` đối với các mắt `Q >= 5`.",
+      "related_nodes": [
+        "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+        "law-miller-theorem-and-rhp-zero",
+        "law-cascode-and-cg-high-frequency-poles"
+      ]
+    },
+    {
+      "id": "CHK-CTF-05",
+      "name": "Độ phủ dải hiệu chỉnh tự động hằng số thời gian trên chip (On-Chip RC / Gm-C PVT Tuning Range & Step Resolution)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "[tau_tune_min, tau_tune_max] bao trùm hoàn toàn [1.15 * R_max(SS,T) * C_max(SS,T), 0.85 * R_min(FF,T) * C_min(FF,T)] với bước nhảy tương đối Delta_f0 / f0 <= (2 * Tolerance_spec) trên toàn mã nhị phân mà không chạm mã biên 00...0 hay 11...1",
+      "why_vi": "Trên công nghệ CMOS tiêu chuẩn, điện trở tấm poly biến thiên +-20% và tụ MIM/MOM biến thiên +-15% hoàn toàn không tương quan nhau, cộng thêm trôi nhiệt tạo tổng độ lệch hằng số thời gian +-32% đến +-40%! Nếu không có giàn tụ chuyển mạch mã nhị phân (hiệu chuẩn SAR theo xung thạch anh) cho Active-RC hoặc vòng khóa Master-Slave cho Gm-C, bộ lọc trên silicon thực sẽ cắt lẹm vào băng thông tín hiệu ở góc SS hoặc mở toang cho nhiễu lọt qua ở góc FF.",
+      "cadence_check": "Quét ma trận góc kết hợp cực trị chéo `(R_slow + C_slow, 125C, VDD_min)` và `(R_fast + C_fast, -40C, VDD_max)`; chạy mô phỏng hiệu chuẩn xác nhận mã hội tụ `tune<B-1:0>` còn dư tối thiểu `>= 2 LSB` cách hai đầu biên và sai số `f_-3dB` sau hiệu chuẩn `< +-2%`.",
+      "related_nodes": [
+        "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "tech-ptat-current-and-constant-gm",
+        "concept-integrated-resistors-and-capacitors-cmos"
+      ]
+    },
+    {
+      "id": "CHK-CTF-06",
+      "name": "Tuyến tính hóa phần tử thụ động / hỗ dẫn và kiểm chứng méo xuyên điều chế hai tông (Two-Tone IM3 / IIP3)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Active-RC: cấm dùng điện trở giếng n-well/khuếch tán hoặc tụ cổng MOS vùng chuyển tiếp trên đường tín hiệu; Gm-C: biên độ vi sai đỉnh V_id,pk <= V_lin của mạng suy biến nguồn / tải triode sao cho HD3, IM3 đạt đặc tả ở biên độ toàn thang",
+      "why_vi": "Điện trở n-well có hệ số phi tuyến điện áp rất lớn làm méo hài bậc ba ngay cả khi Op-Amp có độ lợi vòng cực cao; còn cặp vi sai MOS cơ bản có cửa sổ tuyến tính bị bó chặt bởi V_OV (~150 mV) khiến bộ lọc Gm-C bị nén biên độ và sinh xuyên điều chế bậc ba (IM3) rơi thẳng từ hai nhiễu chặn ngoài dải chụp xuống giữa băng gốc hữu ích.",
+      "cadence_check": "Thực hiện bài đo Hai tông trong dải (`f1, f2` gần `f_c`) và Hai tông chặn ngoài dải bằng SpectreRF `pss/qpss` hoặc `tran` FFT mạch lạc sau PEX, xác nhận `IM3 <= spec` (điển hình `-70..-85 dBc` cho Active-RC và `-50..-65 dBc` cho Gm-C).",
+      "related_nodes": [
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+        "topo-degenerated-diffpair-and-gilbert",
+        "concept-integrated-resistors-and-capacitors-cmos"
+      ]
+    },
+    {
+      "id": "CHK-CTF-07",
+      "name": "Định cỡ điện dung tích phân tối thiểu theo định luật sàn nhiễu nhiệt tỉ lệ hệ số phẩm chất (Q * kT/C Noise Floor)",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "C_int >= (2 * k * T * xi_excess * Q_stage) / V_n,rms,stage_budget^2 (tính đủ nhiễu từ điện trở đầu vào/hồi tiếp, cặp đầu vào OTA, nguồn dòng tải gập và mạch CMFB)",
+      "why_vi": "Trong cả bộ lọc Active-RC lẫn Gm-C, khi tích phân mật độ phổ nhiễu nhiệt trên toàn băng thông cộng hưởng, giá trị điện trở R hay hỗ dẫn Gm triệt tiêu khỏi phương sai nhiễu tổng mà để lại quy luật bất biến tỉ lệ thuận với Q * (kT / C)! Cố giảm R hoặc tăng Gm mà không tăng diện tích tụ C sẽ chỉ làm tốn công suất mà không hạ được nhiễu RMS nếu không đổi thang trở kháng đồng thời.",
+      "cadence_check": "Chạy Spectre `noise` (hoặc `pnoise` nếu có mạch băm Chopper / SC tuning) tích phân từ `f_min` tới `2 * f_c`, in bảng `Noise Summary` kiểm tra tỷ trọng nhiễu của các nhánh tải/CMFB không vượt quá `30%` nhiễu của phần tử chính.",
+      "related_nodes": [
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads",
+        "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+        "law-noise-bandwidth-and-snr-power-scaling",
+        "law-mos-thermal-and-flicker-noise"
+      ]
+    },
+    {
+      "id": "CHK-CTF-08",
+      "name": "Bảo vệ biên độ kim cương (VCM vs Vout Diamond Plot) và khử sụt trở kháng vào của Bộ Khuếch đại Đo lường INA / Chopper CFIA",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "3-Op-Amp INA: V_o1,2 = V_CM +- 0.5*(1 + 2*R1/RG)*V_id nằm trọn trong dải không xén của A1, A2 trên toàn miền V_CM; Chopper CFIA: vòng DC Servo Loop kẹp lệch điện cực |V_eo| <= V_DSL_max VÀ vòng nâng trở kháng dương giữ beta_pf * A_cl < 0.90..0.95 trên mọi góc PVT",
+      "why_vi": "Ở 3-Op-Amp INA chạy nguồn cấp thấp, hai nút nội tầng 1 mang nguyên vẹn mức đồng pha V_CM cộng nửa tín hiệu vi sai đã khuếch đại nên rất dễ xén đỉnh ngầm dù V_out vi sai vẫn nhỏ! Trong khi đó ở Chopper CFIA, tụ vào chuyển mạch ở f_chop làm sụt trở kháng vào xuống 1/(2*f_chop*C_in); nếu dùng tụ hồi tiếp dương C_pf để nâng R_in mà thiết kế quá tay khiến beta_pf*A_cl >= 1 ở góc tụ lệch, ngõ vào sẽ tự dao động!",
+      "cadence_check": "Với 3-Op-Amp INA: quét mặt phẳng 2 chiều `(V_CM, V_id)` xác nhận biên vùng tuyến tính hình kim cương; với Chopper CFIA: chạy `pss + pstb / pac` đo `Z_in(f)` trong dải, kiểm tra độ ổn định vòng `DSL` + vòng nâng `R_in` ở góc lệch tụ xấu nhất `3*sigma`.",
+      "related_nodes": [
+        "topo-instrumentation-amp-3opamp-and-chopper-cfia",
+        "tech-chopper-stabilization-vs-autozeroing",
+        "concept-cm-response-and-cmrr"
+      ]
+    },
+    {
+      "id": "CHK-CTF-09",
+      "name": "Hấp thụ xung điện tích giật ngược lấy mẫu (ADC Kickback Absorption) qua mạng R_iso - C_bucket và xóa nhớ kênh dồn kênh T-Switch",
+      "severity": "error",
+      "method": "simulation",
+      "invariant": "Giữa ngõ ra Op-Amp (bộ lọc AAF / bộ đệm lái) và công tắc lấy mẫu ADC bắt buộc có R_iso nối tiếp trước tụ chứa C_bucket >= (10 .. 20) * C_sample sao cho PM của Op-Amp >= 60 deg VÀ sai số xác lập cuối pha bám t_acq nhỏ hơn < 0.25 LSB trên mọi kênh chuyển mạch",
+      "why_vi": "Đấu trực tiếp ngõ ra Op-Amp hồi tiếp âm vào giàn tụ C_DAC đang phóng nạp xung nhịp sẽ đặt tải tụ đột ngột lên trở kháng ra mang tính cảm kháng của Op-Amp, kích thích dao động chuông tần số cao làm hỏng hoàn toàn THD/ENOB. Đồng thời nếu phía trước có bộ dồn kênh Analog Mux nhiều ngõ vào, điện tích lưu trên tụ đường bus chung C_bus từ kênh trước sẽ gây xuyên âm bóng ma sang kênh trở kháng cao kế tiếp nếu thiếu công tắc T-switch và thời gian nạp đủ hằng số thời gian.",
+      "cadence_check": "Ghép nối trực tiếp mô hình transistor của `AMUX + AAF/Driver + R_iso/C_bucket + Bootstrapped Switch + C_DAC` chạy `tran` chuyển đổi qua lại hai kênh biên ngược dấu (`+V_FS` sang `-V_FS`) và sóng sin sát Nyquist: kiểm tra dạng sóng tại tấm tụ lấy mẫu không rung chuông và sai số chốt mẫu `< 0.25 LSB`.",
+      "related_nodes": [
+        "topo-analog-mux-and-adc-track-hold-drivers",
+        "topo-bootstrapped-sampling-switch",
+        "topo-sar-adc-charge-redistribution-architecture"
+      ]
+    }
+  ]
+}

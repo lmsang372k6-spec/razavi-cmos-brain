@@ -1,0 +1,156 @@
+{
+  "checklist_id": "system-integration-por-and-bias-bus",
+  "title_vi": "Bảng kiểm Kiến trúc Trạm Phân cực Trung tâm (I_PTAT / I_ZTC), Ngắt Ngủ Không Rò (Sleep/PD), Trình tự Khởi động Nguồn (POR/UVLO) và Hợp đồng Ghép Tầng Toàn Chip",
+  "applies_to": [
+    "topo-central-bias-hub-powerup-and-sleep-gating",
+    "tech-hierarchical-chip-spec-budgeting-and-interfaces",
+    "topo-high-speed-lvds-cml-ctle-and-cdr-basics",
+    "topo-bandgap-reference-core",
+    "topo-lvccml-wide-swing-mirror"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-SYS-01",
+      "name": "Phân phối phân cực hình sao bằng nhánh nguồn dòng Cascode trở kháng cao — CẤM kéo dây điện áp cổng V_BIAS xuyên chip",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi ranh giới giữa Trạm Phân cực Trung tâm (Central Bias Hub) và các khối tương tự xa (> 50 um) chỉ truyền dòng điện I_BIAS_OUT<k> từ gương dòng cascode (R_out >= 10 MOhm), thu nhận cục bộ bằng diode-connected mirror quy chiếu về đúng đường nguồn/đất Kelvin tại chỗ",
+      "why_vi": "Với hiệu suất hỗ dẫn gm/ID = 15 V^-1, chỉ cần 15 mV sụt áp đất IR drop cộng 10 mV lệch ngưỡng V_TH theo khoảng cách đã làm dòng phân cực sai lệch 37.5%, chưa kể dây áp cổng trở kháng cao hứng trọn nhiễu xuyên âm từ các đường xung nhịp số và đế bán dẫn! Truyền bằng dòng điện cascode triệt tiêu sai số sụt áp đất và cách ly hoàn toàn phản hồi ngược giữa các khối.",
+      "cadence_check": "Kiểm toán danh sách chân (pin list) của `bias_hub` và các khối con mức top-level: cấm mọi chân `vbias_*` đi xuyên sàn chip; xác nhận mỗi khối độc lập (PLL, ADC, LNA, Filter) dùng nhánh đầu ra gương dòng riêng không đấu chung cực máng.",
+      "related_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "topo-lvccml-wide-swing-mirror",
+        "tech-interconnect-rc-electromigration-and-ir-drop"
+      ]
+    },
+    {
+      "id": "CHK-SYS-02",
+      "name": "Cực tính nối tụ lọc khử nhiễu cục bộ trên cổng gương dòng (PMOS nối về VDD, NMOS nối về VSS — TUYỆT ĐỐI KHÔNG ĐẤU NGƯỢC!)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Tụ lọc phân cực C_byp của gương dòng PMOS bắt buộc mắc giữa cực Cổng (Gate) và chính đường nguồn dương nuôi cực Nguồn (Source = AVDD_local); tụ lọc C_byp của gương dòng NMOS bắt buộc mắc giữa cực Cổng và AVSS_local",
+      "why_vi": "Dòng cực máng gương PMOS phụ thuộc vào hiệu thế V_SG = V_DD - V_G. Nếu mắc nhầm tụ lọc C_byp từ cực cổng PMOS xuống đất VSS, ở tần số cao tụ giữ chặt V_G đứng yên theo đất trong khi V_DD rung lắc nhiễu nguồn v_dd => toàn bộ 100% nhiễu v_dd đặt thẳng lên V_SG và bị khuếch đại với độ hỗ dẫn gm vào đường tín hiệu, làm PSRR sụp đổ về 0 dB!",
+      "cadence_check": "Chạy phân tích `xf` hoặc `ac` bơm `1 V_ac` lên nguồn `AVDD` (với `AVSS = 0`), kiểm tra biên độ biến thiên hiệu áp `|v(AVDD) - v(V_gate_pmos)|` từ `100 kHz` đến `100 MHz` phải `<< -40 dB`!",
+      "related_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "tech-opamp-psrr-plus-and-minus-analysis",
+        "topo-basic-current-mirror"
+      ]
+    },
+    {
+      "id": "CHK-SYS-03",
+      "name": "Phân tách đúng 2 họ dòng chuẩn trung tâm: I_PTAT cho tầng hỗ dẫn gm và I_ZTC cho bộ tạo nhịp RC / DAC tham chiếu",
+      "severity": "error",
+      "method": "semantic",
+      "invariant": "Các khối khuếch đại cần ổn định gm/GBW theo nhiệt độ nhận dòng I_PTAT (~ T); các khối định thời RC Relaxation Oscillator, mạch trễ chuẩn và thang dòng DAC toàn thang bắt buộc nhận dòng bù nhiệt bậc không I_ZTC = I_PTAT + I_CTAT (|TC_I| < 50..150 ppm/°C sau hiệu chỉnh điện trở)",
+      "why_vi": "Nếu cấp nhầm dòng I_PTAT (tăng +55% từ -40 °C lên +125 °C!) vào bộ dao động tích thoát RC hoặc DAC lái dòng, tần số xung nhịp và biên độ toàn thang DAC sẽ trôi thẳng hơn 50% theo nhiệt độ! Ngược lại cấp I_ZTC cho tầng khuếch đại dưới ngưỡng hoặc nghịch đảo vừa sẽ làm gm suy giảm mạnh khi chip nóng lên.",
+      "cadence_check": "Quét DC nhiệt độ `-40 °C .. +125 °C` trên khối `bias_hub`: kiểm tra `ibias_ptat` tăng tuyến tính theo `T (K)` trong khi `ibias_ztc` giữ phẳng hình parabol ngược quanh `27 °C`.",
+      "related_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "tech-ptat-current-and-constant-gm",
+        "law-ctat-ptat-temperature-cancellation"
+      ]
+    },
+    {
+      "id": "CHK-SYS-04",
+      "name": "Kẹp cứng mọi cực cổng phân cực và ngõ ra logic khi Ngủ (Sleep / Power-Down) — Không để bất kỳ nút cổng nào lơ lửng",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Khi pd == 1 (pd_b == 0): mọi nút cổng gương NMOS bị kéo cứng xuống VSS, mọi nút cổng gương PMOS (cả transistor chính lẫn cascode) bị kéo cứng lên VDD, ngõ ra số của khối tắt nguồn phải đi qua cổng cách ly (Isolation AND/OR), đảm bảo tổng dòng rò ngủ I_DDQ(FF, 125C, VDD_max) <= I_sleep_spec",
+      "why_vi": "Nếu chỉ mở công tắc ngắt nhánh dòng chuẩn mà bỏ mặc cực cổng gương dòng hoặc cổng tầng công suất nằm lơ lửng (floating high-Z), ở góc nóng FF 125 °C dòng rò tiếp giáp sẽ kéo điện thế nút lơ lửng trôi về giữa nguồn, làm bật dẫn xuyên (crowbar current) tiêu tốn hàng trăm microampe trên chip pin!",
+      "cadence_check": "Chạy Spectre `dc` + `tran` chuyển trạng thái `pd: 0 -> 1 -> 0` ở góc `(FF, VDD_max, 125 °C)`: kiểm tra không có bất kỳ nút nội nào lơ lửng ở vùng `[0.15*VDD, 0.85*VDD]`, đo `I(VDD) < I_sleep_spec` và thời gian thức dậy `T_wakeup` đúng hạn.",
+      "related_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "concept-subthreshold-weak-inversion-operation",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-SYS-05",
+      "name": "Chuỗi bắt tay khởi động nguồn đơn điệu và phục hồi sụt áp nhanh (POR -> UVLO -> BGR -> Bias Hub -> LDO -> PLL -> Data Path)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mỗi tầng sau chỉ được mở khóa khi tín hiệu báo sẵn sàng (Ready / Power-Good) của tầng trước đã xác lập ổn định, VÀ mạch POR/UVLO phải xả tụ đặt lại đủ nhanh để tái kích hoạt reset ngay khi VDD sụt thoáng qua (brown-out dip) dưới ngưỡng an toàn",
+      "why_vi": "Nếu mở khóa LDO hoặc bộ hiệu chỉnh số ADC/PLL trong khi Bandgap chưa thoát xong vùng chết khởi động, LDO có thể vọt lố đánh thủng mạch lõi hoặc máy trạng thái nạp sai mã hiệu chuẩn rác! Nghiêm trọng hơn, nếu nguồn VDD sụt nhanh rồi bật lên ngay trong 5 us mà tụ giữ của POR đơn giản chưa kịp xả, toàn chip rơi vào trạng thái treo nửa vời.",
+      "cadence_check": "Chạy 3 kịch bản `tran` bắt buộc cho toàn hệ thống: (1) Sườn nguồn nhanh `10 us`, (2) Sườn nguồn siêu chậm `50 ms`, và (3) Sập nguồn chữ V (`VDD -> 0.4*VDD trong 2 us -> VDD`), kiểm tra thứ tự sườn `por_b -> uvlo_ok -> bgr_rdy -> ldo_pg -> pll_lock` trên cả 5 góc PVT.",
+      "related_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "tech-supply-independent-bias-and-startup",
+        "topo-bandgap-reference-core",
+        "topo-cmos-ldo-regulator"
+      ]
+    },
+    {
+      "id": "CHK-SYS-06",
+      "name": "Hợp đồng giao tiếp liên khối: Tương thích cửa sổ V_CM, phân tách trở kháng Middlebrook (|Z_out| <= 0.1*|Z_in|) và sổ cái dấu pha vi sai",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "[V_out,CM_min(k), V_out,CM_max(k)]_PVT nằm gọn trong [V_in,CM_min(k+1), V_in,CM_max(k+1)]_PVT, |Z_out,k(j*w)| <= 0.1 * |Z_in,k+1(j*w)| trên toàn băng thông (hoặc có mạng cách ly R_iso-C_bucket trước tải chuyển mạch), và tích dấu cực tính mọi vòng hồi tiếp liên khối mang dấu ÂM",
+      "why_vi": "Hơn 50% lỗi thiết kế lại (re-spin) mức tích hợp hệ thống đến từ lệch mức đồng pha V_CM giữa ngõ ra khối lọc và ngõ vào bộ đệm ADC làm ép nguồn dòng đuôi vào triode, hoặc đảo nhầm dây vi sai P/N qua một chẵn/lẻ số tầng đảo pha biến vòng CMFB / servo DC thành mạch chốt dương!",
+      "cadence_check": "Lập bảng ma trận hợp đồng giao diện trong `project.json` / `spec.json` trước khi vẽ mạch; kiểm tra DC OP tại biên giới liên khối ở cả 5 góc PVT và đo `stb` cho mọi vòng servo/AGC/CMFB xuyên khối.",
+      "related_nodes": [
+        "tech-hierarchical-chip-spec-budgeting-and-interfaces",
+        "tech-bode-blackman-middlebrook-stb",
+        "concept-opamp-performance-contract"
+      ]
+    },
+    {
+      "id": "CHK-SYS-07",
+      "name": "Khép kín ngân sách phân bổ từ trên xuống (RSS Nhiễu nhiệt + Offset Pelgrom + Dây chuyền phi tuyến IIP3/HD3)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "v_n,in,tot^2 = sum_k (v_n,in,k^2 / prod_{j<k} A_v,j^2) <= V_n,spec^2 VÀ 1 / V_IIP3,tot^2 = sum_k ( (prod_{j<k} A_v,j^2) / V_IIP3,k^2 ) <= 1 / V_IIP3,spec^2 với dự trữ thiết kế >= 2..3 dB cho suy hao ký sinh PEX",
+      "why_vi": "Trong chuỗi nhiều tầng ghép nối tiếp, tầng đầu tiên thống trị tuyệt đối Nhiễu và Offset (nén đóng góp của các tầng sau theo A_1^2), trong khi tầng cuối cùng gánh biên độ tín hiệu lớn nhất lại thống trị tuyệt đối Méo phi tuyến (phóng đại đóng góp 1/V_IIP3,k^2 theo tích bình phương độ lợi phía trước)! Không lập bảng phân bổ đối ngẫu này từ đầu sẽ dẫn tới lãng phí công suất gấp 10 lần ở nhầm khối.",
+      "cadence_check": "Kiểm chứng bảng ngân sách hệ thống bằng mô phỏng Verilog-A tham số hóa ở mức đỉnh trước khi định cỡ transistor, sau đó cập nhật lại số thực đo từ Spectre `noise` và `pss/pac` (IIP3 / THD) của từng khối.",
+      "related_nodes": [
+        "tech-hierarchical-chip-spec-budgeting-and-interfaces",
+        "tech-input-referred-noise-procedure",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    },
+    {
+      "id": "CHK-SYS-08",
+      "name": "Phối hợp trở kháng vi sai 100 Ohm và suy hao phản xạ (Return Loss S11 / S22 < -10 dB) cho giao diện tốc độ cao LVDS / CML",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "|R_term,diff - 100 Ohm| <= 10% qua PVT (kèm hiệu chỉnh điện trở số nếu cần) VÀ S11(f), S22(f) = 20*log10|(Z_diff(f) - 100)/(Z_diff(f) + 100)| <= -10 dB từ DC tới tần số Nyquist f_N = R_b / 2 khi đã cộng đầy đủ C_ESD + C_pad + L_bond",
+      "why_vi": "Ở tốc độ truyền nhiều Gb/s, điện dung tổ hợp của diode ESD và bàn hàn C_pad nối tắt điện trở kết cuối 50 Ohm trên chip ở tần số cao làm hệ số phản xạ vọt lên > -6 dB; sóng phản xạ đập qua lại trên đường truyền PCB cộng chồng trực tiếp vào mắt tín hiệu gây nhiễu xuyên ký tự (ISI) đóng sập biểu đồ mắt.",
+      "cadence_check": "Gắn mô hình đầy đủ vòng đệm `Pad + ESD + L_pkg + C_pkg` vào bộ phát CML/LVDS hoặc đầu thu CTLE, chạy phân tích tham số tán xạ Spectre `sp` với cổng chuẩn vi sai `100 Ohm` kiểm tra `db20(S11) < -10 dB` tới `R_b / 2`.",
+      "related_nodes": [
+        "topo-high-speed-lvds-cml-ctle-and-cdr-basics",
+        "tech-esd-protection-padring-and-package-parasitics",
+        "topo-basic-differential-pair"
+      ]
+    },
+    {
+      "id": "CHK-SYS-09",
+      "name": "Kiểm soát nhô đỉnh truyền Jitter (< 0.1..0.5 dB) và biên độ chịu đựng Jitter (JTOL Mask) trong vòng khôi phục xung nhịp CDR",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Tỷ số tụ bộ lọc vòng CDR loại II C_1 / C_2 >= 50..100 (hệ số tắt dần zeta >= 2..5 tại mật độ chuyển cạnh dữ liệu cực đại alpha_T = 0.5..1.0) để Jitter Peaking <= 0.1 dB, đồng thời băng thông vòng omega_n tối ưu cân bằng giữa nén nhiễu pha VCO và lọc jitter dữ liệu đến",
+      "why_vi": "Vòng CDR loại II bắt buộc có một điểm không ổn định hóa omega_z tạo hiện tượng vọt lố biên độ truyền jitter quanh tần số cắt. Nếu chuỗi trạm lặp viễn thông ghép nối tiếp 20 khối CDR mà mỗi khối nhô đỉnh 1 dB, biên độ jitter bị khuếch đại thêm 20 dB làm tràn hoàn toàn cửa sổ lấy mẫu nửa chu kỳ bit (0.5 UI)!",
+      "cadence_check": "Kiểm chứng mô hình tuyến tính hóa pha và mô phỏng quá độ chuỗi giả ngẫu nhiên `PRBS-7 / PRBS-15` có điều chế pha hình sin trên dữ liệu vào để dựng đường cong `Jitter Transfer` và `Jitter Tolerance` đối chiếu mặt nạ chuẩn.",
+      "related_nodes": [
+        "topo-high-speed-lvds-cml-ctle-and-cdr-basics",
+        "topo-charge-pump-type2-pll",
+        "tech-cp-pll-third-order-loop-filter-synthesis"
+      ]
+    },
+    {
+      "id": "CHK-SYS-10",
+      "name": "Kỷ luật Kim tự tháp Xác minh Tín hiệu Hỗn hợp 3 Tầng (Verilog-A Golden Top -> Swap-One-Transistor-Block -> Full-Macro PEX)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi khối con phải có cặp view tương thích chân 100% (`symbol` dùng chung cho cả `veriloga` và `schematic`/`av_extracted`), vượt qua bài kiểm tra thay thế đơn lẻ trong vỏ hành vi hệ thống với độ suy giảm chỉ tiêu < 0.3 bit ENOB (hoặc < 1 dB SNR) trước khi ghép toàn mạch mức transistor",
+      "why_vi": "Đấu nối trực tiếp 8-10 khối transistor hàng vạn nút ngay lần chạy đầu tiên vừa tốn hàng chục giờ mô phỏng Spectre vừa che giấu hoàn toàn nguyên nhân gốc rễ khi mạch không hội tụ hoặc hỏng phổ đầu ra. Chế độ hoán đổi từng khối qua `Virtuoso Hierarchy Editor (config view)` giúp khoanh vùng lỗi giao tiếp chỉ trong vài phút!",
+      "cadence_check": "Xác nhận tệp cấu hình phân cấp `config` chuyển đổi trơn tru từng ô từ `veriloga` sang `schematic` mà không phát sinh dòng cấp nguồn ảo ẩn trong mô hình hành vi hoặc bất đồng bộ tên chân/bậc bus.",
+      "related_nodes": [
+        "tech-hierarchical-chip-spec-budgeting-and-interfaces",
+        "skill-veriloga-mixed-signal-behavioral-models",
+        "skill-cace-spec-driven-characterization-contract",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    }
+  ]
+}

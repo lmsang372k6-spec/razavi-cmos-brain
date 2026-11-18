@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1096" height="616" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1088 2 Q 1098 2 1098 12 L 1098 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1098" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="123" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="79.5" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">PMIC · Ch.12/18</text>
+  <text x="151" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">PMIC Protection Architecture: POR, UVLO, Soft-Start &amp; Foldback OCP</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Kiến trúc Bảo vệ &amp; Khởi động Nguồn PMIC: POR, UVLO Trễ, Khởi động Mềm &amp; Quá dòng Gập ngược trong Vùng An toàn Nhiệt</text>
+  <line x1="790" y1="22" x2="806" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="811" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="872" y1="22" x2="888" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="893" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="978" y1="22" x2="994" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="999" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="536" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="536" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) Supervisory Chain: POR + Hysteretic UVLO + Soft-Start + TSD</text>
+  <rect x="570" y="74" width="512" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="570" y="74" width="512" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="582" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Brick-Wall vs Foldback Short-Circuit OCP inside Thermal SOA</text>
+  <line x1="114" y1="134" x2="114" y2="125" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="101" y1="125" x2="127" y2="125" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="114" y="120" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="middle" font-weight="bold">VDD</text>
+  <polyline points="114,150 114,158 120,161 108,166 120,171 108,177 120,182 108,187 114,190 114,198" fill="none" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="103" y="178" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="end" font-weight="bold">R_U1</text>
+  <line x1="114" y1="134" x2="114" y2="150" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="114" cy="214" r="3.5" fill="#2563eb"/>
+  <polyline points="114,230 114,238 120,241 108,246 120,251 108,257 120,262 108,267 114,270 114,278" fill="none" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="103" y="258" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="end" font-weight="bold">R_U2</text>
+  <line x1="114" y1="198" x2="114" y2="230" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="114" y1="278" x2="114" y2="285" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="103" y1="285" x2="125" y2="285" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="107" y1="289.5" x2="121" y2="289.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="111" y1="294" x2="117" y2="294" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="186" y1="230" x2="186" y2="240" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="186" y1="268" x2="186" y2="278" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="186" cy="254" r="14" fill="#ffffff" stroke="#d97706" stroke-width="1.9"/>
+  <line x1="186" y1="246" x2="186" y2="261" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-amber)"/>
+  <text x="204" y="258" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#d97706" text-anchor="start" font-weight="bold">I_hys</text>
+  <polyline points="114,214 186,214 186,230" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,2"/>
+  <line x1="186" y1="278" x2="186" y2="285" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="175" y1="285" x2="197" y2="285" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="179" y1="289.5" x2="193" y2="289.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="183" y1="294" x2="189" y2="294" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <polygon points="257,203 257,249 311,226" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="262.5" y1="213" x2="269.5" y2="213" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="266" y1="209.5" x2="266" y2="216.5" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="262.5" y1="239" x2="269.5" y2="239" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="280" y="230" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#2563eb" text-anchor="middle" font-weight="bold">UV</text>
+  <line x1="114" y1="214" x2="257" y2="213" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="226" cy="239" r="3.4" fill="#ffffff" stroke="#059669" stroke-width="1.9"/>
+  <text x="218" y="243" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#059669" text-anchor="end" font-weight="bold">VBG</text>
+  <line x1="226" y1="239" x2="257" y2="239" stroke="#059669" stroke-width="1.9" stroke-linecap="round"/>
+  <rect x="356" y="146" width="178" height="142" rx="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.9"/>
+  <text x="445" y="168" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#059669" text-anchor="middle" font-weight="bold">PMIC Fault &amp;</text>
+  <text x="445" y="184" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#059669" text-anchor="middle" font-weight="bold">Enable Logic</text>
+  <text x="445" y="206" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#0f172a" text-anchor="middle">• POR_B (Brownout Rst)</text>
+  <text x="445" y="224" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#2563eb" text-anchor="middle" font-weight="bold">• UVLO: 2.85V / 2.60V</text>
+  <text x="445" y="242" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#dc2626" text-anchor="middle" font-weight="bold">• TSD: 150°C / 130°C</text>
+  <text x="445" y="260" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#d97706" text-anchor="middle">• Hiccup OCP Retry</text>
+  <line x1="311" y1="226" x2="354" y2="226" stroke="#2563eb" stroke-width="2" stroke-linecap="round" marker-end="url(#arr-sig)"/>
+  <rect x="42" y="322" width="492" height="102" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.7"/>
+  <text x="288" y="344" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.6" fill="#d97706" text-anchor="middle" font-weight="bold">Monotonic Soft-Start Ramp:  V_EA+ = min( V_SS(t) , V_REF )</text>
+  <text x="288" y="366" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="middle">• I_SS (1 µA) -&gt; C_SS (10 nF) ramps Vout linearly over t_SS = C_SS·V_REF / I_SS ≈ 6 ms,</text>
+  <text x="288" y="384" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#059669" text-anchor="middle" font-weight="bold">  clamping capacitive inrush current  I_inrush = Cout · (Vout / t_SS) &lt;&lt; I_OCP !</text>
+  <text x="288" y="404" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" fill="#dc2626" text-anchor="middle">• Fast pull-down NMOS discharges C_SS -&gt; 0 V immediately on ANY UVLO / TSD / EN=0 trip!</text>
+  <line x1="445" y1="288" x2="445" y2="320" stroke="#059669" stroke-width="1.9" stroke-linecap="round" marker-end="url(#arr-bias)"/>
+  <rect x="36" y="442" width="500" height="144" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="448" x2="39" y2="580" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="460" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#1d4ed8" text-anchor="start" font-weight="bold">Hysteretic UVLO Chatter &amp; Brownout Pitfalls</text>
+  <text x="48" y="477" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Exact UVLO Hysteresis:  ΔV_hys = V_ON − V_OFF = I_hys · R_U1  (typ. 200–300 mV).</text>
+  <text x="48" y="493" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Without ΔV_hys &gt; I_in,max · R_src: Turning ON heavy load drops VDD = V_bat − I_in·R_src</text>
+  <text x="48" y="509" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  below threshold -&gt; regulator chatters ON/OFF at kHz!</text>
+  <text x="48" y="525" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Glitch / Brownout Test: Always verify 10 µs fast VDD dips reset POR &amp; C_SS cleanly!</text>
+  <line x1="630" y1="366" x2="1054" y2="366" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="630" y1="366" x2="630" y2="126" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="638" y="138" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">V_out</text>
+  <text x="1048" y="358" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="end" font-weight="bold">I_out</text>
+  <polygon points="1016,150 1040,150 1040,365 812,365 868,280 938,212" fill="#fee2e2" stroke="none" stroke-width="1.8" stroke-linejoin="round" fill-opacity="0.7"/>
+  <path d="M 1016 150 Q 912 246 812 366" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <text x="1034" y="256" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#dc2626" text-anchor="end" font-weight="bold">Thermal SOA Violation!</text>
+  <text x="1034" y="272" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#dc2626" text-anchor="end">(Vin − Vout)·Iout &gt; P_max</text>
+  <line x1="630" y1="168" x2="936" y2="168" stroke="#2563eb" stroke-width="2.8" stroke-linecap="round"/>
+  <text x="775" y="158" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#2563eb" text-anchor="middle" font-weight="bold">Normal Regulation (V_nom)</text>
+  <line x1="936" y1="168" x2="936" y2="366" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6,3"/>
+  <circle cx="936" cy="366" r="5" fill="#dc2626" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="936" y="384" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#dc2626" text-anchor="middle" font-weight="bold">I_lim (Brick-Wall!)</text>
+  <line x1="936" y1="168" x2="726" y2="366" stroke="#059669" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="726" cy="366" r="5" fill="#059669" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="726" y="384" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#059669" text-anchor="middle" font-weight="bold">I_short (Foldback)</text>
+  <text x="792" y="266" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#059669" text-anchor="end" font-weight="bold">Safe Inside SOA!</text>
+  <rect x="588" y="404" width="476" height="182" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <line x1="591" y1="410" x2="591" y2="580" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+  <text x="600" y="422" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#b45309" text-anchor="start" font-weight="bold">Short-Circuit Thermal Math &amp; Foldback Lockout Trap</text>
+  <text x="600" y="439" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Brick-Wall Short-Circuit Dissipation (Vout = 0 -&gt; full Vin across pass FET!):</text>
+  <text x="600" y="455" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">    P_SC,brick = Vin · I_lim   &gt;&gt;   P_SOA = (T_J,max − T_A) / θ_JA !</text>
+  <text x="600" y="471" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Foldback Current Limit scales sense threshold with Vout:</text>
+  <text x="600" y="487" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">    I_short ≈ (0.2 .. 0.3) · I_lim   =&gt;   cuts short-circuit heat by 3–5x!</text>
+  <text x="600" y="503" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Foldback Startup Lockout Caveat: Constant-current loads can latch at a</text>
+  <text x="600" y="519" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">  false low-Vout intersection -&gt; pair with Hiccup Timer (5% retry duty)!</text>
+</svg>

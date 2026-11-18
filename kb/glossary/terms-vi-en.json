@@ -1,11 +1,11 @@
 {
   "schema": "razavi-cmos-brain.glossary.v1",
-  "release": "2026.11.18.1",
+  "release": "2026.11.18.4",
   "base_source": "THUẬT NGỮ CHUẨN.md",
   "base_source_sha256": "8711c2ec025f5bcff10298cb65dc23e526475bd1da4a4de0a1607e8b1bc64e62",
   "base_count": 2134,
-  "extension_count": 66,
-  "total_count": 2200,
+  "extension_count": 146,
+  "total_count": 2280,
   "terms": [
     {
       "id": "T001",
@@ -31790,6 +31790,1438 @@
         "dropout voltage and load-dependent output pole"
       ],
       "search_key": "t2200 dropout voltage and load dependent output pole dien ap sut toi thieu dropout va cuc ngo ra phu thuoc dong tai dropout voltage and load dependent output pole",
+      "curated_extension": true
+    },
+    {
+      "id": "T2201",
+      "en": "synchronous buck converter",
+      "vi": "bộ biến đổi hạ áp DC-DC đồng bộ (Synchronous Buck)",
+      "context": "PMIC / Erickson & Ch12: Bộ biến đổi nguồn chuyển mạch hạ áp dùng cặp khóa CMOS HS/LS đồng bộ và bộ lọc LC cho Vout = D*Vin ở chế độ CCM.",
+      "chapters": [
+        8,
+        12,
+        18,
+        19
+      ],
+      "aliases": [
+        "synchronous buck converter",
+        "buck converter",
+        "step-down DC-DC converter"
+      ],
+      "search_key": "t2201 synchronous buck converter bo bien doi ha ap dc dc dong bo synchronous buck synchronous buck converter buck converter step down dc dc converter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2202",
+      "en": "synchronous boost converter",
+      "vi": "bộ biến đổi tăng áp DC-DC đồng bộ (Synchronous Boost)",
+      "context": "PMIC / Erickson: Bộ biến đổi chuyển mạch tăng áp tích trữ năng lượng từ trường cuộn cảm rồi bơm lên tải cho Vout = Vin/(1 - D) ở CCM.",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "synchronous boost converter",
+        "boost converter",
+        "step-up DC-DC converter"
+      ],
+      "search_key": "t2202 synchronous boost converter bo bien doi tang ap dc dc dong bo synchronous boost synchronous boost converter boost converter step up dc dc converter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2203",
+      "en": "inverting buck-boost converter",
+      "vi": "bộ biến đổi tăng-hạ áp đảo cực (Inverting Buck-Boost)",
+      "context": "PMIC / Erickson: Cấu trúc chuyển mạch tạo nguồn âm Vout = -Vin*D/(1 - D), đòi hỏi dịch mức hồi tiếp và cổng điều khiển sang đường âm.",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "inverting buck-boost converter",
+        "inverting buck-boost"
+      ],
+      "search_key": "t2203 inverting buck boost converter bo bien doi tang ha ap dao cuc inverting buck boost inverting buck boost converter inverting buck boost",
+      "curated_extension": true
+    },
+    {
+      "id": "T2204",
+      "en": "four-switch non-inverting buck-boost converter",
+      "vi": "bộ biến đổi tăng-hạ áp bốn công tắc không đảo (4-Switch Buck-Boost)",
+      "context": "PMIC: Cầu H bốn công tắc bao quanh cuộn cảm chuyển vùng trơn giữa chế độ Buck, vùng chuyển tiếp Buck-Boost và chế độ Boost khi Vin cắt ngang Vout.",
+      "chapters": [
+        8,
+        12,
+        13
+      ],
+      "aliases": [
+        "four-switch non-inverting buck-boost converter",
+        "4-switch buck-boost",
+        "non-inverting buck-boost"
+      ],
+      "search_key": "t2204 four switch non inverting buck boost converter bo bien doi tang ha ap bon cong tac khong dao 4 switch buck boost four switch non inverting buck boost converter 4 switch buck boost non inverting buck boost",
+      "curated_extension": true
+    },
+    {
+      "id": "T2205",
+      "en": "switched-capacitor DC-DC converter, power charge pump",
+      "vi": "bộ biến đổi DC-DC tụ chuyển mạch (bơm điện tích công suất)",
+      "context": "PMIC & Ch13: Mạch biến đổi tỉ số điện áp rời rạc (2:1, 1:2, 3:2, Dickson) truyền năng lượng hoàn toàn qua tụ bay Cfly mà không dùng cuộn cảm.",
+      "chapters": [
+        12,
+        13
+      ],
+      "aliases": [
+        "switched-capacitor DC-DC converter, power charge pump",
+        "switched-capacitor DC-DC converter",
+        "power charge pump",
+        "Dickson charge pump"
+      ],
+      "search_key": "t2205 switched capacitor dc dc converter power charge pump bo bien doi dc dc tu chuyen mach bom dien tich cong suat switched capacitor dc dc converter power charge pump switched capacitor dc dc converter power charge pump dickson charge pump",
+      "curated_extension": true
+    },
+    {
+      "id": "T2206",
+      "en": "inductor volt-second balance",
+      "vi": "nguyên lý cân bằng vôn-giây trên cuộn cảm",
+      "context": "PMIC / Erickson: Ở trạng thái xác lập tuần hoàn, điện áp trung bình trên cuộn cảm trong một chu kỳ chuyển mạch bắt buộc bằng không (<v_L>_Ts = 0).",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "inductor volt-second balance",
+        "volt-second balance"
+      ],
+      "search_key": "t2206 inductor volt second balance nguyen ly can bang von giay tren cuon cam inductor volt second balance volt second balance",
+      "curated_extension": true
+    },
+    {
+      "id": "T2207",
+      "en": "capacitor amp-second (charge) balance",
+      "vi": "nguyên lý cân bằng ampe-giây (điện tích) trên tụ điện",
+      "context": "PMIC / Erickson: Ở trạng thái xác lập tuần hoàn, dòng điện trung bình nạp/xả qua tụ lọc trong một chu kỳ chuyển mạch bằng không (<i_C>_Ts = 0).",
+      "chapters": [
+        8,
+        12,
+        13
+      ],
+      "aliases": [
+        "capacitor amp-second (charge) balance",
+        "capacitor charge balance",
+        "amp-second balance"
+      ],
+      "search_key": "t2207 capacitor amp second charge balance nguyen ly can bang ampe giay dien tich tren tu dien capacitor amp second charge balance capacitor charge balance amp second balance",
+      "curated_extension": true
+    },
+    {
+      "id": "T2208",
+      "en": "continuous conduction mode, CCM",
+      "vi": "chế độ dẫn dòng liên tục (CCM)",
+      "context": "PMIC: Chế độ hoạt động trong đó dòng điện tức thời qua cuộn cảm luôn dương lớn hơn không trong suốt toàn bộ chu kỳ chuyển mạch Ts.",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "continuous conduction mode, CCM",
+        "continuous conduction mode",
+        "CCM"
+      ],
+      "search_key": "t2208 continuous conduction mode ccm che do dan dong lien tuc ccm continuous conduction mode ccm continuous conduction mode ccm",
+      "curated_extension": true
+    },
+    {
+      "id": "T2209",
+      "en": "discontinuous conduction mode, DCM",
+      "vi": "chế độ dẫn dòng gián đoạn (DCM)",
+      "context": "PMIC: Chế độ tải nhẹ trong đó dòng cuộn cảm chạm không trước khi hết chu kỳ và duy trì bằng không trong khoảng thời gian thứ ba D3*Ts.",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "discontinuous conduction mode, DCM",
+        "discontinuous conduction mode",
+        "DCM"
+      ],
+      "search_key": "t2209 discontinuous conduction mode dcm che do dan dong gian doan dcm discontinuous conduction mode dcm discontinuous conduction mode dcm",
+      "curated_extension": true
+    },
+    {
+      "id": "T2210",
+      "en": "critical inductance and boundary conduction mode",
+      "vi": "điện cảm tới hạn và chế độ dẫn biên (BCM / CrCM)",
+      "context": "PMIC: Ngưỡng điện cảm L_crit (hoặc hệ số không thứ nguyên K_crit(D)) phân ranh giới chuyển tiếp giữa chế độ CCM hai pha và DCM ba pha.",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "critical inductance and boundary conduction mode",
+        "critical inductance",
+        "BCM"
+      ],
+      "search_key": "t2210 critical inductance and boundary conduction mode dien cam toi han va che do dan bien bcm crcm critical inductance and boundary conduction mode critical inductance bcm",
+      "curated_extension": true
+    },
+    {
+      "id": "T2211",
+      "en": "state-space averaging, SSA",
+      "vi": "phương pháp trung bình hóa không gian trạng thái (SSA)",
+      "context": "PMIC / Middlebrook-Cuk: Lấy trung bình có trọng số hệ phương trình vi phân qua các pha đóng mở và tuyến tính hóa quanh điểm tĩnh để thu hàm truyền Gvd(s), Gvg(s).",
+      "chapters": [
+        8,
+        10
+      ],
+      "aliases": [
+        "state-space averaging, SSA",
+        "state-space averaging",
+        "SSA"
+      ],
+      "search_key": "t2211 state space averaging ssa phuong phap trung binh hoa khong gian trang thai ssa state space averaging ssa state space averaging ssa",
+      "curated_extension": true
+    },
+    {
+      "id": "T2212",
+      "en": "canonical averaged PWM switch model",
+      "vi": "mô hình công tắc băm xung trung bình chuẩn tắc (Averaged PWM Switch)",
+      "context": "PMIC / Vorperian: Thay cặp khóa tích cực–thụ động bằng mô hình ba cực bất biến thời gian liên tục (CCM/DCM) phục vụ phân tích .dc/.ac/.stb siêu nhanh.",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "canonical averaged PWM switch model",
+        "averaged PWM switch",
+        "PWM switch model"
+      ],
+      "search_key": "t2212 canonical averaged pwm switch model mo hinh cong tac bam xung trung binh chuan tac averaged pwm switch canonical averaged pwm switch model averaged pwm switch pwm switch model",
+      "curated_extension": true
+    },
+    {
+      "id": "T2213",
+      "en": "boost / buck-boost right-half-plane (RHP) zero",
+      "vi": "điểm không nửa mặt phẳng phải (RHP zero) của mạch tăng áp",
+      "context": "PMIC & Ch10: Zero tại +R_load*(1-D)^2/L phát sinh do cơ chế truyền năng lượng hai nhịp (tăng D làm giảm ngay dòng cấp ra tải), khóa trần băng thông vòng fc <= fz_RHP/4.",
+      "chapters": [
+        6,
+        8,
+        10
+      ],
+      "aliases": [
+        "boost / buck-boost right-half-plane (RHP) zero",
+        "boost RHP zero",
+        "right-half-plane zero"
+      ],
+      "search_key": "t2213 boost buck boost right half plane rhp zero diem khong nua mat phang phai rhp zero cua mach tang ap boost buck boost right half plane rhp zero boost rhp zero right half plane zero",
+      "curated_extension": true
+    },
+    {
+      "id": "T2214",
+      "en": "voltage-mode control, VMC",
+      "vi": "điều khiển chế độ điện áp (VMC)",
+      "context": "PMIC: Kiến trúc điều khiển một vòng so sánh trực tiếp sai lệch điện áp ngõ ra sau bù với sóng răng cưa biên độ cố định để điều chế độ rộng xung PWM.",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "voltage-mode control, VMC",
+        "voltage-mode control",
+        "VMC"
+      ],
+      "search_key": "t2214 voltage mode control vmc dieu khien che do dien ap vmc voltage mode control vmc voltage mode control vmc",
+      "curated_extension": true
+    },
+    {
+      "id": "T2215",
+      "en": "peak and valley current-mode control, CMC",
+      "vi": "điều khiển chế độ dòng đỉnh và dòng đáy (CMC)",
+      "context": "PMIC: Kiến trúc hai vòng lồng nhau biến cuộn cảm thành nguồn dòng điều khiển, hạ bậc hàm truyền tải từ cặp cực kép LC xuống hệ một cực trội R_load*C_out.",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "peak and valley current-mode control, CMC",
+        "current-mode control",
+        "peak current-mode control",
+        "CMC"
+      ],
+      "search_key": "t2215 peak and valley current mode control cmc dieu khien che do dong dinh va dong day cmc peak and valley current mode control cmc current mode control peak current mode control cmc",
+      "curated_extension": true
+    },
+    {
+      "id": "T2216",
+      "en": "constant-on-time (COT) and PFM pulse-skipping control",
+      "vi": "điều khiển thời gian dẫn cố định (COT) và điều biến tần số xung bỏ nhịp (PFM)",
+      "context": "PMIC: Kỹ thuật phản ứng quá độ tải siêu nhanh và giảm tần số chuyển mạch khi tải nhẹ nhằm bảo toàn hiệu suất công suất phần trăm cao.",
+      "chapters": [
+        8,
+        12
+      ],
+      "aliases": [
+        "constant-on-time (COT) and PFM pulse-skipping control",
+        "constant-on-time",
+        "COT",
+        "PFM"
+      ],
+      "search_key": "t2216 constant on time cot and pfm pulse skipping control dieu khien thoi gian dan co dinh cot va dieu bien tan so xung bo nhip pfm constant on time cot and pfm pulse skipping control constant on time cot pfm",
+      "curated_extension": true
+    },
+    {
+      "id": "T2217",
+      "en": "Type-II and Type-III loop compensator",
+      "vi": "bộ bù vòng hồi tiếp Loại II và Loại III (Type-II / Type-III)",
+      "context": "PMIC & Ch10: Mạng bù Op-Amp RC hoặc Gm-C tạo cực tại gốc kèm 1 hoặc 2 cặp zero-cực nâng pha tới +180 độ để vượt qua dốc -180 độ của cặp cực cộng hưởng LC.",
+      "chapters": [
+        8,
+        10
+      ],
+      "aliases": [
+        "Type-II and Type-III loop compensator",
+        "Type-III compensator",
+        "Type-II compensator",
+        "K-factor synthesis"
+      ],
+      "search_key": "t2217 type ii and type iii loop compensator bo bu vong hoi tiep loai ii va loai iii type ii type iii type ii and type iii loop compensator type iii compensator type ii compensator k factor synthesis",
+      "curated_extension": true
+    },
+    {
+      "id": "T2218",
+      "en": "subharmonic oscillation and slope compensation",
+      "vi": "dao động hài phụ chu kỳ kép và bù độ dốc (Slope Compensation)",
+      "context": "PMIC: Bất ổn định nhân đôi chu kỳ trong điều khiển dòng đỉnh khi chu kỳ nhiệm vụ D > 0,5, được triệt tiêu bằng cách cộng dốc nhân tạo m_a >= 0,5*m_2.",
+      "chapters": [
+        8,
+        10,
+        13
+      ],
+      "aliases": [
+        "subharmonic oscillation and slope compensation",
+        "slope compensation",
+        "subharmonic oscillation"
+      ],
+      "search_key": "t2218 subharmonic oscillation and slope compensation dao dong hai phu chu ky kep va bu do doc slope compensation subharmonic oscillation and slope compensation slope compensation subharmonic oscillation",
+      "curated_extension": true
+    },
+    {
+      "id": "T2219",
+      "en": "high-side NMOS bootstrap gate driver",
+      "vi": "mạch lái cực cổng NMOS nhánh cao nâng áp bootstrap",
+      "context": "PMIC & Ch13: Dùng tụ nổi C_BST nạp qua diode/công tắc đồng bộ lên mức VSW + VDRV kết hợp mạch dịch mức xung vi sai chịu dV/dt lớn để lái khóa công suất NMOS phía cao.",
+      "chapters": [
+        12,
+        13,
+        18
+      ],
+      "aliases": [
+        "high-side NMOS bootstrap gate driver",
+        "bootstrap driver",
+        "bootstrap gate driver"
+      ],
+      "search_key": "t2219 high side nmos bootstrap gate driver mach lai cuc cong nmos nhanh cao nang ap bootstrap high side nmos bootstrap gate driver bootstrap driver bootstrap gate driver",
+      "curated_extension": true
+    },
+    {
+      "id": "T2220",
+      "en": "adaptive non-overlapping dead-time control",
+      "vi": "điều khiển thời gian chết thích ứng chống trùng dẫn (Dead-Time)",
+      "context": "PMIC: Vòng khóa chéo cảm nhận ngưỡng tắt cổng VGS của khóa HS/LS để chèn khoảng trễ t_dead tối thiểu, ngăn trùng dẫn mà không kéo dài dẫn diode thân.",
+      "chapters": [
+        12,
+        13,
+        18
+      ],
+      "aliases": [
+        "adaptive non-overlapping dead-time control",
+        "dead-time control",
+        "dead-time"
+      ],
+      "search_key": "t2220 adaptive non overlapping dead time control dieu khien thoi gian chet thich ung chong trung dan dead time adaptive non overlapping dead time control dead time control dead time",
+      "curated_extension": true
+    },
+    {
+      "id": "T2221",
+      "en": "shoot-through cross-conduction and body-diode reverse recovery",
+      "vi": "dòng xuyên qua trùng dẫn và tổn hao phục hồi ngược diode thân",
+      "context": "PMIC: Hai cơ chế gây sụt hiệu suất và xung dòng phá hủy tầng công suất nếu hai khóa HS–LS dẫn chồng lấn hoặc thời gian chết quá dài làm diode thân tích điện tích.",
+      "chapters": [
+        12,
+        18
+      ],
+      "aliases": [
+        "shoot-through cross-conduction and body-diode reverse recovery",
+        "shoot-through",
+        "reverse recovery"
+      ],
+      "search_key": "t2221 shoot through cross conduction and body diode reverse recovery dong xuyen qua trung dan va ton hao phuc hoi nguoc diode than shoot through cross conduction and body diode reverse recovery shoot through reverse recovery",
+      "curated_extension": true
+    },
+    {
+      "id": "T2222",
+      "en": "switching-node negative undershoot and substrate carrier injection",
+      "vi": "sụt áp âm nút chuyển mạch VSW và tiêm hạt dẫn thiểu số xuống đế",
+      "context": "PMIC & Ch18: Khi VSW sụt xuống dưới -0,7 V trong thời gian chết, tiếp giáp n+/p-sub của khóa LS phân cực thuận bơm điện tử vào đế dễ kích hoạt Latch-up.",
+      "chapters": [
+        18,
+        19
+      ],
+      "aliases": [
+        "switching-node negative undershoot and substrate carrier injection",
+        "VSW undershoot",
+        "substrate injection"
+      ],
+      "search_key": "t2222 switching node negative undershoot and substrate carrier injection sut ap am nut chuyen mach vsw va tiem hat dan thieu so xuong de switching node negative undershoot and substrate carrier injection vsw undershoot substrate injection",
+      "curated_extension": true
+    },
+    {
+      "id": "T2223",
+      "en": "lossless SenseFET current sensing and leading-edge blanking, LEB",
+      "vi": "cảm biến dòng không tổn hao SenseFET và che mù sườn đầu xung (LEB)",
+      "context": "PMIC & Ch5: Trích xuất dòng tỉ lệ 1:N từ ngón transistor công suất ghép đồng tâm có op-amp ghim cân bằng VDS, kết hợp che xung gai chuyển mạch đầu chu kỳ.",
+      "chapters": [
+        5,
+        9,
+        19
+      ],
+      "aliases": [
+        "lossless SenseFET current sensing and leading-edge blanking, LEB",
+        "SenseFET",
+        "leading-edge blanking",
+        "LEB"
+      ],
+      "search_key": "t2223 lossless sensefet current sensing and leading edge blanking leb cam bien dong khong ton hao sensefet va che mu suon dau xung leb lossless sensefet current sensing and leading edge blanking leb sensefet leading edge blanking leb",
+      "curated_extension": true
+    },
+    {
+      "id": "T2224",
+      "en": "inductor DCR RC matched-time-constant current sensing",
+      "vi": "cảm biến dòng không tổn hao khớp hằng số thời gian cuộn cảm (L/DCR = Rs*Cs)",
+      "context": "PMIC: Mạng lọc RC mắc song song cuộn cảm tái tạo trung thực điện áp tỉ lệ dòng cuộn cảm I_L*DCR khi hằng số Rs*Cs khớp với L/DCR.",
+      "chapters": [
+        6,
+        8,
+        12
+      ],
+      "aliases": [
+        "inductor DCR RC matched-time-constant current sensing",
+        "DCR current sensing"
+      ],
+      "search_key": "t2224 inductor dcr rc matched time constant current sensing cam bien dong khong ton hao khop hang so thoi gian cuon cam l dcr rs cs inductor dcr rc matched time constant current sensing dcr current sensing",
+      "curated_extension": true
+    },
+    {
+      "id": "T2225",
+      "en": "zero-current detection (ZCD) comparator",
+      "vi": "bộ so sánh phát hiện dòng qua không (ZCD)",
+      "context": "PMIC & Ch13: Bộ so sánh tốc độ cao độ lệch thấp ngắt công tắc chỉnh lưu đồng bộ LS ngay khi dòng cuộn cảm về không, chặn dòng ngược xả tụ tải ở tải nhẹ.",
+      "chapters": [
+        12,
+        13,
+        14
+      ],
+      "aliases": [
+        "zero-current detection (ZCD) comparator",
+        "zero-current detection",
+        "ZCD"
+      ],
+      "search_key": "t2225 zero current detection zcd comparator bo so sanh phat hien dong qua khong zcd zero current detection zcd comparator zero current detection zcd",
+      "curated_extension": true
+    },
+    {
+      "id": "T2226",
+      "en": "slow-switching limit (SSL) and fast-switching limit (FSL) impedance",
+      "vi": "giới hạn trở kháng chuyển mạch chậm (SSL) và chuyển mạch nhanh (FSL)",
+      "context": "PMIC & Ch13: Hai tiệm cận trở kháng ra tương đương của mạch DC-DC tụ chuyển mạch do giới hạn truyền điện tích 1/(fsw*Cfly) và điện trở kênh công tắc Ron.",
+      "chapters": [
+        12,
+        13
+      ],
+      "aliases": [
+        "slow-switching limit (SSL) and fast-switching limit (FSL) impedance",
+        "SSL",
+        "FSL"
+      ],
+      "search_key": "t2226 slow switching limit ssl and fast switching limit fsl impedance gioi han tro khang chuyen mach cham ssl va chuyen mach nhanh fsl slow switching limit ssl and fast switching limit fsl impedance ssl fsl",
+      "curated_extension": true
+    },
+    {
+      "id": "T2227",
+      "en": "output-capacitor-less (capless) CMOS LDO",
+      "vi": "bộ ổn áp LDO tích hợp không tụ lọc ngoài (Capless LDO)",
+      "context": "PMIC & Ch10/Ch12: Bộ ổn áp cấp nguồn cục bộ trên SoC chỉ dùng tụ tải nội 50–200 pF, đặt cực trội trong nội vi và đối mặt bài toán cực phức ở dòng tải bằng không.",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "output-capacitor-less (capless) CMOS LDO",
+        "capless LDO",
+        "SoC LDO"
+      ],
+      "search_key": "t2227 output capacitor less capless cmos ldo bo on ap ldo tich hop khong tu loc ngoai capless ldo output capacitor less capless cmos ldo capless ldo soc ldo",
+      "curated_extension": true
+    },
+    {
+      "id": "T2228",
+      "en": "flipped voltage follower (FVF) LDO",
+      "vi": "bộ ổn áp LDO cấu trúc bám áp lật (FVF LDO)",
+      "context": "PMIC & Ch3/Ch8: Cấu trúc LDO siêu nhanh dùng vòng hồi tiếp shunt cục bộ đẩy trở kháng nhìn vào cực cổng/ra xuống rất thấp cho đáp ứng bước nhảy tải cỡ nanogiây.",
+      "chapters": [
+        3,
+        8,
+        10,
+        12
+      ],
+      "aliases": [
+        "flipped voltage follower (FVF) LDO",
+        "flipped voltage follower",
+        "FVF LDO"
+      ],
+      "search_key": "t2228 flipped voltage follower fvf ldo bo on ap ldo cau truc bam ap lat fvf ldo flipped voltage follower fvf ldo flipped voltage follower fvf ldo",
+      "curated_extension": true
+    },
+    {
+      "id": "T2229",
+      "en": "Ahuja current-buffer Miller compensation",
+      "vi": "bộ bù Miller đệm dòng gián tiếp Ahuja",
+      "context": "PMIC & Ch10: Đưa dòng hồi tiếp tụ bù Cc đi qua tầng cổng chung (cascode) quay về nút trở kháng cao thay vì nối thẳng cổng–máng, triệt RHP zero và đẩy xa cực ngõ ra.",
+      "chapters": [
+        6,
+        9,
+        10
+      ],
+      "aliases": [
+        "Ahuja current-buffer Miller compensation",
+        "Ahuja compensation",
+        "cascode Miller compensation"
+      ],
+      "search_key": "t2229 ahuja current buffer miller compensation bo bu miller dem dong gian tiep ahuja ahuja current buffer miller compensation ahuja compensation cascode miller compensation",
+      "curated_extension": true
+    },
+    {
+      "id": "T2230",
+      "en": "damping-factor-control (DFC) frequency compensation",
+      "vi": "bộ bù điều khiển hệ số tắt dần (DFC)",
+      "context": "PMIC & Ch10: Khối bù chủ động kiểm soát hệ số tắt dần zeta và tần số tự nhiên của cặp cực phức liên hợp trong Op-Amp 3 tầng và Capless LDO khi Iload -> 0.",
+      "chapters": [
+        9,
+        10,
+        12
+      ],
+      "aliases": [
+        "damping-factor-control (DFC) frequency compensation",
+        "damping-factor-control",
+        "DFC"
+      ],
+      "search_key": "t2230 damping factor control dfc frequency compensation bo bu dieu khien he so tat dan dfc damping factor control dfc frequency compensation damping factor control dfc",
+      "curated_extension": true
+    },
+    {
+      "id": "T2231",
+      "en": "dynamic slew-rate enhancer (SRE) and active overshoot clamp",
+      "vi": "mạch tăng tốc biến thiên động (SRE) và kẹp xả vọt áp chủ động",
+      "context": "PMIC & Ch9/Ch12: Mạch phụ trợ chỉ kích hoạt khi dVout/dt vượt ngưỡng để bơm/hút dòng lớn nạp tụ cổng M_pass hoặc kéo xả VOUT khi nhả tải đột ngột.",
+      "chapters": [
+        9,
+        10,
+        12
+      ],
+      "aliases": [
+        "dynamic slew-rate enhancer (SRE) and active overshoot clamp",
+        "slew-rate enhancer",
+        "SRE"
+      ],
+      "search_key": "t2231 dynamic slew rate enhancer sre and active overshoot clamp mach tang toc bien thien dong sre va kep xa vot ap chu dong dynamic slew rate enhancer sre and active overshoot clamp slew rate enhancer sre",
+      "curated_extension": true
+    },
+    {
+      "id": "T2232",
+      "en": "equivalent series resistance (ESR) stability tunnel",
+      "vi": "đường hầm ổn định điện trở nối tiếp tương đương (ESR tunnel)",
+      "context": "PMIC & Ch10/Ch12: Cửa sổ giá trị R_ESR tối thiểu và tối đa của tụ lọc ngoài mà trong đó zero 1/(R_ESR*Cout) giữ dự trữ pha của LDO dương bền vững.",
+      "chapters": [
+        10,
+        12
+      ],
+      "aliases": [
+        "equivalent series resistance (ESR) stability tunnel",
+        "ESR tunnel",
+        "ESR zero"
+      ],
+      "search_key": "t2232 equivalent series resistance esr stability tunnel duong ham on dinh dien tro noi tiep tuong duong esr tunnel equivalent series resistance esr stability tunnel esr tunnel esr zero",
+      "curated_extension": true
+    },
+    {
+      "id": "T2233",
+      "en": "power-on reset (POR) and brown-out detector (BOD)",
+      "vi": "mạch đặt lại khi cấp nguồn (POR) và phát hiện sụt nguồn tạm thời (BOD)",
+      "context": "PMIC & Ch12: Phân hệ giám sát giữ tín hiệu reset mức tích cực cho tới khi VDD và Bandgap xác lập ổn định, đồng thời tái kích hoạt tức thì khi nguồn sụt chớp nhoáng.",
+      "chapters": [
+        12,
+        15
+      ],
+      "aliases": [
+        "power-on reset (POR) and brown-out detector (BOD)",
+        "power-on reset",
+        "POR",
+        "brown-out detector"
+      ],
+      "search_key": "t2233 power on reset por and brown out detector bod mach dat lai khi cap nguon por va phat hien sut nguon tam thoi bod power on reset por and brown out detector bod power on reset por brown out detector",
+      "curated_extension": true
+    },
+    {
+      "id": "T2234",
+      "en": "under-voltage lockout (UVLO) with hysteresis",
+      "vi": "khóa bảo vệ thấp áp có trễ (UVLO)",
+      "context": "PMIC & Ch12: Bộ so sánh tham chiếu Bandgap có cửa sổ trễ V_ON > V_OFF ngăn tầng công suất chuyển mạch nửa vời hoặc dao động bật/tắt khi nguồn cấp yếu.",
+      "chapters": [
+        12,
+        14
+      ],
+      "aliases": [
+        "under-voltage lockout (UVLO) with hysteresis",
+        "under-voltage lockout",
+        "UVLO"
+      ],
+      "search_key": "t2234 under voltage lockout uvlo with hysteresis khoa bao ve thap ap co tre uvlo under voltage lockout uvlo with hysteresis under voltage lockout uvlo",
+      "curated_extension": true
+    },
+    {
+      "id": "T2235",
+      "en": "monotonic soft-start and inrush current limiting",
+      "vi": "khởi động mềm đơn điệu và giới hạn dòng xung nạp khởi đầu (Soft-Start)",
+      "context": "PMIC & Ch12: Tăng dần điện áp tham chiếu nội theo dốc kiểm soát dV_ss/dt để giới hạn dòng nạp tụ tải I_inrush = Cout*(dV_ss/dt) và tránh vọt áp lúc bật mạch.",
+      "chapters": [
+        12,
+        13
+      ],
+      "aliases": [
+        "monotonic soft-start and inrush current limiting",
+        "soft-start",
+        "inrush current limiting"
+      ],
+      "search_key": "t2235 monotonic soft start and inrush current limiting khoi dong mem don dieu va gioi han dong xung nap khoi dau soft start monotonic soft start and inrush current limiting soft start inrush current limiting",
+      "curated_extension": true
+    },
+    {
+      "id": "T2236",
+      "en": "constant-current and foldback over-current protection (OCP)",
+      "vi": "bảo vệ quá dòng hằng định và gập lùi dòng ngắn mạch (Foldback OCP)",
+      "context": "PMIC: Vòng kẹp dòng tự động giảm ngưỡng giới hạn dòng từ I_lim xuống I_sc << I_lim khi VOUT sập về 0 V (chập tải) nhằm giữ công suất tiêu tán VIN*I_sc trong vùng an toàn nhiệt.",
+      "chapters": [
+        8,
+        12,
+        18
+      ],
+      "aliases": [
+        "constant-current and foldback over-current protection (OCP)",
+        "foldback OCP",
+        "over-current protection",
+        "OCP"
+      ],
+      "search_key": "t2236 constant current and foldback over current protection ocp bao ve qua dong hang dinh va gap lui dong ngan mach foldback ocp constant current and foldback over current protection ocp foldback ocp over current protection ocp",
+      "curated_extension": true
+    },
+    {
+      "id": "T2237",
+      "en": "over-voltage protection (OVP) clamp",
+      "vi": "mạch kẹp bảo vệ quá áp (OVP)",
+      "context": "PMIC: Mạch giám sát ngưỡng cao ngắt tức thời xung lái khóa nhánh cao hoặc bật khóa xả bảo vệ tải hạ nguồn khỏi hư hỏng điện môi oxit.",
+      "chapters": [
+        12,
+        18,
+        19
+      ],
+      "aliases": [
+        "over-voltage protection (OVP) clamp",
+        "over-voltage protection",
+        "OVP"
+      ],
+      "search_key": "t2237 over voltage protection ovp clamp mach kep bao ve qua ap ovp over voltage protection ovp clamp over voltage protection ovp",
+      "curated_extension": true
+    },
+    {
+      "id": "T2238",
+      "en": "thermal shutdown (TSD) with temperature hysteresis",
+      "vi": "ngắt bảo vệ quá nhiệt có trễ nhiệt độ (TSD)",
+      "context": "PMIC & Ch12: So sánh điện áp VBE giảm theo nhiệt độ với chuẩn PTAT/Bandgap để ngắt tầng công suất quanh 150 °C và chỉ cho phép phục hồi khi đế nguội xuống ~130 °C.",
+      "chapters": [
+        12,
+        17,
+        18
+      ],
+      "aliases": [
+        "thermal shutdown (TSD) with temperature hysteresis",
+        "thermal shutdown",
+        "TSD"
+      ],
+      "search_key": "t2238 thermal shutdown tsd with temperature hysteresis ngat bao ve qua nhiet co tre nhiet do tsd thermal shutdown tsd with temperature hysteresis thermal shutdown tsd",
+      "curated_extension": true
+    },
+    {
+      "id": "T2239",
+      "en": "reverse-current blocking and dynamic maximum-potential bulk selector",
+      "vi": "chặn dòng ngược và mạch chọn thế cực thân cao nhất động",
+      "context": "PMIC & Ch2/Ch18: Ngắt giếng n-well của PMOS pass sang max(VIN, VOUT) để ngăn diode thân dẫn ngược từ tụ tải về nguồn đầu vào khi VIN sập thấp hơn VOUT.",
+      "chapters": [
+        2,
+        12,
+        18
+      ],
+      "aliases": [
+        "reverse-current blocking and dynamic maximum-potential bulk selector",
+        "dynamic bulk selector",
+        "reverse-current protection"
+      ],
+      "search_key": "t2239 reverse current blocking and dynamic maximum potential bulk selector chan dong nguoc va mach chon the cuc than cao nhat dong reverse current blocking and dynamic maximum potential bulk selector dynamic bulk selector reverse current protection",
+      "curated_extension": true
+    },
+    {
+      "id": "T2240",
+      "en": "electrical and thermal safe operating area (SOA)",
+      "vi": "vùng làm việc an toàn điện – nhiệt (SOA)",
+      "context": "PMIC & Ch17/Ch18: Miền giới hạn đồng thời điện áp cực đại VDS/VGS, mật độ dòng điện di và công suất tỏa nhiệt tức thời để linh kiện công suất không suy thoái hoặc cháy nổ.",
+      "chapters": [
+        17,
+        18,
+        19
+      ],
+      "aliases": [
+        "electrical and thermal safe operating area (SOA)",
+        "safe operating area",
+        "SOA"
+      ],
+      "search_key": "t2240 electrical and thermal safe operating area soa vung lam viec an toan dien nhiet soa electrical and thermal safe operating area soa safe operating area soa",
+      "curated_extension": true
+    },
+    {
+      "id": "T2241",
+      "en": "Schmitt trigger and regenerative hysteresis comparator",
+      "vi": "mạch kích Schmitt và bộ so sánh tái sinh có trễ",
+      "context": "AMS & Ch8/Ch13: Mạch so sánh dùng hồi tiếp dương có kiểm soát tạo hai ngưỡng chuyển trạng thái tách biệt V_TH+ và V_TH-, triệt rung nhiễu đa xung trên sườn tín hiệu chậm.",
+      "chapters": [
+        8,
+        13,
+        14
+      ],
+      "aliases": [
+        "Schmitt trigger and regenerative hysteresis comparator",
+        "Schmitt trigger",
+        "hysteresis comparator"
+      ],
+      "search_key": "t2241 schmitt trigger and regenerative hysteresis comparator mach kich schmitt va bo so sanh tai sinh co tre schmitt trigger and regenerative hysteresis comparator schmitt trigger hysteresis comparator",
+      "curated_extension": true
+    },
+    {
+      "id": "T2242",
+      "en": "CMOS RC relaxation and sawtooth ramp oscillator",
+      "vi": "bộ dao động tích thoát RC và tạo sóng răng cưa CMOS",
+      "context": "AMS & Ch12/Ch15: Bộ tạo nhịp đồng hồ và sóng răng cưa điều chế PWM nạp tụ C bằng dòng bù nhiệt I_ZTC giữa hai ngưỡng tham chiếu, có bù trễ lan truyền bộ so sánh.",
+      "chapters": [
+        12,
+        15
+      ],
+      "aliases": [
+        "CMOS RC relaxation and sawtooth ramp oscillator",
+        "relaxation oscillator",
+        "RC oscillator",
+        "sawtooth ramp generator"
+      ],
+      "search_key": "t2242 cmos rc relaxation and sawtooth ramp oscillator bo dao dong tich thoat rc va tao song rang cua cmos cmos rc relaxation and sawtooth ramp oscillator relaxation oscillator rc oscillator sawtooth ramp generator",
+      "curated_extension": true
+    },
+    {
+      "id": "T2243",
+      "en": "Pierce crystal oscillator and motional negative resistance",
+      "vi": "bộ dao động thạch anh Pierce và điện trở âm khởi động",
+      "context": "AMS & Ch15: Mạch dao động chuẩn tần số phẩm chất siêu cao (Q > 10^4) dùng tầng đảo hỗ dẫn gm nạp hai tụ tải CL1, CL2 tạo điện trở âm |-R_neg| >= 3..5*ESR.",
+      "chapters": [
+        15,
+        16
+      ],
+      "aliases": [
+        "Pierce crystal oscillator and motional negative resistance",
+        "Pierce crystal oscillator",
+        "crystal oscillator"
+      ],
+      "search_key": "t2243 pierce crystal oscillator and motional negative resistance bo dao dong thach anh pierce va dien tro am khoi dong pierce crystal oscillator and motional negative resistance pierce crystal oscillator crystal oscillator",
+      "curated_extension": true
+    },
+    {
+      "id": "T2244",
+      "en": "three-op-amp instrumentation amplifier (INA) and VCM-Vout diamond plot",
+      "vi": "bộ khuếch đại đo lường ba op-amp (INA) và biểu đồ hình thoi VCM–Vout",
+      "context": "AMS & Ch8/Ch9: Cấu trúc khuếch đại vi sai trở kháng vào giga-ohm đạt độ lợi (1 + 2*R1/RG)*(R3/R2), bị giới hạn biên độ kẹp nút nội trên miền đa giác kim cương VCM theo Vout.",
+      "chapters": [
+        4,
+        8,
+        9
+      ],
+      "aliases": [
+        "three-op-amp instrumentation amplifier (INA) and VCM-Vout diamond plot",
+        "instrumentation amplifier",
+        "3-op-amp INA",
+        "diamond plot"
+      ],
+      "search_key": "t2244 three op amp instrumentation amplifier ina and vcm vout diamond plot bo khuech dai do luong ba op amp ina va bieu do hinh thoi vcm vout three op amp instrumentation amplifier ina and vcm vout diamond plot instrumentation amplifier 3 op amp ina diamond plot",
+      "curated_extension": true
+    },
+    {
+      "id": "T2245",
+      "en": "capacitive-feedback and current-balancing chopper instrumentation amplifier (CFIA)",
+      "vi": "bộ khuếch đại đo lường băm hồi tiếp tụ và cân bằng dòng (CFIA)",
+      "context": "AMS & Ch7/Ch14: Cấu trúc tiền khuếch đại cảm biến/y sinh ghép điều biến băm đạt điện áp lệch cỡ micro-volt, điểm gãy nhiễu 1/f dưới 10 mHz và CMRR > 110 dB mà không cần khớp điện trở.",
+      "chapters": [
+        7,
+        9,
+        13,
+        14
+      ],
+      "aliases": [
+        "capacitive-feedback and current-balancing chopper instrumentation amplifier (CFIA)",
+        "chopper instrumentation amplifier",
+        "CFIA"
+      ],
+      "search_key": "t2245 capacitive feedback and current balancing chopper instrumentation amplifier cfia bo khuech dai do luong bam hoi tiep tu va can bang dong cfia capacitive feedback and current balancing chopper instrumentation amplifier cfia chopper instrumentation amplifier cfia",
+      "curated_extension": true
+    },
+    {
+      "id": "T2246",
+      "en": "DC servo loop (DSL) and ripple reduction loop (RRL)",
+      "vi": "vòng trợ động khử lệch điện cực DC (DSL) và vòng triệt gợn băm (RRL)",
+      "context": "AMS & Ch14: Hai vòng hồi tiếp phụ trợ trong CFIA giúp triệt điện áp phân cực điện cực lớn (+-300 mV) và khử gợn sóng vuông tại tần số băm do lệch gốc OTA.",
+      "chapters": [
+        7,
+        8,
+        14
+      ],
+      "aliases": [
+        "DC servo loop (DSL) and ripple reduction loop (RRL)",
+        "DC servo loop",
+        "ripple reduction loop",
+        "RRL"
+      ],
+      "search_key": "t2246 dc servo loop dsl and ripple reduction loop rrl vong tro dong khu lech dien cuc dc dsl va vong triet gon bam rrl dc servo loop dsl and ripple reduction loop rrl dc servo loop ripple reduction loop rrl",
+      "curated_extension": true
+    },
+    {
+      "id": "T2247",
+      "en": "positive-feedback input-impedance boosting loop",
+      "vi": "vòng hồi tiếp dương nâng trở kháng ngõ vào",
+      "context": "AMS & Ch8/Ch13: Bù dòng điện tích nạp công tắc băm đầu vào Cin*f_chop bằng tụ hồi tiếp dương có kiểm soát để nâng trở kháng vào hiệu dụng từ vài M-Ohm lên hàng trăm M-Ohm.",
+      "chapters": [
+        8,
+        13,
+        14
+      ],
+      "aliases": [
+        "positive-feedback input-impedance boosting loop",
+        "input-impedance boosting"
+      ],
+      "search_key": "t2247 positive feedback input impedance boosting loop vong hoi tiep duong nang tro khang ngo vao positive feedback input impedance boosting loop input impedance boosting",
+      "curated_extension": true
+    },
+    {
+      "id": "T2248",
+      "en": "active-RC integrator and Q-enhancement from finite op-amp GBW",
+      "vi": "bộ tích phân RC tích cực và hiện tượng vọt hệ số phẩm chất Q do GBW hữu hạn",
+      "context": "AMS & Ch8/Ch10: Trễ pha thêm của op-amp có băng thông đơn vị omega_u hữu hạn làm cực của bộ lọc tích cực dịch sát trục ảo (1/Q_eff = 1/Q - 2*w0/wu), đòi hỏi bù sớm pha thụ động.",
+      "chapters": [
+        6,
+        8,
+        10
+      ],
+      "aliases": [
+        "active-RC integrator and Q-enhancement from finite op-amp GBW",
+        "active-RC filter",
+        "Q-enhancement"
+      ],
+      "search_key": "t2248 active rc integrator and q enhancement from finite op amp gbw bo tich phan rc tich cuc va hien tuong vot he so pham chat q do gbw huu han active rc integrator and q enhancement from finite op amp gbw active rc filter q enhancement",
+      "curated_extension": true
+    },
+    {
+      "id": "T2249",
+      "en": "Sallen-Key active filter and stopband feedthrough zero",
+      "vi": "mạch lọc tích cực Sallen-Key và điểm không xuyên thẳng dải chắn",
+      "context": "AMS & Ch6/Ch8: Mạch lọc bậc hai dùng một bộ đệm/op-amp tiết kiệm công suất nhưng chịu đường truyền thẳng qua tụ hồi tiếp ở tần số cao khi trở kháng ra op-amp tăng.",
+      "chapters": [
+        6,
+        8,
+        9
+      ],
+      "aliases": [
+        "Sallen-Key active filter and stopband feedthrough zero",
+        "Sallen-Key filter"
+      ],
+      "search_key": "t2249 sallen key active filter and stopband feedthrough zero mach loc tich cuc sallen key va diem khong xuyen thang dai chan sallen key active filter and stopband feedthrough zero sallen key filter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2250",
+      "en": "Tow-Thomas / Fleischer-Tow biquadratic filter",
+      "vi": "mạch lọc song bậc hai Tow-Thomas / Fleischer-Tow",
+      "context": "AMS & Ch8/Ch9: Kiến trúc lọc RC tích cực hai bộ tích phân trong vòng cho phép chỉnh trực giao tần số cộng hưởng omega_0, hệ số phẩm chất Q và độ lợi DC mà không phụ thuộc chế độ chung đầu vào.",
+      "chapters": [
+        8,
+        9,
+        10
+      ],
+      "aliases": [
+        "Tow-Thomas / Fleischer-Tow biquadratic filter",
+        "Tow-Thomas biquad",
+        "biquad filter"
+      ],
+      "search_key": "t2250 tow thomas fleischer tow biquadratic filter mach loc song bac hai tow thomas fleischer tow tow thomas fleischer tow biquadratic filter tow thomas biquad biquad filter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2251",
+      "en": "Gm-C (OTA-C) continuous-time filter and active gyrator",
+      "vi": "mạch lọc thời gian liên tục Gm-C và bộ quay trở kháng chủ động (gyrator)",
+      "context": "AMS & Ch4/Ch6: Mạch lọc vòng hở tốc độ cao dùng hỗ dẫn Gm lái trực tiếp tụ C và cặp Gm đối dấu giả lập cuộn cảm L_eq = C/(Gm1*Gm2), đòi hỏi tuyến tính hóa đầu vào.",
+      "chapters": [
+        4,
+        6,
+        14
+      ],
+      "aliases": [
+        "Gm-C (OTA-C) continuous-time filter and active gyrator",
+        "Gm-C filter",
+        "OTA-C filter",
+        "active gyrator"
+      ],
+      "search_key": "t2251 gm c ota c continuous time filter and active gyrator mach loc thoi gian lien tuc gm c va bo quay tro khang chu dong gyrator gm c ota c continuous time filter and active gyrator gm c filter ota c filter active gyrator",
+      "curated_extension": true
+    },
+    {
+      "id": "T2252",
+      "en": "automatic on-chip RC and Gm/C frequency tuning loop",
+      "vi": "vòng tự động hiệu chỉnh tần số RC và Gm/C trên chip",
+      "context": "AMS & Ch13/Ch16: Vòng khóa chủ–tớ hoặc hiệu chuẩn SAR mảng tụ nhị phân đối chiếu tích R*C hoặc C/Gm với chu kỳ thạch anh chuẩn để bù độ lệch quy trình +-30%.",
+      "chapters": [
+        13,
+        16,
+        18
+      ],
+      "aliases": [
+        "automatic on-chip RC and Gm/C frequency tuning loop",
+        "RC tuning loop",
+        "Gm-C tuning"
+      ],
+      "search_key": "t2252 automatic on chip rc and gm c frequency tuning loop vong tu dong hieu chinh tan so rc va gm c tren chip automatic on chip rc and gm c frequency tuning loop rc tuning loop gm c tuning",
+      "curated_extension": true
+    },
+    {
+      "id": "T2253",
+      "en": "T-switch high-isolation analog multiplexer",
+      "vi": "bộ dồn kênh tương tự công tắc chữ T cách ly cao (T-Switch Mux)",
+      "context": "AMS & Ch13: Tổ hợp ba công tắc nối nút giữa xuống đất khi kênh tắt nhằm triệt tiêu xuyên âm điện dung Cds qua kênh hở xuống dưới -80 dB ở tần số cao.",
+      "chapters": [
+        6,
+        13
+      ],
+      "aliases": [
+        "T-switch high-isolation analog multiplexer",
+        "T-switch",
+        "analog multiplexer"
+      ],
+      "search_key": "t2253 t switch high isolation analog multiplexer bo don kenh tuong tu cong tac chu t cach ly cao t switch mux t switch high isolation analog multiplexer t switch analog multiplexer",
+      "curated_extension": true
+    },
+    {
+      "id": "T2254",
+      "en": "ADC track-and-hold driver and R-C charge-kickback bucket filter",
+      "vi": "tầng đệm lái ADC và mắt lọc R-C hấp thụ xung điện tích lấy mẫu",
+      "context": "AMS & Ch9/Ch13: Bộ khuếch đại vi sai méo thấp đi kèm điện trở cách ly R_iso và tụ dự trữ điện tích C_bucket hấp thụ xung dòng nạp mảng CDAC mà không làm rung op-amp.",
+      "chapters": [
+        9,
+        10,
+        13,
+        14
+      ],
+      "aliases": [
+        "ADC track-and-hold driver and R-C charge-kickback bucket filter",
+        "ADC driver",
+        "kickback bucket filter"
+      ],
+      "search_key": "t2254 adc track and hold driver and r c charge kickback bucket filter tang dem lai adc va mat loc r c hap thu xung dien tich lay mau adc track and hold driver and r c charge kickback bucket filter adc driver kickback bucket filter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2255",
+      "en": "dynamic range L-infinity scaling and biquad pole-zero pairing",
+      "vi": "cân bằng dải động chuẩn vô cùng và ghép cặp cực-không chuỗi biquad",
+      "context": "AMS & Ch7/Ch14: Quy tắc xếp tầng Q thấp đi trước Q cao và chuẩn hóa đỉnh biên độ nút nội bằng nhau để tối đa hóa SNDR không kẹp áp của chuỗi lọc bậc cao.",
+      "chapters": [
+        7,
+        8,
+        14
+      ],
+      "aliases": [
+        "dynamic range L-infinity scaling and biquad pole-zero pairing",
+        "dynamic range scaling",
+        "pole-zero pairing"
+      ],
+      "search_key": "t2255 dynamic range l infinity scaling and biquad pole zero pairing can bang dai dong chuan vo cung va ghep cap cuc khong chuoi biquad dynamic range l infinity scaling and biquad pole zero pairing dynamic range scaling pole zero pairing",
+      "curated_extension": true
+    },
+    {
+      "id": "T2256",
+      "en": "programmable-gain amplifier, PGA",
+      "vi": "bộ khuếch đại độ lợi khả trình (PGA)",
+      "context": "AMS & Ch8/Ch9: Bộ khuếch đại dùng mạng điện trở hoặc tụ chuyển mạch chọn số bằng công tắc CMOS để điều chỉnh biên độ tín hiệu khớp toàn thang ADC.",
+      "chapters": [
+        8,
+        9,
+        13
+      ],
+      "aliases": [
+        "programmable-gain amplifier, PGA",
+        "programmable-gain amplifier",
+        "PGA"
+      ],
+      "search_key": "t2256 programmable gain amplifier pga bo khuech dai do loi kha trinh pga programmable gain amplifier pga programmable gain amplifier pga",
+      "curated_extension": true
+    },
+    {
+      "id": "T2257",
+      "en": "Kelvin resistor-string DAC and R-2R ladder DAC",
+      "vi": "bộ biến đổi số-tương tự chuỗi điện trở Kelvin và mạng thang R-2R",
+      "context": "AMS & Ch13/Ch14: Hai họ DAC điện áp kinh điển: chuỗi 2^N điện trở đảm bảo tính đơn điệu tự nhiên, còn mạng thang R-2R nén diện tích nhưng đòi hỏi nhân nhị phân bề rộng công tắc.",
+      "chapters": [
+        13,
+        14,
+        18
+      ],
+      "aliases": [
+        "Kelvin resistor-string DAC and R-2R ladder DAC",
+        "resistor-string DAC",
+        "R-2R DAC"
+      ],
+      "search_key": "t2257 kelvin resistor string dac and r 2r ladder dac bo bien doi so tuong tu chuoi dien tro kelvin va mang thang r 2r kelvin resistor string dac and r 2r ladder dac resistor string dac r 2r dac",
+      "curated_extension": true
+    },
+    {
+      "id": "T2258",
+      "en": "segmented binary-thermometer current-steering DAC",
+      "vi": "bộ biến đổi số-tương tự lái dòng phân đoạn nhị phân – nhiệt kế",
+      "context": "AMS & Ch5/Ch14: Kiến trúc DAC tốc độ GHz kết hợp MSB mã nhiệt kế (giảm DNL và xung chuyển mã) với LSB nhị phân, định cỡ nguồn dòng cascode theo định luật Pelgrom và Zout(f).",
+      "chapters": [
+        5,
+        14,
+        19
+      ],
+      "aliases": [
+        "segmented binary-thermometer current-steering DAC",
+        "current-steering DAC",
+        "segmented DAC"
+      ],
+      "search_key": "t2258 segmented binary thermometer current steering dac bo bien doi so tuong tu lai dong phan doan nhi phan nhiet ke segmented binary thermometer current steering dac current steering dac segmented dac",
+      "curated_extension": true
+    },
+    {
+      "id": "T2259",
+      "en": "DAC mid-scale glitch impulse and local differential clock retiming latch",
+      "vi": "xung nhiễu chuyển mã giữa thang DAC và chốt đồng bộ lại xung nhịp vi sai cục bộ",
+      "context": "AMS & Ch14: Sai lệch thời điểm chuyển mạch tại bước 011...1 -> 100...0 gây gai diện tích lớn, được khử bằng mã nhiệt kế và chốt vi sai điểm cắt thấp đặt sát cặp công tắc lái dòng.",
+      "chapters": [
+        13,
+        14
+      ],
+      "aliases": [
+        "DAC mid-scale glitch impulse and local differential clock retiming latch",
+        "glitch impulse",
+        "clock retiming latch"
+      ],
+      "search_key": "t2259 dac mid scale glitch impulse and local differential clock retiming latch xung nhieu chuyen ma giua thang dac va chot dong bo lai xung nhip vi sai cuc bo dac mid scale glitch impulse and local differential clock retiming latch glitch impulse clock retiming latch",
+      "curated_extension": true
+    },
+    {
+      "id": "T2260",
+      "en": "oversampling ratio (OSR) and quantization noise shaping",
+      "vi": "tỉ số quá lấy mẫu (OSR) và định dạng phổ nhiễu lượng tử",
+      "context": "AMS & Ch7/Ch13: Lấy mẫu ở Fs = 2*OSR*fB kết hợp vòng hồi tiếp tích phân đẩy năng lượng nhiễu lượng tử dồn lên tần số cao ngoài dải tín hiệu để đạt ENOB 16–24 bit.",
+      "chapters": [
+        7,
+        8,
+        13
+      ],
+      "aliases": [
+        "oversampling ratio (OSR) and quantization noise shaping",
+        "oversampling ratio",
+        "OSR",
+        "noise shaping"
+      ],
+      "search_key": "t2260 oversampling ratio osr and quantization noise shaping ti so qua lay mau osr va dinh dang pho nhieu luong tu oversampling ratio osr and quantization noise shaping oversampling ratio osr noise shaping",
+      "curated_extension": true
+    },
+    {
+      "id": "T2261",
+      "en": "delta-sigma modulator noise transfer function (NTF) and signal transfer function (STF)",
+      "vi": "hàm truyền nhiễu (NTF) và hàm truyền tín hiệu (STF) của bộ điều chế Delta-Sigma",
+      "context": "AMS / Schreier: Cặp hàm truyền đóng vòng định hình phổ nhiễu lượng tử thông cao (1 - z^-1)^L dưới ràng buộc ổn định chuẩn vô cùng Lee (||NTF||_inf < 1,5 cho lượng tử hóa 1 bit).",
+      "chapters": [
+        8,
+        10,
+        13
+      ],
+      "aliases": [
+        "delta-sigma modulator noise transfer function (NTF) and signal transfer function (STF)",
+        "noise transfer function",
+        "NTF",
+        "STF"
+      ],
+      "search_key": "t2261 delta sigma modulator noise transfer function ntf and signal transfer function stf ham truyen nhieu ntf va ham truyen tin hieu stf cua bo dieu che delta sigma delta sigma modulator noise transfer function ntf and signal transfer function stf noise transfer function ntf stf",
+      "curated_extension": true
+    },
+    {
+      "id": "T2262",
+      "en": "cascade of integrators with distributed feedback / feedforward (CIFB / CIFF)",
+      "vi": "chuỗi bộ tích phân hồi tiếp phân tán (CIFB) và truyền thẳng (CIFF)",
+      "context": "AMS: Hai cấu trúc vòng lọc Delta-Sigma chuẩn: CIFF chỉ đưa sai số lượng tử đi qua các bộ tích phân giúp thu nhỏ biên độ dao động ngõ ra OTA và tiết kiệm công suất.",
+      "chapters": [
+        8,
+        9,
+        13
+      ],
+      "aliases": [
+        "cascade of integrators with distributed feedback / feedforward (CIFB / CIFF)",
+        "CIFB",
+        "CIFF"
+      ],
+      "search_key": "t2262 cascade of integrators with distributed feedback feedforward cifb ciff chuoi bo tich phan hoi tiep phan tan cifb va truyen thang ciff cascade of integrators with distributed feedback feedforward cifb ciff cifb ciff",
+      "curated_extension": true
+    },
+    {
+      "id": "T2263",
+      "en": "continuous-time delta-sigma excess loop delay (ELD) compensation",
+      "vi": "bù trễ vòng dư (ELD) trong bộ điều chế Delta-Sigma thời gian liên tục",
+      "context": "AMS: Nhánh hồi tiếp trực tiếp k0 quanh bộ lượng tử hóa khôi phục xung đáp ứng tương đương thời gian rời rạc khi chốt comparator và DAC có trễ khác không.",
+      "chapters": [
+        8,
+        10,
+        13
+      ],
+      "aliases": [
+        "continuous-time delta-sigma excess loop delay (ELD) compensation",
+        "excess loop delay",
+        "ELD"
+      ],
+      "search_key": "t2263 continuous time delta sigma excess loop delay eld compensation bu tre vong du eld trong bo dieu che delta sigma thoi gian lien tuc continuous time delta sigma excess loop delay eld compensation excess loop delay eld",
+      "curated_extension": true
+    },
+    {
+      "id": "T2264",
+      "en": "dynamic element matching (DEM) and data-weighted averaging (DWA)",
+      "vi": "ghép phần tử động (DEM) và trung bình hóa trọng số dữ liệu (DWA)",
+      "context": "AMS & Ch14: Thuật toán xoay vòng con trỏ chọn các ô đơn vị của DAC nhiều bit trong vòng Delta-Sigma để biến sai lệch tĩnh thành nhiễu được định dạng bậc nhất (1 - z^-1).",
+      "chapters": [
+        13,
+        14
+      ],
+      "aliases": [
+        "dynamic element matching (DEM) and data-weighted averaging (DWA)",
+        "dynamic element matching",
+        "data-weighted averaging",
+        "DWA"
+      ],
+      "search_key": "t2264 dynamic element matching dem and data weighted averaging dwa ghep phan tu dong dem va trung binh hoa trong so du lieu dwa dynamic element matching dem and data weighted averaging dwa dynamic element matching data weighted averaging dwa",
+      "curated_extension": true
+    },
+    {
+      "id": "T2265",
+      "en": "sinc decimation filter",
+      "vi": "bộ lọc số giảm tốc lấy mẫu dạng Sinc (CIC / Sinc^K)",
+      "context": "AMS: Bộ lọc thông thấp số không cần bộ nhân (tổ hợp lược – tích phân CIC bậc L+1) triệt nhiễu lượng tử ngoài dải trước khi hạ tốc độ mẫu về Nyquist.",
+      "chapters": [
+        13
+      ],
+      "aliases": [
+        "sinc decimation filter",
+        "CIC filter",
+        "decimation filter"
+      ],
+      "search_key": "t2265 sinc decimation filter bo loc so giam toc lay mau dang sinc cic sinc k sinc decimation filter cic filter decimation filter",
+      "curated_extension": true
+    },
+    {
+      "id": "T2266",
+      "en": "Walden and Schreier ADC figures of merit (FoM_W, FoM_S)",
+      "vi": "hệ số phẩm chất đánh giá ADC của Walden (FoM_W) và Schreier (FoM_S)",
+      "context": "AMS / Murmann: Hai thước đo chuẩn toàn cầu so sánh hiệu quả năng lượng bộ biến đổi: FoM_W = P/(2^ENOB*fs) cho dải trung bình và FoM_S = SNDR_dB + 10*log10(BW/P) cho vùng giới hạn nhiễu nhiệt.",
+      "chapters": [
+        1,
+        7,
+        13
+      ],
+      "aliases": [
+        "Walden and Schreier ADC figures of merit (FoM_W, FoM_S)",
+        "Walden FoM",
+        "Schreier FoM"
+      ],
+      "search_key": "t2266 walden and schreier adc figures of merit fom w fom s he so pham chat danh gia adc cua walden fom w va schreier fom s walden and schreier adc figures of merit fom w fom s walden fom schreier fom",
+      "curated_extension": true
+    },
+    {
+      "id": "T2267",
+      "en": "flash ADC thermometer bubble/sparkle error",
+      "vi": "lỗi bọt mã nhiệt kế (bubble / sparkle error) trong ADC so sánh song song",
+      "context": "AMS & Ch13/Ch14: Lỗi xuất hiện bit 0 xen giữa chuỗi bit 1 trong mã nhiệt kế do lệch ngưỡng, nhiễu giật ngược hoặc siêu bền comparator, cần cổng NAND 3 ngõ vào hoặc mã Gray khử.",
+      "chapters": [
+        13,
+        14
+      ],
+      "aliases": [
+        "flash ADC thermometer bubble/sparkle error",
+        "bubble error",
+        "sparkle code"
+      ],
+      "search_key": "t2267 flash adc thermometer bubble sparkle error loi bot ma nhiet ke bubble sparkle error trong adc so sanh song song flash adc thermometer bubble sparkle error bubble error sparkle code",
+      "curated_extension": true
+    },
+    {
+      "id": "T2268",
+      "en": "pipelined ADC multiplying DAC (MDAC) and 1.5-bit/stage redundant signed digit (RSD)",
+      "vi": "khối nhân số-tương tự dư (MDAC) và sửa lỗi chữ số có dấu dư 1,5 bit/tầng (RSD)",
+      "context": "AMS & Ch13: Kiến trúc ADC đường ống dùng mạch lật tụ Vout = 2*Vin - D*Vref kết hợp dư số 3 mức giúp nới dung sai lệch bộ so sánh con lên tận +-Vref/4.",
+      "chapters": [
+        9,
+        13,
+        14
+      ],
+      "aliases": [
+        "pipelined ADC multiplying DAC (MDAC) and 1.5-bit/stage redundant signed digit (RSD)",
+        "MDAC",
+        "redundant signed digit",
+        "RSD"
+      ],
+      "search_key": "t2268 pipelined adc multiplying dac mdac and 1 5 bit stage redundant signed digit rsd khoi nhan so tuong tu du mdac va sua loi chu so co dau du 1 5 bit tang rsd pipelined adc multiplying dac mdac and 1 5 bit stage redundant signed digit rsd mdac redundant signed digit rsd",
+      "curated_extension": true
+    },
+    {
+      "id": "T2269",
+      "en": "current-mode logic (CML) and low-voltage differential signaling (LVDS)",
+      "vi": "logic chế độ dòng (CML) và truyền dẫn vi sai điện áp thấp (LVDS)",
+      "context": "AMS & Ch4: Họ mạch lái đường truyền tốc độ multi-Gb/s chuyển hướng dòng không đổi qua điện trở phối hợp trở kháng 50/100 Ohm nhằm triệt phản xạ và nhiễu dI/dt nguồn.",
+      "chapters": [
+        4,
+        6,
+        19
+      ],
+      "aliases": [
+        "current-mode logic (CML) and low-voltage differential signaling (LVDS)",
+        "current-mode logic",
+        "CML",
+        "LVDS"
+      ],
+      "search_key": "t2269 current mode logic cml and low voltage differential signaling lvds logic che do dong cml va truyen dan vi sai dien ap thap lvds current mode logic cml and low voltage differential signaling lvds current mode logic cml lvds",
+      "curated_extension": true
+    },
+    {
+      "id": "T2270",
+      "en": "continuous-time linear equalizer, CTLE",
+      "vi": "bộ cân bằng tuyến tính thời gian liên tục (CTLE)",
+      "context": "AMS & Ch6: Cặp vi sai suy biến song song Rs || Cs tạo zero nâng biên độ tần số cao để bù suy hao phân tán xuyên ký hiệu (ISI) của kênh truyền hữu tuyến.",
+      "chapters": [
+        4,
+        6
+      ],
+      "aliases": [
+        "continuous-time linear equalizer, CTLE",
+        "continuous-time linear equalizer",
+        "CTLE"
+      ],
+      "search_key": "t2270 continuous time linear equalizer ctle bo can bang tuyen tinh thoi gian lien tuc ctle continuous time linear equalizer ctle continuous time linear equalizer ctle",
+      "curated_extension": true
+    },
+    {
+      "id": "T2271",
+      "en": "clock and data recovery (CDR) with Hogge / Alexander phase detector",
+      "vi": "mạch khôi phục xung nhịp và dữ liệu (CDR) dùng bộ tách pha Hogge / Alexander",
+      "context": "AMS & Ch16: Vòng khóa pha trích xuất trực tiếp xung nhịp từ cạnh chuyển ngẫu nhiên của luồng dữ liệu NRZ thông qua bộ tách pha tuyến tính Hogge hoặc nhị phân Bang-Bang Alexander.",
+      "chapters": [
+        15,
+        16
+      ],
+      "aliases": [
+        "clock and data recovery (CDR) with Hogge / Alexander phase detector",
+        "clock and data recovery",
+        "CDR",
+        "Hogge phase detector"
+      ],
+      "search_key": "t2271 clock and data recovery cdr with hogge alexander phase detector mach khoi phuc xung nhip va du lieu cdr dung bo tach pha hogge alexander clock and data recovery cdr with hogge alexander phase detector clock and data recovery cdr hogge phase detector",
+      "curated_extension": true
+    },
+    {
+      "id": "T2272",
+      "en": "central PTAT and zero-temperature-coefficient (I_ZTC) current-star bias bus",
+      "vi": "trạm phân phối dòng phân cực hình sao trung tâm I_PTAT và bù nhiệt I_ZTC",
+      "context": "AMS & Ch5/Ch12: Kiến trúc phân cực cấp chip chỉ truyền dòng điện qua nhánh gương cascode tới từng khối (cấm kéo dây áp VGS dài) kèm tụ lọc gắn đúng lên đường nguồn tham chiếu.",
+      "chapters": [
+        5,
+        12,
+        19
+      ],
+      "aliases": [
+        "central PTAT and zero-temperature-coefficient (I_ZTC) current-star bias bus",
+        "I_ZTC",
+        "central bias hub",
+        "current-star bias"
+      ],
+      "search_key": "t2272 central ptat and zero temperature coefficient i ztc current star bias bus tram phan phoi dong phan cuc hinh sao trung tam i ptat va bu nhiet i ztc central ptat and zero temperature coefficient i ztc current star bias bus i ztc central bias hub current star bias",
+      "curated_extension": true
+    },
+    {
+      "id": "T2273",
+      "en": "deterministic power-up sequencing and leakage-free sleep tie-off",
+      "vi": "trình tự khởi động nguồn tất định và khóa ngắt ngủ không rò (Power-Down Tie-Off)",
+      "context": "AMS & Ch12: Chuỗi bắt tay cờ hiệu POR -> UVLO -> BGR -> Bias -> LDO -> PLL -> Data Path kết hợp công tắc kéo cứng mọi cực cổng nội về VDD/VSS khi ngủ.",
+      "chapters": [
+        12,
+        18
+      ],
+      "aliases": [
+        "deterministic power-up sequencing and leakage-free sleep tie-off",
+        "power-up sequencing",
+        "sleep tie-off"
+      ],
+      "search_key": "t2273 deterministic power up sequencing and leakage free sleep tie off trinh tu khoi dong nguon tat dinh va khoa ngat ngu khong ro power down tie off deterministic power up sequencing and leakage free sleep tie off power up sequencing sleep tie off",
+      "curated_extension": true
+    },
+    {
+      "id": "T2274",
+      "en": "top-down RSS specification budgeting and inter-block interface contract",
+      "vi": "phân bổ ngân sách chỉ tiêu căn tổng bình phương (RSS) và hợp đồng giao tiếp liên khối",
+      "context": "AMS & Ch1/Ch7/Ch8: Phương pháp chia ngân sách nhiễu, lệch không, méo phi tuyến từ cấp hệ thống xuống từng khối kèm kiểm định tương thích VCM, cực tính và phân tách trở kháng |Zout| << |Zin|.",
+      "chapters": [
+        1,
+        7,
+        8,
+        9
+      ],
+      "aliases": [
+        "top-down RSS specification budgeting and inter-block interface contract",
+        "RSS budgeting",
+        "interface contract"
+      ],
+      "search_key": "t2274 top down rss specification budgeting and inter block interface contract phan bo ngan sach chi tieu can tong binh phuong rss va hop dong giao tiep lien khoi top down rss specification budgeting and inter block interface contract rss budgeting interface contract",
+      "curated_extension": true
+    },
+    {
+      "id": "T2275",
+      "en": "live Virtuoso CIW IPC socket bridge and OpenAccess lock safety",
+      "vi": "cầu nối IPC phiên trực tiếp Virtuoso CIW và an toàn khóa tệp OpenAccess (.cdslck)",
+      "context": "EDA / IC617: Giao thức Unix socket kết nối trực tiếp vào trình thông dịch SKILL của cửa sổ Virtuoso đang mở, cho phép đọc/sửa schematic không đụng khóa .cdslck và không tốn thêm license.",
+      "chapters": [
+        2,
+        18,
+        19
+      ],
+      "aliases": [
+        "live Virtuoso CIW IPC socket bridge and OpenAccess lock safety",
+        "Virtuoso IPC bridge",
+        "cdslck"
+      ],
+      "search_key": "t2275 live virtuoso ciw ipc socket bridge and openaccess lock safety cau noi ipc phien truc tiep virtuoso ciw va an toan khoa tep openaccess cdslck live virtuoso ciw ipc socket bridge and openaccess lock safety virtuoso ipc bridge cdslck",
+      "curated_extension": true
+    },
+    {
+      "id": "T2276",
+      "en": "Spectre PSF STRUCT operating-point and delta-compressed waveform parser",
+      "vi": "bộ giải mã điểm làm việc STRUCT và dạng sóng nén sai phân Spectre PSF",
+      "context": "EDA / Spectre 15.1: Máy trạng thái phân tích đầy đủ khối TYPE STRUCT (BSIM4 dcOpInfo), bảng ánh xạ TRACE GROUP và giải nén giữ bậc (step-hold) của định dạng Parameter Storage Format ASCII.",
+      "chapters": [
+        2,
+        9,
+        11
+      ],
+      "aliases": [
+        "Spectre PSF STRUCT operating-point and delta-compressed waveform parser",
+        "PSF STRUCT parser",
+        "dcOpInfo"
+      ],
+      "search_key": "t2276 spectre psf struct operating point and delta compressed waveform parser bo giai ma diem lam viec struct va dang song nen sai phan spectre psf spectre psf struct operating point and delta compressed waveform parser psf struct parser dcopinfo",
+      "curated_extension": true
+    },
+    {
+      "id": "T2277",
+      "en": "periodic steady-state stability analysis (Spectre PSS + PSTB)",
+      "vi": "phân tích độ ổn định trạng thái xác lập tuần hoàn (Spectre PSS + PSTB)",
+      "context": "EDA / SpectreRF: Phương pháp giải quỹ đạo tuần hoàn lớn bằng thuật toán bắn (shooting PSS) rồi tiêm nhiễu Floquet (PSTB) để đo chính xác độ lợi vòng và dự trữ pha của bộ biến đổi DC-DC băm xung và mạch SC.",
+      "chapters": [
+        8,
+        10,
+        13
+      ],
+      "aliases": [
+        "periodic steady-state stability analysis (Spectre PSS + PSTB)",
+        "PSS + PSTB",
+        "periodic stability"
+      ],
+      "search_key": "t2277 periodic steady state stability analysis spectre pss pstb phan tich do on dinh trang thai xac lap tuan hoan spectre pss pstb periodic steady state stability analysis spectre pss pstb pss pstb periodic stability",
+      "curated_extension": true
+    },
+    {
+      "id": "T2278",
+      "en": "multilinear gm/ID lookup-table inverse sizing",
+      "vi": "định cỡ giải ngược nội suy đa tuyến tính trên bảng tra gm/ID",
+      "context": "EDA & Ch11/Ch17: Thuật toán nội suy đa chiều tốc độ mili-giây ánh xạ bộ mục tiêu (gm, gm/ID, L, VDS) sang mật độ dòng JD, chiều rộng tổng W, số ngón chẵn nf, gm/gds và fT.",
+      "chapters": [
+        2,
+        11,
+        17
+      ],
+      "aliases": [
+        "multilinear gm/ID lookup-table inverse sizing",
+        "gm/ID inverse sizing",
+        "gmid_lut"
+      ],
+      "search_key": "t2278 multilinear gm id lookup table inverse sizing dinh co giai nguoc noi suy da tuyen tinh tren bang tra gm id multilinear gm id lookup table inverse sizing gm id inverse sizing gmid lut",
+      "curated_extension": true
+    },
+    {
+      "id": "T2279",
+      "en": "log-space finite-difference sensitivity Jacobian",
+      "vi": "ma trận độ nhạy đạo hàm riêng không gian logarit (Sensitivity Jacobian)",
+      "context": "EDA & Ch1/Ch9: Ma trận d(Metric_i)/d(ln x_j) định lượng trực tiếp biến hình học W, L, I_bias hay Rz/Cc nào thực sự chi phối từng chỉ tiêu đang trượt trước khi chạy tối ưu hóa.",
+      "chapters": [
+        1,
+        9,
+        10,
+        11
+      ],
+      "aliases": [
+        "log-space finite-difference sensitivity Jacobian",
+        "sensitivity Jacobian"
+      ],
+      "search_key": "t2279 log space finite difference sensitivity jacobian ma tran do nhay dao ham rieng khong gian logarit sensitivity jacobian log space finite difference sensitivity jacobian sensitivity jacobian",
+      "curated_extension": true
+    },
+    {
+      "id": "T2280",
+      "en": "physics-pruned trust-region and Pareto-optimal analog sizing",
+      "vi": "tối ưu hóa định cỡ vùng tin cậy dẫn hướng vật lý và biên tối ưu Pareto",
+      "context": "EDA / LEDRO & Ch1/Ch11: Kết hợp điểm khởi tạo vật lý gm/ID, cắt tỉa hộp tìm kiếm hợp lệ và tối ưu vùng tin cậy / đơn hình Nelder-Mead có rào phạt biên bão hòa qua các góc PVT xấu nhất.",
+      "chapters": [
+        1,
+        9,
+        11,
+        17
+      ],
+      "aliases": [
+        "physics-pruned trust-region and Pareto-optimal analog sizing",
+        "Pareto-optimal sizing",
+        "trust-region sizing"
+      ],
+      "search_key": "t2280 physics pruned trust region and pareto optimal analog sizing toi uu hoa dinh co vung tin cay dan huong vat ly va bien toi uu pareto physics pruned trust region and pareto optimal analog sizing pareto optimal sizing trust region sizing",
       "curated_extension": true
     }
   ]

@@ -1402,3 +1402,98 @@ kbd {
     padding: 20px 18px;
   }
 }
+
+/* v3 7-Stage Optimal Design Cycle Stepper & PMIC/AMS Domain Badges */
+.badge-pmic {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-ink);
+}
+
+.badge-ams {
+  background: var(--tag-blue-bg);
+  color: var(--tag-blue-ink);
+}
+
+.cycle-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.cycle-banner-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.cycle-banner-top h2 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cycle-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(132px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.cycle-step {
+  text-align: left;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 92px;
+}
+
+.cycle-step:hover {
+  border-color: var(--accent-ink);
+  background: var(--bg-subtle);
+}
+
+.cycle-step.is-active {
+  background: var(--accent-bg);
+  border-color: var(--accent-ink);
+}
+
+.cycle-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.cycle-step-num {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+
+.cycle-step-title {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--ink-primary);
+}
+
+.cycle-step-tool {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 10.2px;
+  color: var(--ink-muted);
+  word-break: break-word;
+}
+

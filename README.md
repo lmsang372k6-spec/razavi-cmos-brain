@@ -1,16 +1,16 @@
-# Razavi CMOS Knowledge Brain (`2026.11.18.3`)
+# Razavi CMOS Knowledge Brain (`2026.11.18.4` · v3 Full-Chip PMIC, AMS & Closed-Loop EDA)
 
 - **Kho lưu trữ GitHub chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
-- **Bản đồ Tọa độ Tri thức Tương tác & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
+- **Bản đồ Tọa độ Tri thức Tương tác v3 & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
 - **Endpoint Raw tức thì cho Codex / CLI:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
 
-**Bộ não Bản đồ Tọa độ Tri thức Thiết kế Vi mạch Tương tự CMOS & Thực chiến EDA** (`134` thẻ 6 khối = `112` thẻ lý thuyết & cấu trúc mạch chi tiết xuyên suốt **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `22` thẻ thực chiến GitHub Analog/Cadence Virtuoso IC617/Spectre 15.1 Skills), tích hợp **56 sơ đồ nguyên lý vector SVG**, **319 cạnh đồ thị tiến hóa có hướng**, **16 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách chính xác (`293` mục, `230` phương trình cột mốc, `423` mục `20_Index`)**, **31 kho GitHub Analog/EDA đã kiểm định**, và **2.200 thuật ngữ song ngữ Anh–Việt chuẩn CLB Vi Mạch (`T001–T2200`)**.
+**Bộ não Tri thức Toàn Chip CMOS, Quản lý Nguồn PMIC, Vi mạch Hỗn hợp AMS & Chu trình Tối ưu Khép kín Cadence–Codex** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), tích hợp **72 sơ đồ nguyên lý vector SVG**, **482 cạnh đồ thị tiến hóa có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách chính xác (`293` mục, `230` phương trình cột mốc, `423` mục `20_Index`)**, **52 kho GitHub Analog/PMIC/AMS/EDA đã kiểm định**, và **2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB Vi Mạch (`T001–T2280`)**.
 
-Kho tri thức được thiết kế kép cho cả **kỹ sư / người học thiết kế vi mạch** (qua ứng dụng Web Bản đồ Tọa độ 2D đa khung nhìn trên GitHub Pages) lẫn **tác tử AI thiết kế mạch Codex trên Cadence Virtuoso IC617 / Spectre 15.1** (qua các endpoint JSON/Markdown tĩnh tất định và bộ định tuyến cục bộ `< 10 ms` tương thích Python 2.6.6 trên RHEL 6.5).
+Kho tri thức được thiết kế kép cho cả **kỹ sư / người học thiết kế vi mạch toàn chip** (qua ứng dụng Web Bản đồ Tọa độ 2D v3 gồm 22 cột không chồng lấn & Bộ lọc Chu trình 7 Bước) lẫn **tác tử AI thiết kế mạch Codex trên Cadence Virtuoso IC617 / Spectre 15.1 (RHEL 6.5 `Python 2.6.6`)** qua định tuyến cục bộ `< 5 ms`, cầu nối trực tiếp `ic617_live_bridge.il`, bộ kiểm toán `psf_audit.py`, bảng tra `gmid_lut.py` và bộ tối ưu vùng tin cậy `sizing_opt.py`.
 
 ---
 
-## 1. Kiến trúc 8 Tầng Tri thức & Thực chiến EDA
+## 1. Kiến trúc 10 Tầng Tri thức, PMIC, AMS & Chu trình Tối ưu Khép kín EDA
 
 | Tầng | Miền tri thức (`kb/nodes/<domain>/`) | Chương / Phạm vi | Trọng tâm kỹ thuật & Bất biến thiết kế |
 |---|---|---|---|
@@ -21,82 +21,82 @@ Kho tri thức được thiết kế kép cho cả **kỹ sư / người học t
 | **5** | `references-and-biasing` | Ch.12 (+ Ch.08/10) | Tự phân cực **Constant-$G_m$** & mạch khởi động thoát điểm chết $I=0$, lõi Bandgap $1{,}25\text{ V}$, bù cong bậc cao $T\ln T$ & lọc nhiễu Bandgap, Bandgap hạ áp dưới $1\text{ V}$ (Banba) & tổng hợp bộ ổn áp **CMOS LDO**. |
 | **6** | `sampled-and-clocked` | Ch.13, 15, 16 | Công tắc MOS & Bootstrap, **lấy mẫu tấm đáy ($\phi_{1e}$)**, khuếch đại nhân áp SC & bộ tích phân SC miễn nhiễm ký sinh, so sánh chốt động **StrongARM / Miyahara**, kiến trúc **SAR ADC C-DAC**, dao động vòng / LC ghép chéo / **Colpitts / Quadrature VCO**, nhiễu pha Leeson & ISF, PFD chống vùng chết / tạp phổ Charge Pump, tổng hợp bộ lọc vòng bậc 3 **CP-PLL**, bộ tổng hợp tần số Integer/Fractional-$N$ & DLL. |
 | **7** | `nonideal-and-physical` | Ch.11, 14, 17, 18, 19 | Nghiên cứu thiết kế Op-Amp nanomet, méo hài chẵn HD2 do mất cân xứng, **định luật Pelgrom**, khử lệch không động Auto-Zeroing / CDS đối chiếu **Chopper Stabilization**, mô hình BSIM4 & FinFET, quy trình chế tạo CMOS & điện trở/tụ tích hợp, Latch-up & Guard Ring, dây dẫn RC / Electromigration / IR Drop, nhiễu đế bán dẫn, **bảo vệ ESD Padring & ký sinh dây hàn $L\,di/dt$**. |
-| **8** | `eda-and-github-skills` | Thực chiến GitHub / IC617 / Spectre | **22 Playbook thực chiến** chưng cất từ **31 kho mã nguồn mở đã kiểm định**: định cỡ bảng tra `gm/ID` (`bmurmann` / `pygmid`), Spectre `stb`/`diffstbprobe`, SpectreRF `pss`/`pac`/`pnoise`/`pstb`, góc PVT & Monte Carlo, tự động hóa Virtuoso IC617 SKILL/CDF & OCEAN/PSF, cây chẩn đoán lỗi 5T-OTA / Miller / Folded-Cascode / CMFB / Bandgap / LDO / Comparator / SAR ADC / SC / VCO / PLL, Verilog-A, Common-Centroid Layout, gỡ lỗi DRC/LVS/PEX và đặc tính hóa theo hợp đồng `CACE`. |
+| **8** | `power-management-ic` | PMIC Công nghiệp (`12` thẻ) | Cân bằng Volt–Giây CCM/DCM & không gian trạng thái trung bình, giới hạn băng thông **RHP Zero** của Boost/Buck-Boost, **Synchronous Buck**, **4-Switch Non-Inverting Buck-Boost**, bơm điện tích công suất **SC Charge-Pump ($R_{SSL}/R_{FSL}$)**, tầng lái **High-Side Bootstrap + Adaptive Dead-Time**, tổng hợp bộ bù **VMC Type-III (K-factor)**, **Peak CMC + Bù dốc $m_a \ge 0{,}5 m_2$ & COT**, cảm biến dòng **SenseFET / $L/\text{DCR}$ / ZCD**, **Capless LDO (FVF + Ahuja + DFC + Dynamic SRE)**, chuỗi bảo vệ **POR / UVLO / Soft-Start / Foldback OCP / TSD**, và kiểm chứng Spectre `pss`+`pstb` kèm mô hình `pwm_switch_avg_ccm_dcm.va`. |
+| **9** | `ams-filters-and-system` | Bộ lọc, DAC/ADC, AFE & Chip (`12` thẻ) | **Schmitt Trigger 6T** & so sánh trễ hồi tiếp dòng, dao động tích thoát **RC Sawtooth (`I_ZTC` khử trễ $t_d$)** & tinh thể Pierce, **3-Op-Amp INA** đối chiếu **Chopper CFIA (DC Servo $\pm 300\text{ mV}$ + RRL)**, bộ lọc liên tục **Active-RC Sallen-Key / Tow-Thomas Biquad**, **$G_m\text{-}C$ Biquad kèm vòng tự chỉnh tần số Master–Slave PVT**, T-Switch Mux & đệm lái **Track-and-Hold ADC**, **Kelvin / R-2R / Segmented Current-Steering DAC**, bộ điều chế **$\Delta\Sigma$ SC/CT (CIFF/CIFB, ELD, DWA)**, **Flash & Pipelined 1.5-bit/stage MDAC (RSD)**, giao tiếp tốc độ cao **LVDS/CML/CTLE/CDR**, phân bổ ngân sách **RSS cấp Chip** & trạm phân phối dòng trung tâm **`I_PTAT`/`I_ZTC` LVCCML**. |
+| **10** | `eda-and-github-skills` | Chu trình Khép kín Cadence–Codex (`26` thẻ) | **26 Playbook thực chiến** chưng cất từ **52 kho mã nguồn mở đã kiểm định**: cầu nối IPC sống **`ic617_live_bridge.il` + `ic617_client.py`** (không tranh chấp khóa `.cdslck`, xuất/vẽ JSON schematic), bộ đọc/kiểm toán **`psf_ascii_reader.py` + `psf_audit.py`** (BSIM4 `STRUCT` OP, `TRACE GROUP` waveform & đánh giá `spec.json`), quét công nghệ **`gpdk_techsweep.py` + `gmid_lut.py`** (`< 5 ms`), bộ tối ưu **`sizing_opt.py`** (Sensitivity Jacobian + Log Trust-Region Pareto), cùng toàn bộ testbench Spectre `stb`/`diffstbprobe`/`pss`/`pac`/`pnoise`/`pstb`, Monte Carlo, Common-Centroid Layout, PEX & `CACE`. |
 
 ---
 
-## 2. Cấu trúc Kho Lưu trữ & Endpoint Tĩnh trên GitHub Pages
+## 2. Chu trình Thiết kế & Tối ưu Khép kín 7 Bước (`7-Stage Optimal Design Cycle`)
 
-Khi xuất bản qua `.github/workflows/deploy.yml`, thư mục `_site/` phục vụ đồng thời giao diện Web tương tác v2 tại `/` và hệ thống API tệp tĩnh tất định tại `/kb/*` (không cần máy chủ backend, không phụ thuộc `node_modules`):
+1. **Bước 1 — Tra cứu KB & Bảng kiểm Bất biến (`kb_lookup.py` + `21` Checklists):** Chọn cấu trúc tối ưu theo chỉ tiêu và nạp danh sách bất biến KCL / vùng hoạt động / cực tính hồi tiếp trước khi vẽ mạch.
+2. **Bước 2 — Phân bổ Ngân sách Cấp Chip & Hợp đồng Giao tiếp (`spec.json` + `project.json`):** Phân bổ nhiễu RSS, độ lệch Pelgrom, $V_{CM}$, cực tính dòng phân cực và điều kiện tách trở kháng $|Z_{\text{out},k}| \ll |Z_{\text{in},k+1}|$.
+3. **Bước 3 — Định cỡ Vật lý Bảng tra `gm/ID` (`gpdk_techsweep.py` + `gmid_lut.py`):** Nội suy đa chiều `< 5 ms` từ `(gm, gm/ID, L, VDS)` sang `ID, W, nf (chẵn), gm*ro, fT, Vdsat` chuẩn xác cho GPDK090 / GPDK045.
+4. **Bước 4 — Dựng Schematic OA & Khung Hỗn hợp Verilog-A (`ic617_live_bridge.il` + `ic617_client.py`):** Đặt linh kiện theo lưới `0.0625`, gọi đủ callback CDF (không lỗi nháy kép `%L`), kiểm chứng nhanh vòng kín `< 0.3 s` với `pwm_switch_avg_ccm_dcm.va` và `saCheckAndSaveJson`.
+5. **Bước 5 — Mô phỏng Spectre & Kiểm toán Tự động PSF (`cadence_exec.py` + `psf_audit.py`):** Quét toàn bộ MOSFET (`region == 2`, $|V_{DS}| - |V_{DS,\text{sat}}| \ge 50\text{ mV}$) và đo tự động DC/AC/STB/PSS-PSTB/Tran đối chiếu `spec.json`.
+6. **Bước 6 — Ma trận Độ nhạy Jacobian & Tối ưu Vùng Tin cậy Pareto (`sizing_opt.py`):** Tính đạo hàm độ nhạy cục bộ $\partial \text{Metric}_i / \partial \ln x_j$ và hội tụ cực tiểu công suất/diện tích trong không gian logarit có ràng buộc biên an toàn.
+7. **Bước 7 — Nghiệm thu Đa góc PVT, Monte Carlo & Hậu Layout PEX (`CACE` Signoff):** Kiểm chứng góc xấu nhất `{TT, SS, FF, FS, SF} × {VDD_min, VDD_max} × {-40°C..125°C}`, thống kê $\pm 3\sigma$ Pelgrom và ký sinh sau trích xuất RC.
+
+---
+
+## 3. Cấu trúc Kho Lưu trữ & Endpoint Tĩnh trên GitHub Pages
+
+Khi xuất bản qua `.github/workflows/deploy.yml`, thư mục `_site/` phục vụ đồng thời giao diện Web tương tác v3 tại `/` và hệ thống API tệp tĩnh tất định tại `/kb/*` (100% Python 3 stdlib, không phụ thuộc `node_modules`):
 
 ```text
 razavi-cmos-brain/
 ├── kb/
-│   ├── manifest.json                     # Phiên bản 2026.11.18.3, thống kê & SHA-256 toàn bộ 212 tệp trong kb/
-│   ├── router-index.json                 # Chỉ mục định tuyến tức thì (134 Nodes + coord_2d + section_coords + Symptoms)
+│   ├── manifest.json                     # Phiên bản 2026.11.18.4, thống kê 10 miền & SHA-256 toàn bộ 261 tệp trong kb/
+│   ├── router-index.json                 # Chỉ mục định tuyến tức thì (162 Nodes + 22-col coord_2d + design_cycle + Symptoms)
 │   ├── coordinates/
 │   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 293 mục, 230 phương trình & 423 mục 20_Index
 │   ├── github-skills/
-│   │   └── catalog.json                  # Danh mục 31 kho GitHub Analog/EDA đã kiểm định giấy phép & độ tương thích IC617
+│   │   └── catalog.json                  # Danh mục 52 kho GitHub Analog/PMIC/AMS/EDA đã kiểm định giấy phép & IC617
 │   ├── graph/
-│   │   └── edges.jsonl                   # 319 cạnh có hướng: upgrades_to | fixes | compensated_by | requires | governed_by ...
-│   ├── nodes/<domain>/<id>.md            # 134 Thẻ Tri thức & Playbook 6 khối (JSON frontmatter + Markdown/LaTeX)
-│   ├── diagrams/*.svg                    # 56 Sơ đồ nguyên lý & lưu đồ kiểm chứng vector SVG + diagrams-manifest.json
-│   ├── checklists/*.json                 # 16 Bảng kiểm bất biến cấu trúc độc lập tiến trình (180nm / 90nm / 65nm / 45nm)
+│   │   └── edges.jsonl                   # 482 cạnh có hướng: upgrades_to | fixes | compensated_by | requires | governed_by ...
+│   ├── nodes/<domain>/<id>.md            # 162 Thẻ Tri thức & Playbook 6 khối xuyên suốt 10 tầng kiến trúc
+│   ├── diagrams/*.svg                    # 72 Sơ đồ nguyên lý & lưu đồ vector SVG + diagrams-manifest.json
+│   ├── checklists/*.json                 # 21 Bảng kiểm bất biến cấu trúc độc lập tiến trình (180nm / 90nm / 65nm / 45nm)
 │   └── glossary/
-│       └── terms-vi-en.json              # 2.200 thuật ngữ song ngữ Anh–Việt chuẩn CLB (T001–T2200)
+│       └── terms-vi-en.json              # 2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB & PMIC/AMS (T001–T2280)
 ├── site/
-│   ├── index.html                        # Ứng dụng Web v2: Thanh nhảy tọa độ, Đồ thị 2D, Cây 19 Chương & Kho GitHub Skills
+│   ├── index.html                        # Ứng dụng Web v3: 10 Tầng, Bộ lọc PMIC/AMS/Skills, Chu trình 7 Bước & Đồ thị 22 Cột
 │   ├── styles.css                        # Giao diện học thuật tối giản ấm độ tương phản cao (Light / Dark)
-│   └── app.js                            # Tra cứu §Mục / Eq. / Trang / 20_Index / Tiếng Việt không dấu, Đồ thị 2D, KaTeX
+│   └── app.js                            # Tra cứu tọa độ / PMIC / AMS / Tiếng Việt không dấu, Đồ thị 2D 22 cột, KaTeX
 ├── skills/
 │   └── razavi-cmos-brain/                # Skill chuẩn cho Codex / AI Agent (SKILL.md + agents/openai.yaml)
 ├── tools/
-│   ├── generate_diagrams.py              # Trình sinh & kiểm định va chạm nhãn cho 56 sơ đồ vector SVG thuần Python 3 stdlib
-│   ├── build_index.py                    # Trình biên dịch router-index.json (kèm tọa độ 2D) & manifest.json
+│   ├── generate_diagrams.py              # Trình sinh & kiểm định không va chạm nhãn cho 72 sơ đồ vector SVG
+│   ├── build_index.py                    # Trình biên dịch 10 miền, hợp nhất cạnh tự động & gán tọa độ 2D 22 cột
 │   └── manage_kb.py                      # CLI 1 lệnh: thêm thẻ mới, nối cạnh nâng cấp, rebuild & xuất gói nén offline
 ├── validators/
-│   └── validate_brain.py                 # Kiểm định 100% 8 miền, tọa độ sách, GitHub catalog, LaTeX, SVG, Checklist & Đồ thị
-├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 3 bước mở rộng thẻ/kỹ năng mới & đồng bộ tức thì sang ổ F:
+│   └── validate_brain.py                 # Kiểm định 100% 10 miền (162 thẻ), 72 SVG, 21 checklist, 2280 từ, 52 repo & SHA-256
+├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 3 bước mở rộng thẻ/kỹ năng mới & đồng bộ sang ổ F:
 └── .github/workflows/deploy.yml          # Kiểm định tự động & triển khai GitHub Pages
 ```
 
 ---
 
-## 3. Chạy Kiểm định & Xem Giao diện Web Tọa độ 2D Cục bộ
+## 4. Chạy Kiểm định & Xem Giao diện Web v3 Cục bộ
 
-Yêu cầu duy nhất: **Python 3.8+** (100% thư viện chuẩn `stdlib`, **không** cần cài đặt gói `pip` hay `npm` ngoài; luôn chạy với `-B` hoặc `PYTHONDONTWRITEBYTECODE=1`).
+Yêu cầu duy nhất: **Python 3.8+** (100% thư viện chuẩn `stdlib`, luôn chạy với `-B` hoặc `PYTHONDONTWRITEBYTECODE=1`).
 
 ```bash
-# 1. Biên dịch lại chỉ mục định tuyến 2D và bảng kê SHA-256 + chạy kiểm định toàn vẹn
+# 1. Hợp nhất các mảnh cạnh (nếu có), biên dịch chỉ mục 10 miền và chạy kiểm định toàn vẹn
 python -B tools/manage_kb.py rebuild
 
-# 2. Chạy riêng bộ kiểm định 134 thẻ, 56 SVG, 16 checklist, tọa độ sách, catalog GitHub & đồ thị cạnh
+# 2. Chạy riêng bộ kiểm định 162 thẻ, 72 SVG, 21 checklist, 2.280 thuật ngữ, 52 repo GitHub & đồ thị cạnh
 python -B validators/validate_brain.py
 
-# 3. Mở giao diện Web tương tác ngay trên máy cục bộ
+# 3. Kiểm tra cú pháp JavaScript giao diện Web v3 & chạy máy chủ tĩnh cục bộ
+node --check site/app.js
 python -B -m http.server 8080
 # Mở trình duyệt tại: http://localhost:8080/site/
 ```
 
 ---
 
-## 4. Định tuyến Tọa độ & GitHub Skills trên Máy ảo Cadence RHEL 6.5 (`Python 2.6.6`)
-
-- **Quản trị kho tri thức 1 lệnh ([HUONG-DAN-CAP-NHAT.md](HUONG-DAN-CAP-NHAT.md)):**
-  - `python -B tools/manage_kb.py status` — thống kê chi tiết 134 thẻ, tọa độ sách, kho GitHub, cạnh đồ thị, checklist, SVG và thuật ngữ.
-  - `python -B tools/manage_kb.py new-card <domain> <id> "<title_vi>" "<title_en>" --chapter <N>` — tạo khung thẻ chuẩn 6 khối (hỗ trợ cả 7 tầng Razavi và tầng 8 `eda-and-github-skills`).
-  - `python -B tools/manage_kb.py add-edge <from> <to> <rel> "<when>" "<cost>" "<ref>"` — thêm cạnh đồ thị có hướng.
-  - `python -B tools/manage_kb.py rebuild` — biên dịch lại chỉ mục 2D + kiểm định toàn vẹn `ok: true`.
-- **Định tuyến trực tiếp cho Codex trên ổ `F:` (`F:\SKILL-ANALOG` / RHEL 6.5):**
-  - Bộ công cụ `library/tools/kb_lookup.py` và `library/tools/kb_fetch.py` tương thích 100% **Python 2.6.6** và **Python 3**:
-    * `kb_lookup.py coord "9.2"` / `kb_lookup.py coord "Eq. 2.10"` / `kb_lookup.py coord "page 342"` — nhảy thẳng tới đúng trang sách, phương trình, mục sách Razavi và thẻ tri thức tương ứng.
-    * `kb_lookup.py skills "pss pnoise"` — tra cứu nhanh 22 playbook thực chiến `skill-*` và 31 kho GitHub đã kiểm định tương thích IC617.
-    * `kb_fetch.py --sync` — đồng bộ trực tiếp `router-index.json`, `edges.jsonl`, `book-coordinates.json`, `catalog.json` và các thẻ mới nhất từ GitHub kèm dự phòng offline `nodes-bundle.json.gz`.
-
----
-
 ## 5. Bản quyền & Minh bạch Nguồn Học thuật / Mã nguồn Mở
 
-- Mã nguồn công cụ, bộ kiểm định, 56 sơ đồ vector tự dựng, 16 bảng kiểm cấu trúc và giao diện Web trong kho này được phát hành theo giấy phép **MIT License** ([LICENSE](LICENSE)).
-- Toàn bộ 112 thẻ Razavi và 22 thẻ kỹ năng thực chiến EDA được biên soạn bằng văn phong kỹ thuật độc lập (phương trình giải tích, bất biến cấu trúc, cây chẩn đoán lỗi và hợp đồng kiểm chứng Spectre/SKILL); **tuyệt đối không sao chép nguyên văn đoạn văn bản dài từ sách in hay chép nguyên khối mã nguồn chưa cấp phép**, đồng thời ghi nhận minh bạch giấy phép SPDX và commit khóa cứng của từng kho GitHub trong `kb/github-skills/catalog.json`.
+- Mã nguồn công cụ, bộ kiểm định, 72 sơ đồ vector tự dựng, 21 bảng kiểm cấu trúc và giao diện Web v3 trong kho này được phát hành theo giấy phép **MIT License** ([LICENSE](LICENSE)).
+- Toàn bộ 162 thẻ tri thức và Playbook thực chiến được biên soạn độc lập bằng văn phong kỹ thuật gốc (phương trình giải tích, bất biến cấu trúc, cây chẩn đoán lỗi và hợp đồng kiểm chứng Spectre/SKILL/Verilog-A); **không sao chép nguyên văn đoạn văn bản dài từ sách in hay chép nguyên khối mã nguồn chưa cấp phép**, đồng thời ghi nhận minh bạch giấy phép SPDX và mã băm commit khóa cứng của cả 52 kho GitHub trong `kb/github-skills/catalog.json`.

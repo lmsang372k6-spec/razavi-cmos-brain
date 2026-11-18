@@ -1,0 +1,123 @@
+{
+  "checklist_id": "closed-loop-sizing-and-signoff",
+  "title_vi": "Bảng kiểm Bất biến Chu trình Định cỡ Vòng kín, Cầu nối Live IC617, Hậu kiểm PSF & Tối ưu Pareto",
+  "applies_to": [
+    "skill-ic617-live-ipc-bridge-and-schematic-json",
+    "skill-psf-mos-op-waveform-and-spec-auditor",
+    "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+    "skill-closed-loop-sizing-and-pareto-optimization"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-OPT-01",
+      "name": "Không gian làm việc bất biến SKILL-ANALOG và cô lập tệp tạm thời gian chạy",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Không có socket IPC, tệp đệm LUT (.lut.json.gz), thư mục chạy mô phỏng hay mã byte .pyc nào được ghi vào cây thư mục thư viện chuẩn SKILL-ANALOG; mọi phiên chạy phải cô lập trong <project>/sim/runs/<run_id>/ hoặc ~/.cache/skill-analog/",
+      "why_vi": "Trình kiểm định toàn vẹn analogctl.py verify kiểm tra mã băm SHA-256 trên toàn bộ cây thư viện; bất kỳ tệp phát sinh nào ghi nhầm vào thư mục gốc đều làm gãy kiểm định truy nguyên và gây xung đột giữa nhiều phiên thiết kế song song.",
+      "cadence_check": "Luôn gọi qua `cadence_exec.py` với `--run-id` riêng biệt, đặt `PYTHONDONTWRITEBYTECODE=1` (`python -B`) và xác minh `analogctl.py verify` trả `ok: true`.",
+      "related_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ocean-parametric-testbench-runner",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "CHK-OPT-02",
+      "name": "An toàn khóa tệp OpenAccess (.cdslck) giữa phiên Virtuoso GUI đang mở và tiến trình batch",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Khi cellView đang mở chế độ sửa ('a') trong Virtuoso GUI (tồn tại khóa .cdslck), mọi thao tác đọc/sửa schematic bắt buộc định tuyến qua cầu nối IPC trực tiếp (`ic617_client.py` -> `ic617_live_bridge.il`), tuyệt đối không gọi `virtuoso -nograph` ghi đè hoặc đọc đĩa cũ chưa lưu",
+      "why_vi": "Mở trùng quyền ghi từ tiến trình phụ sẽ bị OpenAccess chặn khóa `.cdslck` hoặc treo cứng hộp thoại cấp phép, còn mở chỉ đọc `'r'` từ đĩa khi người dùng chưa nhấn Check & Save sẽ xuất netlist cũ sai lệch hoàn toàn với sơ đồ trên màn hình.",
+      "cadence_check": "Chạy `ic617_client.py ping` và `dump-json` để xác nhận trạng thái bộ nhớ trực tiếp, hoặc kiểm tra sự vắng mặt của `*.cdslck*` bằng `cadence_exec.py` trước khi chạy batch.",
+      "related_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation"
+      ]
+    },
+    {
+      "id": "CHK-OPT-03",
+      "name": "Đồng bộ chuỗi hàm CDF Callback không bọc nháy kép và đóng dấu schCheck + dbSave",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi phép gán tham số hình học (l, fingers, w, m, segW, segL) phải kích hoạt `PasCdfFormInit(cdfData)` + chuỗi callback + `cdfUpdateInstParam(inst)` với chuỗi nguyên bản (cấm dùng `%L` làm nhân đôi dấu nháy kép `\"\\\"12u\\\"\"`), theo sau bởi `schCheck(cv)` 0 lỗi và `dbSave(cv)`",
+      "why_vi": "Nếu bọc thừa dấu nháy kép quanh chuỗi đơn vị hoặc bỏ qua CDF callback, trình xuất netlist Spectre của GPDK090/045 sẽ đọc giá trị mặc định cũ của `fw`, `simM`, `ad`, `as`, `pd`, `ps`, làm sai lệch cả dòng phân cực lẫn điện dung tiếp giáp CDB/CSB.",
+      "cadence_check": "Thực thi `ic617_client.py set-param` + `check-save`, sau đó đối chiếu trường `stored` và `cdf_effective` trong tệp xuất của `saDumpSchematicJson`.",
+      "related_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation",
+        "concept-mos-capacitances-small-signal"
+      ]
+    },
+    {
+      "id": "CHK-OPT-04",
+      "name": "Hợp đồng đơn vị nhiệt độ, giới hạn áp SOA và tính đơn điệu khi quét bảng tra gm/ID LUT",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Netlist quét đặc tính `gpdk_techsweep.py` truyền đúng độ C cho Spectre `options temp` (27.0 °C, không nhầm 27 K = -246.15 °C), khóa trần quét VGS/VDS <= V_SOA của loại oxit (1.2 V cho GPDK090 1V core; 1.0–1.1 V cho GPDK045 SVT), và cắt bỏ nhánh rò dưới đỉnh cực đại gm/ID trước khi nội suy ngược",
+      "why_vi": "Bốn lỗi kinh điển của các bộ quét mã mở (nhầm Kelvin/Celsius, lệch dấu hai chấm/chấm trong PSF, nuốt mã lỗi trả mảng 0 và quá áp 1.8 V trên core 1.0 V) sẽ sinh bảng LUT hỏng làm lệch kích thước W/L hàng chục lần.",
+      "cadence_check": "Chạy kiểm tra điểm chuẩn (pilot check) đối chiếu đầu ra `gmid_lut.py size` với một lần chạy `dcOpInfo.info` thực của Spectre 15.1 (sai số ID, gm, Vdsat < 3%).",
+      "related_nodes": [
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "skill-gm-id-lookup-table-sizing",
+        "law-short-channel-effects"
+      ]
+    },
+    {
+      "id": "CHK-OPT-05",
+      "name": "Kiểm toán toàn diện vùng hoạt động STRUCT dcOpInfo và dự trữ bão hòa trước khi tin chỉ số AC/STB",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "100% transistor khuếch đại, gương dòng và cascode phải đạt `region == 2` (hoặc `region == 3` dưới ngưỡng có chủ đích) kèm biên bão hòa `|VDS| - |Vdsat| >= 50 mV` trên toàn bộ các góc PVT trước khi chấm đạt Gain, GBW hay PSRR",
+      "why_vi": "Một nguồn dòng đuôi hoặc nhánh cascode chớm rơi vào vùng triode (`region == 1`) ở góc SS/SF có thể vẫn giữ mạch khuếch đại chạy trong AC danh định nhưng làm sập CMRR/PSRR 20 dB và gây kẹp cứng dưới bước nhảy lớn.",
+      "cadence_check": "Chạy `psf_audit.py op-audit <run_dir> --vds-margin 0.05` giải mã trực tiếp bản ghi `STRUCT` BSIM4 trong `dcOpInfo.info` và xác nhận 0 vi phạm vùng hoạt động ngoài danh sách `--expect-triode`.",
+      "related_nodes": [
+        "skill-psf-mos-op-waveform-and-spec-auditor",
+        "concept-mos-operating-regions",
+        "tech-nanometer-vdsmin-gmid-sizing"
+      ]
+    },
+    {
+      "id": "CHK-OPT-06",
+      "name": "Giải nén chuẩn xác TRACE GROUP và bước giữ sai phân (Delta Compression) trên sóng quá độ",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Trình đọc sóng PSF ASCII phải ánh xạ đầy đủ bảng `TRACE` `GROUP` sang tên nút thực và khôi phục các điểm giữ bậc (step-hold) theo đúng độ dài vector quét `time` / `freq` trước khi tính Slew Rate, Settling Time, Ripple hoặc FFT",
+      "why_vi": "Spectre 15.1 nén bỏ các thành phần trong `GROUP` không đổi giữa hai bước thời gian liên tiếp; bỏ qua phần `TRACE` và giải nén sai sẽ làm lệch chỉ số mảng thời gian–điện áp dẫn tới kết quả Slew Rate và thời gian xác lập sai hoàn toàn.",
+      "cadence_check": "Dùng `psf_audit.py metrics <run_dir> --spec spec.json` kiểm tra `len(signal) == len(sweep)` trên mọi sóng trích xuất và xác nhận không có giá trị `NaN`/`Inf`/`NOT_VERIFIED`.",
+      "related_nodes": [
+        "skill-psf-mos-op-waveform-and-spec-auditor",
+        "skill-ocean-parametric-testbench-runner"
+      ]
+    },
+    {
+      "id": "CHK-OPT-07",
+      "name": "Khởi tạo điểm ấm vật lý gm/ID và kiểm tra ma trận độ nhạy Jacobian trước khi chạy vòng tối ưu số",
+      "severity": "warn",
+      "method": "semantic",
+      "invariant": "Không bao giờ khởi chạy tối ưu hóa hộp đen từ kích thước đoán mò ngẫu nhiên; phải xuất phát từ nghiệm giải tích + `gmid_lut.py`, khóa các tỉ số khớp đối xứng (M1=M2, M3=M4) vào chung biến độc lập và tính ma trận độ nhạy `d(Metric)/d(ln x)` để xác nhận biến điều khiển có hiệu lực vật lý",
+      "why_vi": "Tối ưu hóa không ràng buộc đối xứng sẽ phá vỡ cặp vi sai/gương dòng tạo offset hệ thống khổng lồ, còn tối ưu trên không gian chưa cắt tỉa sẽ tiêu tốn hàng trăm lần chạy Spectre vô ích vào vùng cắt/triode.",
+      "cadence_check": "Xem bảng `sensitivity_jacobian` của `sizing_opt.py` ở Giai đoạn 1, xác minh biến có `|S_ij|` lớn nhất khớp với phương trình vật lý Razavi/Erickson trước khi bật vòng lặp vùng tin cậy.",
+      "related_nodes": [
+        "skill-closed-loop-sizing-and-pareto-optimization",
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "law-pelgrom-mismatch-and-sizing-duality"
+      ]
+    },
+    {
+      "id": "CHK-OPT-08",
+      "name": "Làm tròn lưới chế tạo PDK, số ngón chẵn và nghiệm thu đa góc PVT + Monte Carlo + PEX cuối chu trình",
+      "severity": "error",
+      "method": "semantic",
+      "invariant": "Nghiệm tối ưu cuối cùng của `sizing_opt.py` phải được làm tròn về lưới chế tạo PDK (ví dụ 5 nm), số ngón `nf` nguyên chẵn >= 2 cho các cặp khớp nhau, và vượt qua toàn bộ hợp đồng `spec.json` trên các góc cực trị `{TT, SS, FF, FS, SF}` + Monte Carlo mismatch + hậu kiểm ký sinh PEX",
+      "why_vi": "Điểm tối ưu Pareto danh định trên góc TT với kích thước số thực lẻ rất dễ vi phạm DRC lưới chế tạo hoặc sụp dự trữ pha / biên bão hòa ở góc chậm nóng (`SS 125 °C`) và sau khi cộng điện dung dây nối layout.",
+      "cadence_check": "Chạy kiểm chứng sign-off Giai đoạn 7 trên bộ kích thước đã khóa lưới qua `cadence_exec.py` + `psf_audit.py --spec spec.json` cho toàn bộ ma trận góc PVT và Monte Carlo.",
+      "related_nodes": [
+        "skill-closed-loop-sizing-and-pareto-optimization",
+        "skill-cace-spec-driven-characterization-contract",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    }
+  ]
+}

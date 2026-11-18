@@ -1,8 +1,11 @@
 {
   "checklist_id": "ldo-regulator",
-  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ Ổn áp Tuyến tính Sụt áp Thấp CMOS (CMOS LDO)",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ Ổn áp Tuyến tính Sụt áp Thấp CMOS (External-Cap & Capless On-Chip LDO)",
   "applies_to": [
-    "topo-cmos-ldo-regulator"
+    "topo-cmos-ldo-regulator",
+    "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+    "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+    "skill-ldo-stability-load-line-psrr-tb"
   ],
   "process_agnostic": true,
   "checks": [
@@ -87,6 +90,63 @@
         "topo-cmos-ldo-regulator",
         "tech-slew-rate-and-class-ab-opamps",
         "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-LDO-07",
+      "name": "Hệ số tắt dần cặp cực phức (Damping Factor zeta) của Capless LDO ở chế độ Không tải (I_load = 0)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Tại I_load = 0 trên mọi góc PVT: zeta_complex >= 0.50, Gain Margin >= 10 dB, Phase Margin >= 50 deg VÀ độ nhô đỉnh AC vòng kín max|H_cl(jw)| <= +2.5 dB (không có đỉnh cộng hưởng vượt lại 0 dB sau tần số cắt fu)",
+      "why_vi": "Trong Capless LDO trên chip (Cout = 50-200 pF) dùng bù Ahuja, FVF hoặc 3 tầng, khi dòng tải ngoài về 0 làm gm_pass sụt thê thảm và rO_pass tăng vọt, hai cực không trội hợp nhất thành cặp cực phức liên hợp có hệ số tắt dần zeta tỉ lệ với sqrt(gm_pass). Nếu thiếu khối kiểm soát hệ số tắt dần (DFC) hoặc dòng rỉ tối thiểu, đỉnh cộng hưởng Q cao ở tần số trên fu sẽ vọt qua mốc 0 dB gây tự dao động dù PM đo ngay tại fu đầu tiên vẫn báo > 55 độ!",
+      "cadence_check": "Chạy `stb` quét mịn `50 pts/dec` tại `Iload = {0, 1u, 10u, 100u}` qua `{SS, TT, FF} x {-40C, 125C}`: kiểm tra đồng thời `Gain Margin >= 10 dB` (đảm bảo `|T(jw)|` không nhô lên cắt lại `0 dB` ở cao tần) và kiểm chứng bằng xung nhả tải nhỏ `10 uA <-> 0` trong `tran`.",
+      "related_nodes": [
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "topo-cmos-ldo-regulator",
+        "tech-miller-rhp-zero-nulling-and-cascode-comp",
+        "tech-nyquist-stability-criterion"
+      ]
+    },
+    {
+      "id": "CHK-LDO-08",
+      "name": "Mạch hút dòng chủ động chống vọt lố nhả tải (Load-Release Overshoot Clamp & Dynamic SRE)",
+      "severity": "error",
+      "method": "semantic",
+      "invariant": "Khi nhả tải đột ngột I_max -> 0 (t_fall <= 10 ns): Delta_V_overshoot <= V_overshoot_spec (đảm bảo VOUT_peak < V_oxide_safe của lõi số tải), VÀ dòng tĩnh của nhánh kéo xuống chủ động I_sink_idle < 50 nA ở trạng thái xác lập",
+      "why_vi": "Phần tử truyền PMOS chỉ có khả năng cấp dòng một chiều từ VIN xuống VOUT chứ không thể hút dòng ngược. Khi tải số ngắt dòng từ 50 mA về 0 A trong vài nano-giây trên tụ Cout nhỏ (100 pF), trong thời gian cổng M_pass đang slewing đi lên VIN để khóa lại, lượng điện tích dư bơm thẳng vào Cout làm VOUT vọt lố hàng trăm mV gây thủng oxit cổng mỏng và mất hàng chục micro-giây mới xả hết qua cầu phân áp RFB.",
+      "cadence_check": "Chạy `tran` xung tải `Imax -> 0 A` với `t_fall = 1 ns` và `10 ns` tại `VIN_max, FF, -40 °C` và `125 °C`: đo đỉnh `ymax(V(vout)) - VOUT_nom`, thời gian hồi phục về dải `+-1%` và dòng tĩnh `IDC(\"/M_overshoot_sink/D\")` sau xác lập.",
+      "related_nodes": [
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+        "tech-slew-rate-and-class-ab-opamps"
+      ]
+    },
+    {
+      "id": "CHK-LDO-09",
+      "name": "Bảo vệ Quá dòng Hằng dòng / Gập lùi (OCP & Foldback) và Khóa Quá nhiệt (TSD) trong Vùng An toàn SOA",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "I_lim(VOUT_nom) thuộc [1.15, 1.50] * I_max; khi ngắn mạch VOUT = 0: P_short = VIN_max * I_foldback(0) <= P_SOA_max, I_foldback(0) > I_startup_min (tránh khóa kẹt latch-off), đi kèm TSD ngắt ở ~150 °C / mở lại ở ~130 °C",
+      "why_vi": "Khi chân VOUT bị chập đất, toàn bộ điện áp VIN_max đặt trực tiếp lên hai cực nguồn-máng của M_pass. Nếu chỉ giới hạn dòng phẳng ở 1.3 * I_max, công suất tiêu tán VIN_max * I_lim có thể nung chảy kim loại hoặc đẩy nhiệt độ tiếp giáp vượt 175 °C; ngược lại nếu gập lùi dòng I_foldback về quá sát 0 A, LDO sẽ bị kẹt chết ở mức áp thấp không khởi động nổi khi tải là nguồn dòng không đổi.",
+      "cadence_check": "Quét `dc` kéo `VOUT` từ `VOUT_nom` xuống `0 V` tại `VIN_max` để vẽ đường đặc tuyến `I_OUT(V_OUT)` kiểm tra vùng SOA và không có điểm cắt ổn định giả với đường tải, kết hợp quét `temp = 100..170 °C` kiểm tra ngưỡng lật trễ của khối `TSD`.",
+      "related_nodes": [
+        "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+        "topo-cmos-ldo-regulator",
+        "concept-process-corners-and-temperature"
+      ]
+    },
+    {
+      "id": "CHK-LDO-10",
+      "name": "Chuyển mạch Giếng N Động max(VIN, VOUT) và Khóa Chống Dòng Ngược qua Diode Thân PMOS Pass",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Cực thân N-well của M_pass nối vào nút động V_NW = max(VIN, VOUT) (tuyệt đối không nối cứng vào VIN nếu VOUT có thể cao hơn VIN khi tắt nguồn) VÀ kéo V_G_pass = V_NW để khóa kênh khi VOUT > VIN",
+      "why_vi": "Khi nguồn đầu vào VIN sập trước trong khi tụ tải hoặc nguồn dự phòng phía sau vẫn giữ áp VOUT > VIN + 0.6 V, nếu giếng N của PMOS truyền nối cứng vào VIN thì diode ký sinh p+/N-well (Drain -> Bulk) sẽ phân cực thuận, vừa xả cạn dòng ngược khổng lồ từ VOUT về VIN vừa tiêm hạt tải thiểu số xuống đế p gây chốt ký sinh SCR (Latch-up) phá hủy toàn chip!",
+      "cadence_check": "Kiểm tra kết nối cực `B` của `M_pass` đi qua mạch chọn áp cao nhất `max(VIN, VOUT)` kèm vòng bảo vệ kép trên layout; mô phỏng `tran` kịch bản tắt nguồn `VIN: VIN_nom -> 0 V` khi `VOUT` neo bởi tụ lớn qua điện trở nhỏ, xác nhận `|I(VIN)| < 1 uA` và không phát sinh dòng đế đột biến.",
+      "related_nodes": [
+        "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+        "topo-cmos-ldo-regulator",
+        "law-cmos-wells-and-latchup-guard-rings"
       ]
     }
   ]

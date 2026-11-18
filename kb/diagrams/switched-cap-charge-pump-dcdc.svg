@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1096" height="616" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1088 2 Q 1098 2 1098 12 L 1098 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1098" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="123" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="79.5" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">PMIC · Ch.12/13</text>
+  <text x="151" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">Switched-Capacitor Charge-Pump DC-DC: SSL/FSL &amp; Bottom-Plate Loss</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Bộ Biến đổi DC-DC Bơm Điện tích Đóng cắt Tụ (SC Charge Pump): Trở kháng Tiệm cận SSL/FSL &amp; Tổn hao Đáy Tụ</text>
+  <line x1="790" y1="22" x2="806" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="811" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="872" y1="22" x2="888" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="893" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="978" y1="22" x2="994" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="999" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="530" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="530" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) 2-Phase SC Doubler / 2:1 Cell &amp; Dickson Charge-Pump Chain</text>
+  <rect x="564" y="74" width="518" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="564" y="74" width="518" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="576" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) Asymptotic Output Impedance Rout(f_sw) &amp; Parasitic Loss</text>
+  <circle cx="52" cy="152" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="52" y="144" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" font-weight="bold">Vin</text>
+  <line x1="52" y1="152" x2="108" y2="152" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="108" y1="152" x2="118" y2="152" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="138" y1="152" x2="148" y2="152" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="120" cy="152" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <circle cx="136" cy="152" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <line x1="122" y1="151" x2="134" y2="151" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="128" y="139" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">S1 (φ1)</text>
+  <line x1="148" y1="152" x2="292" y2="152" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="292" y1="152" x2="302" y2="152" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <line x1="322" y1="152" x2="332" y2="152" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="304" cy="152" r="2.3" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <circle cx="320" cy="152" r="2.3" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <line x1="306" y1="151" x2="319" y2="143" stroke="#7c3aed" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="312" y="139" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">S3 (φ2)</text>
+  <line x1="332" y1="152" x2="496" y2="152" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="496" cy="152" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="496" y="144" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#2563eb" text-anchor="middle" font-weight="bold">Vout</text>
+  <circle cx="220" cy="152" r="3.5" fill="#2563eb"/>
+  <text x="206" y="142" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#2563eb" text-anchor="end" font-weight="bold">VT</text>
+  <line x1="220" y1="174" x2="220" y2="188" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="209" y1="188" x2="231" y2="188" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="209" y1="196" x2="231" y2="196" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="220" y1="196" x2="220" y2="210" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <text x="235" y="196" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#2563eb" text-anchor="start" font-weight="bold">C_fly</text>
+  <line x1="220" y1="152" x2="220" y2="174" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="220" y1="210" x2="220" y2="236" stroke="#d97706" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="220" cy="236" r="3.5" fill="#d97706"/>
+  <text x="206" y="232" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#d97706" text-anchor="end" font-weight="bold">VB</text>
+  <line x1="116" y1="236" x2="126" y2="236" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <line x1="146" y1="236" x2="156" y2="236" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="128" cy="236" r="2.3" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <circle cx="144" cy="236" r="2.3" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+  <line x1="130" y1="235" x2="143" y2="227" stroke="#7c3aed" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="136" y="223" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">S4 (φ2-&gt;Vin)</text>
+  <polyline points="78,152 78,236 116,236" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="78" cy="152" r="3.5" fill="#2563eb"/>
+  <line x1="156" y1="236" x2="220" y2="236" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="284" y1="236" x2="294" y2="236" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="314" y1="236" x2="324" y2="236" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="296" cy="236" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <circle cx="312" cy="236" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <line x1="298" y1="235" x2="310" y2="235" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="304" y="223" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">S2 (φ1-&gt;GND)</text>
+  <line x1="220" y1="236" x2="284" y2="236" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="324,236 356,236 356,266" fill="none" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="356" y1="266" x2="356" y2="273" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="345" y1="273" x2="367" y2="273" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="349" y1="277.5" x2="363" y2="277.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="353" y1="282" x2="359" y2="282" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="220" y1="250" x2="220" y2="264" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="209" y1="264" x2="231" y2="264" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="209" y1="272" x2="231" y2="272" stroke="#dc2626" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="220" y1="272" x2="220" y2="286" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <text x="205" y="272" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#dc2626" text-anchor="end" font-weight="bold">C_bot = α·C_fly</text>
+  <line x1="220" y1="236" x2="220" y2="250" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3,2"/>
+  <line x1="220" y1="286" x2="220" y2="293" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+  <line x1="209" y1="293" x2="231" y2="293" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="213" y1="297.5" x2="227" y2="297.5" stroke="#dc2626" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="217" y1="302" x2="223" y2="302" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="456" cy="152" r="3.5" fill="#0f172a"/>
+  <line x1="456" y1="196" x2="456" y2="210" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="445" y1="210" x2="467" y2="210" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="445" y1="218" x2="467" y2="218" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="456" y1="218" x2="456" y2="232" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <text x="471" y="218" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">Cout</text>
+  <line x1="456" y1="152" x2="456" y2="196" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="456" y1="232" x2="456" y2="266" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="456" y1="266" x2="456" y2="273" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+  <line x1="445" y1="273" x2="467" y2="273" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round"/>
+  <line x1="449" y1="277.5" x2="463" y2="277.5" stroke="#0f172a" stroke-width="1.9" stroke-linecap="round"/>
+  <line x1="453" y1="282" x2="459" y2="282" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="36" y="314" width="494" height="106" rx="7" fill="#f8fafc" stroke="#059669" stroke-width="1.6"/>
+  <text x="283" y="336" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="middle" font-weight="bold">N-Stage Dickson Pump &amp; Cross-Coupled Latch Doubler</text>
+  <text x="283" y="356" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="middle">• Classic Diode Dickson:  Vout = (N + 1)·Vin − N·V_TH  (severe body-effect V_TH loss!)</text>
+  <text x="283" y="375" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#2563eb" text-anchor="middle" font-weight="bold">• Cross-Coupled NMOS/PMOS Charge-Transfer Switches: Zero V_TH drop (full N+1 gain!).</text>
+  <text x="283" y="394" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#475569" text-anchor="middle">• Multi-Phase Interleaving (K = 4..16 phases): Cancels input/output ΔV_ripple without Cout!</text>
+  <rect x="36" y="434" width="494" height="152" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="440" x2="39" y2="580" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="452" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#1d4ed8" text-anchor="start" font-weight="bold">Inherent Ratio Efficiency Law &amp; Multi-Gearbox SC</text>
+  <text x="48" y="469" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Ideal Charge Conservation forces I_in = M · I_out  =&gt;</text>
+  <text x="48" y="485" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  η_max = Vout / (M · Vin)   (even if R_out -&gt; 0, voltage drop burns power!).</text>
+  <text x="48" y="501" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Multi-Ratio Gearbox (M ∈ {2:1, 3:2, 4:3, 1:1}): Reconfigures flying</text>
+  <text x="48" y="517" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  caps dynamically across Li-Ion discharge to sustain η = 86–93% on-die!</text>
+  <text x="48" y="533" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Bottom-Plate Rule: Always tie C_bot plate to lower-dV/dt / driven node!</text>
+  <line x1="622" y1="352" x2="1052" y2="352" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="622" y1="352" x2="622" y2="126" stroke="#0f172a" stroke-width="1.8" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="1044" y="370" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="end" font-weight="bold">log10(f_sw)</text>
+  <text x="630" y="138" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#0f172a" text-anchor="start" font-weight="bold">log10(R_out)</text>
+  <line x1="642" y1="152" x2="972" y2="338" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="5,4"/>
+  <text x="685" y="162" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#2563eb" text-anchor="start" font-weight="bold">R_SSL = M_c / (C_fly·f_sw)</text>
+  <line x1="642" y1="282" x2="1034" y2="282" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="5,4"/>
+  <text x="652" y="273" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#d97706" text-anchor="start" font-weight="bold">R_FSL = M_r · R_on (Switch Floor)</text>
+  <path d="M 642 150 L 765 219 Q 848 268 935 279 L 1034 281" fill="none" stroke="#0f172a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="848" cy="260" r="5" fill="#059669" stroke="#ffffff" stroke-width="1.6"/>
+  <line x1="848" y1="260" x2="848" y2="352" stroke="#059669" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3,3"/>
+  <text x="848" y="368" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#059669" text-anchor="middle" font-weight="bold">f_opt (R_SSL = R_FSL)</text>
+  <path d="M 745 340 Q 895 312 1028 168" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+  <text x="1026" y="158" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#dc2626" text-anchor="end" font-weight="bold">P_bot + P_gate ∝ f_sw!</text>
+  <rect x="582" y="390" width="482" height="196" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.3"/>
+  <line x1="585" y1="396" x2="585" y2="580" stroke="#6d28d9" stroke-width="3" stroke-linecap="round"/>
+  <text x="594" y="408" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.4" fill="#6d28d9" text-anchor="start" font-weight="bold">Seeman–Sanders SSL / FSL Equations &amp; Cap Choice</text>
+  <text x="594" y="425" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Equivalent Thevenin Model:  Vout = M · Vin − I_load · R_out(f_sw)</text>
+  <text x="594" y="441" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Euclidean Approximation:    R_out ≈ √( R_SSL² + R_FSL² )</text>
+  <text x="594" y="457" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  - Slow-Switching Limit:  R_SSL = (∑ a_c,i²) / (C_fly · f_sw)</text>
+  <text x="594" y="473" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  - Fast-Switching Limit:  R_FSL = 2 · ∑ a_r,k² · R_on,k</text>
+  <text x="594" y="489" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">• Parasitic Loss Floor:    P_par = (α · C_fly · V_sw² + C_gg · V_G²) · f_sw</text>
+  <text x="594" y="505" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.8" fill="#0f172a" text-anchor="start">  (MIM/MOM α ≈ 1–2% vs planar MOS cap α ≈ 8–15% -&gt; choose MIM + DNW!)</text>
+</svg>

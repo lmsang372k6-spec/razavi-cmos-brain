@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+  <defs>
+    <marker id="arr-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#0f172a"/></marker>
+    <marker id="arr-sig" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#2563eb"/></marker>
+    <marker id="arr-bias" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#059669"/></marker>
+    <marker id="arr-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#dc2626"/></marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#d97706"/></marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#7c3aed"/></marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="2" y="2" width="1096" height="616" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <path d="M 12 2 L 1088 2 Q 1098 2 1098 12 L 1098 58 L 2 58 L 2 12 Q 2 2 12 2 Z" fill="#f8fafc"/>
+  <line x1="2" y1="58" x2="1098" y2="58" stroke="#e2e8f0" stroke-width="1.2"/>
+  <rect x="18" y="11" width="95" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="65.5" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#1d4ed8" text-anchor="middle" font-weight="bold">AMS · Ch.13</text>
+  <text x="123" y="26.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">1.5-Bit/Stage Flip-Around MDAC &amp; RSD Offset Immunity</text>
+  <text x="20" y="48" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#475569" text-anchor="start">Tầng MDAC Đóng cắt Tụ Lật vòng 1.5-Bit/Tầng &amp; Sửa lỗi Số Dư có Dấu RSD Miễn nhiễm Offset ±Vref/4</text>
+  <line x1="790" y1="22" x2="806" y2="22" stroke="#2563eb" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="811" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Signal</text>
+  <line x1="872" y1="22" x2="888" y2="22" stroke="#059669" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="893" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Bias/Mirror</text>
+  <line x1="978" y1="22" x2="994" y2="22" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="999" y="26" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#475569" text-anchor="start">Parasitic/FB</text>
+  <rect x="18" y="74" width="544" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="18" y="74" width="544" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="30" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(a) 1.5-Bit Flip-Around Switched-Capacitor MDAC + Sub-ADC</text>
+  <rect x="578" y="74" width="504" height="528" rx="8" fill="#fcfdff" stroke="#e2e8f0" stroke-width="1.3"/>
+  <rect x="578" y="74" width="504" height="28" rx="8" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="590" y="92.5" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">(b) 1.5-Bit Residue Transfer Curve (±Vref/4 V_OS Immunity!)</text>
+  <circle cx="52" cy="224" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="44" y="228" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" fill="#2563eb" text-anchor="end" font-weight="bold">Vin</text>
+  <line x1="52" y1="224" x2="96" y2="224" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <circle cx="96" cy="224" r="3.5" fill="#2563eb"/>
+  <line x1="214" y1="168" x2="228" y2="168" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="228" y1="157" x2="228" y2="179" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="236" y1="157" x2="236" y2="179" stroke="#059669" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="236" y1="168" x2="250" y2="168" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <text x="232" y="153" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#059669" text-anchor="middle" font-weight="bold">C2 = C</text>
+  <polyline points="96,224 96,168 156,168" fill="none" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="156" y1="168" x2="166" y2="168" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="186" y1="168" x2="196" y2="168" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="168" cy="168" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <circle cx="184" cy="168" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <line x1="170" y1="167" x2="183" y2="159" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="176" y="155" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">φ1</text>
+  <line x1="196" y1="168" x2="214" y2="168" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="214" y1="248" x2="228" y2="248" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <line x1="228" y1="237" x2="228" y2="259" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="236" y1="237" x2="236" y2="259" stroke="#d97706" stroke-width="2.3" stroke-linecap="round"/>
+  <line x1="236" y1="248" x2="250" y2="248" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <text x="232" y="271" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d97706" text-anchor="middle" font-weight="bold">C1 = C</text>
+  <polyline points="96,224 96,248 156,248" fill="none" stroke="#2563eb" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="156" y1="248" x2="166" y2="248" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <line x1="186" y1="248" x2="196" y2="248" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="168" cy="248" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <circle cx="184" cy="248" r="2.3" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <line x1="170" y1="247" x2="183" y2="239" stroke="#2563eb" stroke-width="2.1" stroke-linecap="round"/>
+  <text x="176" y="235" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#7c3aed" text-anchor="middle" font-weight="bold">φ1</text>
+  <line x1="196" y1="248" x2="214" y2="248" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="250,168 302,168 302,248" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="250" y1="248" x2="354" y2="248" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="302" cy="248" r="3.5" fill="#2563eb"/>
+  <line x1="302" y1="248" x2="302" y2="292" stroke="#7c3aed" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3,2"/>
+  <circle cx="302" cy="296" r="3.4" fill="#ffffff" stroke="#7c3aed" stroke-width="1.9"/>
+  <text x="302" y="312" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#7c3aed" text-anchor="middle" font-weight="bold">Vcm (φ1e!)</text>
+  <polygon points="354,237 354,285 410,261" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="359.5" y1="274" x2="366.5" y2="274" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="363" y1="270.5" x2="363" y2="277.5" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="359.5" y1="248" x2="366.5" y2="248" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="378" y="265" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.2" fill="#2563eb" text-anchor="middle" font-weight="bold">OTA</text>
+  <circle cx="334" cy="274" r="3.4" fill="#ffffff" stroke="#475569" stroke-width="1.9"/>
+  <text x="326" y="278" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.2" fill="#475569" text-anchor="end" font-weight="bold">Vcm</text>
+  <line x1="334" y1="274" x2="354" y2="274" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+  <line x1="410" y1="261" x2="508" y2="261" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="508" cy="261" r="3.4" fill="#ffffff" stroke="#2563eb" stroke-width="1.9"/>
+  <text x="508" y="253" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#2563eb" text-anchor="middle" font-weight="bold">V_res</text>
+  <circle cx="466" cy="261" r="3.5" fill="#059669"/>
+  <circle cx="204" cy="168" r="3.5" fill="#059669"/>
+  <polyline points="466,261 466,120 204,120 204,168" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <text x="352" y="114" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#059669" text-anchor="middle" font-weight="bold">φ2 Flip-Around Loop (β ≈ 0.5!)</text>
+  <rect x="68" y="344" width="416" height="68" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.8"/>
+  <text x="276" y="366" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#d97706" text-anchor="middle" font-weight="bold">1.5-Bit Flash Sub-ADC (±Vref/4) + 3-Level Reference Mux</text>
+  <text x="276" y="384" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.3" fill="#0f172a" text-anchor="middle">D = −1 (Vin &lt; −Vr/4)  |  D = 0 (|Vin| ≤ Vr/4)  |  D = +1 (Vin &gt; +Vr/4)</text>
+  <text x="276" y="401" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" fill="#2563eb" text-anchor="middle" font-weight="bold">Drives C1 left plate in φ2 to D·Vref  =&gt;  V_res = 2·Vin − D·Vref</text>
+  <polyline points="72,224 72,378" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3,3"/>
+  <circle cx="204" cy="248" r="3.5" fill="#d97706"/>
+  <polyline points="204,344 204,248" fill="none" stroke="#d97706" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr-amber)"/>
+  <rect x="36" y="430" width="508" height="156" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <line x1="39" y1="436" x2="39" y2="580" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="448" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.3" fill="#1d4ed8" text-anchor="start" font-weight="bold">Flip-Around Feedback Advantage &amp; OTA Gain/BW Spec</text>
+  <text x="48" y="465" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Feedback Factor Boost: Flipping C2 onto V_res yields β = C / (2C + C_p) ≈ 0.5</text>
+  <text x="48" y="481" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">  (vs β ≈ 0.33 in non-flip charge-redistribution) -&gt; 50% faster settling / lower I_D!</text>
+  <text x="48" y="497" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Remaining K-bit Accuracy Specs on Stage-1 OTA:</text>
+  <text x="48" y="513" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">    DC Gain:  A0 · β  &gt;  2^(K + 1)      |      Settling:  τ_cl &lt; T_φ2 / [(K + 1)·ln(2)]</text>
+  <text x="48" y="529" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.7" fill="#0f172a" text-anchor="start">• Bottom-Plate Sampling: Open φ1e at VX slightly BEFORE φ1 input switches!</text>
+  <rect x="652" y="146" width="360" height="200" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <line x1="652" y1="146" x2="1012" y2="146" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <line x1="652" y1="346" x2="1012" y2="346" stroke="#dc2626" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="4,3"/>
+  <text x="646" y="150" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#dc2626" text-anchor="end" font-weight="bold">+Vref</text>
+  <text x="646" y="250" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#475569" text-anchor="end">0</text>
+  <text x="646" y="350" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#dc2626" text-anchor="end" font-weight="bold">−Vref</text>
+  <line x1="646" y1="246" x2="1026" y2="246" stroke="#0f172a" stroke-width="1.6" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <line x1="832" y1="356" x2="832" y2="128" stroke="#0f172a" stroke-width="1.6" stroke-linecap="round" marker-end="url(#arr-dark)"/>
+  <text x="840" y="134" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#0f172a" text-anchor="start" font-weight="bold">V_res</text>
+  <rect x="877" y="147" width="45" height="198" rx="0" fill="#ecfdf5" stroke="none" stroke-width="1.4" fill-opacity="0.8"/>
+  <text x="945" y="164" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#059669" text-anchor="middle" font-weight="bold">±Vref/4 V_OS Safe!</text>
+  <polyline points="652,346 787,196 787,296 877,196 877,296 1012,146" fill="none" stroke="#2563eb" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="877,196 912,157 912,257 1012,146" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+  <text x="787" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#2563eb" text-anchor="middle" font-weight="bold">−Vr/4</text>
+  <text x="877" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#2563eb" text-anchor="middle" font-weight="bold">+Vr/4</text>
+  <text x="652" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#475569" text-anchor="middle">−Vref</text>
+  <text x="1012" y="364" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.4" fill="#475569" text-anchor="middle">+Vref</text>
+  <text x="832" y="381" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" fill="#0f172a" text-anchor="middle" font-weight="bold">Input Voltage V_in</text>
+  <rect x="596" y="396" width="468" height="190" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <line x1="599" y1="402" x2="599" y2="580" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="608" y="414" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.2" fill="#047857" text-anchor="start" font-weight="bold">RSD Digital Overlap Math vs Uncorrected Analog Errors</text>
+  <text x="608" y="431" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">• Comparator Offset Immunity: Ideal residue uses ONLY [−Vref/2, +Vref/2],</text>
+  <text x="608" y="447" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">  leaving ±Vref/2 margin -&gt; tolerates |V_OS,comp| &lt; Vref / 4 (±250 mV @ 1V!)</text>
+  <text x="608" y="463" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">  with zero missing codes after shift-and-add RSD reconstruction!</text>
+  <text x="608" y="479" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">• Errors NOT Corrected by RSD (True Linearity Ceilings):</text>
+  <text x="608" y="495" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">  1. C1 vs C2 Mismatch (ΔC/C): Alters slope 2 -&gt; step discontinuity (INL/DNL)!</text>
+  <text x="608" y="511" font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.6" fill="#0f172a" text-anchor="start">  2. Finite OTA Gain A0 &amp; Incomplete Settling -&gt; calibrate interstage gain!</text>
+</svg>

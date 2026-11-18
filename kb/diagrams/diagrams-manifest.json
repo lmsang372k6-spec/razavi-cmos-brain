@@ -1,7 +1,7 @@
 {
-  "version": "2026.11.18.3",
+  "version": "2026.11.18.4",
   "generator": "tools/generate_diagrams.py",
-  "total_diagrams": 56,
+  "total_diagrams": 72,
   "diagrams": [
     {
       "index": 1,
@@ -998,6 +998,309 @@
       "height": 600,
       "geometry_elements": 47,
       "text_elements": 37
+    },
+    {
+      "index": 57,
+      "filename": "synchronous-buck-converter.svg",
+      "file": "synchronous-buck-converter.svg",
+      "path": "kb/diagrams/synchronous-buck-converter.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Mạch Hạ áp Đồng bộ CMOS (Synchronous Buck): Tầng Công suất Bootstrap, Cảm biến Dòng & Vòng Điều khiển",
+      "title_en": "CMOS Synchronous Buck Converter IC: Power Stage & Control Loop",
+      "chapter": "PMIC · Ch.08/12",
+      "chapters": [
+        8,
+        12,
+        18
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 117,
+      "text_elements": 56
+    },
+    {
+      "index": 58,
+      "filename": "boost-and-rhp-zero-locus.svg",
+      "file": "boost-and-rhp-zero-locus.svg",
+      "path": "kb/diagrams/boost-and-rhp-zero-locus.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Mạch Tăng áp Đồng bộ (Boost): Khóa Ngắt Tải Thực, Sụt Áp Quá độ Ngược & Quỹ đạo Zero Nửa Phải RHPZ",
+      "title_en": "Synchronous Boost Converter: True Disconnect & RHP Zero Locus",
+      "chapter": "PMIC · Ch.08/10",
+      "chapters": [
+        8,
+        10,
+        12
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 102,
+      "text_elements": 47
+    },
+    {
+      "index": 59,
+      "filename": "four-switch-buck-boost.svg",
+      "file": "four-switch-buck-boost.svg",
+      "path": "kb/diagrams/four-switch-buck-boost.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Mạch Hạ–Tăng áp 4 Khóa Không Đảo (4-Switch H-Bridge Buck-Boost) & Chuyển Vùng Mượt 3 Chế độ",
+      "title_en": "4-Switch Non-Inverting Buck-Boost & 3-Mode Transition",
+      "chapter": "PMIC · Ch.08/12",
+      "chapters": [
+        8,
+        12,
+        13
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 89,
+      "text_elements": 47
+    },
+    {
+      "index": 60,
+      "filename": "switched-cap-charge-pump-dcdc.svg",
+      "file": "switched-cap-charge-pump-dcdc.svg",
+      "path": "kb/diagrams/switched-cap-charge-pump-dcdc.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bộ Biến đổi DC-DC Bơm Điện tích Đóng cắt Tụ (SC Charge Pump): Trở kháng Tiệm cận SSL/FSL & Tổn hao Đáy Tụ",
+      "title_en": "Switched-Capacitor Charge-Pump DC-DC: SSL/FSL & Bottom-Plate Loss",
+      "chapter": "PMIC · Ch.12/13",
+      "chapters": [
+        12,
+        13
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 93,
+      "text_elements": 42
+    },
+    {
+      "index": 61,
+      "filename": "hs-bootstrap-driver-deadtime.svg",
+      "file": "hs-bootstrap-driver-deadtime.svg",
+      "path": "kb/diagrams/hs-bootstrap-driver-deadtime.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Mạch Lái Cạnh Cao Bootstrap C_BST, Chống Trùng dẫn Thích nghi & Tiêm Hạt tải Thiểu số khi V_SW < -0.7V",
+      "title_en": "High-Side Bootstrap Driver, Adaptive Dead-Time & V_SW Injection",
+      "chapter": "PMIC · Ch.12/18",
+      "chapters": [
+        12,
+        18,
+        19
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 86,
+      "text_elements": 58
+    },
+    {
+      "index": 62,
+      "filename": "vmc-type3-and-cmc-slope-comp.svg",
+      "file": "vmc-type3-and-cmc-slope-comp.svg",
+      "path": "kb/diagrams/vmc-type3-and-cmc-slope-comp.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bù Tần số Type-III (Chế độ Áp VMC) & Bù Độ dốc Chống Dao động Sóng hài Phụ D > 0.5 (Chế độ Dòng CMC)",
+      "title_en": "VMC Type-III Compensator vs Peak CMC Slope Compensation",
+      "chapter": "PMIC · Ch.08/10",
+      "chapters": [
+        8,
+        10
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 77,
+      "text_elements": 44
+    },
+    {
+      "index": 63,
+      "filename": "capless-fvf-dfc-ldo.svg",
+      "file": "capless-fvf-dfc-ldo.svg",
+      "path": "kb/diagrams/capless-fvf-dfc-ldo.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bộ Ổn áp Tuyến tính Không Tụ Ngoài (Capless SoC LDO): Đệm FVF, Kiểm soát Hệ số Tắt dần DFC & Tăng Tốc SRE",
+      "title_en": "Output-Capacitor-Less SoC LDO: FVF, DFC & Dynamic Slew Enhancer",
+      "chapter": "PMIC · Ch.10/12",
+      "chapters": [
+        9,
+        10,
+        12
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 116,
+      "text_elements": 47
+    },
+    {
+      "index": 64,
+      "filename": "pmic-por-uvlo-ocp-foldback.svg",
+      "file": "pmic-por-uvlo-ocp-foldback.svg",
+      "path": "kb/diagrams/pmic-por-uvlo-ocp-foldback.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Kiến trúc Bảo vệ & Khởi động Nguồn PMIC: POR, UVLO Trễ, Khởi động Mềm & Quá dòng Gập ngược trong Vùng An toàn Nhiệt",
+      "title_en": "PMIC Protection Architecture: POR, UVLO, Soft-Start & Foldback OCP",
+      "chapter": "PMIC · Ch.12/18",
+      "chapters": [
+        12,
+        18,
+        19
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 62,
+      "text_elements": 44
+    },
+    {
+      "index": 65,
+      "filename": "schmitt-and-rc-sawtooth-osc.svg",
+      "file": "schmitt-and-rc-sawtooth-osc.svg",
+      "path": "kb/diagrams/schmitt-and-rc-sawtooth-osc.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Mạch Schmitt Trigger CMOS 6 Transistor & Bộ Dao động Răng cưa Kép I_ZTC Khử Trễ So sánh",
+      "title_en": "6-T CMOS Schmitt Trigger & Dual-Cap Ping-Pong Oscillator",
+      "chapter": "AMS · Ch.15",
+      "chapters": [
+        13,
+        15
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 139,
+      "text_elements": 49
+    },
+    {
+      "index": 66,
+      "filename": "three-opamp-and-chopper-cfia.svg",
+      "file": "three-opamp-and-chopper-cfia.svg",
+      "path": "kb/diagrams/three-opamp-and-chopper-cfia.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Khuếch đại Đo lường 3 Op-Amp Kinh điển (Biểu đồ Kim cương V_CM–V_out) & Kiến trúc CFIA Băm Triệt Nhiễu 1/f",
+      "title_en": "3-Op-Amp INA (Diamond Plot) & Chopper Capacitive/CFIA",
+      "chapter": "AMS · Ch.08/14",
+      "chapters": [
+        4,
+        8,
+        14
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 84,
+      "text_elements": 59
+    },
+    {
+      "index": 67,
+      "filename": "tow-thomas-and-gmc-tuned-biquad.svg",
+      "file": "tow-thomas-and-gmc-tuned-biquad.svg",
+      "path": "kb/diagrams/tow-thomas-and-gmc-tuned-biquad.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bộ Lọc Bậc Hai Active-RC Tow-Thomas (Chỉnh Trực giao) & Gm-C Kèm Vòng Tự động Khóa Tần số Master–Slave",
+      "title_en": "Active-RC Tow-Thomas vs Master-Slave Tuned Gm-C Biquad",
+      "chapter": "AMS · Ch.08/13",
+      "chapters": [
+        6,
+        8,
+        13
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 91,
+      "text_elements": 50
+    },
+    {
+      "index": 68,
+      "filename": "current-steering-segmented-dac.svg",
+      "file": "current-steering-segmented-dac.svg",
+      "path": "kb/diagrams/current-steering-segmented-dac.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bộ Biến đổi D/A Lái Dòng Phân đoạn (Thermometer + Binary): Ô Dòng Cascode Chốt Nhịp & Trần Tạp Phổ SFDR",
+      "title_en": "Segmented Current-Steering DAC: Cascode Cell & SFDR Ceiling",
+      "chapter": "AMS · Ch.14",
+      "chapters": [
+        5,
+        14,
+        19
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 76,
+      "text_elements": 47
+    },
+    {
+      "index": 69,
+      "filename": "deltasigma-ciff-modulator.svg",
+      "file": "deltasigma-ciff-modulator.svg",
+      "path": "kb/diagrams/deltasigma-ciff-modulator.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Bộ Điều chế ΔΣ Kiến trúc CIFF Dao động Thấp, Xáo trộn DWA, Bù Trễ Vòng CT (k0) & Định dạng Nhiễu NTF",
+      "title_en": "CIFF Delta-Sigma Modulator: DWA, CT ELD & Noise Shaping",
+      "chapter": "AMS · Ch.13/14",
+      "chapters": [
+        7,
+        13,
+        14
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 56,
+      "text_elements": 48
+    },
+    {
+      "index": 70,
+      "filename": "pipelined-mdac-1p5bit-stage.svg",
+      "file": "pipelined-mdac-1p5bit-stage.svg",
+      "path": "kb/diagrams/pipelined-mdac-1p5bit-stage.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Tầng MDAC Đóng cắt Tụ Lật vòng 1.5-Bit/Tầng & Sửa lỗi Số Dư có Dấu RSD Miễn nhiễm Offset ±Vref/4",
+      "title_en": "1.5-Bit/Stage Flip-Around MDAC & RSD Offset Immunity",
+      "chapter": "AMS · Ch.13",
+      "chapters": [
+        9,
+        13,
+        14
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 75,
+      "text_elements": 44
+    },
+    {
+      "index": 71,
+      "filename": "central-ptat-ztc-bias-hub.svg",
+      "file": "central-ptat-ztc-bias-hub.svg",
+      "path": "kb/diagrams/central-ptat-ztc-bias-hub.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Trung tâm Phân cực Toàn Chip (Phân phối Sao Dòng I_PTAT / I_ZTC) & Chuỗi Khởi động Nguồn Không Tranh chấp",
+      "title_en": "Central Chip Bias Hub (PTAT/ZTC Star) & Power-Up Sequence",
+      "chapter": "AMS · Ch.12/19",
+      "chapters": [
+        5,
+        12,
+        19
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 69,
+      "text_elements": 44
+    },
+    {
+      "index": 72,
+      "filename": "closed-loop-cadence-codex-flow.svg",
+      "file": "closed-loop-cadence-codex-flow.svg",
+      "path": "kb/diagrams/closed-loop-cadence-codex-flow.svg",
+      "viewBox": "0 0 1100 620",
+      "title_vi": "Quy trình Thiết kế Vi mạch Tương tự Tối ưu Khép kín 7 Bước: Tri thức Razavi -> gm/ID LUT -> Cầu nối IC617 -> Tối ưu Jacobian",
+      "title_en": "7-Stage Optimal Closed-Loop Analog Design Cycle (Cadence + Codex)",
+      "chapter": "EDA · Closed-Loop",
+      "chapters": [
+        1,
+        9,
+        10,
+        11,
+        17
+      ],
+      "width": 1100,
+      "height": 620,
+      "geometry_elements": 35,
+      "text_elements": 45
     }
   ]
 }

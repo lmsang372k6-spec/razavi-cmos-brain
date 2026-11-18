@@ -5,7 +5,7 @@ Deterministic, textbook-grade SVG circuit schematic & analytical diagram generat
 for Razavi CMOS Knowledge Brain (Design of Analog CMOS Integrated Circuits, 2nd Ed.).
 
 Pure Python 3 standard library only (zero external packages, zero temp files).
-Generates all 56 vector SVG diagrams in `kb/diagrams/` + `kb/diagrams/diagrams-manifest.json`
+Generates all 72 vector SVG diagrams in `kb/diagrams/` + `kb/diagrams/diagrams-manifest.json`
 and validates every SVG via xml.etree.ElementTree + strict viewBox & text-collision checks.
 """
 
@@ -6136,6 +6136,1853 @@ def diag_56_gmid_sizing_methodology():
     return d
 
 
+# ==============================================================================
+# PART 6: DIAGRAMS 57 - 64 (PMIC: Switching DC-DC, Charge Pumps, Capless LDO, Supervisory)
+# ==============================================================================
+
+def diag_57_synchronous_buck_converter():
+    d = SVGDoc(
+        "synchronous-buck-converter.svg",
+        "CMOS Synchronous Buck Converter IC: Power Stage & Control Loop",
+        "Mạch Hạ áp Đồng bộ CMOS (Synchronous Buck): Tầng Công suất Bootstrap, Cảm biến Dòng & Vòng Điều khiển",
+        "PMIC · Ch.08/12", [8, 12, 18], width=1100, height=620
+    )
+    d.panel(18,  74, 598, 528, "(a) Integrated Bootstrap Power Stage + SenseFET/DCR + CMC/Type-III Loop")
+    d.panel(632, 74, 450, 528, "(b) Volt-Second Balance vL(t), CCM vs DCM iL(t) & Losses")
+
+    # --- (a) Power Stage & Control Loop ---
+    # VDD5 -> Bootstrap Diode -> BST -> C_BST -> V_SW
+    d.port(48, 134, "VDRV", side="top", color=COL_BIAS, fs=10.0)
+    d.line(48, 134, 84, 134, color=COL_BIAS, sw=1.9)
+    # Bootstrap diode D_BST pointing right (84..104)
+    d.poly([(84, 126), (84, 142), (102, 134)], fill="#ecfdf5", stroke=COL_BIAS, sw=1.8)
+    d.line(102, 125, 102, 143, color=COL_BIAS, sw=2.1)
+    d.line(102, 134, 132, 134, color=COL_BIAS, sw=1.9)
+    d.dot(114, 134, COL_BIAS)
+    d.text(93, 118, "D_BST", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+
+    cbst = d.cap_h(150, 134, color=COL_PURPLE, label="C_BST", label_pos="top")
+    d.wire([cbst["r"], (182, 134), (182, 240)], color=COL_PURPLE, sw=1.8, dash="4,3")
+
+    # Non-Overlapping Gate Driver + ZCD Box (46..158, 168..324)
+    d.rect(46, 168, 112, 156, fill="#f8fafc", stroke=COL_SIG, sw=1.8, rx=7)
+    d.line(114, 134, 114, 168, color=COL_BIAS, sw=1.8)
+    d.text(102, 192, "Floating HS", size=10.2, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(102, 208, "Level-Shift", size=9.6, color=COL_MUTED, anchor="middle")
+    d.line(54, 238, 150, 238, color=COL_BORDER, sw=1.2)
+    d.text(102, 260, "Dead-Time", size=10.2, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(102, 276, "& LS + ZCD", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(102, 294, "(Blocks -iL)", size=9.2, color=COL_MUTED, anchor="middle")
+
+    # Power Half-Bridge at x=216: PVIN -> M_HS -> V_SW (240) -> M_LS -> PGND
+    x_sw = 216
+    d.vdd(x_sw, 136, "PVIN")
+    mhs = d.nmos(x_sw, 190, facing="right", color=COL_SIG, label="M_HS", sub="NMOS", label_side="right")
+    d.line(x_sw, 136, x_sw, mhs["d"][1], color=COL_DARK, sw=2.2)
+    d.line(158, 190, mhs["g"][0], 190, color=COL_SIG, sw=2.0)
+
+    mls = d.nmos(x_sw, 294, facing="right", color=COL_DARK, label="M_LS", sub="Sync", label_side="right")
+    d.line(x_sw, mhs["s"][1], x_sw, mls["d"][1], color=COL_SIG, sw=2.3)
+    d.line(158, 294, mls["g"][0], 294, color=COL_DARK, sw=2.0)
+    d.line(x_sw, mls["s"][1], x_sw, 336, color=COL_DARK, sw=2.2)
+    d.gnd(x_sw, 336)
+
+    # Switch Node V_SW (216, 240) -> Inductor L -> Vout (566, 240)
+    d.dot(x_sw, 240, COL_WARN)
+    d.dot(182, 240, COL_PURPLE)
+    d.line(182, 240, x_sw, 240, color=COL_PURPLE, sw=1.8, dash="4,3")
+    d.text(246, 228, "V_SW", size=10.8, color=COL_WARN, anchor="middle", weight="bold")
+
+    ind = d.ind_h(320, 240, color=COL_SIG, label="L (f_LC)", label_pos="top")
+    d.line(x_sw, 240, ind["l"][0], 240, color=COL_SIG, sw=2.3)
+    d.line(ind["r"][0], 240, 566, 240, color=COL_SIG, sw=2.3)
+    d.port(566, 240, "Vout", side="top", color=COL_SIG)
+
+    # Lossless DCR / SenseFET Current Sensor block below L
+    d.dot(284, 240, COL_BIAS)
+    d.dot(356, 240, COL_BIAS)
+    d.line(284, 240, 284, 284, color=COL_BIAS, sw=1.5, dash="3,3")
+    d.line(356, 240, 356, 284, color=COL_BIAS, sw=1.5, dash="3,3")
+    d.rect(272, 284, 96, 38, fill="#ecfdf5", stroke=COL_BIAS, sw=1.6, rx=6)
+    d.text(320, 300, "SenseFET /", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(320, 314, "DCR I_sns", size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Output Capacitor C_out + R_ESR at x=418, and R_load at x=496
+    d.dot(418, 240, COL_DARK)
+    cout = d.cap_v(418, 276, color=COL_DARK, label="Cout", label_side="right")
+    d.line(418, 240, 418, cout["t"][1])
+    resr = d.res_v(418, 326, color=COL_AMBER, label="R_ESR", label_side="right")
+    d.line(418, cout["b"][1], 418, resr["t"][1])
+    d.gnd(418, resr["b"][1])
+
+    d.dot(498, 240, COL_DARK)
+    rld = d.res_v(498, 302, color=COL_DARK, label="Rload", label_side="right")
+    d.line(498, 240, 498, rld["t"][1])
+    d.line(498, rld["b"][1], 498, 350)
+    d.gnd(498, 350)
+
+    # Feedback Divider at x=566: Vout -> RFB1 -> V_FB (438) -> RFB2 -> GND
+    rfb1 = d.res_v(566, 392, color=COL_AMBER, label="RFB1", label_side="left")
+    d.line(566, 244, 566, rfb1["t"][1], color=COL_AMBER, sw=1.9)
+    d.dot(566, 436, COL_AMBER)
+    rfb2 = d.res_v(566, 478, color=COL_AMBER, label="RFB2", label_side="left")
+    d.line(566, rfb1["b"][1], 566, rfb2["t"][1], color=COL_AMBER, sw=1.9)
+    d.gnd(566, rfb2["b"][1])
+
+    # Right-to-Left Feedback Path at y=436: Type-III / Gm EA -> Peak-CMC + Slope -> Gate Driver
+    d.rect(366, 404, 136, 64, fill="#fffbeb", stroke=COL_AMBER, sw=1.8, rx=7)
+    d.text(434, 428, "Type-III / Gm", size=10.6, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(434, 445, "Error Amp (Vc)", size=10.0, color=COL_DARK, anchor="middle")
+    d.text(434, 460, "vs Vref = 0.6V", size=9.4, color=COL_MUTED, anchor="middle")
+    d.arrow(566, 436, 504, 436, color=COL_AMBER, sw=1.9)
+
+    d.rect(184, 404, 146, 64, fill="#eff6ff", stroke=COL_SIG, sw=1.8, rx=7)
+    d.text(257, 428, "PWM / Peak-CMC", size=10.6, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(257, 445, "Vc vs Isns + m_a·t", size=9.8, color=COL_DARK, anchor="middle")
+    d.text(257, 460, "Modulator @ f_sw", size=9.4, color=COL_MUTED, anchor="middle")
+    d.arrow(366, 436, 332, 436, color=COL_AMBER, sw=1.9)
+    # Connect I_sns down into CMC modulator
+    d.wire([(320, 322), (320, 382), (257, 382), (257, 402)], color=COL_BIAS, sw=1.8, marker_end="arr-bias")
+    # Connect PWM output up into Gate Driver
+    d.wire([(184, 436), (102, 436), (102, 326)], color=COL_SIG, sw=2.0, marker_end="arr-sig")
+
+    d.callout(36, 514, 562, 72, "Transfer Function Poles & Zeros (CCM Buck)", [
+        "• Double LC Pole: f_0 = 1/(2π√(L·Cout)) (-180° phase cliff!)  |  ESR Zero: f_z,ESR = 1/(2π·R_ESR·Cout)",
+        "• Lossless DCR Match: L / R_DCR = R_s · C_s  =>  V_Cs(s) = R_DCR · I_L(s) across frequencies!",
+    ], tone="sig", fs=9.8)
+
+    # --- (b) Waveforms & Loss Breakdown ---
+    # Top Plot: v_L(t) Volt-Second Balance
+    d.axes(680, 126, 372, 114, xlabel="t", ylabel="vL")
+    y_zero = 190
+    d.line(680, y_zero, 1046, y_zero, color=COL_SUBTLE, sw=1.3, dash="4,3")
+    # Shaded A+ (680..815, y=148..190) and A- (815..995, y=190..226)
+    d.rect(681, 148, 134, 42, fill="#dbeafe", stroke="none", rx=0, opacity=0.7)
+    d.rect(815, 190, 180, 36, fill="#fef3c7", stroke="none", rx=0, opacity=0.75)
+    d.wire([
+        (681, 190), (681, 148), (815, 148), (815, 226),
+        (995, 226), (995, 190), (1035, 190)
+    ], color=COL_SIG, sw=2.3)
+    d.text(758, 142, "+(Vin - Vout)", size=9.6, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(748, 174, "A+ (D·Ts)", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(905, 213, "A- = -Vout(1-D)Ts", size=9.5, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(865, 122, "<vL> = 0  =>  Vout = D · Vin", size=10.5, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Bottom Plot: i_L(t) CCM vs DCM
+    d.axes(680, 276, 372, 128, xlabel="t", ylabel="iL(t)")
+    # CCM waveform (solid Emerald): oscillates between y=346 and y=298 around I_load (y=322)
+    d.line(680, 322, 1020, 322, color=COL_SUBTLE, sw=1.2, dash="3,3")
+    d.wire([(681, 346), (815, 298), (995, 346), (1035, 332)], color=COL_BIAS, sw=2.5)
+    d.text(858, 290, "CCM: ΔIL = Vout(1-D)/(L·fsw)", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # DCM waveform (dashed Purple/Warn): starts at 0 (y=404), peaks at y=362, hits 0 at x=910, stays 0 (ZCD!)
+    d.wire([(681, 404), (785, 362), (910, 404), (1025, 404)], color=COL_PURPLE, sw=2.2, dash="5,3")
+    d.text(915, 388, "DCM (ZCD turns M_LS OFF at iL=0!)", size=9.4, color=COL_PURPLE, anchor="middle", weight="bold")
+
+    d.callout(648, 430, 418, 156, "CCM/DCM Boundary & 4-Term PMIC Loss Budget", [
+        "• CCM -> DCM Boundary:  I_load,crit = ΔI_L / 2 = Vout(1 - D) / (2·L·f_sw)",
+        "• Conduction Loss:  P_cond = I_out²·[D·Ron,HS + (1-D)·Ron,LS + R_DCR]",
+        "• Overlap V-I Loss:  P_sw ≈ 0.5 · PVIN · I_out · (t_r + t_f) · f_sw",
+        "• Gate + Dead-Time:  P_g+dt = (Qg,tot·VDRV + 2·VD·I_out·t_dead)·f_sw",
+        "  (Light-load PFM / Pulse-Skipping scales f_sw ∝ I_out to save Qg!)",
+    ], tone="amber", fs=9.7)
+    return d
+
+
+def diag_58_boost_and_rhp_zero_locus():
+    d = SVGDoc(
+        "boost-and-rhp-zero-locus.svg",
+        "Synchronous Boost Converter: True Disconnect & RHP Zero Locus",
+        "Mạch Tăng áp Đồng bộ (Boost): Khóa Ngắt Tải Thực, Sụt Áp Quá độ Ngược & Quỹ đạo Zero Nửa Phải RHPZ",
+        "PMIC · Ch.08/10", [8, 10, 12], width=1100, height=620
+    )
+    d.panel(18,  74, 520, 528, "(a) Synchronous Boost + True Load-Disconnect Switch")
+    d.panel(554, 74, 528, 528, "(b) Non-Minimum-Phase Vout Dip & s-Plane RHPZ Locus")
+
+    # --- (a) Boost Schematic ---
+    y_pwr = 216
+    d.port(48, y_pwr, "Vin", side="top", color=COL_SIG)
+    d.line(48, y_pwr, 124, y_pwr, color=COL_SIG, sw=2.2)
+    d.dot(82, y_pwr, COL_DARK)
+    cin = d.cap_v(82, 276, color=COL_DARK, label="Cin", label_side="right")
+    d.line(82, y_pwr, 82, cin["t"][1])
+    d.gnd(82, cin["b"][1])
+
+    ind = d.ind_h(148, y_pwr, color=COL_SIG, label="L (Input)", label_pos="top")
+    d.line(ind["r"][0], y_pwr, 286, y_pwr, color=COL_SIG, sw=2.3)
+
+    # V_SW node at (226, 216) + Low-Side Main Switch M_N (S1)
+    d.dot(226, y_pwr, COL_WARN)
+    d.text(226, 198, "V_SW", size=10.8, color=COL_WARN, anchor="middle", weight="bold")
+    mn = d.nmos(226, 282, facing="left", color=COL_DARK, label="M_N (S1)", sub="ON: D·Ts", label_side="left")
+    d.line(226, y_pwr, 226, mn["d"][1], color=COL_DARK, sw=2.2)
+    d.line(226, mn["s"][1], 226, 338, color=COL_DARK, sw=2.2)
+    d.gnd(226, 338)
+
+    # High-Side Sync Rectifier PMOS M_P (S2) at (310, 216) + True-Disconnect M_ISO at (396, 216)
+    mp = d.pmos_h(310, y_pwr, gate_pos="bottom", color=COL_BIAS, label="M_P (S2)", sub="Sync (1-D)Ts")
+    d.line(mp["r"][0], y_pwr, 372, y_pwr, color=COL_BIAS, sw=2.2)
+    miso = d.pmos_h(396, y_pwr, gate_pos="bottom", color=COL_WARN, label="M_ISO", sub="True Disconn.")
+    d.line(miso["r"][0], y_pwr, 502, y_pwr, color=COL_SIG, sw=2.3)
+    d.port(502, y_pwr, "Vout", side="top", color=COL_SIG)
+
+    # Cout & Rload at x=454, x=502
+    d.dot(454, y_pwr, COL_DARK)
+    cout = d.cap_v(454, 282, color=COL_DARK, label="Cout", label_side="left")
+    d.line(454, y_pwr, 454, cout["t"][1])
+    d.line(454, cout["b"][1], 454, 338)
+    d.gnd(454, 338)
+
+    rld = d.res_v(502, 282, color=COL_DARK, label="RL", label_side="left")
+    d.line(502, y_pwr + 4, 502, rld["t"][1])
+    d.line(502, rld["b"][1], 502, 338)
+    d.gnd(502, 338)
+
+    # PWM + Bulk/Isolation Controller Box
+    d.rect(72, 376, 356, 48, fill="#f8fafc", stroke=COL_AMBER, sw=1.7, rx=7)
+    d.text(250, 396, "Boost PWM + Dynamic Bulk & Shutdown Isolation", size=10.4, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(250, 414, "Vout = Vin / (1 - D)   |   EN=0 opens M_ISO + reverses N-Well!", size=9.6, color=COL_DARK, anchor="middle")
+    d.wire([(256, 376), (256, 282)], color=COL_DARK, sw=1.6, dash="4,3")
+    d.line(310, 376, 310, mp["g"][1], color=COL_BIAS, sw=1.6, dash="4,3")
+    d.line(396, 376, 396, miso["g"][1], color=COL_WARN, sw=1.6, dash="4,3")
+
+    d.callout(36, 440, 484, 146, "Physical Cause of RHPZ & Shutdown Leakage Trap", [
+        "• Standard Boost Fault: Even with M_N & M_P OFF (EN=0), M_P's",
+        "  parasitic body diode conducts Vin -> L -> Vout! Back-to-back",
+        "  M_ISO (or dynamic N-well switcher) gives true 0 µA disconnect &",
+        "  short-circuit protection.",
+        "• RHPZ Physics: Cout receives current I_rect = (1 - D)·I_L ONLY",
+        "  when S1 is OFF. Increasing D by +ΔD cuts (1 - D) IMMEDIATELY",
+        "  before I_L can ramp up through L -> Vout initially DIPS!",
+    ], tone="warn", fs=9.8)
+
+    # --- (b) Two-Step Transient Dip + s-Plane RHPZ Locus ---
+    # Top Plot: Step D -> D + ΔD transient
+    d.axes(604, 126, 444, 122, xlabel="t", ylabel="Vout , iL")
+    d.line(695, 126, 695, 248, color=COL_SUBTLE, sw=1.4, dash="4,3")
+    d.text(695, 118, "Step +ΔD", size=9.6, color=COL_AMBER, anchor="middle", weight="bold")
+    # i_L(t) ramping up (Emerald dashed)
+    d.path("M 608 214 L 695 214 Q 755 182 835 166 L 1035 166", stroke=COL_BIAS, sw=2.1, dash="5,3")
+    d.text(965, 156, "iL(t) rises slowly (Vin/L)", size=9.6, color=COL_BIAS, anchor="end", weight="bold")
+    # V_out(t) dipping first then rising (Red dip -> Blue steady-state)
+    d.path("M 608 188 L 695 188 Q 726 238 768 212 Q 820 144 885 144 L 1035 144", stroke=COL_SIG, sw=2.6)
+    d.circle(730, 218, 4.5, fill=COL_WARN, stroke=COL_BG, sw=1.4)
+    d.text(792, 236, "Initial RHPZ Undershoot Dip!", size=9.8, color=COL_WARN, weight="bold")
+
+    # Bottom Plot: s-Plane Locus (x=594..1046, y=284..434, jω axis at x=825)
+    d.rect(825, 286, 222, 146, fill="#fef2f2", stroke="none", rx=4, opacity=0.65)
+    d.arrow(594, 359, 1052, 359, color=COL_DARK, sw=1.8)
+    d.arrow(825, 436, 825, 280, color=COL_DARK, sw=1.8)
+    d.text(1046, 376, "+σ (RHP)", size=10.0, color=COL_WARN, anchor="end", weight="bold")
+    d.text(602, 350, "−σ (LHP)", size=10.0, color=COL_BIAS, weight="bold")
+    d.text(833, 292, "jω", size=10.5, color=COL_DARK, weight="bold")
+
+    # LHP Complex Poles p1, p2 = ±jω0(1-D) at (735, 314) & (735, 404)
+    for py_p in (314, 404):
+        d.line(729, py_p - 6, 741, py_p + 6, color=COL_SIG, sw=2.2)
+        d.line(729, py_p + 6, 741, py_p - 6, color=COL_SIG, sw=2.2)
+    d.text(722, 310, "p1,2: ω0(1-D)", size=9.6, color=COL_SIG, anchor="end", weight="bold")
+
+    # RHP Zero O at (968, 359) moving INWARD to (872, 359) under heavy load / low Vin!
+    d.circle(968, 359, 6.5, fill=COL_BG, stroke=COL_WARN, sw=2.4)
+    d.circle(872, 359, 6.5, fill="#fecaca", stroke=COL_WARN, sw=2.4)
+    d.arrow(956, 359, 884, 359, color=COL_WARN, sw=2.2)
+    d.text(945, 326, "ω_z,RHP moves INWARD", size=9.8, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(945, 341, "as I_load ↑ or Vin ↓ !", size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.callout(572, 448, 492, 138, "Mandatory RHP Zero Loop-Bandwidth Ceiling", [
+        "• Exact Location:  ω_z,RHP = R_load · (1 - D)² / L = Vin² / (Vout · I_load · L)",
+        "• Bode Trap: Adds +20 dB/dec gain boost WITH −90° phase lag (uncancellable!).",
+        "• Hard Signoff Rule (check at Vin,min & I_load,max):",
+        "  f_crossover ≤ (1/4 .. 1/5) · f_z,RHP(min)   [CMC removes L pole, NOT RHPZ!]",
+    ], tone="sig", fs=9.8)
+    return d
+
+
+def diag_59_four_switch_buck_boost():
+    d = SVGDoc(
+        "four-switch-buck-boost.svg",
+        "4-Switch Non-Inverting Buck-Boost & 3-Mode Transition",
+        "Mạch Hạ–Tăng áp 4 Khóa Không Đảo (4-Switch H-Bridge Buck-Boost) & Chuyển Vùng Mượt 3 Chế độ",
+        "PMIC · Ch.08/12", [8, 12, 13], width=1100, height=620
+    )
+    d.panel(18,  74, 530, 528, "(a) Non-Inverting 4-Switch H-Bridge Power Stage (S1..S4)")
+    d.panel(564, 74, 518, 528, "(b) Seamless 3-Region Modulation (Eliminating t_on,min Glitch)")
+
+    # --- (a) H-Bridge Schematic around Horizontal Inductor L ---
+    xl, xr = 152, 386
+    d.vdd(xl, 134, "VIN (2.7–4.5V)")
+    s1 = d.pmos(xl, 188, facing="right", color=COL_SIG, label="S1", sub="Buck HS", label_side="left")
+    d.line(xl, 134, xl, s1["s"][1], color=COL_DARK, sw=2.2)
+
+    s2 = d.nmos(xl, 304, facing="right", color=COL_DARK, label="S2", sub="Buck LS", label_side="left")
+    d.line(xl, s1["d"][1], xl, s2["d"][1], color=COL_SIG, sw=2.3)
+    d.line(xl, s2["s"][1], xl, 348, color=COL_DARK, sw=2.2)
+    d.gnd(xl, 348)
+
+    # Single Inductor L bridging SW1 (152, 246) and SW2 (386, 246)
+    d.dot(xl, 246, COL_SIG)
+    d.dot(xr, 246, COL_SIG)
+    d.text(176, 236, "SW1", size=10.4, color=COL_SIG, weight="bold")
+    d.text(362, 236, "SW2", size=10.4, color=COL_AMBER, anchor="end", weight="bold")
+    ind = d.ind_h(269, 246, color=COL_SIG, label="L (Single Inductor)", label_pos="top")
+    d.line(xl, 246, ind["l"][0], 246, color=COL_SIG, sw=2.4)
+    d.line(ind["r"][0], 246, xr, 246, color=COL_SIG, sw=2.4)
+
+    # Right Half-Bridge: S4 (top PMOS Sync to VOUT) & S3 (bottom NMOS Boost switch to GND)
+    s4 = d.pmos(xr, 188, facing="left", color=COL_BIAS, label="S4", sub="Boost Sync", label_side="left")
+    s3 = d.nmos(xr, 304, facing="left", color=COL_AMBER, label="S3", sub="Boost LS", label_side="left")
+    d.line(xr, s4["d"][1], xr, s3["d"][1], color=COL_SIG, sw=2.3)
+    d.line(xr, s3["s"][1], xr, 348, color=COL_DARK, sw=2.2)
+    d.gnd(xr, 348)
+
+    # VOUT bus from S4 top (386, 164 -> up to 136 -> right to 500) + Cout
+    d.wire([s4["s"], (xr, 136), (502, 136)], color=COL_BIAS, sw=2.3)
+    d.port(502, 136, "VOUT (3.3V)", side="bottom", color=COL_BIAS, fs=10.5)
+    d.dot(456, 136, COL_DARK)
+    cout = d.cap_v(456, 246, color=COL_DARK, label="Cout", label_side="right")
+    d.line(456, 136, 456, cout["t"][1])
+    d.line(456, cout["b"][1], 456, 348)
+    d.gnd(456, 348)
+
+    # Dual-Ramp 3-Mode Modulator Box
+    d.rect(58, 386, 448, 52, fill="#eff6ff", stroke=COL_SIG, sw=1.8, rx=7)
+    d.text(282, 407, "Dual-Offset PWM / Peak-CMC Mode Controller (S1..S4)", size=10.6, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(282, 425, "VOUT = VIN · D_buck / (1 - D_boost)   (Non-Inverting Positive Rail!)", size=9.8, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.callout(36, 454, 494, 132, "Why 3-Mode Beats Naive 1-Mode 4-Switch PWM", [
+        "• Naive 1-Mode (S1+S3 @ D, S2+S4 @ 1-D): Switches ALL 4 FETs every",
+        "  cycle with I_L = I_out/(1-D) = 2·I_out at VIN=VOUT -> 4x I²R loss!",
+        "• Optimal 3-Mode: Pure Buck (S4=ON, S3=OFF: only S1/S2 switch, I_L=I_out)",
+        "  & Pure Boost (S1=ON, S2=OFF: only S3/S4 switch) -> η_peak > 96%!",
+    ], tone="bias", fs=9.8)
+
+    # --- (b) 3-Region Seamless Duty-Cycle & Transition Plot ---
+    d.axes(614, 134, 434, 214, xlabel="", ylabel="Duty Cycle")
+    # Shaded 3 mode bands: Boost (614..750), Buck-Boost Bridge (750..896, amber), Buck (896..1044)
+    d.rect(750, 134, 146, 214, fill="#fffbeb", stroke="none", rx=0, opacity=0.75)
+    d.line(750, 134, 750, 348, color=COL_AMBER, sw=1.3, dash="4,3")
+    d.line(896, 134, 896, 348, color=COL_AMBER, sw=1.3, dash="4,3")
+
+    d.text(682, 124, "1. Pure Boost", size=10.0, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(823, 124, "2. 2-Phase Bridge", size=10.0, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(970, 124, "3. Pure Buck", size=10.0, color=COL_SIG, anchor="middle", weight="bold")
+
+    # D_buck curve (Blue): 100% (y=152) in Boost -> smoothly ramps 92%..86% in Bridge -> Vout/Vin down to 65% (y=236) in Buck!
+    d.path("M 616 152 L 750 152 Q 823 162 896 180 Q 970 210 1040 238", stroke=COL_SIG, sw=2.7)
+    d.text(985, 198, "D_buck (S1/S2)", size=10.0, color=COL_SIG, anchor="middle", weight="bold")
+
+    # D_boost curve (Amber/Emerald): 42% (y=252) in Boost -> ramps smoothly through ~12% in Bridge -> 0% (y=346) in Buck!
+    d.path("M 616 248 Q 685 288 750 312 Q 823 326 896 346 L 1040 346", stroke=COL_AMBER, sw=2.7)
+    d.text(685, 240, "D_boost (S3/S4)", size=10.0, color=COL_AMBER, anchor="middle", weight="bold")
+
+    # Mark VIN = VOUT center line at x=823
+    d.text(823, 365, "VIN ≈ VOUT", size=9.8, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(668, 365, "VIN < VOUT", size=9.6, color=COL_MUTED, anchor="middle")
+    d.text(978, 365, "VIN > VOUT", size=9.6, color=COL_MUTED, anchor="middle")
+    d.text(828, 381, "Input-to-Output Ratio  (VIN / VOUT)", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.callout(582, 390, 482, 196, "Solving the VIN ≈ VOUT Minimum Pulse-Width Dead-Zone", [
+        "• Hardware Limit: Gate drivers & C_BST refresh enforce minimum",
+        "  on/off pulses t_on,min & t_off,min (~30–60 ns -> ±6% dead-band @ 1 MHz).",
+        "• Without Bridge Region: Jumping directly from D_buck=94% to D_boost=6%",
+        "  causes chaotic mode toggling & 40–80 mVpp VOUT subharmonic bursts!",
+        "• Dual-Carrier Solution: Offset Buck & Boost sawtooth ramps so Vc",
+        "  smoothly overlaps ~8–12% duty in both half-bridges across VIN ≈ VOUT,",
+        "  plus scale modulator gain by (1 - D_boost) to hold f_c constant!",
+    ], tone="amber", fs=9.8)
+    return d
+
+
+def diag_60_switched_cap_charge_pump_dcdc():
+    d = SVGDoc(
+        "switched-cap-charge-pump-dcdc.svg",
+        "Switched-Capacitor Charge-Pump DC-DC: SSL/FSL & Bottom-Plate Loss",
+        "Bộ Biến đổi DC-DC Bơm Điện tích Đóng cắt Tụ (SC Charge Pump): Trở kháng Tiệm cận SSL/FSL & Tổn hao Đáy Tụ",
+        "PMIC · Ch.12/13", [12, 13], width=1100, height=620
+    )
+    d.panel(18,  74, 530, 528, "(a) 2-Phase SC Doubler / 2:1 Cell & Dickson Charge-Pump Chain")
+    d.panel(564, 74, 518, 528, "(b) Asymptotic Output Impedance Rout(f_sw) & Parasitic Loss")
+
+    # --- (a) Top: 2-Phase 1:2 / 2:1 SC Cell showing C_fly & Bottom-Plate C_bot ---
+    d.port(52, 152, "Vin", side="top", color=COL_SIG)
+    d.line(52, 152, 108, 152, color=COL_SIG, sw=2.1)
+    s1 = d.sw_h(128, 152, label="S1 (φ1)", color=COL_SIG, closed=True)
+    d.line(s1["r"][0], 152, 292, 152, color=COL_SIG, sw=2.1)
+    s3 = d.sw_h(312, 152, label="S3 (φ2)", color=COL_PURPLE, closed=False)
+    d.line(s3["r"][0], 152, 496, 152, color=COL_SIG, sw=2.2)
+    d.port(496, 152, "Vout", side="top", color=COL_SIG)
+
+    # Flying Capacitor C_fly at x=220 between Top Plate VT (152) and Bottom Plate VB (232)
+    d.dot(220, 152, COL_SIG)
+    d.text(206, 142, "VT", size=10.0, color=COL_SIG, anchor="end", weight="bold")
+    cfly = d.cap_v(220, 192, color=COL_SIG, label="C_fly", label_side="right")
+    d.line(220, 152, 220, cfly["t"][1], color=COL_SIG, sw=2.1)
+    d.line(220, cfly["b"][1], 220, 236, color=COL_AMBER, sw=2.1)
+    d.dot(220, 236, COL_AMBER)
+    d.text(206, 232, "VB", size=10.0, color=COL_AMBER, anchor="end", weight="bold")
+
+    # VB switches: S4 (φ2 to Vin) on left, S2 (φ1 to GND) on right, PLUS Red Bottom-Plate C_bot!
+    s4 = d.sw_h(136, 236, label="S4 (φ2->Vin)", color=COL_PURPLE, closed=False)
+    d.wire([(78, 152), (78, 236), s4["l"]], color=COL_SIG, sw=1.8)
+    d.dot(78, 152, COL_SIG)
+    d.line(s4["r"][0], 236, 220, 236, color=COL_AMBER, sw=2.0)
+
+    s2 = d.sw_h(304, 236, label="S2 (φ1->GND)", color=COL_SIG, closed=True)
+    d.line(220, 236, s2["l"][0], 236, color=COL_AMBER, sw=2.0)
+    d.wire([s2["r"], (356, 236), (356, 266)], color=COL_DARK, sw=1.9)
+    d.gnd(356, 266)
+
+    # Parasitic Bottom-Plate Capacitor C_bot = α*C_fly at x=220 down to GND!
+    cbot = d.cap_v(220, 268, color=COL_WARN, label="C_bot = α·C_fly", label_side="left")
+    d.line(220, 236, 220, cbot["t"][1], color=COL_WARN, sw=1.8, dash="3,2")
+    d.gnd(220, cbot["b"][1], color=COL_WARN)
+
+    # Cout at x=456
+    d.dot(456, 152, COL_DARK)
+    cout = d.cap_v(456, 214, color=COL_DARK, label="Cout", label_side="right")
+    d.line(456, 152, 456, cout["t"][1])
+    d.line(456, cout["b"][1], 456, 266)
+    d.gnd(456, 266)
+
+    # Middle Box: Cross-Coupled Voltage Doubler & Multi-Stage Dickson Summary
+    d.rect(36, 314, 494, 106, fill="#f8fafc", stroke=COL_BIAS, sw=1.6, rx=7)
+    d.text(283, 336, "N-Stage Dickson Pump & Cross-Coupled Latch Doubler", size=11.0, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(283, 356, "• Classic Diode Dickson:  Vout = (N + 1)·Vin − N·V_TH  (severe body-effect V_TH loss!)", size=9.8, color=COL_DARK, anchor="middle")
+    d.text(283, 375, "• Cross-Coupled NMOS/PMOS Charge-Transfer Switches: Zero V_TH drop (full N+1 gain!).", size=9.8, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(283, 394, "• Multi-Phase Interleaving (K = 4..16 phases): Cancels input/output ΔV_ripple without Cout!", size=9.8, color=COL_MUTED, anchor="middle")
+
+    d.callout(36, 434, 494, 152, "Inherent Ratio Efficiency Law & Multi-Gearbox SC", [
+        "• Ideal Charge Conservation forces I_in = M · I_out  =>",
+        "  η_max = Vout / (M · Vin)   (even if R_out -> 0, voltage drop burns power!).",
+        "• Multi-Ratio Gearbox (M ∈ {2:1, 3:2, 4:3, 1:1}): Reconfigures flying",
+        "  caps dynamically across Li-Ion discharge to sustain η = 86–93% on-die!",
+        "• Bottom-Plate Rule: Always tie C_bot plate to lower-dV/dt / driven node!",
+    ], tone="sig", fs=9.8)
+
+    # --- (b) Asymptotic R_out(f_sw) Log-Log Plot ---
+    d.axes(622, 134, 422, 218, xlabel="log10(f_sw)", ylabel="log10(R_out)")
+    # SSL Asymptote: straight line from (642, 152) down to (972, 338)
+    d.line(642, 152, 972, 338, color=COL_SIG, sw=1.9, dash="5,4")
+    d.text(685, 162, "R_SSL = M_c / (C_fly·f_sw)", size=9.8, color=COL_SIG, weight="bold")
+
+    # FSL Asymptote: horizontal line at y=282 from x=642..1034
+    d.line(642, 282, 1034, 282, color=COL_AMBER, sw=1.9, dash="5,4")
+    d.text(652, 273, "R_FSL = M_r · R_on (Switch Floor)", size=9.6, color=COL_AMBER, weight="bold")
+
+    # Exact Euclidean curve R_out = sqrt(R_SSL^2 + R_FSL^2) hugging SSL then flattening onto FSL!
+    d.path("M 642 150 L 765 219 Q 848 268 935 279 L 1034 281", stroke=COL_DARK, sw=2.8)
+    # Mark knee f_opt at (848, 262)
+    d.circle(848, 260, 5.0, fill=COL_BIAS, stroke=COL_BG, sw=1.6)
+    d.line(848, 260, 848, 352, color=COL_BIAS, sw=1.4, dash="3,3")
+    d.text(848, 368, "f_opt (R_SSL = R_FSL)", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # Rising Parasitic Switching Loss curve P_par ∝ f_sw (Red dashed rising right)
+    d.path("M 745 340 Q 895 312 1028 168", stroke=COL_WARN, sw=2.1, dash="4,3")
+    d.text(1026, 158, "P_bot + P_gate ∝ f_sw!", size=9.8, color=COL_WARN, anchor="end", weight="bold")
+
+    d.callout(582, 390, 482, 196, "Seeman–Sanders SSL / FSL Equations & Cap Choice", [
+        "• Equivalent Thevenin Model:  Vout = M · Vin − I_load · R_out(f_sw)",
+        "• Euclidean Approximation:    R_out ≈ √( R_SSL² + R_FSL² )",
+        "  - Slow-Switching Limit:  R_SSL = (∑ a_c,i²) / (C_fly · f_sw)",
+        "  - Fast-Switching Limit:  R_FSL = 2 · ∑ a_r,k² · R_on,k",
+        "• Parasitic Loss Floor:    P_par = (α · C_fly · V_sw² + C_gg · V_G²) · f_sw",
+        "  (MIM/MOM α ≈ 1–2% vs planar MOS cap α ≈ 8–15% -> choose MIM + DNW!)",
+    ], tone="purple", fs=9.8)
+    return d
+
+
+def diag_61_hs_bootstrap_driver_deadtime():
+    d = SVGDoc(
+        "hs-bootstrap-driver-deadtime.svg",
+        "High-Side Bootstrap Driver, Adaptive Dead-Time & V_SW Injection",
+        "Mạch Lái Cạnh Cao Bootstrap C_BST, Chống Trùng dẫn Thích nghi & Tiêm Hạt tải Thiểu số khi V_SW < -0.7V",
+        "PMIC · Ch.12/18", [12, 18, 19], width=1100, height=620
+    )
+    d.panel(18,  74, 560, 528, "(a) Floating C_BST Supply, HV Level Shifter & Adaptive Dead-Time")
+    d.panel(594, 74, 488, 528, "(b) Dead-Time Body-Diode Undershoot & Double Guard-Ring Fix")
+
+    # --- (a) HS Bootstrap + Level Shifter + Adaptive Non-Overlapping Loop ---
+    # Power stage column at x=476
+    xp = 476
+    d.vdd(xp, 134, "PVIN (12–48V)")
+    mhs = d.nmos(xp, 196, facing="right", color=COL_SIG, label="M_HS", sub="NMOS", label_side="right")
+    d.line(xp, 134, xp, mhs["d"][1], color=COL_DARK, sw=2.2)
+
+    mls = d.nmos(xp, 342, facing="right", color=COL_DARK, label="M_LS", sub="Sync", label_side="right")
+    d.line(xp, mhs["s"][1], xp, mls["d"][1], color=COL_SIG, sw=2.3)
+    d.line(xp, mls["s"][1], xp, 386, color=COL_DARK, sw=2.2)
+    d.gnd(xp, 386)
+
+    d.dot(xp, 268, COL_WARN)
+    d.line(xp, 268, 536, 268, color=COL_SIG, sw=2.3)
+    d.port(536, 268, "SW", side="top", color=COL_WARN, fs=10.5)
+
+    # VDD5 -> Sync Bootstrap Switch/Diode -> BST rail (y=130) -> C_BST (x=414) -> SW (268)
+    d.port(242, 130, "VDD5", side="left", color=COL_BIAS, fs=10.2)
+    d.line(242, 130, 286, 130, color=COL_BIAS, sw=2.0)
+    d.poly([(286, 122), (286, 138), (304, 130)], fill="#ecfdf5", stroke=COL_BIAS, sw=1.8)
+    d.line(304, 121, 304, 139, color=COL_BIAS, sw=2.1)
+    d.line(304, 130, 414, 130, color=COL_BIAS, sw=2.0)
+    d.text(356, 120, "BST = V_SW + 5V", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+
+    cbst = d.cap_v(414, 198, color=COL_PURPLE, label="C_BST", label_side="left")
+    d.dot(414, 130, COL_BIAS)
+    d.line(414, 130, 414, cbst["t"][1], color=COL_PURPLE, sw=2.0)
+    d.wire([cbst["b"], (414, 268), (xp, 268)], color=COL_PURPLE, sw=2.0)
+    d.dot(414, 268, COL_WARN)
+
+    # Floating HS Gate Driver (292..374, 168..224) powered between BST (130) and SW (268)
+    d.rect(290, 168, 84, 56, fill="#eff6ff", stroke=COL_SIG, sw=1.9, rx=6)
+    d.text(332, 193, "HS Driver", size=10.2, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(332, 209, "(BST/SW)", size=9.4, color=COL_MUTED, anchor="middle")
+    d.line(332, 130, 332, 168, color=COL_BIAS, sw=1.7)
+    d.dot(332, 130, COL_BIAS)
+    d.wire([(332, 224), (332, 268), (414, 268)], color=COL_WARN, sw=1.7)
+    d.line(374, 196, mhs["g"][0], 196, color=COL_SIG, sw=2.1)
+
+    # Pulsed HV Level Shifter (168..268, 168..248)
+    d.rect(166, 168, 104, 78, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.8, rx=6)
+    d.text(218, 192, "Pulsed HV", size=10.2, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(218, 208, "Level-Shift", size=10.0, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(218, 226, "50 V/ns dV/dt", size=9.2, color=COL_DARK, anchor="middle")
+    d.arrow(270, 196, 290, 196, color=COL_PURPLE, sw=1.9)
+
+    # LS Gate Driver (290..374, 314..370)
+    d.rect(290, 314, 84, 56, fill="#f8fafc", stroke=COL_DARK, sw=1.8, rx=6)
+    d.text(332, 339, "LS Driver", size=10.2, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(332, 355, "(VDD5/GND)", size=9.4, color=COL_MUTED, anchor="middle")
+    d.line(374, 342, mls["g"][0], 342, color=COL_DARK, sw=2.1)
+
+    # Adaptive Non-Overlapping Dead-Time Controller (42..146, 240..366)
+    d.rect(42, 240, 106, 126, fill="#fffbeb", stroke=COL_AMBER, sw=1.9, rx=7)
+    d.text(95, 266, "Adaptive", size=10.5, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(95, 282, "Dead-Time", size=10.5, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(95, 302, "Wait until", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(95, 317, "V_GS < V_TH", size=9.6, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(95, 334, "before turn-ON!", size=9.2, color=COL_DARK, anchor="middle")
+    d.wire([(148, 262), (156, 262), (156, 206), (166, 206)], color=COL_AMBER, sw=1.8, marker_end="arr-amber")
+    d.arrow(148, 342, 290, 342, color=COL_AMBER, sw=1.8)
+    # Gate-sense feedback from LDRV (396, 342) back to Adaptive Dead-Time!
+    d.dot(396, 342, COL_AMBER)
+    d.wire([(396, 342), (396, 392), (95, 392), (95, 368)], color=COL_AMBER, sw=1.6, dash="4,3", marker_end="arr-amber")
+
+    d.callout(36, 418, 524, 168, "Bootstrap Sizing, 100%-Duty Trickle & dV/dt Shielding", [
+        "• Bootstrap Cap Charge Balance:  C_BST ≥ Q_g,HS / ΔV_BST,droop  (typ. 47–100 nF).",
+        "• 100% Duty Dropout Trap: If M_LS never turns ON, C_BST leaks below UVLO_BST ->",
+        "  add internal trickle charge pump to sustain HDRV indefinitely in dropout!",
+        "• dV_SW/dt Immunity: Fast 50 V/ns SW slewing injects C_gd,DMOS·dV/dt common-mode",
+        "  currents into HV level-shifter -> cancel with cross-coupled dummy caps + clamp!",
+    ], tone="sig", fs=9.8)
+
+    # --- (b) Dead-Time Waveforms & Substrate Minority Injection Cross-Section ---
+    # Top Switching Timing Diagram (y=118..268)
+    d.text(614, 134, "HDRV", size=10.0, color=COL_SIG, weight="bold")
+    d.wire([(662, 122), (735, 122), (748, 144), (1048, 144)], color=COL_SIG, sw=2.1)
+    d.text(614, 174, "LDRV", size=10.0, color=COL_DARK, weight="bold")
+    d.wire([(662, 182), (792, 182), (804, 160), (965, 160), (976, 182), (1048, 182)], color=COL_DARK, sw=2.1)
+    # Highlight dead-time window x=748..792
+    d.rect(748, 118, 44, 148, fill="#fef2f2", stroke="none", rx=0, opacity=0.75)
+    d.line(748, 118, 748, 266, color=COL_WARN, sw=1.2, dash="3,3")
+    d.line(792, 118, 792, 266, color=COL_WARN, sw=1.2, dash="3,3")
+    d.text(770, 114, "t_dead", size=9.8, color=COL_WARN, anchor="middle", weight="bold")
+
+    # V_SW waveform plunging to -0.8V during t_dead!
+    d.text(614, 232, "V_SW", size=10.2, color=COL_WARN, weight="bold")
+    d.line(662, 236, 1048, 236, color=COL_SUBTLE, sw=1.2, dash="4,3")
+    d.text(1054, 240, "0V", size=9.5, color=COL_MUTED)
+    d.wire([
+        (662, 202), (738, 202), (750, 262), (792, 262),
+        (802, 236), (968, 236), (978, 262), (1012, 262)
+    ], color=COL_WARN, sw=2.4)
+    d.text(856, 265, "V_SW ≈ −0.8V (Body Diode ON!)", size=9.8, color=COL_WARN, weight="bold")
+
+    # Silicon Cross-Section Box (612..1064, 292..428)
+    d.rect(612, 292, 452, 136, fill="#f1f5f9", stroke=COL_BORDER, sw=1.5, rx=6)
+    d.text(838, 418, "Shared P-Substrate (PGND) — Parasitic Lateral NPN Hazard!", size=9.8, color=COL_DARK, anchor="middle", weight="bold")
+    # Left: M_LS N+ Drain (V_SW = -0.8V) injecting electrons!
+    d.rect(628, 292, 86, 42, fill="#fecaca", stroke=COL_WARN, sw=1.8, rx=3)
+    d.text(671, 310, "N+ Drain", size=9.8, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(671, 325, "V_SW < -0.7V", size=9.2, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Middle: Double Guard Ring: Deep N-Well / N+ Ring (VDD) + P+ Ring (PGND)!
+    d.rect(752, 292, 88, 68, fill="#ecfdf5", stroke=COL_BIAS, sw=2.0, rx=3)
+    d.text(796, 314, "DNW / N+ Ring", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(796, 330, "Tied to VDD", size=9.2, color=COL_DARK, anchor="middle")
+    d.text(796, 346, "(Sinks e−!)", size=9.4, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.rect(854, 292, 64, 42, fill="#e2e8f0", stroke=COL_DARK, sw=1.6, rx=3)
+    d.text(886, 310, "P+ Guard", size=9.4, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(886, 325, "(PGND)", size=9.0, color=COL_MUTED, anchor="middle")
+
+    # Right: Quiet Bandgap / ADC Victim protected!
+    d.rect(942, 292, 106, 52, fill="#eff6ff", stroke=COL_SIG, sw=1.8, rx=3)
+    d.text(995, 314, "Quiet Analog", size=9.8, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(995, 330, "BGR / ADC", size=9.4, color=COL_DARK, anchor="middle")
+
+    # Electron injection arrow intercepted by N+ VDD collector ring!
+    d.wire([(671, 334), (671, 382), (796, 382), (796, 362)], color=COL_WARN, sw=2.0, dash="4,3", marker_end="arr-warn")
+    d.text(732, 398, "Injected e− swept to VDD!", size=9.4, color=COL_WARN, anchor="middle", weight="bold")
+
+    d.callout(612, 442, 452, 144, "Dead-Time & Substrate Minority-Injection Signoff Rules", [
+        "• When V_SW drops below −0.7 V during t_dead, the N+ drain / P-sub",
+        "  junction forward-biases as a massive NPN emitter, spraying minority",
+        "  electrons hundreds of µm to corrupt Bandgap VREF or trigger Latch-Up!",
+        "• Fix: Keep t_dead minimal (~3–8 ns via adaptive V_GS sense) + surround",
+        "  power FETs with wide N+/DNW minority-collector ring tied to clean VDD!",
+    ], tone="warn", fs=9.7)
+    return d
+
+
+def diag_62_vmc_type3_and_cmc_slope_comp():
+    d = SVGDoc(
+        "vmc-type3-and-cmc-slope-comp.svg",
+        "VMC Type-III Compensator vs Peak CMC Slope Compensation",
+        "Bù Tần số Type-III (Chế độ Áp VMC) & Bù Độ dốc Chống Dao động Sóng hài Phụ D > 0.5 (Chế độ Dòng CMC)",
+        "PMIC · Ch.08/10", [8, 10], width=1100, height=620
+    )
+    d.panel(18,  74, 524, 528, "(a) Op-Amp Type-III Compensator (2 Zeros, 3 Poles) & Phase Rescue")
+    d.panel(558, 74, 524, 528, "(b) Peak CMC D > 0.5 Subharmonic Instability & Slope Comp ma")
+
+    # --- (a) Type-III Schematic (y=116..312) ---
+    ea = d.opamp(408, 256, w=58, h=50, facing="right", plus_top=False, label="EA", color=COL_SIG, fill="#eff6ff")
+    # '+' (in_bot at 269) tied to Vref
+    d.port(338, ea["in_bot"][1], "Vref", side="left", color=COL_BIAS, fs=10.2)
+    d.line(338, ea["in_bot"][1], ea["in_bot"][0], ea["in_bot"][1], color=COL_BIAS, sw=1.9)
+    # Output Vc at (492, 256)
+    d.line(ea["out"][0], 256, 496, 256, color=COL_SIG, sw=2.1)
+    d.port(496, 256, "Vc", side="right", color=COL_SIG, fs=10.5)
+
+    # Summing node V_FB at '-' (in_top at y=243)
+    y_fb = ea["in_top"][1]
+    d.port(56, y_fb, "Vout", side="top", color=COL_SIG, fs=10.2)
+    d.line(56, y_fb, 156, y_fb, color=COL_SIG, sw=2.0)
+    r1 = d.res_h(180, y_fb, color=COL_DARK, label="R1", label_pos="bottom")
+    d.line(r1["r"][0], y_fb, ea["in_top"][0], y_fb, color=COL_DARK, sw=2.0)
+
+    # Parallel Feedforward Lead Branch (R3 + C3) across R1 at y=188
+    d.dot(98, y_fb, COL_AMBER)
+    d.dot(262, y_fb, COL_AMBER)
+    r3 = d.res_h(144, 188, color=COL_AMBER, label="R3", label_pos="top")
+    c3 = d.cap_h(218, 188, color=COL_AMBER, label="C3", label_pos="top")
+    d.wire([(98, y_fb), (98, 188), r3["l"]], color=COL_AMBER, sw=1.8)
+    d.line(r3["r"][0], 188, c3["l"][0], 188, color=COL_AMBER, sw=1.8)
+    d.wire([c3["r"], (262, 188), (262, y_fb)], color=COL_AMBER, sw=1.8)
+
+    # Feedback Z_f around EA: (R2 + C1) at y=188 in parallel with C2 at y=136!
+    d.dot(316, y_fb, COL_PURPLE)
+    d.dot(472, 256, COL_PURPLE)
+    r2 = d.res_h(362, 188, color=COL_PURPLE, label="R2", label_pos="bottom")
+    c1 = d.cap_h(430, 188, color=COL_PURPLE, label="C1", label_pos="bottom")
+    d.wire([(316, y_fb), (316, 188), r2["l"]], color=COL_PURPLE, sw=1.8)
+    d.line(r2["r"][0], 188, c1["l"][0], 188, color=COL_PURPLE, sw=1.8)
+    d.wire([c1["r"], (472, 188), (472, 256)], color=COL_PURPLE, sw=1.8)
+
+    c2 = d.cap_h(396, 136, color=COL_BIAS, label="C2 (HF Pole)", label_pos="top")
+    d.wire([(316, 188), (316, 136), c2["l"]], color=COL_BIAS, sw=1.7)
+    d.wire([c2["r"], (472, 136), (472, 188)], color=COL_BIAS, sw=1.7)
+    d.dot(316, 188, COL_PURPLE)
+    d.dot(472, 188, COL_PURPLE)
+
+    # Bottom-left Bode Phase Rescue Plot (y=338..466)
+    d.axes(74, 340, 430, 118, xlabel="log(f)", ylabel="∠T(jω)")
+    # -180 deg instability line at y=438
+    d.line(74, 438, 500, 438, color=COL_WARN, sw=1.3, dash="4,3")
+    d.text(80, 452, "−180° (Unstable)", size=9.2, color=COL_WARN, weight="bold")
+    # Uncompensated LC cliff (Red dashed)
+    d.path("M 84 366 L 195 366 Q 235 446 285 452 L 485 452", stroke=COL_WARN, sw=2.0, dash="5,3")
+    d.text(175, 424, "Raw LC −180° Cliff!", size=9.4, color=COL_WARN, anchor="end", weight="bold")
+    # Type-III Phase Boost (Emerald solid)
+    d.path("M 84 366 Q 185 388 235 392 Q 315 344 378 368 Q 438 408 488 424", stroke=COL_BIAS, sw=2.6)
+    d.circle(352, 360, 4.5, fill=COL_SIG, stroke=COL_BG, sw=1.5)
+    d.text(352, 346, "f_c (PM ≥ 60° via f_z1,z2!)", size=9.6, color=COL_SIG, anchor="middle", weight="bold")
+
+    d.callout(36, 482, 488, 104, "Type-III K-Factor Placement (f_c ≈ 0.1..0.2 · f_sw)", [
+        "• Double Zero near f_LC:  f_z1 = 1/(2π·R2·C1),  f_z2 = 1/(2π·(R1+R3)·C3) ≈ f_c/√K",
+        "• Double Pole at ESR & f_sw/2:  f_p1 ≈ 1/(2π·R2·C2),  f_p2 = 1/(2π·R3·C3) ≈ f_c·√K",
+        "• Gives up to +180° phase boost to tame underdamped ceramic-Cout LC filters!",
+    ], tone="sig", fs=9.6)
+
+    # --- (b) Peak CMC Subharmonic Instability & Slope Compensation ---
+    d.axes(610, 134, 438, 198, xlabel="", ylabel="I_sns(t)")
+    # Clock lines Ts (x=815) and 2Ts (x=1020)
+    for xt, xlbl in [(610, "0"), (815, "Ts"), (1020, "2Ts")]:
+        if xt > 610:
+            d.line(xt, 134, xt, 332, color=COL_SUBTLE, sw=1.3, dash="3,3")
+        d.text(xt, 347, xlbl, size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(825, 361, "Time t   (Duty Ratio D = 0.65 > 0.5)", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Flat Peak Threshold Vc (dashed gray at y=166)
+    d.line(610, 166, 1032, 166, color=COL_MUTED, sw=1.6, dash="5,3")
+    d.text(1032, 158, "Flat Vc (ma = 0)", size=9.6, color=COL_MUTED, anchor="end", weight="bold")
+
+    # Steady-state iL(t) (solid Blue): rises (610,276)->(743,166) [D=0.65], falls (743,166)->(815,276) [1-D=0.35]
+    d.wire([
+        (610, 276), (743, 166), (815, 276),
+        (948, 166), (1020, 276)
+    ], color=COL_SIG, sw=2.3)
+
+    # Perturbed trajectory WITHOUT slope comp (Red dashed): starts +ΔI0 higher at (610, 250)!
+    # Hits flat Vc (166) early at x=712 -> falls at steep m2 until Ts (815), hitting y=323 (|ΔI1| = 1.86*|ΔI0| >> ΔI0)!
+    # Then rises from (815,323) to hit y=166 late at x=1005 -> Period-2 Chaos!
+    d.wire([
+        (610, 250), (712, 166), (815, 323), (1005, 166), (1030, 204)
+    ], color=COL_WARN, sw=2.3, dash="5,3")
+    d.text(622, 240, "+ΔI0", size=9.8, color=COL_WARN, weight="bold")
+    d.text(823, 324, "ΔI1 = −(D/(1-D))·ΔI0  (|ΔI1| > |ΔI0|!)", size=9.6, color=COL_WARN, weight="bold")
+
+    # Compensating Slope Ramp Vc - ma*t (Solid Amber sawtooth ceiling in each cycle!)
+    d.wire([(610, 142), (815, 218)], color=COL_AMBER, sw=2.5)
+    d.wire([(815, 142), (1020, 218)], color=COL_AMBER, sw=2.5)
+    d.text(764, 140, "Vc − ma·t (Slope Comp!)", size=9.8, color=COL_AMBER, anchor="middle", weight="bold")
+
+    d.callout(576, 368, 488, 218, "Exact Perturbation Recurrence & Slope-Comp Design Law", [
+        "• Cycle-to-Cycle Error Gain (up-slope m1, down-slope m2, ramp ma):",
+        "    ΔI_{n+1} / ΔI_n  =  − (m2 − ma) / (m1 + ma)",
+        "• Uncompensated (ma = 0):  m2/m1 = D / (1 − D) ≥ 1  for ALL D ≥ 0.5",
+        "  -> Period-doubling subharmonic oscillation at f_sw / 2 !",
+        "• Unconditional Stability & Zero Subharmonic Q-Peaking (Q_p ≤ 1):",
+        "    ma ≥ 0.5 · m2     (Buck: m2 = Vout/L ;  Boost: m2 = (Vout−Vin)/L)",
+        "• Over-Compensation Trap: ma >> m2 ruins line rejection & CMC 1-pole benefit!",
+    ], tone="warn", fs=9.8)
+    return d
+
+
+def diag_63_capless_fvf_dfc_ldo():
+    d = SVGDoc(
+        "capless-fvf-dfc-ldo.svg",
+        "Output-Capacitor-Less SoC LDO: FVF, DFC & Dynamic Slew Enhancer",
+        "Bộ Ổn áp Tuyến tính Không Tụ Ngoài (Capless SoC LDO): Đệm FVF, Kiểm soát Hệ số Tắt dần DFC & Tăng Tốc SRE",
+        "PMIC · Ch.10/12", [9, 10, 12], width=1100, height=620
+    )
+    d.panel(18,  74, 556, 528, "(a) Capless SoC LDO (Cout = 50–200 pF): FVF + DFC + Dynamic SRE")
+    d.panel(590, 74, 492, 528, "(b) Zero-Load Complex-Pole Locus & Load-Step Droop Physics")
+
+    # --- (a) Capless FVF + DFC + SRE Schematic ---
+    d.line(120, 132, 435, 132, color=COL_DARK, sw=2.5)
+    d.text(278, 120, "VDD (Input Supply Rail)", size=10.8, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Pass PMOS M_PASS at (415, 194) -> Vout node at y=252
+    mpass = d.pmos(415, 194, facing="right", color=COL_SIG, label="M_PASS", sub="Cgg~30pF", label_side="right")
+    d.line(415, 132, 415, mpass["s"][1], color=COL_DARK, sw=2.2)
+    d.line(415, mpass["d"][1], 415, 252, color=COL_SIG, sw=2.3)
+    d.line(265, 252, 530, 252, color=COL_SIG, sw=2.3)
+    d.port(530, 252, "Vout", side="top", color=COL_SIG)
+
+    # Pure On-Chip Load: Cout = 50-200 pF (x=446) + I_load step (x=514)
+    d.dot(446, 252, COL_AMBER)
+    cout = d.cap_v(446, 326, color=COL_AMBER, label="Cout", sub="100 pF", label_side="left")
+    d.line(446, 252, 446, cout["t"][1])
+    d.line(446, cout["b"][1], 446, 368)
+    d.gnd(446, 368)
+
+    d.dot(514, 252, COL_SIG)
+    ild = d.isrc_v(514, 326, direction="down", color=COL_SIG, label="IL", sub="0..100mA", label_side="left")
+    d.line(514, 252, 514, ild["t"][1])
+    d.line(514, ild["b"][1], 514, 368)
+    d.gnd(514, 368)
+
+    # Flipped Voltage Follower (FVF) Control Sense PMOS M_FVF at (265, 304): Source at Vout (252)!
+    d.dot(265, 252, COL_BIAS)
+    mfvf = d.pmos(265, 304, facing="right", color=COL_BIAS, label="M_FVF", sub="Sense Vout", label_side="right")
+    d.line(265, 252, 265, mfvf["s"][1], color=COL_BIAS, sw=2.1)
+    ib_fvf = d.isrc_v(265, 368, direction="down", color=COL_BIAS, label="Ib", label_side="right")
+    d.line(265, mfvf["d"][1], 265, ib_fvf["t"][1], color=COL_BIAS)
+    d.gnd(265, ib_fvf["b"][1])
+
+    # Outer Error Amp setting V_SET on M_FVF Gate (235, 304)
+    ea = d.opamp(122, 304, w=54, h=46, facing="right", plus_top=False, label="EA", color=COL_SIG, fill="#eff6ff")
+    d.port(56, ea["in_top"][1], "Vref", side="left", color=COL_BIAS, fs=10.0)
+    d.line(56, ea["in_top"][1], ea["in_top"][0], ea["in_top"][1], color=COL_BIAS)
+    d.wire([(265, 252), (196, 252), (196, 344), (74, 344), (74, ea["in_bot"][1]), ea["in_bot"]],
+           color=COL_SIG, sw=1.5, dash="4,3")
+    d.line(ea["out"][0], 304, mfvf["g"][0], 304, color=COL_SIG, sw=2.0)
+    d.text(192, 296, "V_SET", size=9.6, color=COL_SIG, anchor="middle", weight="bold")
+
+    # Fast Low-Z Gate Buffer + Damping-Factor-Control (DFC) Block (162..326, 164..222) driving M_PASS Gate!
+    d.rect(162, 164, 164, 58, fill="#ecfdf5", stroke=COL_BIAS, sw=1.9, rx=7)
+    d.text(244, 188, "FVF Folded Buffer +", size=10.2, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(244, 206, "Ahuja / DFC Network", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+    d.line(326, 194, mpass["g"][0], 194, color=COL_BIAS, sw=2.2)
+    # Connect M_FVF drain (265, 336) around left to FVF Folded Buffer (162, 194)
+    d.wire([(265, 336), (218, 336), (218, 222)], color=COL_BIAS, sw=1.9, marker_end="arr-bias")
+    # Miller / Ahuja Cap C_m from Vout (354, 252) up into DFC block (326, 178)
+    d.dot(354, 252, COL_AMBER)
+    cm = d.cap_v(354, 212, color=COL_AMBER, label="Cm", label_side="right")
+    d.line(354, 252, 354, cm["b"][1], color=COL_AMBER, sw=1.9)
+    d.wire([cm["t"], (354, 178), (326, 178)], color=COL_AMBER, sw=1.9)
+
+    # Dynamic Capacitive Slew-Rate Enhancer (SRE) at (332..408, 366..418)
+    d.dot(370, 252, COL_PURPLE)
+    csre = d.cap_v(370, 286, color=COL_PURPLE, label="C_SRE", label_side="left")
+    d.line(370, 252, 370, csre["t"][1], color=COL_PURPLE, sw=1.7)
+    d.rect(318, 368, 104, 48, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.8, rx=6)
+    d.line(370, csre["b"][1], 370, 368, color=COL_PURPLE, sw=1.7)
+    d.text(370, 389, "Dynamic SRE", size=9.8, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(370, 405, "I_Q=0, Pull I_pk!", size=9.0, color=COL_DARK, anchor="middle")
+    # Pulse arrow from SRE to M_PASS gate (376, 194)
+    d.wire([(318, 392), (302, 392), (302, 236), (376, 236), (376, 194)],
+           color=COL_PURPLE, sw=1.6, dash="4,3", marker_end="arr-purple")
+
+    d.callout(36, 434, 520, 152, "How FVF + DFC + SRE Solve the Capless Paradox", [
+        "• Without external 1 µF cap, ω_out = 1/(R_out·Cout) sits at MHz right near",
+        "  ω_gate = 1/(R_buf·Cgg) -> classic 2-stage Miller LDO oscillates violently!",
+        "• FVF Local Loop lowers pass-gate drive R_buf by local gain, pushing ω_gate high.",
+        "• Dynamic SRE: C_SRE·(dVout/dt) fires momentary mA current spike onto V_G,PASS",
+        "  only during fast load edges, achieving ns recovery at µA quiescent I_Q!",
+    ], tone="sig", fs=9.8)
+
+    # --- (b) Zero-Load Complex-Pole Locus in s-Plane ---
+    # jω axis at x=996, σ axis at y=232 (x=634..1046)
+    d.arrow(634, 232, 1048, 232, color=COL_DARK, sw=1.8)
+    d.arrow(996, 336, 996, 126, color=COL_DARK, sw=1.8)
+    d.text(1004, 136, "jω", size=10.5, color=COL_DARK, weight="bold")
+    d.text(642, 222, "−σ (LHP)", size=10.0, color=COL_BIAS, weight="bold")
+
+    # Dominant internal pole p1 near origin at (972, 232)
+    d.line(967, 227, 977, 237, color=COL_SIG, sw=2.2)
+    d.line(967, 237, 977, 227, color=COL_SIG, sw=2.2)
+    d.text(965, 250, "p1", size=9.8, color=COL_SIG, anchor="end", weight="bold")
+
+    # Heavy Load poles (real axis, safe) -> Zero-Load Undamped Complex Pair WITHOUT DFC (Red)!
+    d.path("M 745 232 Q 875 232 970 148", stroke=COL_WARN, sw=2.1, dash="5,3", marker_end="arr-warn")
+    d.path("M 825 232 Q 895 232 970 316", stroke=COL_WARN, sw=2.1, dash="5,3", marker_end="arr-warn")
+    for py_u in (146, 318):
+        d.line(965, py_u - 5, 975, py_u + 5, color=COL_WARN, sw=2.3)
+        d.line(965, py_u + 5, 975, py_u - 5, color=COL_WARN, sw=2.3)
+    d.text(952, 142, "I_load = 0 (No DFC: ζ < 0.15 -> Rings!)", size=9.5, color=COL_WARN, anchor="end", weight="bold")
+
+    # WITH DFC Damping Network (Solid Emerald): keeps ζ >= 0.6 far in LHP!
+    for py_d in (180, 284):
+        d.line(815, py_d - 5, 825, py_d + 5, color=COL_BIAS, sw=2.4)
+        d.line(815, py_d + 5, 825, py_d - 5, color=COL_BIAS, sw=2.4)
+    d.arrow(955, 158, 834, 178, color=COL_BIAS, sw=2.0)
+    d.text(812, 172, "With DFC (ζ ≥ 0.6!)", size=9.8, color=COL_BIAS, anchor="end", weight="bold")
+
+    d.callout(608, 366, 456, 220, "Zero-Load Peaking Trap & Transient Droop Equation", [
+        "• Why Zero Load (I_load -> 0) Is Worst-Case Stability:",
+        "  As I_load -> 0, gm,pass ∝ √I_load -> 0 and ro,pass -> ∞ !",
+        "  Non-dominant poles p2, p3 merge into high-Q complex conjugate poles",
+        "  with huge gain peaking just above GBW (invisible if only tested at I_max!).",
+        "• Unassisted Initial Voltage Droop (Cout = 100 pF):",
+        "    ΔV_droop ≈ (ΔI_load · t_resp) / Cout    where t_resp ≈ 1/(2π·BW_FVF)",
+        "• Mandatory Signoff: Sweep Spectre `stb` over I_load = {0 µA, 10 µA, 1 mA, I_max}!",
+    ], tone="warn", fs=9.7)
+    return d
+
+
+def diag_64_pmic_por_uvlo_ocp_foldback():
+    d = SVGDoc(
+        "pmic-por-uvlo-ocp-foldback.svg",
+        "PMIC Protection Architecture: POR, UVLO, Soft-Start & Foldback OCP",
+        "Kiến trúc Bảo vệ & Khởi động Nguồn PMIC: POR, UVLO Trễ, Khởi động Mềm & Quá dòng Gập ngược trong Vùng An toàn Nhiệt",
+        "PMIC · Ch.12/18", [12, 18, 19], width=1100, height=620
+    )
+    d.panel(18,  74, 536, 528, "(a) Supervisory Chain: POR + Hysteretic UVLO + Soft-Start + TSD")
+    d.panel(570, 74, 512, 528, "(b) Brick-Wall vs Foldback Short-Circuit OCP inside Thermal SOA")
+
+    # --- (a) Top: Hysteretic Bandgap UVLO + POR + TSD Gate ---
+    xu = 114
+    d.vdd(xu, 134, "VDD")
+    ru1 = d.res_v(xu, 174, color=COL_DARK, label="R_U1", label_side="left")
+    d.line(xu, 134, xu, ru1["t"][1])
+    d.dot(xu, 214, COL_SIG)
+    ru2 = d.res_v(xu, 254, color=COL_DARK, label="R_U2", label_side="left")
+    d.line(xu, ru1["b"][1], xu, ru2["t"][1])
+    d.gnd(xu, ru2["b"][1])
+
+    # Switched Hysteresis Current Sink I_hys at x=186 (active when UVLO_OK=0 -> raises V_ON!)
+    ihys = d.isrc_v(186, 254, direction="down", color=COL_AMBER, label="I_hys", label_side="right")
+    d.wire([(xu, 214), (186, 214), ihys["t"]], color=COL_AMBER, sw=1.8, dash="3,2")
+    d.gnd(186, ihys["b"][1])
+
+    cmp_uv = d.opamp(284, 226, w=54, h=46, facing="right", plus_top=True, label="UV", color=COL_SIG, fill="#eff6ff")
+    d.line(xu, 214, cmp_uv["in_top"][0], cmp_uv["in_top"][1], color=COL_SIG, sw=1.9)
+    d.port(226, cmp_uv["in_bot"][1], "VBG", side="left", color=COL_BIAS, fs=9.8)
+    d.line(226, cmp_uv["in_bot"][1], cmp_uv["in_bot"][0], cmp_uv["in_bot"][1], color=COL_BIAS, sw=1.9)
+
+    # Supervisory Enable Sequencer Box (356..534, 146..288)
+    d.rect(356, 146, 178, 142, fill="#ecfdf5", stroke=COL_BIAS, sw=1.9, rx=7)
+    d.text(445, 168, "PMIC Fault &", size=10.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(445, 184, "Enable Logic", size=10.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(445, 206, "• POR_B (Brownout Rst)", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(445, 224, "• UVLO: 2.85V / 2.60V", size=9.4, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(445, 242, "• TSD: 150°C / 130°C", size=9.4, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(445, 260, "• Hiccup OCP Retry", size=9.4, color=COL_AMBER, anchor="middle")
+    d.arrow(cmp_uv["out"][0], 226, 354, 226, color=COL_SIG, sw=2.0)
+
+    # Tier 2: Monotonic Soft-Start Ramp + Dual-Input Error Amp (y=320..426)
+    d.rect(42, 322, 492, 102, fill="#fffbeb", stroke=COL_AMBER, sw=1.7, rx=7)
+    d.text(288, 344, "Monotonic Soft-Start Ramp:  V_EA+ = min( V_SS(t) , V_REF )", size=10.6, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(288, 366, "• I_SS (1 µA) -> C_SS (10 nF) ramps Vout linearly over t_SS = C_SS·V_REF / I_SS ≈ 6 ms,", size=9.6, color=COL_DARK, anchor="middle")
+    d.text(288, 384, "  clamping capacitive inrush current  I_inrush = Cout · (Vout / t_SS) << I_OCP !", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(288, 404, "• Fast pull-down NMOS discharges C_SS -> 0 V immediately on ANY UVLO / TSD / EN=0 trip!", size=9.5, color=COL_WARN, anchor="middle")
+    d.arrow(445, 288, 445, 320, color=COL_BIAS, sw=1.9)
+
+    d.callout(36, 442, 500, 144, "Hysteretic UVLO Chatter & Brownout Pitfalls", [
+        "• Exact UVLO Hysteresis:  ΔV_hys = V_ON − V_OFF = I_hys · R_U1  (typ. 200–300 mV).",
+        "• Without ΔV_hys > I_in,max · R_src: Turning ON heavy load drops VDD = V_bat − I_in·R_src",
+        "  below threshold -> regulator chatters ON/OFF at kHz!",
+        "• Glitch / Brownout Test: Always verify 10 µs fast VDD dips reset POR & C_SS cleanly!",
+    ], tone="sig", fs=9.8)
+
+    # --- (b) V_out vs I_out Brick-Wall vs Foldback OCP inside Thermal SOA ---
+    ox, oy = d.axes(630, 134, 416, 232, xlabel="", ylabel="V_out")
+    d.text(1048, 358, "I_out", size=10.2, color=COL_DARK, anchor="end", weight="bold")
+    # oy = 366 (V_out = 0 Short-Circuit axis!), V_nom at y=168
+
+    # Shaded Red Thermal Runaway Danger Region to the right of SOA hyperbola!
+    # SOA boundary: I_SOA(Vout) = P_max / (Vin - Vout) -> wide at top (x=1016, y=150), narrow at bottom Vout=0 (x=812, y=366)!
+    d.poly([
+        (1016, 150), (1040, 150), (1040, 365), (812, 365), (868, 280), (938, 212)
+    ], fill="#fee2e2", stroke="none", opacity=0.7)
+    d.path("M 1016 150 Q 912 246 812 366", stroke=COL_WARN, sw=2.2, dash="5,3")
+    d.text(1034, 256, "Thermal SOA Violation!", size=9.6, color=COL_WARN, anchor="end", weight="bold")
+    d.text(1034, 272, "(Vin − Vout)·Iout > P_max", size=9.2, color=COL_WARN, anchor="end")
+
+    # 1. Regulated flat top from (630, 168) to I_lim knee (936, 168)
+    d.line(630, 168, 936, 168, color=COL_SIG, sw=2.8)
+    d.text(775, 158, "Normal Regulation (V_nom)", size=9.8, color=COL_SIG, anchor="middle", weight="bold")
+
+    # 2. Constant-Current ("Brick-Wall") OCP dropping vertically to (936, 366) INSIDE RED ZONE!
+    d.line(936, 168, 936, 366, color=COL_WARN, sw=2.4, dash="6,3")
+    d.circle(936, 366, 5.0, fill=COL_WARN, stroke=COL_BG, sw=1.5)
+    d.text(936, 384, "I_lim (Brick-Wall!)", size=9.6, color=COL_WARN, anchor="middle", weight="bold")
+
+    # 3. Foldback OCP slanting back from (936, 168) to (726, 366) SAFELY INSIDE SOA!
+    d.line(936, 168, 726, 366, color=COL_BIAS, sw=2.8)
+    d.circle(726, 366, 5.0, fill=COL_BIAS, stroke=COL_BG, sw=1.5)
+    d.text(726, 384, "I_short (Foldback)", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(792, 266, "Safe Inside SOA!", size=9.8, color=COL_BIAS, anchor="end", weight="bold")
+
+    d.callout(588, 404, 476, 182, "Short-Circuit Thermal Math & Foldback Lockout Trap", [
+        "• Brick-Wall Short-Circuit Dissipation (Vout = 0 -> full Vin across pass FET!):",
+        "    P_SC,brick = Vin · I_lim   >>   P_SOA = (T_J,max − T_A) / θ_JA !",
+        "• Foldback Current Limit scales sense threshold with Vout:",
+        "    I_short ≈ (0.2 .. 0.3) · I_lim   =>   cuts short-circuit heat by 3–5x!",
+        "• Foldback Startup Lockout Caveat: Constant-current loads can latch at a",
+        "  false low-Vout intersection -> pair with Hiccup Timer (5% retry duty)!",
+    ], tone="amber", fs=9.7)
+    return d
+
+
+# ==============================================================================
+# PART 7: DIAGRAMS 65 - 72 (AMS: Relaxation Osc, INA/CFIA, Biquads, DAC, ΔΣ, MDAC, Bias Hub, Closed-Loop EDA)
+# ==============================================================================
+
+def diag_65_schmitt_and_rc_sawtooth_osc():
+    d = SVGDoc(
+        "schmitt-and-rc-sawtooth-osc.svg",
+        "6-T CMOS Schmitt Trigger & Dual-Cap Ping-Pong Oscillator",
+        "Mạch Schmitt Trigger CMOS 6 Transistor & Bộ Dao động Răng cưa Kép I_ZTC Khử Trễ So sánh",
+        "AMS · Ch.15", [13, 15], width=1100, height=620
+    )
+    d.panel(18,  74, 520, 528, "(a) 6-Transistor CMOS Schmitt Trigger (Source-Follower Hysteresis)")
+    d.panel(554, 74, 528, 528, "(b) Precision I_ZTC Dual-Cap Ping-Pong Relaxation Oscillator")
+
+    # --- (a) 6-T CMOS Schmitt Trigger ---
+    xs = 198
+    d.vdd(xs, 128, "VDD")
+    mp1 = d.pmos(xs, 168, facing="right", color=COL_BIAS, label="M_P1", label_side="right")
+    d.line(xs, 128, xs, mp1["s"][1])
+    mp2 = d.pmos(xs, 244, facing="right", color=COL_BIAS, label="M_P2", label_side="right")
+    d.line(xs, mp1["d"][1], xs, mp2["s"][1], color=COL_BIAS, sw=2.1)
+    d.dot(xs, 206, COL_AMBER)
+    d.text(xs - 8, 204, "VP", size=9.8, color=COL_AMBER, anchor="end", weight="bold")
+
+    mn2 = d.nmos(xs, 344, facing="right", color=COL_SIG, label="M_N2", label_side="right")
+    d.line(xs, mp2["d"][1], xs, mn2["d"][1], color=COL_SIG, sw=2.2)
+    mn1 = d.nmos(xs, 420, facing="right", color=COL_SIG, label="M_N1", label_side="right")
+    d.line(xs, mn2["s"][1], xs, mn1["d"][1], color=COL_SIG, sw=2.1)
+    d.dot(xs, 382, COL_AMBER)
+    d.text(xs - 8, 380, "VN", size=9.8, color=COL_AMBER, anchor="end", weight="bold")
+    d.line(xs, mn1["s"][1], xs, 456)
+    d.gnd(xs, 456)
+
+    # Common Vin gate bus at x=122 feeding MP1, MP2, MN2, MN1
+    d.wire([mp1["g"], (122, 168), (122, 420), mn1["g"]], color=COL_SIG, sw=2.0)
+    d.line(122, 244, mp2["g"][0], 244, color=COL_SIG, sw=2.0)
+    d.line(122, 344, mn2["g"][0], 344, color=COL_SIG, sw=2.0)
+    d.dot(122, 244, COL_SIG)
+    d.dot(122, 344, COL_SIG)
+    d.dot(122, 294, COL_SIG)
+    d.line(78, 294, 122, 294, color=COL_SIG, sw=2.1)
+    d.port(78, 294, "Vin", side="left", color=COL_SIG)
+
+    # Vout line at y=294 extending right to x=392, plus Hysteresis Feedback FETs M_PF & M_NF at x=336!
+    d.dot(xs, 294, COL_SIG)
+    d.line(xs, 294, 412, 294, color=COL_SIG, sw=2.2)
+    d.port(412, 294, "Vout", side="top", color=COL_SIG)
+    d.dot(384, 294, COL_AMBER)
+
+    mpf = d.pmos(336, 206, facing="left", color=COL_AMBER, label="M_PF", label_side="left")
+    d.wire([(xs, 206), (276, 206), (276, mpf["s"][1]), mpf["s"]], color=COL_AMBER, sw=1.9)
+    d.gnd(336, mpf["d"][1])
+    d.wire([mpf["g"], (384, 206), (384, 294)], color=COL_AMBER, sw=1.9)
+
+    mnf = d.nmos(336, 382, facing="left", color=COL_AMBER, label="M_NF", label_side="left")
+    d.vdd(336, mnf["d"][1], "VDD", color=COL_AMBER)
+    d.wire([(xs, 382), (276, 382), (276, mnf["s"][1]), mnf["s"]], color=COL_AMBER, sw=1.9)
+    d.wire([mnf["g"], (384, 382), (384, 294)], color=COL_AMBER, sw=1.9)
+
+    # Mini Hysteresis Transfer Inset Box (406..522, 126..244)
+    d.rect(406, 126, 116, 118, fill="#fffbeb", stroke=COL_AMBER, sw=1.5, rx=6)
+    d.text(464, 144, "Hysteresis ΔVH", size=9.6, color=COL_AMBER, anchor="middle", weight="bold")
+    d.wire([(420, 162), (484, 162), (484, 220), (508, 220)], color=COL_SIG, sw=2.0)
+    d.wire([(444, 162), (444, 220), (484, 220)], color=COL_WARN, sw=1.8, dash="3,2")
+    d.text(444, 236, "V_TH-", size=8.8, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(488, 236, "V_TH+", size=8.8, color=COL_SIG, anchor="middle", weight="bold")
+
+    d.callout(36, 482, 484, 104, "Regenerative Threshold Equations (Dokić / Razavi)", [
+        "• When Vin=0 -> Vout=VDD -> M_NF ON clamps VN = VDD − V_TH,NF:",
+        "  M_N2 stays OFF until Vin > V_TH+ = (VDD + √(β_N1/β_NF)·V_TH,N) / (1 + √(β_N1/β_NF))!",
+        "• Immune to slow noisy edges & RC sawtooth chatter without static Ib!",
+    ], tone="sig", fs=9.6)
+
+    # --- (b) Precision I_ZTC Dual-Cap Ping-Pong Sawtooth Oscillator ---
+    # Top Schematic (y=124..332): I_ZTC -> φ1/φ2 -> C1 & C2 -> CMP1/CMP2 vs VH=I_ZTC*Rref -> SR Latch
+    d.vdd(664, 128, "VDD")
+    iztc = d.isrc_v(664, 164, direction="down", color=COL_BIAS, label="I_ZTC", label_side="left")
+    d.line(664, 128, 664, iztc["t"][1])
+    d.line(664, iztc["b"][1], 664, 202, color=COL_BIAS, sw=2.0)
+    d.dot(664, 202, COL_BIAS)
+
+    # Branch 1 (left x=626): φ1 charge -> VC1 -> C1 to GND (+ φ2 reset switch)
+    # Branch 2 (right x=724): φ2 charge -> VC2 -> C2 to GND (+ φ1 reset switch)
+    d.wire([(664, 202), (624, 202), (624, 232)], color=COL_SIG, sw=1.9)
+    d.text(606, 220, "φ1", size=9.6, color=COL_SIG, anchor="end", weight="bold")
+    c1_osc = d.cap_v(624, 276, color=COL_SIG, label="C1", label_side="left")
+    d.line(624, 232, 624, c1_osc["t"][1], color=COL_SIG)
+    d.gnd(624, c1_osc["b"][1])
+    d.dot(624, 244, COL_SIG)
+
+    d.wire([(664, 202), (724, 202), (724, 232)], color=COL_PURPLE, sw=1.9)
+    d.text(742, 220, "φ2", size=9.6, color=COL_PURPLE, weight="bold")
+    c2_osc = d.cap_v(724, 276, color=COL_PURPLE, label="C2", label_side="right")
+    d.line(724, 232, 724, c2_osc["t"][1], color=COL_PURPLE)
+    d.gnd(724, c2_osc["b"][1])
+    d.dot(724, 244, COL_PURPLE)
+
+    # Ratiometric VH = I_ZTC * R_ref + Twin Comparators + SR Latch Box (808..1056, 146..312)
+    d.rect(808, 146, 248, 166, fill="#f8fafc", stroke=COL_SIG, sw=1.8, rx=7)
+    d.text(932, 169, "Twin Comparators + SR Latch", size=10.6, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(932, 190, "• CMP1: Set φ2 when VC1 ≥ V_H", size=9.6, color=COL_DARK, anchor="middle")
+    d.text(932, 208, "• CMP2: Set φ1 when VC2 ≥ V_H", size=9.6, color=COL_DARK, anchor="middle")
+    d.text(932, 228, "• Threshold:  V_H = I_ZTC · R_ref", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(932, 246, "  (I_ZTC cancels ratiometrically!)", size=9.4, color=COL_MUTED, anchor="middle")
+    d.rect(836, 260, 192, 36, fill="#ecfdf5", stroke=COL_BIAS, sw=1.5, rx=5)
+    d.text(932, 282, "f_osc = 1 / (2·R_ref·C + 2·t_d)", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.wire([(624, 244), (624, 174), (806, 174)], color=COL_SIG, sw=1.7, marker_end="arr-sig")
+    d.wire([(724, 244), (806, 244)], color=COL_PURPLE, sw=1.7, marker_end="arr-purple")
+
+    # Ping-Pong Sawtooth Waveforms (y=344..442)
+    d.axes(608, 344, 438, 92, xlabel="", ylabel="VC1,2")
+    d.line(608, 362, 1038, 362, color=COL_AMBER, sw=1.4, dash="4,3")
+    d.text(1040, 355, "V_H = I_ZTC·R_ref", size=9.4, color=COL_AMBER, anchor="end", weight="bold")
+    # VC1 (Blue): ramps (610,436)->(715,362), resets to 0 during (715..820), ramps (820,436)->(925,362), resets (925..1030)
+    d.wire([
+        (610, 436), (715, 362), (718, 436), (820, 436),
+        (925, 362), (928, 436), (1030, 436)
+    ], color=COL_SIG, sw=2.3)
+    # VC2 (Purple dashed): 0 during (610..715), ramps (715,436)->(820,362), resets (820..925), ramps (925,436)->(1030,362)
+    d.wire([
+        (610, 436), (715, 436), (820, 362), (823, 436),
+        (925, 436), (1030, 362)
+    ], color=COL_PURPLE, sw=2.1, dash="5,3")
+    d.text(685, 386, "VC1", size=9.6, color=COL_SIG, weight="bold")
+    d.text(792, 386, "VC2 (Ping-Pong)", size=9.6, color=COL_PURPLE, weight="bold")
+
+    d.callout(572, 456, 492, 130, "Why Ping-Pong + Delay Cancellation Beats Single-Cap Osc", [
+        "• Single-Cap Fault: Finite switch Ron discharge tail Δt_dis + comparator",
+        "  delay t_d(T, VDD) corrupts f_osc above 5–10 MHz!",
+        "• Ping-Pong Fix: Idle capacitor has a FULL half-period R·C to discharge",
+        "  completely to 0.00 V! Pair with chopped/feedforward t_d compensation",
+        "  + composite P+/N-poly Zero-TC resistor R_ref for < ±0.5% PVT clock!",
+    ], tone="amber", fs=9.6)
+    return d
+
+
+def diag_66_three_opamp_and_chopper_cfia():
+    d = SVGDoc(
+        "three-opamp-and-chopper-cfia.svg",
+        "3-Op-Amp INA (Diamond Plot) & Chopper Capacitive/CFIA",
+        "Khuếch đại Đo lường 3 Op-Amp Kinh điển (Biểu đồ Kim cương V_CM–V_out) & Kiến trúc CFIA Băm Triệt Nhiễu 1/f",
+        "AMS · Ch.08/14", [4, 8, 14], width=1100, height=620
+    )
+    d.panel(18,  74, 530, 528, "(a) Classic 3-Op-Amp INA & V_CM vs V_out Diamond Range")
+    d.panel(564, 74, 518, 528, "(b) Chopper Capacitive / Current-Feedback INA (DSL + RRL)")
+
+    # --- (a) Classic 3-Op-Amp INA Schematic (y=118..318) ---
+    a1 = d.opamp(158, 152, w=50, h=44, facing="right", plus_top=True, label="A1", color=COL_SIG, fill="#eff6ff")
+    a2 = d.opamp(158, 286, w=50, h=44, facing="right", plus_top=False, label="A2", color=COL_SIG, fill="#eff6ff")
+    d.port(72, a1["in_top"][1], "Vin+", side="left", color=COL_SIG, fs=10.2)
+    d.line(72, a1["in_top"][1], a1["in_top"][0], a1["in_top"][1], color=COL_SIG, sw=2.0)
+    d.port(72, a2["in_bot"][1], "Vin-", side="left", color=COL_SIG, fs=10.2)
+    d.line(72, a2["in_bot"][1], a2["in_bot"][0], a2["in_bot"][1], color=COL_SIG, sw=2.0)
+
+    # Vertical resistor ladder at x=222: A1_out (152) -> R1 -> (184) -> RG (219) -> (254) -> R1 -> A2_out (286)
+    xr_ina = 222
+    d.line(a1["out"][0], 152, 294, 152, color=COL_SIG, sw=2.0)
+    d.line(a2["out"][0], 286, 294, 286, color=COL_SIG, sw=2.0)
+    d.dot(xr_ina, 152, COL_SIG)
+    d.dot(xr_ina, 286, COL_SIG)
+
+    # Draw compact R1_top, RG, R1_bot along x=222
+    rg = d.res_v(xr_ina, 219, color=COL_AMBER, label="RG", label_side="right")
+    d.line(xr_ina, 152, xr_ina, rg["t"][1], color=COL_DARK, sw=1.9)
+    d.line(xr_ina, rg["b"][1], xr_ina, 286, color=COL_DARK, sw=1.9)
+    d.text(xr_ina + 10, 174, "R1", size=9.8, color=COL_DARK, weight="bold")
+    d.text(xr_ina + 10, 268, "R1", size=9.8, color=COL_DARK, weight="bold")
+    # Feedback taps to A1 '-' (165) & A2 '-' (273)
+    d.dot(xr_ina, 186, COL_AMBER)
+    d.wire([(xr_ina, 186), (116, 186), (116, a1["in_bot"][1]), a1["in_bot"]], color=COL_AMBER, sw=1.7)
+    d.dot(xr_ina, 252, COL_AMBER)
+    d.wire([(xr_ina, 252), (116, 252), (116, a2["in_top"][1]), a2["in_top"]], color=COL_AMBER, sw=1.7)
+
+    # Stage 2 Difference Amplifier A3 at (422, 219)
+    r2_t = d.res_h(318, 152, color=COL_DARK, label="R2", label_pos="top")
+    r2_b = d.res_h(318, 286, color=COL_DARK, label="R2", label_pos="bottom")
+    a3 = d.opamp(422, 219, w=54, h=46, facing="right", plus_top=False, label="A3", color=COL_BIAS, fill="#ecfdf5")
+    d.wire([r2_t["r"], (368, 152), (368, a3["in_top"][1]), a3["in_top"]], color=COL_DARK, sw=1.9)
+    d.wire([r2_b["r"], (368, 286), (368, a3["in_bot"][1]), a3["in_bot"]], color=COL_DARK, sw=1.9)
+
+    # Feedback R3 (top y=126) and Reference R3 (bottom x=368 -> Vref)
+    r3_t = d.res_h(426, 134, color=COL_BIAS, label="R3", label_pos="top")
+    d.dot(368, 152, COL_BIAS)
+    d.wire([(368, 152), (368, 134), r3_t["l"]], color=COL_BIAS, sw=1.8)
+    d.wire([r3_t["r"], (476, 134), (476, 219)], color=COL_BIAS, sw=1.8)
+    d.dot(476, 219, COL_BIAS)
+    d.line(a3["out"][0], 219, 502, 219, color=COL_BIAS, sw=2.1)
+    d.port(502, 219, "Vout", side="top", color=COL_BIAS, fs=10.2)
+
+    d.dot(368, 286, COL_BIAS)
+    d.line(368, 286, 444, 286, color=COL_BIAS, sw=1.8)
+    d.port(448, 286, "Vref (R3)", side="right", color=COL_BIAS, fs=9.6)
+
+    # Bottom-left V_CM vs V_out Hexagon/Diamond Operating Plot (52..246, 352..492)
+    d.axes(56, 356, 184, 132, xlabel="", ylabel="V_CM")
+    d.text(148, 506, "V_out (rel. Vref)", size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+    # Diamond polygon inside (56..240, 356..488)
+    d.poly([
+        (72, 422), (122, 368), (176, 368), (226, 422), (176, 476), (122, 476)
+    ], fill="#dbeafe", stroke=COL_SIG, sw=2.2, opacity=0.75)
+    d.text(149, 426, "Valid Diamond", size=9.5, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(149, 350, "Internal A1/A2 Clip!", size=9.2, color=COL_WARN, anchor="middle", weight="bold")
+
+    # Right-of-diamond Callout inside Panel (a) (258..532, 340..586)
+    d.callout(258, 340, 274, 246, "3-Op-Amp Gain, CMRR & Diamond Trap", [
+        "• Gain: Av = (1 + 2·R1/RG)·(R3/R2)",
+        "• Stage-1 CM Gain = 1.000:",
+        "  No current flows in RG for V_CM!",
+        "  R1 mismatch causes ZERO CMRR loss!",
+        "• Total CMRR:",
+        "  CMRR ≈ (1 + 2·R1/RG) / (4·ΔR/R)",
+        "• Diamond Clipping Trap:",
+        "  At V_CM near VDD or VSS, A1/A2",
+        "  outputs V_CM ± (0.5 + R1/RG)·Vid",
+        "  clip against supply rails BEFORE",
+        "  Vout reaches full scale!",
+    ], tone="sig", fs=9.5)
+
+    # --- (b) Chopper Capacitive / Current-Feedback INA (CFIA) ---
+    # Forward Chain (y=196): Sensor Vin -> CH_in -> Cin / Gm_in -> Low-Noise OTA -> CH_out -> RRL -> Vout
+    d.port(600, 196, "Vin±", side="left", color=COL_SIG, fs=10.2)
+    d.text(608, 172, "±300mV DC", size=9.2, color=COL_WARN, weight="bold")
+    # CH_in circle at (658, 196)
+    d.line(600, 196, 638, 196, color=COL_SIG, sw=2.0)
+    d.circle(658, 196, 20, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.9)
+    d.text(658, 200, "CH1", size=9.6, color=COL_PURPLE, anchor="middle", weight="bold")
+
+    # C_in / Gm_in + Low-Noise OTA Core (712..852, 162..230)
+    d.line(678, 196, 712, 196, color=COL_SIG, sw=2.0)
+    d.rect(712, 162, 140, 68, fill="#eff6ff", stroke=COL_SIG, sw=1.9, rx=7)
+    d.text(782, 186, "C_in / Gm_in +", size=10.2, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(782, 204, "Low-Noise OTA", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(782, 220, "(G = Cin/Cfb = 100)", size=9.2, color=COL_MUTED, anchor="middle")
+
+    # CH_out circle at (894, 196) + RRL notch -> Vout (1046, 196)
+    d.line(852, 196, 874, 196, color=COL_SIG, sw=2.0)
+    d.circle(894, 196, 20, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.9)
+    d.text(894, 200, "CH2", size=9.6, color=COL_PURPLE, anchor="middle", weight="bold")
+
+    d.rect(934, 168, 76, 56, fill="#ecfdf5", stroke=COL_BIAS, sw=1.8, rx=6)
+    d.text(972, 192, "RRL", size=10.2, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(972, 208, "Notch", size=9.4, color=COL_DARK, anchor="middle")
+    d.line(914, 196, 934, 196, color=COL_SIG, sw=2.0)
+    d.line(1010, 196, 1046, 196, color=COL_SIG, sw=2.1)
+    d.port(1046, 196, "Vout", side="top", color=COL_SIG, fs=10.2)
+
+    # Top: Positive-Feedback C_pos Input-Impedance Boost Loop (y=128)
+    d.rect(720, 114, 188, 34, fill="#ecfdf5", stroke=COL_BIAS, sw=1.6, rx=5)
+    d.text(814, 135, "Z_in Boost Loop (C_pos -> >200 MΩ!)", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+    d.wire([(1022, 196), (1022, 131), (908, 131)], color=COL_BIAS, sw=1.6, dash="4,3")
+    d.wire([(720, 131), (624, 131), (624, 196)], color=COL_BIAS, sw=1.6, dash="4,3", marker_end="arr-bias")
+
+    # Bottom: DC Servo Loop (DSL) Integrator cancelling ±300 mV Electrode Offset! (y=276..352)
+    d.rect(688, 278, 264, 68, fill="#fffbeb", stroke=COL_AMBER, sw=1.9, rx=7)
+    d.text(820, 300, "DC Servo Loop (DSL — Active HPF @ 0.5 Hz)", size=10.2, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(820, 318, "Integrates DC output & subtracts ±300 mV electrode", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(820, 334, "offset via C_hp / Gm_fb BEFORE OTA saturates!", size=9.4, color=COL_WARN, anchor="middle", weight="bold")
+    d.wire([(1022, 196), (1022, 312), (952, 312)], color=COL_AMBER, sw=1.9, marker_end="arr-amber")
+    d.wire([(688, 312), (696, 312), (696, 232)], color=COL_AMBER, sw=1.9, marker_end="arr-amber")
+    d.wire([(688, 312), (658, 312), (658, 218)], color=COL_AMBER, sw=1.8, dash="3,2")
+
+    d.callout(582, 376, 482, 210, "Chopper CFIA / CCIA Precision Sensor Equations", [
+        "• Zero 1/f & Sub-µV Offset: Chopping above 1/f corner (f_chop = 10–50 kHz)",
+        "  achieves < 50 nV/√Hz noise floor, Vos < 1 µV, & CMRR > 115 dB!",
+        "• Switched-Capacitor Z_in Degradation Trap:",
+        "  Chopping C_in shuttles charge every cycle -> equivalent shunt resistor",
+        "    Z_in,raw = 1 / (2 · f_chop · C_in)   (e.g. 20 kHz, 10 pF -> ONLY 2.5 MΩ!)",
+        "  Fix: Calibrated positive-FB capacitor C_pos (or Current-Feedback Gm_in",
+        "  isolated gates in CFIA) boosts Z_in > 100–500 MΩ for dry biopotential pads!",
+    ], tone="purple", fs=9.7)
+    return d
+
+
+def diag_67_tow_thomas_and_gmc_tuned_biquad():
+    d = SVGDoc(
+        "tow-thomas-and-gmc-tuned-biquad.svg",
+        "Active-RC Tow-Thomas vs Master-Slave Tuned Gm-C Biquad",
+        "Bộ Lọc Bậc Hai Active-RC Tow-Thomas (Chỉnh Trực giao) & Gm-C Kèm Vòng Tự động Khóa Tần số Master–Slave",
+        "AMS · Ch.08/13", [6, 8, 13], width=1100, height=620
+    )
+    d.panel(18,  74, 530, 528, "(a) Active-RC Tow-Thomas Biquad: Orthogonal (ω0, Q, H0) & Q-Fix")
+    d.panel(564, 74, 518, 528, "(b) High-Speed Gm-C Biquad + Master–Slave SC PVT Tuning")
+
+    # --- (a) Tow-Thomas Active-RC 2-Integrator Loop (y=124..364) ---
+    y_tt = 248
+    d.port(48, y_tt, "Vin", side="top", color=COL_SIG, fs=10.0)
+    rin = d.res_h(94, y_tt, color=COL_SIG, label="R_in (Sets H0)", label_pos="bottom")
+    d.line(48, y_tt, rin["l"][0], y_tt, color=COL_SIG, sw=2.0)
+
+    # OA1 (Damped Integrator -> V_BP) at (204, 260)
+    oa1 = d.opamp(204, 260, w=50, h=44, facing="right", plus_top=False, label="OA1", color=COL_SIG, fill="#eff6ff")
+    d.line(rin["r"][0], y_tt, oa1["in_top"][0], y_tt, color=COL_SIG, sw=2.0)
+    d.gnd(oa1["in_bot"][0] - 12, oa1["in_bot"][1] + 6)
+    d.wire([oa1["in_bot"], (oa1["in_bot"][0] - 12, oa1["in_bot"][1]), (oa1["in_bot"][0] - 12, oa1["in_bot"][1] + 6)])
+
+    # C1 (y=194) || RQ (y=142) around OA1!
+    d.dot(148, y_tt, COL_AMBER)
+    d.dot(246, 260, COL_SIG)
+    c1_tt = d.cap_h(197, 196, color=COL_SIG, label="C1", label_pos="bottom")
+    rq_tt = d.res_h(197, 142, color=COL_AMBER, label="R_Q (Sets Q!)", label_pos="top")
+    d.wire([(148, y_tt), (148, 142), rq_tt["l"]], color=COL_AMBER, sw=1.8)
+    d.line(148, 196, c1_tt["l"][0], 196, color=COL_SIG, sw=1.8)
+    d.wire([rq_tt["r"], (246, 142), (246, 260)], color=COL_AMBER, sw=1.8)
+    d.line(c1_tt["r"][0], 196, 246, 196, color=COL_SIG, sw=1.8)
+    d.dot(148, 196, COL_SIG)
+    d.dot(246, 196, COL_SIG)
+
+    # R_int -> OA2 (Lossless Integrator + Inverter -> V_LP)
+    d.line(oa1["out"][0], 260, 272, 260, color=COL_SIG, sw=2.0)
+    d.text(258, 282, "V_BP", size=9.6, color=COL_AMBER, anchor="middle", weight="bold")
+    r_int = d.res_h(296, 260, color=COL_DARK, label="R", label_pos="bottom")
+    oa2 = d.opamp(388, 273, w=50, h=44, facing="right", plus_top=False, label="OA2", color=COL_BIAS, fill="#ecfdf5")
+    d.line(r_int["r"][0], 260, oa2["in_top"][0], 260, color=COL_DARK, sw=2.0)
+    d.gnd(oa2["in_bot"][0] - 10, oa2["in_bot"][1] + 6)
+    d.wire([oa2["in_bot"], (oa2["in_bot"][0] - 10, oa2["in_bot"][1]), (oa2["in_bot"][0] - 10, oa2["in_bot"][1] + 6)])
+
+    c2_tt = d.cap_h(386, 196, color=COL_BIAS, label="C2", label_pos="top")
+    d.dot(342, 260, COL_BIAS)
+    d.wire([(342, 260), (342, 196), c2_tt["l"]], color=COL_BIAS, sw=1.8)
+    d.wire([c2_tt["r"], (426, 196), (426, 273)], color=COL_BIAS, sw=1.8)
+    d.dot(426, 273, COL_BIAS)
+
+    # Inverter (-1 / Diff Cross-Wire) at (468, 273) -> V_LP port (516, 273) + Feedback R + Lead Cap Cc at y=346!
+    d.rect(444, 255, 42, 36, fill="#f8fafc", stroke=COL_DARK, sw=1.7, rx=5)
+    d.text(465, 277, "−1", size=11.0, color=COL_DARK, anchor="middle", weight="bold")
+    d.line(oa2["out"][0], 273, 444, 273, color=COL_BIAS, sw=2.0)
+    d.line(486, 273, 514, 273, color=COL_BIAS, sw=2.1)
+    d.port(514, 273, "V_LP", side="top", color=COL_BIAS, fs=10.0)
+
+    # Bottom Feedback Loop (R_fb || C_c passive phase-lead Q-enhancement cure!)
+    rfb_tt = d.res_h(296, 344, color=COL_WARN, label="R (Sets ω0) || C_c (Q-Fix!)", label_pos="bottom")
+    d.dot(498, 273, COL_WARN)
+    d.wire([(498, 273), (498, 344), rfb_tt["r"]], color=COL_WARN, sw=1.9)
+    d.wire([rfb_tt["l"], (132, 344), (132, y_tt), (148, y_tt)], color=COL_WARN, sw=1.9)
+    d.dot(148, y_tt, COL_WARN)
+
+    d.callout(36, 388, 494, 198, "Orthogonal Tuning & Thomas–Soderstrand Q-Enhancement", [
+        "• 3 Independent Design Equations (C1 = C2 = C):",
+        "    1. ω0 = 1 / (R · C)      2. Q = R_Q / R      3. H_LP(0) = R / R_in",
+        "• Finite Op-Amp Unity-Gain Bandwidth (ω_u) Hazard:",
+        "  Two integrators accumulate excess phase lag Δφ ≈ −2·ω0 / ω_u,",
+        "  boosting actual pole Q uncontrollably:",
+        "    Q_actual ≈ Q_ideal / ( 1 − 2 · Q_ideal · ω0 / ω_u )  -> OSCILLATES!",
+        "• Fix: Add small passive lead cap C_c ≈ 2/(R·ω_u) across feedback R!",
+    ], tone="sig", fs=9.7)
+
+    # --- (b) Linearized Gm-C Biquad + Master–Slave Automatic PVT Tuning ---
+    # Top Slave Gm-C Biquad (y=118..252)
+    d.rect(582, 118, 482, 134, fill="#eff6ff", stroke=COL_SIG, sw=1.8, rx=7)
+    d.text(823, 138, "Slave Linearized Gm-C Biquad (Grounded Caps -> 50–500 MHz!)", size=10.5, color=COL_SIG, anchor="middle", weight="bold")
+    # Draw block flow inside: Vin -> [+Gm_in] -> Node 1 (C1 + [-Gm_Q]) -> [+Gm_1] -> Node 2 (C2) -> V_LP & [-Gm_2] feedback!
+    blocks_gmc = [
+        (602, "+Gm_in", COL_SIG),
+        (742, "+Gm_1",  COL_BIAS),
+        (882, "−Gm_2",  COL_AMBER),
+    ]
+    for bx, blbl, bcol in blocks_gmc:
+        d.rect(bx, 162, 74, 38, fill=COL_BG, stroke=bcol, sw=1.8, rx=5)
+        d.text(bx + 37, 185, blbl, size=10.0, color=bcol, anchor="middle", weight="bold")
+    d.line(676, 181, 742, 181, color=COL_SIG, sw=2.0)
+    d.line(816, 181, 882, 181, color=COL_BIAS, sw=2.0)
+    d.text(709, 173, "C1||GmQ", size=9.2, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(849, 173, "C2 (V_LP)", size=9.2, color=COL_BIAS, anchor="middle", weight="bold")
+    d.wire([(956, 181), (1036, 181), (1036, 226), (709, 226), (709, 181)],
+           color=COL_AMBER, sw=1.8, marker_end="arr-amber")
+    d.text(872, 242, "All Slave Gm cells biased by shared V_tune  =>  ω0 = Gm / C", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Middle Master–Slave Switched-Capacitor Frequency Tuning Loop (y=272..412)
+    d.rect(582, 272, 482, 138, fill="#ecfdf5", stroke=COL_BIAS, sw=1.9, rx=7)
+    d.text(823, 294, "Master–Slave Switched-Capacitor Automatic PVT Tuning Loop", size=10.6, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.rect(602, 314, 132, 54, fill=COL_BG, stroke=COL_PURPLE, sw=1.7, rx=6)
+    d.text(668, 336, "SC Ref Resistor", size=9.8, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(668, 354, "R_SC = 1/(f_clk·C_r)", size=9.2, color=COL_DARK, anchor="middle")
+
+    d.rect(758, 314, 132, 54, fill=COL_BG, stroke=COL_BIAS, sw=1.7, rx=6)
+    d.text(824, 336, "Master Replica", size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(824, 354, "1 / Gm_master", size=9.2, color=COL_DARK, anchor="middle")
+
+    d.rect(914, 314, 130, 54, fill="#fffbeb", stroke=COL_AMBER, sw=1.8, rx=6)
+    d.text(979, 336, "CP / Integrator", size=9.8, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(979, 354, "Locks Gm = f_clk·Cr", size=9.0, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.arrow(734, 341, 758, 341, color=COL_PURPLE, sw=1.8)
+    d.arrow(890, 341, 914, 341, color=COL_BIAS, sw=1.8)
+    # Route V_tune UP into Slave Gm-C Biquad!
+    d.wire([(979, 314), (979, 254)], color=COL_AMBER, sw=2.2, marker_end="arr-amber")
+    d.text(1018, 266, "V_tune", size=9.8, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(823, 394, "Cancels ±35% R·C / Gm·C process & temperature spread down to < ±1%!",
+           size=9.5, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.callout(582, 426, 482, 160, "Active-RC vs Gm-C Linearity & Dynamic Range Duality", [
+        "• Active-RC (Closed-Loop Virtual GND): Input pair sees ~0 mV swing ->",
+        "  ultra-high IIP3 (+25..+35 dBm), best for < 20 MHz baseband Wi-Fi/LTE.",
+        "• Gm-C (Open-Loop Input): Full signal Vin appears directly across Gm gates!",
+        "  Requires source degeneration (Gm ≈ 1/R_S), cross-coupled diff pairs, or",
+        "  triode degeneration — trading excess noise factor F for linearity V_lin!",
+    ], tone="amber", fs=9.7)
+    return d
+
+
+def diag_68_current_steering_segmented_dac():
+    d = SVGDoc(
+        "current-steering-segmented-dac.svg",
+        "Segmented Current-Steering DAC: Cascode Cell & SFDR Ceiling",
+        "Bộ Biến đổi D/A Lái Dòng Phân đoạn (Thermometer + Binary): Ô Dòng Cascode Chốt Nhịp & Trần Tạp Phổ SFDR",
+        "AMS · Ch.14", [5, 14, 19], width=1100, height=620
+    )
+    d.panel(18,  74, 548, 528, "(a) M-MSB Thermometer + B-LSB Binary & Retimed Cascode Cell")
+    d.panel(582, 74, 500, 528, "(b) High-Frequency Z_unit(f) Roll-Off & Dynamic SFDR")
+
+    # --- (a) Top Segmented Architecture Strip (y=112..188) ---
+    d.rect(36, 112, 248, 72, fill="#eff6ff", stroke=COL_SIG, sw=1.8, rx=7)
+    d.text(160, 134, "M-Bit MSBs -> Thermometer", size=10.2, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(160, 152, "(2^M − 1) Equal Unit Cells (I0)", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(160, 169, "Monotonic, Low Glitch, Low DNL!", size=9.2, color=COL_BIAS, anchor="middle")
+
+    d.rect(300, 112, 248, 72, fill="#fffbeb", stroke=COL_AMBER, sw=1.8, rx=7)
+    d.text(424, 134, "B-Bit LSBs -> Delay-Matched", size=10.2, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(424, 152, "B Binary-Weighted Cells (2^k·Iu)", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(424, 169, "Compact Area & Decoder Routing!", size=9.2, color=COL_MUTED, anchor="middle")
+
+    # Detailed Cascode Retimed Unit Current Cell Schematic (y=204..446)
+    xc = 366
+    d.vdd(xc, 218, "AVDD")
+    mcs = d.pmos(xc, 256, facing="right", color=COL_BIAS, label="M_CS", sub="Pelgrom WL!", label_side="right")
+    d.line(xc, 218, xc, mcs["s"][1])
+    d.port(314, 256, "V_bias", side="left", color=COL_BIAS, fs=9.6)
+    d.line(314, 256, mcs["g"][0], 256, color=COL_BIAS, sw=1.8)
+
+    mcas = d.pmos(xc, 322, facing="right", color=COL_BIAS, label="M_CAS", sub="Always ON", label_side="right")
+    d.line(xc, mcs["d"][1], xc, mcas["s"][1], color=COL_BIAS, sw=2.0)
+    d.port(314, 322, "V_cas", side="left", color=COL_BIAS, fs=9.6)
+    d.line(314, 322, mcas["g"][0], 322, color=COL_BIAS, sw=1.8)
+
+    # Tail Node V_tail at (366, 358) + Red Parasitic C_tail -> Differential Switches MSW+ (306) & MSW- (426)!
+    d.line(xc, mcas["d"][1], xc, 358, color=COL_SIG, sw=2.1)
+    d.dot(xc, 358, COL_WARN)
+    d.text(xc + 8, 354, "V_tail (C_par!)", size=9.4, color=COL_WARN, weight="bold")
+
+    mswp = d.pmos(306, 396, facing="right", color=COL_SIG, label="M_SW+", label_side="right")
+    mswn = d.pmos(442, 396, facing="left",  color=COL_SIG, label="M_SW-", label_side="left")
+    d.wire([(xc, 358), (306, 358), mswp["s"]], color=COL_SIG, sw=2.0)
+    d.wire([(xc, 358), (442, 358), mswn["s"]], color=COL_SIG, sw=2.0)
+
+    d.line(306, mswp["d"][1], 306, 444, color=COL_SIG, sw=2.1)
+    d.port(306, 444, "Iout+", side="bottom", color=COL_SIG, fs=10.0)
+    d.line(442, mswn["d"][1], 442, 444, color=COL_SIG, sw=2.1)
+    d.port(442, 444, "Iout-", side="bottom", color=COL_SIG, fs=10.0)
+
+    # Local Clock-Retiming Latch + Low-Crossover Driver Box (40..244, 344..434)
+    d.rect(40, 344, 204, 90, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.9, rx=7)
+    d.text(142, 366, "Local Retiming Latch +", size=10.0, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(142, 382, "Low-Crossover Driver", size=10.0, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(142, 400, "Clean CLK_DAC resyncs skew;", size=9.0, color=COL_DARK, anchor="middle")
+    d.text(142, 415, "Never both MSW± OFF!", size=9.2, color=COL_WARN, anchor="middle", weight="bold")
+    d.line(244, 396, mswp["g"][0], 396, color=COL_PURPLE, sw=1.9)
+    d.wire([(244, 376), (262, 376), (262, 434), (484, 434), (484, 396), mswn["g"]],
+           color=COL_PURPLE, sw=1.6, dash="4,3")
+
+    d.callout(36, 466, 512, 120, "Pelgrom Static INL Yield & Crossover Swing Rules", [
+        "• For >99.7% INL < 0.5 LSB yield across 2^N codes, size M_CS gate area WL so:",
+        "    σ(ΔI / I_u) = √[ A_β² + (4·A_VT² / V_ov²) ] / √(W·L)  ≤  1 / (6 · √(2^N))",
+        "  (Choose strong inversion V_ov = 0.25–0.40 V -> gm/ID = 5..8 V⁻¹ on M_CS!)",
+        "• Low-Crossover Gate Swing keeps V_tail from collapsing to AVDD at transitions!",
+    ], tone="bias", fs=9.6)
+
+    # --- (b) Dynamic Z_unit(f) Roll-Off & SFDR vs f_out Plot ---
+    d.axes(638, 134, 414, 214, xlabel="", ylabel="SFDR [dBc]")
+    d.text(845, 374, "Output Signal Frequency  log10(f_out)", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Curve 1 (Red dashed): Uncascoded current source (low Z_unit -> early -20 dB/dec SFDR drop!)
+    d.path("M 648 214 L 742 214 L 1032 332", stroke=COL_WARN, sw=2.1, dash="5,3")
+    d.text(792, 294, "No Cascode (Low Z_unit)", size=9.6, color=COL_WARN, anchor="end", weight="bold")
+
+    # Curve 2 (Blue solid): Cascode M_CS + M_CAS (high DC SFDR, drops at HF as C_tail shorts M_CS!)
+    d.path("M 648 158 L 835 158 Q 885 162 1034 282", stroke=COL_SIG, sw=2.7)
+    d.text(852, 144, "Cascode Cell (C_tail Roll-Off)", size=9.8, color=COL_SIG, anchor="middle", weight="bold")
+
+    # Curve 3 (Emerald solid): Cascode + Quad-Switch / Bleeding Return-to-Zero (RZ)
+    d.path("M 648 154 L 905 154 Q 955 158 1038 222", stroke=COL_BIAS, sw=2.5)
+    d.text(1036, 198, "+ Quad-Switch / RZ!", size=9.6, color=COL_BIAS, anchor="end", weight="bold")
+
+    d.callout(600, 396, 464, 190, "Why Finite Z_unit(f) Limits High-Speed RF DAC SFDR", [
+        "• At RF frequencies, parasitic C_tail at M_CAS source shunts M_CS ro:",
+        "    Z_unit(f) ≈ gm,cas · ro,cas / (j · 2π·f_out · C_tail)   (−20 dB/dec!)",
+        "• Code-Dependent Load Modulation (k ON cells in parallel with R_L):",
+        "    SFDR_HD2(f) ≈ 20 · log10[ 4 · |Z_unit(f)| / (2^N · R_L) ]",
+        "  Example: 12b DAC, R_L=50Ω, SFDR=70 dBc @ 500 MHz -> |Z_unit| > 160 MΩ!",
+        "• Layout: Minimum-finger M_CAS drain/source diffusion + Q² Random-Walk MSB!",
+    ], tone="sig", fs=9.6)
+    return d
+
+
+def diag_69_deltasigma_ciff_modulator():
+    d = SVGDoc(
+        "deltasigma-ciff-modulator.svg",
+        "CIFF Delta-Sigma Modulator: DWA, CT ELD & Noise Shaping",
+        "Bộ Điều chế ΔΣ Kiến trúc CIFF Dao động Thấp, Xáo trộn DWA, Bù Trễ Vòng CT (k0) & Định dạng Nhiễu NTF",
+        "AMS · Ch.13/14", [7, 13, 14], width=1100, height=620
+    )
+    d.panel(18,  74, 568, 528, "(a) Low-Swing CIFF Loop Filter + Multi-Bit DWA + CT ELD (k0)")
+    d.panel(602, 74, 480, 528, "(b) Oversampled Spectrum: STF(f), |NTF(f)|² & OSR Gain")
+
+    # --- (a) CIFF ΔΣ Architecture (y=124..398) ---
+    ym = 218
+    d.port(46, ym, "U", side="left", color=COL_SIG, fs=10.5)
+    d.line(46, ym, 80, ym, color=COL_SIG, sw=2.1)
+    # Input Summer Σ1 at (96, 218)
+    d.circle(96, ym, 15, fill="#eff6ff", stroke=COL_SIG, sw=1.9)
+    d.text(96, ym + 4, "Σ", size=11.5, color=COL_SIG, anchor="middle", weight="bold")
+
+    # 1st Integrator I1 (134..216) -> 2nd Integrator I2 (244..326)
+    d.rect(134, 192, 84, 52, fill="#eff6ff", stroke=COL_SIG, sw=2.0, rx=6)
+    d.text(176, 214, "Int 1 (I1)", size=10.2, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(176, 231, "Sets kT/C!", size=9.2, color=COL_WARN, anchor="middle", weight="bold")
+    d.arrow(111, ym, 134, ym, color=COL_SIG, sw=2.0)
+
+    d.rect(246, 192, 84, 52, fill="#f8fafc", stroke=COL_DARK, sw=1.8, rx=6)
+    d.text(288, 214, "Int 2..L", size=10.2, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(288, 231, "Shaped Noise", size=9.0, color=COL_MUTED, anchor="middle")
+    d.arrow(218, ym, 246, ym, color=COL_SIG, sw=2.0)
+
+    # Feedforward Summer Σ_FF at (378, 218) -> Multi-Bit Quantizer (416..498) -> V(z) (554)
+    d.circle(378, ym, 16, fill="#ecfdf5", stroke=COL_BIAS, sw=1.9)
+    d.text(378, ym + 4, "Σ", size=11.5, color=COL_BIAS, anchor="middle", weight="bold")
+    d.arrow(330, ym, 362, ym, color=COL_BIAS, sw=1.9)
+    d.text(346, 210, "c2", size=9.4, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.rect(416, 190, 86, 56, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.9, rx=6)
+    d.text(459, 213, "B-Bit Quant", size=10.0, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(459, 230, "+ e_q(z)", size=9.4, color=COL_WARN, anchor="middle", weight="bold")
+    d.arrow(394, ym, 416, ym, color=COL_BIAS, sw=2.0)
+
+    d.line(502, ym, 554, ym, color=COL_SIG, sw=2.2)
+    d.port(554, ym, "V(z)", side="top", color=COL_SIG, fs=10.2)
+
+    # Top Direct Input Feedforward (U -> Σ_FF, gain=1) + c1 tap from I1!
+    d.dot(64, ym, COL_BIAS)
+    d.wire([(64, ym), (64, 134), (378, 134), (378, 200)], color=COL_BIAS, sw=2.0, marker_end="arr-bias")
+    d.text(222, 125, "Direct Input Feedforward (+1): Integrators Process ONLY E_q(z)!",
+           size=9.5, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.dot(232, ym, COL_BIAS)
+    d.wire([(232, ym), (232, 164), (366, 164), (366, 204)], color=COL_BIAS, sw=1.7, marker_end="arr-bias")
+    d.text(298, 156, "c1 (Stabilizing Zero)", size=9.2, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # Fast CT Excess Loop Delay (ELD) Direct Feedback DAC (-k0) at y=286
+    d.dot(526, ym, COL_AMBER)
+    d.rect(408, 270, 96, 36, fill="#fffbeb", stroke=COL_AMBER, sw=1.8, rx=5)
+    d.text(456, 292, "ELD DAC (−k0)", size=9.4, color=COL_AMBER, anchor="middle", weight="bold")
+    d.wire([(526, ym), (526, 288), (504, 288)], color=COL_AMBER, sw=1.8)
+    d.wire([(408, 288), (378, 288), (378, 236)], color=COL_AMBER, sw=1.8, marker_end="arr-amber")
+
+    # Outer Feedback Loop: DWA Pointer Scrambler (336..482, 336..388) -> Main DAC1 (152..294, 336..388) -> Σ1!
+    d.rect(334, 336, 152, 52, fill="#f5f3ff", stroke=COL_PURPLE, sw=1.8, rx=6)
+    d.text(410, 358, "DWA Scrambler", size=10.0, color=COL_PURPLE, anchor="middle", weight="bold")
+    d.text(410, 375, "Shapes ΔI_DAC by (1−z⁻¹)", size=9.0, color=COL_DARK, anchor="middle")
+    d.wire([(526, 288), (526, 362), (486, 362)], color=COL_PURPLE, sw=1.9, marker_end="arr-purple")
+
+    d.rect(146, 336, 152, 52, fill="#fef2f2", stroke=COL_WARN, sw=1.9, rx=6)
+    d.text(222, 358, "Outer DAC1 (−1)", size=10.0, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(222, 375, "Jitter & Noise Unshaped!", size=9.0, color=COL_WARN, anchor="middle", weight="bold")
+    d.arrow(334, 362, 298, 362, color=COL_PURPLE, sw=1.9)
+    d.wire([(146, 362), (96, 362), (96, 235)], color=COL_WARN, sw=2.0, marker_end="arr-warn")
+
+    d.callout(36, 418, 532, 168, "CIFF vs CIFB, DWA Mismatch Shaping & CT Jitter", [
+        "• Why CIFF Wins Low-Power: Direct U -> Σ_FF cancels Vin at Σ1, so I1..IL",
+        "  process ONLY tiny quantization noise -> 5x smaller OTA swing & power!",
+        "• Why DWA Is Mandatory for Multi-Bit DAC1: Outer DAC1 nonlinearity adds",
+        "  DIRECTLY to input; DWA rotates elements cyclically to push mismatch out-of-band!",
+        "• CT-ΔΣ Inherent Anti-Aliasing vs Clock Jitter: Free sinc alias rejection at",
+        "  f_s, but NRZ DAC1 pulse-width jitter σ_t limits SNR -> use FIR-DAC or SCR!",
+    ], tone="sig", fs=9.7)
+
+    # --- (b) Noise-Shaping Spectrum Plot ---
+    d.axes(654, 134, 398, 214, xlabel="", ylabel="PSD [dB]")
+    d.text(853, 374, "Frequency f   [ 0 .. f_B (Signal Band) .. f_s / 2 ]", size=9.8, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Shaded green In-Band region [0, f_B] (655..744)
+    d.rect(655, 140, 89, 208, fill="#ecfdf5", stroke="none", rx=0, opacity=0.75)
+    d.line(744, 138, 744, 348, color=COL_BIAS, sw=1.5, dash="4,3")
+    d.text(700, 361, "f_B", size=9.5, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(1038, 361, "f_s/2", size=9.5, color=COL_MUTED, anchor="middle", weight="bold")
+
+    # Input signal tone at f_in (704) + flat |STF| = 0 dB
+    d.arrow(704, 348, 704, 156, color=COL_SIG, sw=2.8)
+    d.text(712, 160, "Vin", size=9.8, color=COL_SIG, anchor="start", weight="bold")
+
+    # Unshaped Nyquist Quantization Noise Floor (flat dashed gray at y=282)
+    d.line(655, 282, 1044, 282, color=COL_MUTED, sw=1.5, dash="5,3")
+    d.text(1040, 274, "Unshaped Δ²/(6·fs)", size=9.2, color=COL_MUTED, anchor="end")
+
+    # Shaped |NTF(f)|^2 = (2 sin(πf/fs))^(2L) (Solid Red/Warn rising +20L dB/dec!)
+    d.path("M 660 344 Q 735 338 785 282 Q 855 198 945 194 L 1042 194", stroke=COL_WARN, sw=2.7)
+    d.text(925, 184, "|NTF(f)|² (+20·L dB/dec!)", size=9.8, color=COL_WARN, anchor="middle", weight="bold")
+
+    # Digital Decimation Sinc/FIR Brick-Wall Cutoff (Purple dashed)
+    d.path("M 656 172 L 736 172 Q 752 176 762 346", stroke=COL_PURPLE, sw=2.1, dash="4,3")
+    d.text(838, 166, "Digital Decimation Filter", size=9.4, color=COL_PURPLE, weight="bold")
+
+    d.callout(620, 396, 444, 190, "In-Band SQNR Law & Lee's Out-of-Band Gain Rule", [
+        "• Peak SQNR (Order L, B-bit Quantizer, OSR = f_s / (2·f_B)):",
+        "    SQNR ≈ 6.02·B + 1.76 − 10·log10(π^(2L)/(2L+1)) + (20L+10)·log10(OSR)",
+        "• Resolution Gained per Octave (2x) of OSR:",
+        "    L = 1: +9 dB (1.5b)  |  L = 2: +15 dB (2.5b)  |  L = 3: +21 dB (3.5b)!",
+        "• Lee's Stability Criterion: Bound ||NTF||_∞ < 1.5 (1-bit) or 2.5–3.5",
+        "  (multi-bit) so high-frequency quantization peaks never overload loop!",
+    ], tone="amber", fs=9.6)
+    return d
+
+
+def diag_70_pipelined_mdac_1p5bit_stage():
+    d = SVGDoc(
+        "pipelined-mdac-1p5bit-stage.svg",
+        "1.5-Bit/Stage Flip-Around MDAC & RSD Offset Immunity",
+        "Tầng MDAC Đóng cắt Tụ Lật vòng 1.5-Bit/Tầng & Sửa lỗi Số Dư có Dấu RSD Miễn nhiễm Offset ±Vref/4",
+        "AMS · Ch.13", [9, 13, 14], width=1100, height=620
+    )
+    d.panel(18,  74, 544, 528, "(a) 1.5-Bit Flip-Around Switched-Capacitor MDAC + Sub-ADC")
+    d.panel(578, 74, 504, 528, "(b) 1.5-Bit Residue Transfer Curve (±Vref/4 V_OS Immunity!)")
+
+    # --- (a) Flip-Around SC MDAC Schematic (y=124..414) ---
+    d.port(52, 224, "Vin", side="left", color=COL_SIG, fs=10.5)
+    d.line(52, 224, 96, 224, color=COL_SIG, sw=2.1)
+    d.dot(96, 224, COL_SIG)
+
+    # Top Flip-Around Capacitor C2 = C at (232, 168)
+    c2_m = d.cap_h(232, 168, color=COL_BIAS, label="C2 = C", label_pos="top")
+    d.wire([(96, 224), (96, 168), (156, 168)], color=COL_SIG, sw=1.9)
+    s_c2 = d.sw_h(176, 168, label="φ1", color=COL_SIG, closed=False)
+    d.line(s_c2["r"][0], 168, c2_m["l"][0], 168, color=COL_BIAS, sw=2.0)
+
+    # Bottom DAC Capacitor C1 = C at (232, 248)
+    c1_m = d.cap_h(232, 248, color=COL_AMBER, label="C1 = C", label_pos="bottom")
+    d.wire([(96, 224), (96, 248), (156, 248)], color=COL_SIG, sw=1.9)
+    s_c1 = d.sw_h(176, 248, label="φ1", color=COL_SIG, closed=False)
+    d.line(s_c1["r"][0], 248, c1_m["l"][0], 248, color=COL_AMBER, sw=2.0)
+
+    # Summing Node VX at (302, 248) -> High-GBW OTA A0 at (382, 261) -> V_res (512, 261)
+    d.wire([c2_m["r"], (302, 168), (302, 248)], color=COL_BIAS, sw=2.0)
+    d.line(c1_m["r"][0], 248, 354, 248, color=COL_SIG, sw=2.0)
+    d.dot(302, 248, COL_SIG)
+    # Early bottom-plate switch φ1e to Vcm at (302, 294)
+    d.line(302, 248, 302, 292, color=COL_PURPLE, sw=1.7, dash="3,2")
+    d.port(302, 296, "Vcm (φ1e!)", side="bottom", color=COL_PURPLE, fs=9.4)
+
+    ota = d.opamp(382, 261, w=56, h=48, facing="right", plus_top=False, label="OTA", color=COL_SIG, fill="#eff6ff")
+    d.port(334, ota["in_bot"][1], "Vcm", side="left", color=COL_MUTED, fs=9.2)
+    d.line(334, ota["in_bot"][1], ota["in_bot"][0], ota["in_bot"][1], color=COL_MUTED)
+    d.line(ota["out"][0], 261, 508, 261, color=COL_SIG, sw=2.2)
+    d.port(508, 261, "V_res", side="top", color=COL_SIG, fs=10.2)
+
+    # Flip-Around φ2 Wire from V_res (466, 261) up to y=118 and back to C2 left plate (204, 168)!
+    d.dot(466, 261, COL_BIAS)
+    d.dot(204, 168, COL_BIAS)
+    d.wire([(466, 261), (466, 120), (204, 120), (204, 168)], color=COL_BIAS, sw=2.0, dash="5,3")
+    d.text(352, 114, "φ2 Flip-Around Loop (β ≈ 0.5!)", size=9.6, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # 1.5-Bit Sub-ADC (±Vref/4) + 3-Level DAC Mux Box (68..484, 344..414)
+    d.rect(68, 344, 416, 68, fill="#fffbeb", stroke=COL_AMBER, sw=1.8, rx=7)
+    d.text(276, 366, "1.5-Bit Flash Sub-ADC (±Vref/4) + 3-Level Reference Mux", size=10.2, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(276, 384, "D = −1 (Vin < −Vr/4)  |  D = 0 (|Vin| ≤ Vr/4)  |  D = +1 (Vin > +Vr/4)", size=9.3, color=COL_DARK, anchor="middle")
+    d.text(276, 401, "Drives C1 left plate in φ2 to D·Vref  =>  V_res = 2·Vin − D·Vref", size=9.5, color=COL_SIG, anchor="middle", weight="bold")
+    d.wire([(72, 224), (72, 378)], color=COL_SIG, sw=1.6, dash="3,3")
+    d.dot(204, 248, COL_AMBER)
+    d.wire([(204, 344), (204, 248)], color=COL_AMBER, sw=1.9, marker_end="arr-amber")
+
+    d.callout(36, 430, 508, 156, "Flip-Around Feedback Advantage & OTA Gain/BW Spec", [
+        "• Feedback Factor Boost: Flipping C2 onto V_res yields β = C / (2C + C_p) ≈ 0.5",
+        "  (vs β ≈ 0.33 in non-flip charge-redistribution) -> 50% faster settling / lower I_D!",
+        "• Remaining K-bit Accuracy Specs on Stage-1 OTA:",
+        "    DC Gain:  A0 · β  >  2^(K + 1)      |      Settling:  τ_cl < T_φ2 / [(K + 1)·ln(2)]",
+        "• Bottom-Plate Sampling: Open φ1e at VX slightly BEFORE φ1 input switches!",
+    ], tone="sig", fs=9.7)
+
+    # --- (b) 1.5-Bit RSD Residue Transfer Plot (V_res vs V_in) ---
+    # Box centered at (832, 246): Vin ∈ [-Vref..+Vref] = [652..1012], Vres ∈ [-Vref..+Vref] = [346..146]
+    cx_r, cy_r = 832, 246
+    d.rect(652, 146, 360, 200, fill="#f8fafc", stroke=COL_BORDER, sw=1.4, rx=4)
+    # ±Vref saturation ceiling lines (Red dashed)
+    d.line(652, 146, 1012, 146, color=COL_WARN, sw=1.6, dash="4,3")
+    d.line(652, 346, 1012, 346, color=COL_WARN, sw=1.6, dash="4,3")
+    d.text(646, 150, "+Vref", size=9.4, color=COL_WARN, anchor="end", weight="bold")
+    d.text(646, 250, "0", size=9.4, color=COL_MUTED, anchor="end")
+    d.text(646, 350, "−Vref", size=9.4, color=COL_WARN, anchor="end", weight="bold")
+
+    # Axes through origin (832, 246)
+    d.arrow(646, cy_r, 1026, cy_r, color=COL_DARK, sw=1.6)
+    d.arrow(cx_r, 356, cx_r, 128, color=COL_DARK, sw=1.6)
+    d.text(840, 134, "V_res", size=10.2, color=COL_DARK, weight="bold")
+
+    # Shaded green ±Vref/4 Comparator Offset Immunity Window around +Vref/4 (x=877: 832..922)
+    d.rect(877, 147, 45, 198, fill="#ecfdf5", stroke="none", rx=0, opacity=0.8)
+    d.text(945, 164, "±Vref/4 V_OS Safe!", size=9.4, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # Ideal 1.5-Bit Sawtooth (Blue solid): transitions at -Vref/4 (x=787) and +Vref/4 (x=877), peaks at ±Vref/2 (y=196, 296)!
+    d.wire([
+        (652, 346), (787, 196), (787, 296),
+        (877, 196), (877, 296), (1012, 146)
+    ], color=COL_SIG, sw=2.7)
+
+    # Shifted Transition with Large Comparator Offset +V_OS (Red dashed at x=912 -> peaks at y=157 < +Vref 146!)
+    d.wire([(877, 196), (912, 157), (912, 257), (1012, 146)], color=COL_WARN, sw=2.2, dash="5,3")
+    d.text(787, 364, "−Vr/4", size=9.4, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(877, 364, "+Vr/4", size=9.4, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(652, 364, "−Vref", size=9.4, color=COL_MUTED, anchor="middle")
+    d.text(1012, 364, "+Vref", size=9.4, color=COL_MUTED, anchor="middle")
+    d.text(832, 381, "Input Voltage V_in", size=10.0, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.callout(596, 396, 468, 190, "RSD Digital Overlap Math vs Uncorrected Analog Errors", [
+        "• Comparator Offset Immunity: Ideal residue uses ONLY [−Vref/2, +Vref/2],",
+        "  leaving ±Vref/2 margin -> tolerates |V_OS,comp| < Vref / 4 (±250 mV @ 1V!)",
+        "  with zero missing codes after shift-and-add RSD reconstruction!",
+        "• Errors NOT Corrected by RSD (True Linearity Ceilings):",
+        "  1. C1 vs C2 Mismatch (ΔC/C): Alters slope 2 -> step discontinuity (INL/DNL)!",
+        "  2. Finite OTA Gain A0 & Incomplete Settling -> calibrate interstage gain!",
+    ], tone="bias", fs=9.6)
+    return d
+
+
+def diag_71_central_ptat_ztc_bias_hub():
+    d = SVGDoc(
+        "central-ptat-ztc-bias-hub.svg",
+        "Central Chip Bias Hub (PTAT/ZTC Star) & Power-Up Sequence",
+        "Trung tâm Phân cực Toàn Chip (Phân phối Sao Dòng I_PTAT / I_ZTC) & Chuỗi Khởi động Nguồn Không Tranh chấp",
+        "AMS · Ch.12/19", [5, 12, 19], width=1100, height=620, legend=False
+    )
+    d.panel(18,  74, 1064, 286, "(a) Central Bandgap Bias Hub -> Current-Star Routing -> Local Mirror Receiver")
+    d.panel(18, 374, 1064, 228, "(b) Deterministic 7-Stage SoC Power-Up Handshake & Brownout Reset")
+
+    # --- (a) Left: Central Bias Generator Box (38..328, 114..342) ---
+    d.rect(38, 114, 290, 228, fill="#eff6ff", stroke=COL_SIG, sw=2.0, rx=8)
+    d.text(183, 138, "Central Bandgap & Bias Core", size=11.4, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(183, 156, "(Single Trimmed Core per Die)", size=9.6, color=COL_MUTED, anchor="middle")
+
+    d.rect(56, 170, 254, 68, fill=COL_BG, stroke=COL_SIG, sw=1.6, rx=6)
+    d.text(183, 190, "1. I_PTAT = ΔV_BE / R_1  (+0.33%/K)", size=9.8, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(183, 208, "Keeps gm = I_PTAT/(n·VT) CONSTANT!", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(183, 224, "-> Route to OTAs, LNAs, Mixers, Gm-C", size=9.2, color=COL_BIAS, anchor="middle", weight="bold")
+
+    d.rect(56, 252, 254, 72, fill=COL_BG, stroke=COL_AMBER, sw=1.6, rx=6)
+    d.text(183, 272, "2. I_ZTC = I_PTAT + I_CTAT  (0 ppm/K)", size=9.8, color=COL_AMBER, anchor="middle", weight="bold")
+    d.text(183, 290, "Temperature-invariant current reference!", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(183, 308, "-> Route to Sawtooth Osc, DACs, Slew/Delays", size=9.2, color=COL_AMBER, anchor="middle", weight="bold")
+
+    # Middle: Star Current Bus across Long 2–5 mm Chip Floorplan (328..642)
+    d.arrow(328, 198, 638, 198, color=COL_BIAS, sw=2.6)
+    d.text(483, 186, "✓ Star Current Routing:  I_bias = 5–10 µA (Cascode High-Z)",
+           size=9.8, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(483, 216, "Immune to 30 mV ΔV_GND / ΔV_VDD IR Drop Across 4 mm Die!",
+           size=9.4, color=COL_DARK, anchor="middle")
+
+    d.rect(350, 248, 266, 86, fill="#fef2f2", stroke=COL_WARN, sw=1.8, rx=7)
+    d.text(483, 270, "✗ NEVER Route Raw V_bias Voltage!", size=10.2, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(483, 290, "25 mV ground bounce shifts local V_GS,", size=9.4, color=COL_DARK, anchor="middle")
+    d.text(483, 306, "causing exp(25mV/nVT) ≈ 2.2x I_D error", size=9.4, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(483, 322, "& cross-block substrate noise coupling!", size=9.2, color=COL_MUTED, anchor="middle")
+
+    # Right: Local Analog Block Mirror Receiver Schematic (642..1062, 114..342)
+    d.rect(642, 114, 420, 228, fill="#ecfdf5", stroke=COL_BIAS, sw=2.0, rx=8)
+    d.text(852, 136, "Local Block Receiver (Referenced to LOCAL VDD_blk!)", size=10.8, color=COL_BIAS, anchor="middle", weight="bold")
+
+    # Local VDD_blk bus at y=164 across x=710..1015
+    d.line(710, 164, 1015, 164, color=COL_DARK, sw=2.4)
+    d.text(862, 154, "VDD_blk (Local Domain Rail)", size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+
+    # Diode-connected PMOS M_R1 (x=736, y=218), Local C_byp (x=842, y=190), Output Mirror M_R2 (x=936, y=218), PD switch (x=1004, y=200)!
+    mr1 = d.pmos(736, 218, facing="left", color=COL_BIAS, label="M_R1", label_side="left")
+    d.line(736, 164, 736, mr1["s"][1])
+    # Connect incoming I_bias (638, 198 -> 680, 198 -> down to drain 736, 260 -> GND sink or incoming sink!)
+    d.wire([(638, 198), (676, 198), (676, 266), (736, 266), mr1["d"]], color=COL_BIAS, sw=2.0)
+    # Diode tie on M_R1
+    d.wire([(736, 254), (776, 254), (776, 218)], color=COL_BIAS, sw=1.8)
+    d.dot(736, 254, COL_BIAS)
+    d.dot(776, 218, COL_BIAS)
+
+    # Gate line V_GP at y=218 from M_R1 gate (766) to M_R2 gate (906) + PD pull-up switch!
+    mr2 = d.pmos(936, 218, facing="right", color=COL_SIG, label="M_R2", sub="Local I_D", label_side="right")
+    d.line(936, 164, 936, mr2["s"][1])
+    d.line(mr1["g"][0], 218, mr2["g"][0], 218, color=COL_BIAS, sw=2.0)
+    d.line(936, mr2["d"][1], 936, 286, color=COL_SIG, sw=2.1)
+    d.port(936, 286, "To Core", side="bottom", color=COL_SIG, fs=9.6)
+
+    # Local Gate Decoupling Capacitor C_byp tied between V_GP (218) and LOCAL VDD_blk (164)!
+    cbyp = d.cap_v(842, 191, color=COL_AMBER, label="C_byp", label_side="right")
+    d.dot(842, 164, COL_DARK)
+    d.dot(842, 218, COL_BIAS)
+    d.line(842, 164, 842, cbyp["t"][1], color=COL_AMBER, sw=1.8)
+    d.line(842, cbyp["b"][1], 842, 218, color=COL_AMBER, sw=1.8)
+
+    # Sleep Pull-Up Switch (PD_B pulls V_GP -> VDD_blk so M_R2 is hard OFF in sleep!)
+    d.wire([(892, 218), (892, 276), (802, 276)], color=COL_PURPLE, sw=1.6, dash="3,2")
+    d.text(780, 326, "• C_byp to LOCAL VDD_blk keeps ΔV_SG = 0 under supply ripple!   • Sleep switch ties V_GP -> VDD_blk (0 nA, no floating gate!)",
+           size=9.3, color=COL_DARK, anchor="start", weight="bold")
+    # Adjust centered footer inside box (642..1062)
+    d.elements.pop()
+    d.text(852, 328, "C_byp -> LOCAL VDD (High PSRR)  +  PD Ties Gate -> VDD (Zero Floating Gate!)",
+           size=9.4, color=COL_DARK, anchor="middle", weight="bold")
+
+    # --- (b) 7-Stage Power-Up Handshake Timeline ---
+    stages = [
+        ("1. VDD Ramp",   "Rail > 0.8V",     "neutral"),
+        ("2. POR Clear",  "por_b = 1",       "purple"),
+        ("3. UVLO OK",    "VDD > 2.85V",     "sig"),
+        ("4. BGR Ready",  "VBG = 1.20V",     "bias"),
+        ("5. Bias Star",  "IPTAT / IZTC",    "amber"),
+        ("6. Core LDOs",  "SS -> pgood=1",   "sig"),
+        ("7. PLL & ADC",  "lock -> cal_ok",  "bias"),
+    ]
+    sx = 36
+    for idx_p, (st_hd, st_sub, st_tone) in enumerate(stages):
+        bg, bd, hd = TONE_STYLES[st_tone]
+        d.rect(sx, 416, 130, 74, fill=bg, stroke=bd, sw=1.8, rx=7)
+        d.text(sx + 65, 444, st_hd, size=10.2, color=hd, anchor="middle", weight="bold")
+        d.text(sx + 65, 468, st_sub, size=9.4, color=COL_DARK, anchor="middle", weight="bold")
+        if idx_p < len(stages) - 1:
+            d.arrow(sx + 130, 453, sx + 148, 453, color=COL_DARK, sw=1.9)
+        sx += 149
+
+    d.callout(36, 508, 1028, 78, "Mandatory Power-Up / Power-Down Signoff Verification Matrix", [
+        "• Never enable PLL/ADC/PA before `ldo_pgood & bias_ok = 1` (prevents metastability, false OCP latch, & speaker/RF pop)!",
+        "• Simulate ALL 3 transient VDD profiles across SS/FF (−40°C, 125°C):  1. Fast 1 µs ramp   2. Slow 100 ms ramp   3. Mid-rail 10 µs brownout dip!",
+    ], tone="sig", fs=9.8)
+    return d
+
+
+def diag_72_closed_loop_cadence_codex_flow():
+    d = SVGDoc(
+        "closed-loop-cadence-codex-flow.svg",
+        "7-Stage Optimal Closed-Loop Analog Design Cycle (Cadence + Codex)",
+        "Quy trình Thiết kế Vi mạch Tương tự Tối ưu Khép kín 7 Bước: Tri thức Razavi -> gm/ID LUT -> Cầu nối IC617 -> Tối ưu Jacobian",
+        "EDA · Closed-Loop", [1, 9, 10, 11, 17], width=1100, height=620, legend=False
+    )
+    d.panel(18,  74, 1064, 344, "(a) End-to-End 7-Stage Closed-Loop Architecture (SKILL-ANALOG 2026.11.18.4)")
+    d.panel(18, 432, 1064, 170, "(b) Quantitative Engineering Gains vs Legacy Manual Iteration")
+
+    # --- (a) Top Row: Stages 1 -> 2 -> 3 -> 4 (y=114..222) ---
+    top_boxes = [
+        (36,  232, "sig",    "1. kb_lookup & Checklists",
+         "Query Razavi equations,", "failure modes & 21 checklists"),
+        (292, 232, "purple", "2. Spec & Interface Budget",
+         "Partition kT/C, headroom,", "PM ≥ 60° & f_z,RHP/4 ceiling"),
+        (548, 232, "bias",   "3. gmid_lut.py (< 5 ms)",
+         "Equation-free BSIM4 LUT:", "gm/ID, gm·ro, fT -> (W,L,M,ID)"),
+        (804, 258, "amber",  "4. ic617_live_bridge / VA",
+         "Zero-fork TCP OA update +", "CDF callbacks + Behavioral VA"),
+    ]
+    for bx, bw, btone, bhd, bl1, bl2 in top_boxes:
+        bg, bd, hd = TONE_STYLES[btone]
+        d.rect(bx, 114, bw, 106, fill=bg, stroke=bd, sw=2.0, rx=8)
+        d.text(bx + bw / 2, 140, bhd, size=10.8, color=hd, anchor="middle", weight="bold")
+        d.text(bx + bw / 2, 168, bl1, size=9.6, color=COL_DARK, anchor="middle")
+        d.text(bx + bw / 2, 188, bl2, size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+
+    d.arrow(268, 167, 290, 167, color=COL_DARK, sw=2.1)
+    d.arrow(524, 167, 546, 167, color=COL_DARK, sw=2.1)
+    d.arrow(780, 167, 802, 167, color=COL_DARK, sw=2.1)
+
+    # --- Bottom Row (Right-to-Left): Stage 4 -> Stage 5 -> Stage 6 (Loops to 4!) -> Stage 7 Signoff (y=282..398) ---
+    # Stage 5 (804..1062, 282..398)
+    d.rect(804, 282, 258, 114, fill="#fef2f2", stroke=COL_WARN, sw=2.0, rx=8)
+    d.text(933, 308, "5. Spectre + psf_audit.py", size=10.8, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(933, 332, "Run dcOp / stb / tran / pss;", size=9.6, color=COL_DARK, anchor="middle")
+    d.text(933, 351, "Binary PSF check: region == 2", size=9.6, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(933, 370, "(VDS−VDSAT ≥ 50mV) & PM/GM!", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+    d.arrow(933, 220, 933, 280, color=COL_AMBER, sw=2.2)
+
+    # Stage 6 (434..762, 282..398): Closed-Loop Jacobian + Log Trust-Region Optimizer!
+    d.rect(434, 282, 328, 114, fill="#eff6ff", stroke=COL_SIG, sw=2.2, rx=8)
+    d.text(598, 308, "6. sizing_opt.py Closed-Loop Optimizer", size=10.8, color=COL_SIG, anchor="middle", weight="bold")
+    d.text(598, 332, "Sensitivity Jacobian ∂M_i / ∂log(W, L, I_bias)", size=9.6, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(598, 351, "+ Log-Domain Trust-Region + Constraint-First", size=9.5, color=COL_DARK, anchor="middle")
+    d.text(598, 370, "Phase 1: Feasibility  ->  Phase 2: Pareto Power/FoM!", size=9.5, color=COL_BIAS, anchor="middle", weight="bold")
+    d.arrow(804, 339, 764, 339, color=COL_WARN, sw=2.2)
+
+    # Iterative Closed-Loop Feedback Arrow from Stage 6 UP-RIGHT back to Stage 4!
+    d.wire([(598, 282), (598, 250), (866, 250), (866, 222)],
+           color=COL_SIG, sw=2.4, dash="6,3", marker_end="arr-sig")
+    d.text(728, 242, "Closed-Loop Δlog(W,L,Ib) via ic617_client (4–8 iters!)",
+           size=9.6, color=COL_SIG, anchor="middle", weight="bold")
+
+    # Stage 7 (36..388, 282..398): Final Multi-Corner + MC + PEX Signoff!
+    d.rect(36, 282, 352, 114, fill="#ecfdf5", stroke=COL_BIAS, sw=2.2, rx=8)
+    d.text(212, 308, "7. Worst-Case PVT + MC + PEX Signoff", size=10.8, color=COL_BIAS, anchor="middle", weight="bold")
+    d.text(212, 332, "• Corners: TT/SS/FF/SF/FS × {−40, 27, 125°C} × VDD±10%", size=9.5, color=COL_DARK, anchor="middle")
+    d.text(212, 351, "• 200-Run Pelgrom Monte Carlo (Mean ± 3σ Yield)", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
+    d.text(212, 370, "• RC PEX Re-Sim + EM/IR + Latch-Up / ESD Guard DRC!", size=9.5, color=COL_BIAS, anchor="middle", weight="bold")
+    d.arrow(434, 339, 390, 339, color=COL_BIAS, sw=2.3)
+
+    # --- (b) 3 Quantitative Benefit Cards ---
+    cards_eda = [
+        (36, "Zero Cold-Start Virtuoso Bottleneck", "sig", [
+            "• `gmid_lut.py` sizes (W, L, M) in < 5 ms",
+            "  directly from BSIM4 silicon tables.",
+            "• `ic617_live_bridge.il` keeps OA warm in",
+            "  RAM -> < 50 ms schematic/CDF updates!",
+        ]),
+        (382, "Automated Physical Sanity Gate", "warn", [
+            "• `psf_audit.py` reads binary Spectre PSF",
+            "  with zero OCEAN / libpsf dependencies.",
+            "• Flags ANY triode/cutoff FET BEFORE",
+            "  wasting iterations on AC/Tran metrics!",
+        ]),
+        (728, "Principled Jacobian Convergence", "bias", [
+            "• Log-domain steps `x_new = x · exp(Δu)`",
+            "  preserve physical positivity & PDK bounds.",
+            "• Converges to specs + 20–45% lower I_DD",
+            "  in 4–8 Spectre runs instead of 50+!",
+        ]),
+    ]
+    for cx_e, chd_e, ctn_e, clns_e in cards_eda:
+        d.callout(cx_e, 466, 334, 120, chd_e, clns_e, tone=ctn_e, fs=9.6)
+    return d
+
+
 ALL_GENERATORS = [
     diag_01_analog_design_octagon,
     diag_02_mos_small_signal_caps,
@@ -6193,6 +8040,22 @@ ALL_GENERATORS = [
     diag_54_spectre_stb_probe_setup,
     diag_55_spectre_pss_pnoise_flow,
     diag_56_gmid_sizing_methodology,
+    diag_57_synchronous_buck_converter,
+    diag_58_boost_and_rhp_zero_locus,
+    diag_59_four_switch_buck_boost,
+    diag_60_switched_cap_charge_pump_dcdc,
+    diag_61_hs_bootstrap_driver_deadtime,
+    diag_62_vmc_type3_and_cmc_slope_comp,
+    diag_63_capless_fvf_dfc_ldo,
+    diag_64_pmic_por_uvlo_ocp_foldback,
+    diag_65_schmitt_and_rc_sawtooth_osc,
+    diag_66_three_opamp_and_chopper_cfia,
+    diag_67_tow_thomas_and_gmc_tuned_biquad,
+    diag_68_current_steering_segmented_dac,
+    diag_69_deltasigma_ciff_modulator,
+    diag_70_pipelined_mdac_1p5bit_stage,
+    diag_71_central_ptat_ztc_bias_hub,
+    diag_72_closed_loop_cadence_codex_flow,
 ]
 
 
@@ -6231,7 +8094,7 @@ def main():
         })
 
     manifest_obj = {
-        "version": "2026.11.18.3",
+        "version": "2026.11.18.4",
         "generator": "tools/generate_diagrams.py",
         "total_diagrams": len(manifest_entries),
         "diagrams": manifest_entries,

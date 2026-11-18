@@ -1,22 +1,32 @@
 {
   "schema": "razavi-cmos-brain.manifest.v1",
-  "release": "2026.11.18.3",
-  "node_count": 134,
-  "razavi_node_count": 112,
-  "skill_node_count": 22,
-  "edge_count": 319,
-  "diagram_count": 56,
-  "checklist_count": 16,
-  "glossary_count": 2200,
+  "release": "2026.11.18.4",
+  "domain_count": 10,
+  "node_count": 162,
+  "razavi_core_node_count": 112,
+  "pmic_node_count": 12,
+  "ams_node_count": 12,
+  "eda_domain_node_count": 26,
+  "razavi_node_count": 135,
+  "skill_node_count": 27,
+  "edge_count": 482,
+  "diagram_count": 72,
+  "checklist_count": 21,
+  "glossary_count": 2280,
   "book_section_count": 293,
   "book_equation_count": 230,
-  "github_repo_count": 31,
-  "file_count": 212,
+  "github_repo_count": 52,
+  "file_count": 261,
   "files": [
     {
       "path": "kb/checklists/bandgap-and-bias.json",
       "bytes": 9208,
       "sha256": "bf074b8dce74a57c09fd8419b7980f2237259ac72dd095636f11e693f8a72437"
+    },
+    {
+      "path": "kb/checklists/closed-loop-sizing-and-signoff.json",
+      "bytes": 10601,
+      "sha256": "24af366852d8e79872678bf145ba8e966f21ae0bf23471f47b63c2c7b9ba13bb"
     },
     {
       "path": "kb/checklists/cmfb.json",
@@ -34,9 +44,24 @@
       "sha256": "1ecf519a107067ac4172a945ba500658d3f4a98d0b3368e71bc34560e1a3b7d0"
     },
     {
+      "path": "kb/checklists/continuous-time-filters.json",
+      "bytes": 15451,
+      "sha256": "11c96418749a0d025096c20596868bffbdcc09c739ee24bbd115e312790c5c5b"
+    },
+    {
       "path": "kb/checklists/current-mirror.json",
       "bytes": 6441,
       "sha256": "6b1deef0e305eda074b9430936134a5263f7ee5e92c46d55bb337fed9462772e"
+    },
+    {
+      "path": "kb/checklists/dac-and-deltasigma-adc.json",
+      "bytes": 14733,
+      "sha256": "2529d32b7d772d7225b6ddd78abae0567bd14885f5aa6e8a7684f84c8915f64e"
+    },
+    {
+      "path": "kb/checklists/dcdc-switching-converter.json",
+      "bytes": 16424,
+      "sha256": "e6ac1d14b08e3d915d4a8dd83f3a7fdbdb496244d2a02ccbd9e9eef6c0ac3a6f"
     },
     {
       "path": "kb/checklists/differential-pair.json",
@@ -65,8 +90,8 @@
     },
     {
       "path": "kb/checklists/ldo-regulator.json",
-      "bytes": 6873,
-      "sha256": "875de241e87136da761471c12d8931c7cc0953eb2ce1f7d8111a6bf1965d208d"
+      "bytes": 13220,
+      "sha256": "3a2946a1d99d68fb4318a7bf0054734e437fcbaa1a7ff221c3573811de12a03d"
     },
     {
       "path": "kb/checklists/oscillator-and-pll.json",
@@ -87,6 +112,11 @@
       "path": "kb/checklists/switched-capacitor.json",
       "bytes": 7717,
       "sha256": "90a10c31818e3d41e44235777a77d52576c5be4aab69688cecc2b0d0838fdb5c"
+    },
+    {
+      "path": "kb/checklists/system-integration-por-and-bias-bus.json",
+      "bytes": 15744,
+      "sha256": "2eabbf09ebd914c2d7de36fe4d923626c24d7e4465c1015d158fc24b4b76586f"
     },
     {
       "path": "kb/checklists/two-stage-miller.json",
@@ -114,6 +144,11 @@
       "sha256": "2db53759c124231d8bf88e341278146266d7b25b59f4292556e8c10b40493f91"
     },
     {
+      "path": "kb/diagrams/boost-and-rhp-zero-locus.svg",
+      "bytes": 21251,
+      "sha256": "11969f1ea8dbce6cab1a45c4913b558570305c912a9562d18397132f0bda9c0e"
+    },
+    {
       "path": "kb/diagrams/bootstrapped-switch.svg",
       "bytes": 18341,
       "sha256": "6322582e2c4340544337fa6d70800766679bdc6d80b0d95328b7fb16b0882ea9"
@@ -122,6 +157,11 @@
       "path": "kb/diagrams/bottom-plate-sampling-sc.svg",
       "bytes": 20236,
       "sha256": "a77a27450103b84bf075ff65e587263bfce51eb803dbf447743e8d4020ebbe80"
+    },
+    {
+      "path": "kb/diagrams/capless-fvf-dfc-ldo.svg",
+      "bytes": 22621,
+      "sha256": "0ef2ff5322baf714e28d03f99033a261494444c3c959b60373cbdfd7572df46a"
     },
     {
       "path": "kb/diagrams/cascode-ahuja-compensation.svg",
@@ -134,6 +174,11 @@
       "sha256": "691ee82aab1e34e849546be219b76a4711d74c26632210e930608f68880f4f42"
     },
     {
+      "path": "kb/diagrams/central-ptat-ztc-bias-hub.svg",
+      "bytes": 17322,
+      "sha256": "4e1cb56ec447be99c99e4bdd53e485f72c567b35438bfb0b3126826e8748c94e"
+    },
+    {
       "path": "kb/diagrams/charge-pump-type2-pll.svg",
       "bytes": 18014,
       "sha256": "cb6403f292aa4a395e8a6179d6a7c296b3887e9185b023aa82b970251c1bb63e"
@@ -142,6 +187,11 @@
       "path": "kb/diagrams/chopper-stabilization-principle.svg",
       "bytes": 13429,
       "sha256": "c157c2b10a66c8faba634fc59c658d7319e5ddd584e2dffa6e4602d06cdeb2a7"
+    },
+    {
+      "path": "kb/diagrams/closed-loop-cadence-codex-flow.svg",
+      "bytes": 13969,
+      "sha256": "b100725c04b9efa979b1391980fa7a54ae0314a4b4f63456bb224722bd27c9df"
     },
     {
       "path": "kb/diagrams/cmfb-sensing-networks.svg",
@@ -184,9 +234,19 @@
       "sha256": "1e1b51c7fc86b6ba7375bf76e658ff913011cdc2539d7846874c3f22a705ad1a"
     },
     {
+      "path": "kb/diagrams/current-steering-segmented-dac.svg",
+      "bytes": 18696,
+      "sha256": "0a0e2512c4fbeba86921ef45266c9e8e76df7d66112c0beab1fa4016e5ceb234"
+    },
+    {
+      "path": "kb/diagrams/deltasigma-ciff-modulator.svg",
+      "bytes": 16820,
+      "sha256": "a6cfc5a153c7a3a5c0cb65d26cccc9d88e731d6299c2ee3397ca34fe2fd75b5b"
+    },
+    {
       "path": "kb/diagrams/diagrams-manifest.json",
-      "bytes": 34904,
-      "sha256": "970be6c65cc18d597419ad57ab8f5a8c93be3b3f7f28ca2160313d6d46a7a971"
+      "bytes": 45409,
+      "sha256": "48b97d7a8a839e6e7910c4601d23cade2dc11d6107dcb6e58697d3f05fd13b1c"
     },
     {
       "path": "kb/diagrams/diff-pair-active-mirror.svg",
@@ -224,6 +284,11 @@
       "sha256": "81088b29e7692cd546741cc00c9c9ced0cfe2cce01dfe880f56ca66522bc7e4c"
     },
     {
+      "path": "kb/diagrams/four-switch-buck-boost.svg",
+      "bytes": 19915,
+      "sha256": "1ee5b983d440c11c73be84b5a79dd4e8ac5da7212ae6bbbe5a3b2bd556547608"
+    },
+    {
       "path": "kb/diagrams/gain-boosted-cascode.svg",
       "bytes": 14463,
       "sha256": "bc823165b4303ea612be9f0167df2e484f911e3f352aadb94c6ca74113deed03"
@@ -237,6 +302,11 @@
       "path": "kb/diagrams/gmid-sizing-methodology.svg",
       "bytes": 13678,
       "sha256": "22741b7a1e369fae45844c28c5a2bb5894598e922388f298b5a7bda031761b3f"
+    },
+    {
+      "path": "kb/diagrams/hs-bootstrap-driver-deadtime.svg",
+      "bytes": 21539,
+      "sha256": "f3b07866c2bd02086eeadc20161944c21f8dfdc4b1381a06faea6e0448963bbe"
     },
     {
       "path": "kb/diagrams/latchup-and-guard-rings.svg",
@@ -299,6 +369,16 @@
       "sha256": "5c938ef775826ef0ceebc728289caf4aab6dd5c0101d1473740e9f25c30be41b"
     },
     {
+      "path": "kb/diagrams/pipelined-mdac-1p5bit-stage.svg",
+      "bytes": 17653,
+      "sha256": "efd54adb351cad1e538ca2f060b81214b6042ce1b645b5a4f6a99120d6e3d9f4"
+    },
+    {
+      "path": "kb/diagrams/pmic-por-uvlo-ocp-foldback.svg",
+      "bytes": 16789,
+      "sha256": "d87805214e87a0f4b91e6b24ec2bee3e0eb532fafc718242cc747c7d5fa87240"
+    },
+    {
       "path": "kb/diagrams/pole-splitting-locus.svg",
       "bytes": 13256,
       "sha256": "c1453eed91fc5069468037cc2983bc97f2f7a91e456246a32642e55c700567e7"
@@ -327,6 +407,11 @@
       "path": "kb/diagrams/sc-parasitic-insensitive-integrator.svg",
       "bytes": 20039,
       "sha256": "50fa8f27ee8e01cc89a6b84a7847cc9e3fac556c850c18e9ed1044952818d379"
+    },
+    {
+      "path": "kb/diagrams/schmitt-and-rc-sawtooth-osc.svg",
+      "bytes": 25492,
+      "sha256": "a468812c5b0c14c7db3f4ac0522bdbf9f1ef098141cedc79c619322ad430be73"
     },
     {
       "path": "kb/diagrams/short-channel-iv-gmid.svg",
@@ -359,14 +444,34 @@
       "sha256": "e41623171b145649fc988f23bfde91b12e035b8d84d5c2e1f3b4a519ad3b949a"
     },
     {
+      "path": "kb/diagrams/switched-cap-charge-pump-dcdc.svg",
+      "bytes": 19128,
+      "sha256": "c0fb02f3ea37f5230a6ede1f49453be7644190857715dd1c69aa6008576cb7a5"
+    },
+    {
+      "path": "kb/diagrams/synchronous-buck-converter.svg",
+      "bytes": 24686,
+      "sha256": "a60dbe69b39f9e37830dae9fc1aa17e6421b9973f0c52b89b43f5326d33cc6ea"
+    },
+    {
       "path": "kb/diagrams/telescopic-cascode-opamp.svg",
       "bytes": 23846,
       "sha256": "c2886f1a696cfc51e601e4bc3189cb7eca3981c73fbb84702c744932fee44e70"
     },
     {
+      "path": "kb/diagrams/three-opamp-and-chopper-cfia.svg",
+      "bytes": 21573,
+      "sha256": "aa4d82a65c0cd0593eb0552678815f53db5085ca6a6a3d4134c10d06a5c137fc"
+    },
+    {
       "path": "kb/diagrams/tia-shunt-shunt-feedback.svg",
       "bytes": 15622,
       "sha256": "210b8da32a2550cca954f58ced04ecab64c225fc34693ab26461999651908125"
+    },
+    {
+      "path": "kb/diagrams/tow-thomas-and-gmc-tuned-biquad.svg",
+      "bytes": 20803,
+      "sha256": "9ae8a0a308ae501503198d009bbe8202d71267254b0452122b1536fc0df9a41a"
     },
     {
       "path": "kb/diagrams/two-stage-miller-opamp.svg",
@@ -379,24 +484,89 @@
       "sha256": "df96ea0f69246919613f673e1f39898eaaca8c09ea46c2d7dcbae3b715141c64"
     },
     {
+      "path": "kb/diagrams/vmc-type3-and-cmc-slope-comp.svg",
+      "bytes": 18314,
+      "sha256": "20e525019dc8aa4a24a773d626c58783e7118dfb0aded00b9ebb1570ab59fecd"
+    },
+    {
       "path": "kb/diagrams/wilson-current-mirror.svg",
       "bytes": 17037,
       "sha256": "2d073d24806f45060bf955e0d8075b71258934ec71fcdf45c65d982babeec71c"
     },
     {
       "path": "kb/github-skills/catalog.json",
-      "bytes": 59135,
-      "sha256": "ef04d42bbec932af1cd1ea453eeff5fa0a55e5e17f1b15922aee474d22bd5d31"
+      "bytes": 99465,
+      "sha256": "5c6f8e87341072f57ff59122269c780c9924ed97ae3bb89d19c98194e1bc5695"
     },
     {
       "path": "kb/glossary/terms-vi-en.json",
-      "bytes": 1336450,
-      "sha256": "0ad0a5e60e754efc7414441900e3c302f16b22453964fa1137a45852d6c8b59d"
+      "bytes": 1406715,
+      "sha256": "1f661cf2252ec5d9f84d9e573d93f439613f3a96a618dd10f93b832beeeae5a3"
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 160375,
-      "sha256": "a948ee1dd48e4cbca9e4ba065b04caadd9bceb5e1782b3b4f4dbbad65e4a72f0"
+      "bytes": 250375,
+      "sha256": "3158048b921fe085c3ee3a8ad3a09b8172deade03751820928d603226cf418d7"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
+      "bytes": 28196,
+      "sha256": "d867c6e86b12c189ee4a72cfd1299cb6e3f21e682e463ca4115b9ee322c261a8"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-active-rc-sallen-key-and-tow-thomas-biquads.md",
+      "bytes": 32373,
+      "sha256": "571a1ff0fa90951c66057edb64ff5cd75d908d5e5613cf4b51aab2d9496a0fb6"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-analog-mux-and-adc-track-hold-drivers.md",
+      "bytes": 31664,
+      "sha256": "bae6d0890443068486c09f44af7fd7712eebe763e31210a95d1a853b1b00b91d"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-central-bias-hub-powerup-and-sleep-gating.md",
+      "bytes": 30012,
+      "sha256": "a7c07862f262a0fe40640b72b5d0dc679decb326433fbff405d42a210cd600f1"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-deltasigma-modulator-sc-and-ct-architectures.md",
+      "bytes": 35394,
+      "sha256": "0d9d7701fceef40055839072d01820e77a7bca4eb281cd0460882aef8dba8c09"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-flash-and-pipelined-mdac-rsd-adcs.md",
+      "bytes": 31725,
+      "sha256": "13cfb73bd5565042ad402f8796b939652bd70f346284868af626167319ff974b"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-gm-c-filters-and-automatic-rc-gmc-tuning.md",
+      "bytes": 32143,
+      "sha256": "221ca74331f298725a4a208d3444962a9a349c7bb7ef85245fd531be11f13248"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-high-speed-lvds-cml-ctle-and-cdr-basics.md",
+      "bytes": 31854,
+      "sha256": "4a0ef96edf9c181f2cbc344e8fe545e2b6cd65c48484e1e589dd1cf7e6353240"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-instrumentation-amp-3opamp-and-chopper-cfia.md",
+      "bytes": 31761,
+      "sha256": "dfaeff64c6b740b25a367eaa5f3bd0f4bfcae1899e60d19c6c1108a202db7897"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-relaxation-rc-sawtooth-and-crystal-oscillators.md",
+      "bytes": 33638,
+      "sha256": "3dc672757fe14d9594db677843fc59ceaa1d8b2103f50d3b3ba4f6d3997f9e9f"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-resistor-string-r2r-and-current-steering-dacs.md",
+      "bytes": 32922,
+      "sha256": "24735086ac32536918c286b9ac11c83d41b7e870edda92a0093d0f6354c5ddf5"
+    },
+    {
+      "path": "kb/nodes/ams-filters-and-system/topo-schmitt-trigger-and-hysteresis-comparators.md",
+      "bytes": 35034,
+      "sha256": "2118845359f27db31a221ce7becdb834e99278ef9eb245caaf80d738ac83dd07"
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/concept-diffpair-mirror-pole-doublet.md",
@@ -514,6 +684,11 @@
       "sha256": "ee9c05d80b0ccab92c9dd97c3456dddb75816656fa214ed26837c777fd6805c8"
     },
     {
+      "path": "kb/nodes/eda-and-github-skills/skill-closed-loop-sizing-and-pareto-optimization.md",
+      "bytes": 25634,
+      "sha256": "e4651ec14ed5d9d917b1e928bf80e2af4d4c1745222ab7c80cf6581b2af97dbb"
+    },
+    {
       "path": "kb/nodes/eda-and-github-skills/skill-cmfb-continuous-and-sc-testbench.md",
       "bytes": 23720,
       "sha256": "c699cca846207a27e3dfb0de963512c00e59c2d14ed2612e9f5bd009db832733"
@@ -532,6 +707,16 @@
       "path": "kb/nodes/eda-and-github-skills/skill-gm-id-lookup-table-sizing.md",
       "bytes": 25331,
       "sha256": "cc62d20b6a1261ef1b2714c2d3a42a28d6dfeb762bb577f214299d725d7cd755"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-gpdk-techsweep-and-gmid-lut-interpolator.md",
+      "bytes": 22409,
+      "sha256": "d9bb9b37542dfd5a9a51550fbd792b0479687d8683a8ebeddfd07b2e44f86f74"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-ic617-live-ipc-bridge-and-schematic-json.md",
+      "bytes": 24791,
+      "sha256": "33a1ee84aab2f73f76ff7c0c6d100e496d5fdeeb41558b3c04db3f9ebe228e13"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-ic617-skill-sch-cdf-automation.md",
@@ -557,6 +742,11 @@
       "path": "kb/nodes/eda-and-github-skills/skill-post-layout-pex-drc-lvs-debug.md",
       "bytes": 24671,
       "sha256": "b749d266303a27ea31596e3d79fe0e1312290c1655330fc569fe91943eed496d"
+    },
+    {
+      "path": "kb/nodes/eda-and-github-skills/skill-psf-mos-op-waveform-and-spec-auditor.md",
+      "bytes": 23067,
+      "sha256": "6aeca9358417c7e6f6068b1dda7bf0b812eb3752ce6d9c74d71defa4d0b20bf2"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-sar-adc-cdac-coherent-fft-calibration.md",
@@ -819,6 +1009,66 @@
       "sha256": "e77d7f694b07a7b95e680839e6e8944c0b17c1eb43f515741dde3a414765001a"
     },
     {
+      "path": "kb/nodes/power-management-ic/law-boost-buckboost-rhp-zero-and-bandwidth-limit.md",
+      "bytes": 31672,
+      "sha256": "3f0144a01a907f35cbf1c14d27a9c53a32b06990b4535a1aa8f7928077907f94"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/law-dcdc-volt-second-ccm-dcm-and-state-space.md",
+      "bytes": 35516,
+      "sha256": "a2ace10013930ea52ad5a8e696b0fbfd6ad148cd3687fbd071045d1648c37c83"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb.md",
+      "bytes": 27579,
+      "sha256": "57e35333a49087df013c5f0ef3ab54348005e428dab9a1a73beaa9b9f902aa6c"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/tech-dcdc-cmc-subharmonic-slope-comp-and-cot.md",
+      "bytes": 32069,
+      "sha256": "92b56e503967f43f54be09937c96cd2674e28b325a3a5741f665a7f0e1d99cc4"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/tech-dcdc-vmc-type2-type3-compensator-synthesis.md",
+      "bytes": 34558,
+      "sha256": "ee82641124b7b017318fe038c47e70f93f2308986f1b5b72b5e122495e1c8b65"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-boost-inverting-and-4switch-buckboost.md",
+      "bytes": 31145,
+      "sha256": "cccdb5b83355508c151f57129d5a54bdc28dafd09badc7291a83ae5ca2c30055"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-capless-ldo-fvf-ahuja-dfc-and-sre.md",
+      "bytes": 34506,
+      "sha256": "d9fd1978671ca2aaf645b149c9e368503551c0c73a9ad1b83c926b7032d6c4ac"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks.md",
+      "bytes": 34106,
+      "sha256": "ae17ff4ee44f953fb971ae0c4e53337f5d22fed2011072b5a83fd9dce95ac3a5"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-pmic-protections-por-uvlo-softstart-ocp-tsd.md",
+      "bytes": 33588,
+      "sha256": "024a8af25f9b0cc36a4e8143251f2c1af52b7a1094600b729f65cd7fac6403f1"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-power-stage-hs-bootstrap-driver-deadtime.md",
+      "bytes": 33417,
+      "sha256": "84d3b769c6eac972f710d25cf0e2079f8457d19a653a033965b8e1cc4db64459"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-switched-capacitor-charge-pump-dcdc.md",
+      "bytes": 31128,
+      "sha256": "6f7a23d74da3df41e2a083cb526dbda3aa4a1c23d504b61bb0d76374f067daa1"
+    },
+    {
+      "path": "kb/nodes/power-management-ic/topo-synchronous-buck-converter-architecture.md",
+      "bytes": 34388,
+      "sha256": "8b5037fb53b8cfff6e62ad17107fbd120e0b44e5acce6848591c6340e301aef6"
+    },
+    {
       "path": "kb/nodes/references-and-biasing/law-ctat-ptat-temperature-cancellation.md",
       "bytes": 20131,
       "sha256": "13b6272d8827a3979c861f8f45f1a53a022d46c1f46ca9b89485e8ad322b2fe8"
@@ -1070,8 +1320,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1269191,
-      "sha256": "61836dcfd82b4b231bc0a6cf09af502a292b4c79d14ea6f67d1f0d17cacc291f"
+      "bytes": 1673085,
+      "sha256": "3f9faf5ac611577afedc974fb75039b0f2eaf45b05f07030f0b8e20933c61796"
     }
   ]
 }

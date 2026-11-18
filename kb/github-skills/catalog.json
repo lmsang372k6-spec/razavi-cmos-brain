@@ -1,6 +1,6 @@
 {
   "schema": "razavi-github-skills-catalog.v1",
-  "release": "2026.11.18.3",
+  "release": "2026.11.18.4",
   "updated_at": "2026-11-18",
   "title_vi": "Danh mục Kho Kỹ năng Thực chiến Analog IC, Cadence IC617, Spectre 15.1 & EDA trên GitHub (Đã Kiểm định)",
   "title_en": "Vetted GitHub Open-Source Analog IC, Cadence Virtuoso IC617, Spectre 15.1 & EDA Skills Catalog",
@@ -11,9 +11,9 @@
     "notice": "Mọi kho mã nguồn dưới đây đã được xác minh tồn tại thực tế qua GitHub API tại đúng mã băm commit khóa cứng, rà soát giấy phép (SPDX) và đánh giá mức độ tương thích thực tế với Cadence IC617 + Spectre 15.1 + GPDK180/090/045. Chỉ chắt lọc quy trình kỹ thuật và mẫu kiểm chứng bằng văn phong gốc; tuyệt đối không sao chép nguyên văn mã chưa cấp phép."
   },
   "stats": {
-    "vetted_count": 31,
-    "filtered_out_count": 6,
-    "skill_card_count": 22
+    "vetted_count": 52,
+    "filtered_out_count": 9,
+    "skill_card_count": 27
   },
   "categories": [
     {
@@ -55,6 +55,16 @@
       "id": "characterization-and-signoff",
       "title_vi": "Đặc tính hóa Theo Hợp đồng Datasheet (CACE), Đa Góc PVT & Monte Carlo",
       "title_en": "Datasheet-Driven Characterization (CACE), PVT & Monte Carlo Sign-Off"
+    },
+    {
+      "id": "pmic-dcdc-ldo-and-protection",
+      "title_vi": "Thiết kế Nguồn PMIC: Bộ biến đổi DC-DC Buck/Boost/SC, Capless LDO, Bandgap & Bảo vệ POR/UVLO",
+      "title_en": "PMIC Power Conversion: Switching DC-DC, Capless LDO, Bandgap & POR/UVLO Protection"
+    },
+    {
+      "id": "agentic-sizing-and-optimization",
+      "title_vi": "Tối ưu hóa Định cỡ Đa Mục tiêu, Tổng hợp Cấu trúc & Tác tử Thiết kế Khép kín",
+      "title_en": "Physics-Guided Sizing Optimization, Topology Synthesis & Closed-Loop EDA Benchmarks"
     }
   ],
   "repositories": [
@@ -78,7 +88,9 @@
         "skill-gm-id-lookup-table-sizing",
         "skill-folded-cascode-and-gainboost-sizing-flow",
         "tech-nanometer-vdsmin-gmid-sizing",
-        "tech-nanometer-opamp-design-case-studies"
+        "tech-nanometer-opamp-design-case-studies",
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "skill-closed-loop-sizing-and-pareto-optimization"
       ]
     },
     {
@@ -100,7 +112,8 @@
       "linked_nodes": [
         "skill-gm-id-lookup-table-sizing",
         "tech-nanometer-vdsmin-gmid-sizing",
-        "law-short-channel-effects"
+        "law-short-channel-effects",
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator"
       ]
     },
     {
@@ -145,7 +158,9 @@
         "skill-ic617-skill-sch-cdf-automation",
         "skill-ocean-parametric-testbench-runner",
         "skill-spectre-noise-dc-ac-tran-montecarlo",
-        "skill-spectre-pss-pac-pnoise-pstb"
+        "skill-spectre-pss-pac-pnoise-pstb",
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-psf-mos-op-waveform-and-spec-auditor"
       ]
     },
     {
@@ -166,7 +181,8 @@
       ],
       "linked_nodes": [
         "skill-ic617-skill-sch-cdf-automation",
-        "skill-ocean-parametric-testbench-runner"
+        "skill-ocean-parametric-testbench-runner",
+        "skill-ic617-live-ipc-bridge-and-schematic-json"
       ]
     },
     {
@@ -314,7 +330,8 @@
         "skill-ocean-parametric-testbench-runner",
         "skill-spectre-noise-dc-ac-tran-montecarlo",
         "skill-spectre-stb-diffstb-middlebrook",
-        "skill-spectre-pss-pac-pnoise-pstb"
+        "skill-spectre-pss-pac-pnoise-pstb",
+        "skill-psf-mos-op-waveform-and-spec-auditor"
       ]
     },
     {
@@ -702,7 +719,8 @@
       ],
       "linked_nodes": [
         "skill-5t-ota-root-cause-fault-tree",
-        "skill-amplifier-25-topology-selector"
+        "skill-amplifier-25-topology-selector",
+        "skill-closed-loop-sizing-and-pareto-optimization"
       ]
     },
     {
@@ -723,6 +741,475 @@
       "linked_nodes": [
         "skill-two-stage-miller-fault-tree",
         "skill-spectre-stb-diffstb-middlebrook"
+      ]
+    },
+    {
+      "id": "westonb-open-pmic",
+      "repo": "westonb/open-pmic",
+      "url": "https://github.com/westonb/open-pmic",
+      "pinned_commit_or_branch": "2ec3130e71791a275147c50bef978a48a7c98e15",
+      "license": "Apache-2.0",
+      "stars": 39,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Thiết kế gốc trên SKY130 (Xschem/ngspice/Magic); kiến trúc phân rã 9 khối con của bộ biến đổi Buck đồng bộ chế độ dòng đỉnh chuyển dịch 1-đối-1 sang GPDK180/090/045 trên Virtuoso IC617, kết hợp kiểm chứng độ ổn định vòng chuyển mạch bằng Spectre 15.1 `pss` + `pstb` hoặc mô hình trung bình `pwm_switch_avg_ccm_dcm.va`.",
+      "summary_vi": "Thiết kế cấp transistor mã nguồn mở hoàn chỉnh (Apache-2.0, Stanford EE272B) của bộ biến đổi hạ áp DC-DC chế độ dòng đỉnh (Peak-Current-Mode Synchronous Buck Converter), phân rã mạch lạc 9 khối con: tầng công suất HS/LS, điều khiển dead-time, cảm biến dòng chủ động, bộ điều chế PWM + bù độ dốc (slope compensation), dao động răng cưa, Error Amp Folded-Cascode và tính hiệu suất đa góc.",
+      "key_techniques": [
+        "Phân rã hệ thống Buck đồng bộ thành 9 khối chức năng độc lập kiểm chứng riêng trước khi đóng vòng toàn chip",
+        "Tổng hợp mạch tạo xung răng cưa tích hợp dòng bù độ dốc chống dao động hài phụ chu kỳ kép khi D > 0.5",
+        "Đo đạc đặc tính công tắc công suất, tổn hao diode thân trong thời gian chết và đường cong hiệu suất theo dòng tải qua góc SS/FF"
+      ],
+      "linked_nodes": [
+        "topo-synchronous-buck-converter-architecture",
+        "topo-power-stage-hs-bootstrap-driver-deadtime",
+        "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+        "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        "skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb"
+      ]
+    },
+    {
+      "id": "idea-fasoc-openfasoc",
+      "repo": "idea-fasoc/OpenFASOC",
+      "url": "https://github.com/idea-fasoc/OpenFASOC",
+      "pinned_commit_or_branch": "426c17025c7c01d6e7d4d259fb7f9e7d741cc5c4",
+      "license": "Apache-2.0",
+      "stars": 370,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Chạy độc lập trên máy chủ Python 3 / Docker bên ngoài và xuất GDSII/SPICE nhập vào IC617; đóng góp giá trị lớn nhất về kiến trúc bộ sinh mạch DC-DC tụ chuyển mạch nhiều tỷ số (`dcdc-gen`), hồi quy tự động Pre-PEX đối chiếu Post-PEX cho `ldo-gen` và lưới quét đặc tính `mos_char/gmId`.",
+      "summary_vi": "Khung tổng hợp tự động mạch tương tự và hỗn hợp từ đặc tả ra GDSII của ĐH Michigan & chương trình DARPA FASoC (Apache-2.0), bao gồm các bộ sinh PMU/Switched-Capacitor DC-DC đa cấu hình, LDO lai số–tương tự, cảm biến nhiệt độ, LC-DCO và thư viện P-cell tham số hóa `glayout`.",
+      "key_techniques": [
+        "Tái cấu hình tỷ số biến đổi tụ bay (Switched-Capacitor Charge-Pump DC-DC) tối ưu hiệu suất theo tải và điện áp vào",
+        "Quy trình kiểm chứng tự động đối chiếu trực tiếp đáp ứng sụt áp/ổn định giữa schematic trước layout và sau trích xuất ký sinh PEX",
+        "Mẫu chuẩn hóa ô bố cục tương tự tham số hóa độc lập quy trình chế tạo"
+      ],
+      "linked_nodes": [
+        "topo-switched-capacitor-charge-pump-dcdc",
+        "topo-cmos-ldo-regulator",
+        "skill-post-layout-pex-drc-lvs-debug",
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator"
+      ]
+    },
+    {
+      "id": "chriszonghaoli-sky130-ldo-rl",
+      "repo": "ChrisZonghaoLi/sky130_ldo_rl",
+      "url": "https://github.com/ChrisZonghaoLi/sky130_ldo_rl",
+      "pinned_commit_or_branch": "95adf17fc59804000ef6dc901241f0d4c7c419a1",
+      "license": "Apache-2.0",
+      "stars": 52,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Khuôn mẫu tách bạch các bài đo định lượng của bộ ổn áp LDO (Loop Gain/PM ở tải min/max, PSRR nhiều dải tần, Line/Load Regulation, Load Transient undershoot/overshoot) ánh xạ trực tiếp sang bộ kiểm toán `psf_audit.py` và tối ưu hóa `sizing_opt.py` trên Spectre 15.1.",
+      "summary_vi": "Kho thiết kế và tối ưu hóa tự động bộ ổn áp CMOS LDO cấp transistor kèm layout hoàn chỉnh (Apache-2.0, ICCAD), xây dựng hệ thống hàm mục tiêu đa chỉ tiêu và bộ testbench đánh giá đồng thời độ ổn định vòng, PSRR và đáp ứng bước nhảy dòng tải.",
+      "key_techniques": [
+        "Chuẩn hóa vector chỉ tiêu đánh giá LDO ở cả hai biên dòng tải cực tiểu và cực đại chống rơi vào bẫy ổn định một điểm",
+        "Tự động đo biên độ sụt áp/vọt áp quá độ (undershoot/overshoot) và thời gian hồi phục dưới sườn xung dòng tải nhanh",
+        "Kết hợp mô hình đồ thị cấu trúc mạch với vòng lặp tối ưu hóa tham số W/L và tụ bù"
+      ],
+      "linked_nodes": [
+        "topo-cmos-ldo-regulator",
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "skill-ldo-stability-load-line-psrr-tb",
+        "skill-closed-loop-sizing-and-pareto-optimization"
+      ]
+    },
+    {
+      "id": "johnkustin-bandgapreferencecircuit",
+      "repo": "johnkustin/bandgapReferenceCircuit",
+      "url": "https://github.com/johnkustin/bandgapReferenceCircuit",
+      "pinned_commit_or_branch": "7f9bb8bf0318db0888ac9a0bc881b0f2f36ea06b",
+      "license": "Apache-2.0",
+      "stars": 45,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Quy trình đối chiếu 4 chặng (Schematic -> Post-Layout PEX -> Monte Carlo Mismatch -> Đo kiểm chip Silicon thật) hoàn toàn tương thích với luồng sign-off khối Bandgap trên Cadence IC617 + Spectre 15.1.",
+      "summary_vi": "Thiết kế mạch tham chiếu điện áp CMOS Bandgap đã chế tạo và đo kiểm thực tế trên chip silicon (Apache-2.0, Stanford EE272B / IEEE SSCS Code-a-Chip), công bố đầy đủ mạch mồi khởi động, lõi PTAT/CTAT gương cascode tự phân cực, bố cục đồng tâm chung và dữ liệu đo phòng thí nghiệm đối chiếu trực tiếp với mô phỏng PEX/Monte Carlo.",
+      "key_techniques": [
+        "Đối chiếu định lượng dữ liệu đo thực nghiệm trên silicon với phân bố Monte Carlo và mô phỏng sau trích xuất ký sinh RC",
+        "Kiểm chứng quá độ bật/tắt nguồn chống khóa chết điểm không và cô lập ảnh hưởng của lệch ngẫu nhiên Op-Amp/gương dòng lên độ trôi nhiệt",
+        "Bố trí mặt bằng đồng tâm chung cho cụm BJT tỷ lệ 1:8 và mảng điện trở đơn vị"
+      ],
+      "linked_nodes": [
+        "topo-bandgap-reference-core",
+        "tech-bandgap-curvature-compensation-and-speed",
+        "skill-bandgap-startup-curvature-montecarlo-tb",
+        "skill-post-layout-pex-drc-lvs-debug"
+      ]
+    },
+    {
+      "id": "vyges-sg13cmos5l-ldo-capless",
+      "repo": "vyges/sg13cmos5l_vyges_ip__ldo_capless",
+      "url": "https://github.com/vyges/sg13cmos5l_vyges_ip__ldo_capless",
+      "pinned_commit_or_branch": "4f3b40e3a172c51b33ca0939f4c47aeb552f8263",
+      "license": "Apache-2.0",
+      "stars": 0,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Cấu trúc IP Capless LDO trên tiến trình CMOS 130nm của IHP và bộ bài đo quá độ có mạch tăng tốc động (`tb_ldo_boost`) chuyển dịch trực tiếp sang bài toán thiết kế Capless SoC LDO trên GPDK180/090/045 trong IC617.",
+      "summary_vi": "Khối IP bộ ổn áp LDO không tụ lọc ngoài (Output-Capacitor-Less LDO, Apache-2.0) có khả năng tinh chỉnh số và tích hợp mạch tăng cường dòng lái động (dynamic boost / SRE) kèm kịch bản quét đa góc PVT cho PSRR, ổn định vòng và sụt áp quá độ tải.",
+      "key_techniques": [
+        "Thiết kế ổn định nội vi cho Capless LDO chỉ mang tụ tải trên chip cỡ chục đến trăm pF mà không cần ESR tụ gốm ngoài",
+        "Mạch tăng tốc động kích hoạt tức thời khi sườn tải nhảy bậc thang giúp nén biên độ sụt áp trong khi giữ dòng tĩnh micro-ampere",
+        "Tích hợp mạng điện trở tinh chỉnh số hiệu chuẩn mức áp ngõ ra qua các góc quy trình"
+      ],
+      "linked_nodes": [
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "skill-ldo-stability-load-line-psrr-tb",
+        "topo-cmos-ldo-regulator"
+      ]
+    },
+    {
+      "id": "efabless-sky130-power-on-reset",
+      "repo": "efabless/sky130_ef_ip__power_on_reset",
+      "url": "https://github.com/efabless/sky130_ef_ip__power_on_reset",
+      "pinned_commit_or_branch": "de7a9fd892ccb2a4f7c9e77c1ad66bd3f4821704",
+      "license": "Apache-2.0",
+      "stars": 5,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Kiến trúc giám sát nguồn phân cấp và hợp đồng kiểm chứng CACE quét tốc độ dốc nguồn `VDD` (từ micro-giây đến hàng chục mili-giây kèm sụt áp brown-out) chuyển đổi 1-đối-1 sang testbench Spectre 15.1 trên IC617.",
+      "summary_vi": "Khối IP mạch đặt lại khi cấp nguồn (Power-On Reset — POR, Apache-2.0) chuẩn công nghiệp của Efabless, ghép phân cấp chuẩn tham chiếu áp CMOS công suất siêu thấp, LDO nội bộ và lõi POR tạo trễ có trễ ngưỡng chống sụt nguồn tạm thời (brown-out).",
+      "key_techniques": [
+        "Kiến trúc khởi động tự chủ không phụ thuộc xung nhịp ngoài, giữ chặt cờ POR mức tích cực suốt giai đoạn nguồn VDD chưa vượt ngưỡng an toàn",
+        "Cơ chế xả nhanh tụ tạo trễ khi nguồn sụt chớp nhoáng (brown-out recovery) kết hợp cửa sổ trễ Schmitt chống rung nhiễu",
+        "Ma trận testbench quét dốc lên/xuống nguồn PWL chậm và nhanh trên toàn dải nhiệt độ -40 °C đến 125 °C"
+      ],
+      "linked_nodes": [
+        "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "rtimothyedwards-sky130-biasgen",
+      "repo": "RTimothyEdwards/sky130_ef_ip__biasgen",
+      "url": "https://github.com/RTimothyEdwards/sky130_ef_ip__biasgen",
+      "pinned_commit_or_branch": "9d1ceb5dbf2168599f9e55f1053c155cf05de829",
+      "license": "Apache-2.0",
+      "stars": 4,
+      "category": "pmic-dcdc-ldo-and-protection",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Mẫu tổ chức trạm tạo và phân phối dòng phân cực trung tâm cấp chip (kèm công tắc ngắt ngủ `ena` và mảng nhánh gương cascode độc lập) áp dụng trực tiếp khi thiết kế kiến trúc phân cực đa khối trên Virtuoso IC617.",
+      "summary_vi": "Khối IP trạm tạo dòng và phân cực trung tâm (Central Bias Generator, Apache-2.0) do R. Timothy Edwards thiết kế, cung cấp đồng thời các đầu ra dòng phân cực độc lập nguồn/nhiệt độ với cách ly xuyên nhiễu giữa các khối tương tự trên cùng chip.",
+      "key_techniques": [
+        "Phân phối dòng phân cực hình sao từ trạm trung tâm tới từng khối chức năng thay vì kéo đường điện áp cổng VGS nhạy nhiễu đi xa",
+        "Tích hợp chân điều khiển bật/tắt chế độ ngủ (`enable` / `power-down`) kéo cứng các nút nội không để trôi lơ lửng",
+        "Đặc tính hóa tự động độ trôi dòng theo nguồn cấp, nhiệt độ và sai lệch Monte Carlo"
+      ],
+      "linked_nodes": [
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "tech-supply-independent-bias-and-startup",
+        "topo-lvccml-wide-swing-mirror"
+      ]
+    },
+    {
+      "id": "ggventurini-python-deltasigma",
+      "repo": "ggventurini/python-deltasigma",
+      "url": "https://github.com/ggventurini/python-deltasigma",
+      "pinned_commit_or_branch": "15f8466c5be527963225b881d29a3b4087641ba3",
+      "license": "NOASSERTION (BSD-style derivative of Richard Schreier's MATLAB delsig toolbox)",
+      "stars": 100,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Chạy trên máy trạm phân tích Python 3 bên ngoài để tổng hợp hàm truyền nhiễu NTF, cân bằng dải động nút tích phân và xuất ma trận hệ số tụ/hỗ dẫn chính xác trước khi dựng schematic bộ điều chế Delta-Sigma SC hoặc CT trên Virtuoso IC617.",
+      "summary_vi": "Bản chuyển dịch Python chuẩn xác của bộ công cụ kinh điển Richard Schreier Delta-Sigma Toolbox (`delsig`), hỗ trợ trọn vẹn `synthesizeNTF`, hiện thực hóa cấu trúc vòng lọc `realizeNTF` (`CIFB`, `CIFF`, `CRFB`, `CRFF`), cân bằng biên độ `scaleABCD` và ánh xạ thời gian liên tục `mapABCD`.",
+      "key_techniques": [
+        "Tổng hợp hàm truyền nhiễu bậc cao có tối ưu điểm không trên vòng tròn đơn vị dưới ràng buộc ổn định chuẩn vô cùng Lee (`||H_inf|| < 1.5`)",
+        "Cân bằng dải động (`scaleABCD`) giữ đỉnh dao động của mọi ngõ ra OTA nằm gọn trong cửa sổ tuyến tính nguồn thấp",
+        "Chuyển đổi tương đương xung bất biến giữa vòng lọc tụ chuyển mạch rời rạc và vòng lọc Gm-C / Active-RC thời gian liên tục"
+      ],
+      "linked_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "topo-switched-capacitor-integrator-parasitic-insensitive"
+      ]
+    },
+    {
+      "id": "r09g-iadc",
+      "repo": "r09g/iadc",
+      "url": "https://github.com/r09g/iadc",
+      "pinned_commit_or_branch": "b8c2c4006a0091d6bbcb35d19028b0b4c1393bf4",
+      "license": "MIT",
+      "stars": 25,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Cấu trúc sơ đồ phân cấp từ bộ tạo xung hai pha không chồng lấn, tích phân SC vi sai, comparator động tới quy hoạch mảng tụ tâm chung và kiểm chứng LVS/PEX đối ứng trực tiếp với luồng thiết kế trên IC617.",
+      "summary_vi": "Thiết kế hoàn chỉnh từ cấp kiến trúc xuống bố cục GDSII (MIT, Stanford EE372) của bộ biến đổi 12-bit 10-kSPS Incremental Delta-Sigma ADC (`OSR = 512`, `Fs = 5.12 MHz`), gồm bộ điều chế tụ chuyển mạch, sơ đồ ghép tụ đồng tâm chung, bộ lọc số decimation và hậu kiểm ký sinh.",
+      "key_techniques": [
+        "Phối hợp đặt lại định kỳ bộ điều chế Delta-Sigma bậc cao với bộ lọc số Sinc/tích phân để đo lường cảm biến chính xác từng mẫu",
+        "Quy hoạch mẫu ghép mảng tụ đơn vị đối xứng tâm chung giảm sai lệch tỷ số hệ số vòng lọc",
+        "Kiểm chứng toàn chuỗi nhiễu lấy mẫu kT/C, rò điện tích công tắc và suy giảm sau trích xuất PEX"
+      ],
+      "linked_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "skill-switched-capacitor-charge-injection-pac-tb",
+        "skill-analog-layout-common-centroid-matching"
+      ]
+    },
+    {
+      "id": "iic-jku-audiodac-v1",
+      "repo": "iic-jku/iic-audiodac-v1",
+      "url": "https://github.com/iic-jku/iic-audiodac-v1",
+      "pinned_commit_or_branch": "66ddda4d1ca46a3cccc34f606f75adea44b595f0",
+      "license": "Apache-2.0",
+      "stars": 36,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Khuôn mẫu phân chia ranh giới giao tiếp số–tương tự, chống nhiễu xung nhịp trên tầng tái tạo tương tự và lọc thông thấp đầu ra áp dụng tốt cho thiết kế DAC quá lấy mẫu trong môi trường IC617 / AMS.",
+      "summary_vi": "Thiết kế chip 16-bit 48-kHz Delta-Sigma Audio DAC đã gửi chế tạo thực tế của nhóm GS. Harald Pretl (JKU Linz, Apache-2.0), kết hợp bộ lọc nội suy quá lấy mẫu số, bộ định dạng nhiễu bậc cao và tầng đệm lọc thông thấp tương tự đầu ra.",
+      "key_techniques": [
+        "Kiến trúc chuỗi nội suy số và điều chế Delta-Sigma đẩy nhiễu lượng tử ra khỏi dải âm thanh trước khi biến đổi sang miền tương tự",
+        "Thiết kế tầng lọc thông thấp tích cực thời gian liên tục ở ngõ ra DAC làm trơn bậc thang cao tần mà không gây méo hài THD",
+        "Đồng mô phỏng kiểm chứng toàn tuyến số–tương tự từ luồng mã PCM đến phổ FFT ngõ ra tương tự"
+      ],
+      "linked_nodes": [
+        "topo-resistor-string-r2r-and-current-steering-dacs",
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "topo-active-rc-sallen-key-and-tow-thomas-biquads"
+      ]
+    },
+    {
+      "id": "bmurmann-adc-survey",
+      "repo": "bmurmann/ADC-survey",
+      "url": "https://github.com/bmurmann/ADC-survey",
+      "pinned_commit_or_branch": "00b4b855de5ce6bdf584a6aace354380022f1de4",
+      "license": "BSD-3-Clause",
+      "stars": 327,
+      "category": "adc-dac-mixed-signal",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Dữ liệu chuẩn toàn cầu độc lập công cụ EDA, dùng bắt buộc ở Giai đoạn 1–2 của chu trình thiết kế trên IC617 để kiểm tra tính khả thi vật lý của đặc tả (SNDR, Fs, Công suất, Jitter khẩu độ) trước khi chọn kiến trúc SAR, Delta-Sigma, Pipeline hay Flash.",
+      "summary_vi": "Cơ sở dữ liệu thống kê toàn bộ các công bố ADC tại ISSCC và Symposia on VLSI Circuits từ năm 1997 đến nay do GS. Boris Murmann duy trì (BSD-3-Clause), định hình bản đồ biên hiệu năng Walden FoM_W, Schreier FoM_S và ranh giới chọn kiến trúc bộ chuyển đổi.",
+      "key_techniques": [
+        "Kiểm tra biên vật lý công suất tối thiểu theo nhiễu nhiệt Schreier FoM_S ở độ phân giải cao và hiệu quả chuyển mạch Walden FoM_W ở độ phân giải trung bình",
+        "Định lượng trần độ phân giải bị khóa bởi nhiễu rung pha xung nhịp lấy mẫu (aperture jitter) theo tích Fin * sigma_t",
+        "Phân vùng miền thống trị thực tế giữa bốn kiến trúc: Delta-Sigma, SAR, Pipelined MDAC và Time-Interleaved/Flash"
+      ],
+      "linked_nodes": [
+        "topo-flash-and-pipelined-mdac-rsd-adcs",
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "tech-hierarchical-chip-spec-budgeting-and-interfaces"
+      ]
+    },
+    {
+      "id": "bmurmann-book-on-mos-stages",
+      "repo": "bmurmann/Book-on-MOS-stages",
+      "url": "https://github.com/bmurmann/Book-on-MOS-stages",
+      "pinned_commit_or_branch": "de27e862689ba41fb4957aa94366026d02d5724a",
+      "license": "CC-BY-4.0 (companion scripts & figures — see upstream README)",
+      "stars": 404,
+      "category": "gm-id-sizing",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Phương pháp phân tích thống nhất các tầng khuếch đại MOS cơ bản (CS, CG, CD/SF, Cascode, Diff-pair) bằng thông số tín hiệu nhỏ trích xuất trực tiếp từ bảng tra `gm/ID` khớp tuyệt đối với công cụ `gmid_lut.py` và Spectre 15.1 trên GPDK.",
+      "summary_vi": "Kho mã nguồn và hình vẽ đi kèm chuyên khảo mở Analysis and Design of Elementary MOS Amplifier Stages của GS. Boris Murmann, hệ thống hóa chính xác hàm truyền, trở kháng vào/ra, cực/không và hệ số nhiễu thừa gamma cho mọi tầng MOS cơ sở ở chế độ kênh ngắn.",
+      "key_techniques": [
+        "Dẫn xuất biểu thức độ lợi, băng thông GBW và cực phụ của các tầng CS, CG, SF và Cascode không phụ thuộc giả định kênh dài",
+        "Phân tích định lượng mối liên hệ giữa điện dung tự tải Cdd/Cgg với tần số cắt nội tại fT trên đồ thị đánh đổi công nghệ",
+        "Tối ưu hóa điểm chọn gm/ID để cực tiểu hóa công suất dưới ràng buộc tích độ lợi–băng thông và sàn nhiễu nhiệt"
+      ],
+      "linked_nodes": [
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "skill-gm-id-lookup-table-sizing",
+        "concept-choice-of-transistor-configurations",
+        "law-noise-in-single-stage-amplifiers"
+      ]
+    },
+    {
+      "id": "ihp-gmbh-analogacademy",
+      "repo": "IHP-GmbH/IHP-AnalogAcademy",
+      "url": "https://github.com/IHP-GmbH/IHP-AnalogAcademy",
+      "pinned_commit_or_branch": "d1c892d66bd6f40af481ff1514b7461e38ac4aa8",
+      "license": "Apache-2.0",
+      "stars": 180,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Cấu trúc bài thực hành chuẩn hóa của viện nghiên cứu bán dẫn IHP (từ trích xuất đường cong `gm/ID`, thiết kế Bandgap chạy Monte Carlo mismatch, giải phẫu chốt động StrongARM đến SAR ADC 8-bit và trích xuất ký sinh RC) đối ứng trực tiếp với luồng đào tạo và sign-off trên Virtuoso IC617.",
+      "summary_vi": "Chương trình đào tạo thiết kế vi mạch tương tự thực chiến chính thức của Viện Vi điện tử IHP (Đức, Apache-2.0) trên tiến trình 130nm BiCMOS/CMOS, bao phủ trọn vẹn định cỡ gm/ID, tham chiếu Bandgap, bộ so sánh StrongARM, SAR ADC và hậu kiểm PEX.",
+      "key_techniques": [
+        "Quy trình tách biệt khâu khảo sát đặc tính linh kiện gm/ID với khâu kiểm chứng thống kê Monte Carlo mismatch riêng phần và kết hợp process+mismatch",
+        "Phân tích miền thời gian từng pha hoạt động của bộ so sánh chốt động StrongARM (tiền khuếch đại tích phân, tái sinh dương và đặt lại)",
+        "Hướng dẫn rà soát ký sinh điện trở–điện dung sau layout cho các nút nhạy cảm trong Bandgap và mảng tụ SAR"
+      ],
+      "linked_nodes": [
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "skill-bandgap-startup-curvature-montecarlo-tb",
+        "skill-comparator-kickback-offset-metastability-tb",
+        "skill-sar-adc-cdac-coherent-fft-calibration"
+      ]
+    },
+    {
+      "id": "wulffern-aicex",
+      "repo": "wulffern/aicex",
+      "url": "https://github.com/wulffern/aicex",
+      "pinned_commit_or_branch": "2820aec687ffd46ac37785facbbfdf5484fb8ec1",
+      "license": "MIT",
+      "stars": 47,
+      "category": "analog-courseware-and-benchmarks",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Tổ chức dự án phân cấp theo từng IP tương tự có ma trận góc PVT/Monte Carlo tự động và quy ước đặt tên chân điều khiển/phân cực rất sạch để tham khảo cấu trúc dự án đa khối (`project.json` / `spec.json`) trên IC617.",
+      "summary_vi": "Tập hợp các khối vi mạch tương tự đã gửi chế tạo thực tế của GS. Carsten Wulff (NTNU, MIT), minh họa kiến trúc quản lý thiết kế mô-đun hóa cho khối tham chiếu phân cực, cảm biến nhiệt độ và chuyển đổi dữ liệu tiết kiệm năng lượng.",
+      "key_techniques": [
+        "Tổ chức ma trận mô phỏng hồi quy tự động qua tổ hợp góc quy trình, điện áp nguồn và nhiệt độ cho từng khối con trước khi ghép đỉnh",
+        "Thiết kế giao diện phân cực và điều khiển số rõ ràng phục vụ tái sử dụng IP tương tự qua nhiều đợt tape-out"
+      ],
+      "linked_nodes": [
+        "topo-sar-adc-charge-redistribution-architecture",
+        "topo-central-bias-hub-powerup-and-sleep-gating",
+        "skill-analog-layout-common-centroid-matching",
+        "skill-cace-spec-driven-characterization-contract"
+      ]
+    },
+    {
+      "id": "efabless-sky130-pa-instramp",
+      "repo": "efabless/sky130_pa_ip__instramp",
+      "url": "https://github.com/efabless/sky130_pa_ip__instramp",
+      "pinned_commit_or_branch": "67a57bbfeef03e70fdaea05ec05004bdb09a8e51",
+      "license": "Apache-2.0",
+      "stars": 5,
+      "category": "amplifier-sizing-and-diagnosis",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Tài liệu thiết kế gốc của GS. Phillip E. Allen và bộ hợp đồng đo kiểm CACE (CMRR, PSRR, Gain Error qua các mức chọn số, ICMR, Noise và Offset Monte Carlo) áp dụng trực tiếp làm chuẩn thiết kế INA/PGA trên Virtuoso IC617.",
+      "summary_vi": "Khối IP Bộ khuếch đại Đo lường Độ lợi Khả trình (Instrumentation Amplifier / PGA, Apache-2.0) do chính GS. Phillip E. Allen thiết kế và tài liệu hóa, trình bày trọn vẹn từ tính toán lý thuyết, chọn cấu trúc nhiều op-amp, mạng điện trở chọn độ lợi số đến layout và đặc tính hóa đa góc.",
+      "key_techniques": [
+        "Kiến trúc khuếch đại đo lường vi sai trở kháng vào cao kết hợp mạng thang điện trở chuyển mạch CMOS chọn bậc độ lợi chính xác",
+        "Kiểm soát dải điện áp chế độ chung nút nội (diamond plot) tránh kẹp bão hòa tầng đầu khi khuếch đại tín hiệu vi sai lớn",
+        "Đánh giá đồng bộ sai số độ lợi, CMRR suy giảm do lệch điện trở và nhiễu đầu vào trên toàn bộ các mã chọn độ lợi"
+      ],
+      "linked_nodes": [
+        "topo-instrumentation-amp-3opamp-and-chopper-cfia",
+        "skill-cace-spec-driven-characterization-contract",
+        "concept-cm-response-and-cmrr"
+      ]
+    },
+    {
+      "id": "deanyou-virtuoso-cli",
+      "repo": "deanyou/virtuoso-cli",
+      "url": "https://github.com/deanyou/virtuoso-cli",
+      "pinned_commit_or_branch": "74a9fbcebdd38524b9dca3a6643e17974b6d5cf0",
+      "license": "MIT",
+      "stars": 45,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Kiến trúc client biên dịch tĩnh giao tiếp TCP/JSON với daemon pure-SKILL trong CIW giải quyết xuất sắc rào cản thiếu Python 3 trên RHEL 6.5; khi áp dụng trên IC617 cần dùng nhóm hàm `asi`/`ocean` truyền thống thay cho các hàm Maestro `mae*` của IC618+.",
+      "summary_vi": "Công cụ dòng lệnh tốc độ cao (MIT) kết nối tác tử dòng lệnh với phiên Cadence Virtuoso đang mở qua cầu nối SKILL IPC, đi kèm 29 mô-đun kỹ năng thực chiến bao phủ duyệt thư viện, dựng schematic, tái tạo netlist OCEAN, chạy quét Spectre và gỡ lỗi giao diện.",
+      "key_techniques": [
+        "Giao tiếp IPC độ trễ thấp trực tiếp với phiên Virtuoso đang chạy giúp tránh xung đột khóa tệp `.cdslck` và không tốn thêm license",
+        "Phân tách mô-đun kỹ năng theo từng tác vụ nguyên tử: khảo sát cell, đặt/nối dây schematic, thiết lập mô phỏng và đo kiểm sóng",
+        "Tổng hợp các bẫy thực tế khi truyền chuỗi thoát ký tự giữa shell Linux, SKILL và netlist Spectre"
+      ],
+      "linked_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-ocean-parametric-testbench-runner"
+      ]
+    },
+    {
+      "id": "si-view-via",
+      "repo": "si-view/via",
+      "url": "https://github.com/si-view/via",
+      "pinned_commit_or_branch": "64b0ae3b3aa47b73079f9ca787506747b690e71f",
+      "license": "MIT (declared in Cargo.toml)",
+      "stars": 12,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-1-production-infra",
+      "ic617_compatibility": "Tương thích trực tiếp cực cao với Cadence Virtuoso IC617 trên RHEL 6.5: phần server chỉ gồm 1 tệp pure SKILL (`via.il`) giao tiếp qua tiến trình phụ Unix domain socket có mã xác thực phiên cục bộ, là hình mẫu trực tiếp cho cặp `ic617_live_bridge.il` + `ic617_client.py` chuẩn Python 2.6.6.",
+      "summary_vi": "Cầu nối IPC tối giản và an toàn (MIT) cho phép gửi biểu thức SKILL và nhận phản hồi cấu trúc JSON từ phiên Virtuoso CIW đang mở qua Unix domain socket `/tmp/via-<user>.sock` với cơ chế xác thực mã phiên ngẫu nhiên.",
+      "key_techniques": [
+        "Sử dụng `ipcBeginProcess` ngay trong SKILL để khởi chạy cầu nối Unix socket cục bộ mà không cần cài Python 3 bên trong tiến trình Virtuoso",
+        "Bảo vệ kênh IPC trên máy chủ dùng chung bằng quyền thư mục chặt (`0700`) và mã xác thực phiên (session token)",
+        "Đọc và cập nhật cellView đang mở trực tiếp trong bộ nhớ của người dùng mà không gây đụng độ khóa `.cdslck`"
+      ],
+      "linked_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation"
+      ]
+    },
+    {
+      "id": "silicad-analog-mcp",
+      "repo": "SiliCAD/Analog_MCP",
+      "url": "https://github.com/SiliCAD/Analog_MCP",
+      "pinned_commit_or_branch": "606ac2eba83233d8834ce9fa8eb889c5145c7611",
+      "license": "MIT",
+      "stars": 38,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Phía máy chủ Linux Cadence chỉ chạy thuần kịch bản SKILL (`MCP_setup.il`) tương thích 100% với IC617 trên RHEL 6.5 không đòi hỏi Python 3 trên guest; đặc biệt mẫu bọc `errset(evalstring(...) t)` bên trong `unwindProtect` chuyển hướng `woport` và tự nạp `libInit.il` là chuẩn mực an toàn cho CIW.",
+      "summary_vi": "Máy chủ giao thức Model Context Protocol (MIT) điều khiển Cadence Virtuoso từ xa qua kênh SSH tốc độ cao, nổi bật với bộ xử lý pure-SKILL bắt trọn cả giá trị trả về, luồng in chuẩn `stdout` lẫn thông báo lỗi của CIW và tự động khởi tạo thư viện PDK.",
+      "key_techniques": [
+        "Bọc lệnh đánh giá động `errset(evalstring(cmd) t)` trong khối `unwindProtect` khôi phục cổng xuất `poport`/`woport` chống làm câm cửa sổ CIW khi có lỗi cú pháp",
+        "Tự động gọi `ddGetObj` kích hoạt `libInit.il` của PDK trước khi chạy callback CDF trong phiên mới mở",
+        "Biểu diễn sơ đồ kết nối mạch dưới dạng văn bản có cấu trúc giúp tác tử kiểm tra chéo topology trước khi sửa OpenAccess"
+      ],
+      "linked_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation"
+      ]
+    },
+    {
+      "id": "toonbettens-psf-parser",
+      "repo": "ToonBettens/psf-parser",
+      "url": "https://github.com/ToonBettens/psf-parser",
+      "pinned_commit_or_branch": "05021e6e62cdb9aebf1ee1a98609bb4b3a4f2d16",
+      "license": "MIT",
+      "stars": 13,
+      "category": "cadence-virtuoso-spectre-bridge",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Giải mã chính xác cấu trúc tệp kết quả Parameter Storage Format của Spectre 15.1 (cả `psfascii` lẫn `psfbin` cho DC OP `STRUCT`, AC, STB, sweeps và Monte Carlo; lưu ý với phân tích quá độ nên chỉ định rõ `-format psfascii` hoặc `psfbin` thay vì `psfxl`) mà không phụ thuộc gói ngoài.",
+      "summary_vi": "Trình phân tích tệp kết quả mô phỏng Cadence Spectre PSF thuần Python không phụ thuộc thư viện ngoài (MIT), xử lý trọn vẹn định nghĩa kiểu dữ liệu phức hợp `STRUCT`, bảng ánh xạ nhóm tín hiệu `TRACE GROUP` và dữ liệu quét tham số.",
+      "key_techniques": [
+        "Phân tích máy trạng thái qua đủ 5 phân đoạn `HEADER`, `TYPE`, `SWEEP`, `TRACE` và `VALUE` thay vì chỉ quét biểu thức chính quy đơn giản",
+        "Giải mã bản ghi `STRUCT` nhiều trường của mô hình transistor BSIM4 trong `dcOpInfo.info` (`region`, `ids`, `gm`, `gds`, `vth`, `vdsat`, `cgg`)",
+        "Ánh xạ mã nhóm `GROUP` trong khối `TRACE` và khôi phục độ dài sóng nén sai phân khớp tuyệt đối với trục thời gian/tần số"
+      ],
+      "linked_nodes": [
+        "skill-psf-mos-op-waveform-and-spec-auditor",
+        "skill-ocean-parametric-testbench-runner",
+        "skill-spectre-noise-dc-ac-tran-montecarlo"
+      ]
+    },
+    {
+      "id": "arcadia-1-analog-design-bench",
+      "repo": "Arcadia-1/analog-design-bench",
+      "url": "https://github.com/Arcadia-1/analog-design-bench",
+      "pinned_commit_or_branch": "972f7cd7c95381134387b250edf18f3bd23bdd25",
+      "license": "Apache-2.0 (evaluation harness) / CC-BY-NC-4.0 (benchmark tasks — testbench contract structure reference only)",
+      "stars": 53,
+      "category": "agentic-sizing-and-optimization",
+      "quality_tier": "tier-1-foundational",
+      "ic617_compatibility": "Khuôn mẫu cấu trúc bài đo đa góc PVT và Monte Carlo cho 50 bài toán mạch thực tế (Capless LDO, NMOS-pass LDO, Regulated Charge-Pump, 2:1 SC Converter, Bootstrap Driver, Ahuja 2-Stage OTA, Gm-C Biquad, Delta-Sigma ADC, R-DAC, High-PSRR Bandgap) là tài liệu tham chiếu chuẩn để thiết kế hợp đồng `spec.json` trên Spectre 15.1.",
+      "summary_vi": "Bộ chuẩn đánh giá 50 bài toán thiết kế mạch tương tự đa góc PVT và Monte Carlo bao phủ rộng khắp từ quản lý nguồn PMIC (Capless LDO, Charge-Pump, Bootstrap Driver), bộ lọc liên tục Gm-C biquad, bộ biến đổi dữ liệu đến mạch tạo dao động công suất thấp.",
+      "key_techniques": [
+        "Định nghĩa ma trận kiểm chứng nghiêm ngặt kết hợp góc quy trình cực trị, biên điện áp nguồn, biên nhiệt độ và thống kê lệch ngẫu nhiên",
+        "Bao phủ các bài đo chuyên biệt cho khối PMIC và AMS ngoài sách giáo khoa cơ bản: quá độ tải Capless LDO, hiệu suất tầng công suất, dải tuyến tính biquad Gm-C và nhiễu gợn bơm điện tích",
+        "Chấm điểm tách bạch giữa tính hợp lệ vật lý điểm làm việc DC và mức đạt ngưỡng của từng chỉ tiêu động"
+      ],
+      "linked_nodes": [
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "topo-power-stage-hs-bootstrap-driver-deadtime",
+        "topo-gm-c-filters-and-automatic-rc-gmc-tuning",
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "skill-psf-mos-op-waveform-and-spec-auditor"
+      ]
+    },
+    {
+      "id": "dimplekochar-ledro",
+      "repo": "dimplekochar/LEDRO",
+      "url": "https://github.com/dimplekochar/LEDRO",
+      "pinned_commit_or_branch": "e970d3059e375d35ea68d5e5e767798403e5404a",
+      "license": "UNLICENSED (MIT & MIT-IBM arXiv:2411.12930 paper companion — search-space pruning & trust-region methodology reference only)",
+      "stars": 17,
+      "category": "agentic-sizing-and-optimization",
+      "quality_tier": "tier-2-domain-specialist",
+      "ic617_compatibility": "Triết lý kết hợp tri thức vật lý mạch để cắt tỉa hộp tìm kiếm tham số (`W`, `L`, `I_bias`, `R_z`, `C_c`) với thuật toán tối ưu hóa vùng tin cậy cục bộ được hiện thực hóa thuần thư viện chuẩn Python 2.6.6+ trong `tools/sizing_opt.py` cho Spectre 15.1 (cùng hướng tiếp cận phân tách cấu trúc–tối ưu của `laiyao1/AnalogCoderPro` `5db764d33889` và kiểm tra đồ thị kết nối `xz-group/AnalogGenie` `efc25358939c`).",
+      "summary_vi": "Phương pháp tối ưu hóa kích thước mạch tương tự tiết kiệm mẫu mô phỏng (MIT & MIT-IBM Watson AI Lab), khắc phục sự hội tụ chậm của tối ưu hóa hộp đen truyền thống bằng cách dùng lập luận vật lý mạch thu hẹp miền tìm kiếm kết hợp bộ giải vùng tin cậy (Trust-Region Optimization).",
+      "key_techniques": [
+        "Cắt tỉa không gian tham số nhiều chiều về vùng khả thi vật lý quanh điểm định cỡ giải tích trước khi gọi bộ mô phỏng SPICE/Spectre",
+        "Tối ưu hóa vùng tin cậy trong không gian biến chuẩn hóa logarit giúp đạt nghiệm tối ưu Pareto công suất/FoM chỉ sau vài chục lần chạy mô phỏng",
+        "Tái định tâm hộp tìm kiếm động dựa trên độ nhạy địa phương và biên độ vi phạm ràng buộc vùng bão hòa"
+      ],
+      "linked_nodes": [
+        "skill-closed-loop-sizing-and-pareto-optimization",
+        "skill-gpdk-techsweep-and-gmid-lut-interpolator",
+        "tech-opamp-step-by-step-sizing-procedure"
       ]
     }
   ],
@@ -750,6 +1237,18 @@
     {
       "repo": "Amarkumar008/Pandas_Profiling-",
       "reason_vi": "Loại bỏ: nhiễu từ khóa tìm kiếm ('EDA' = Exploratory Data Analysis trong khoa học dữ liệu bảng, hoàn toàn không liên quan đến Electronic Design Automation vi mạch)."
+    },
+    {
+      "repo": "NVlabs/ChipNeMo (and NVIDIA/ChipNeMo, AmpAgent)",
+      "reason_vi": "Loại bỏ (HTTP 404 Not Found qua GitHub API): các bài báo công nghiệp nổi tiếng về LLM cho thiết kế chip/khuếch đại nhưng tác giả không công bố kho mã nguồn hoặc trọng số mở chính thức trên GitHub."
+    },
+    {
+      "repo": "mdmfernandes/socad",
+      "reason_vi": "Loại bỏ (commit dcd272e12dbc, GPL-3.0): chính tác giả gắn thông báo ngừng bảo trì từ nhiều năm trước; kiến trúc IPC cũ đã được vượt qua hoàn toàn bởi `si-view/via` (MIT) và `deanyou/virtuoso-cli` (MIT)."
+    },
+    {
+      "repo": "wulffern/ocs",
+      "reason_vi": "Loại bỏ (commit 2818e456e973, 1 sao): gói bọc OCEAN viết bằng Perl ở mức thử nghiệm alpha 0.1 thiếu tài liệu, chính tác giả cảnh báo không ổn định cho luồng thiết kế thực tế."
     }
   ]
 }

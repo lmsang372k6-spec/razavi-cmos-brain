@@ -1,0 +1,160 @@
+{
+  "checklist_id": "dcdc-switching-converter",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến & Kiểm định cho Bộ Biến đổi Nguồn Chuyển mạch DC-DC CMOS (Buck, Boost, Buck-Boost & Charge-Pump)",
+  "applies_to": [
+    "law-dcdc-volt-second-ccm-dcm-and-state-space",
+    "law-boost-buckboost-rhp-zero-and-bandwidth-limit",
+    "topo-synchronous-buck-converter-architecture",
+    "topo-boost-inverting-and-4switch-buckboost",
+    "topo-switched-capacitor-charge-pump-dcdc",
+    "topo-power-stage-hs-bootstrap-driver-deadtime",
+    "tech-dcdc-vmc-type2-type3-compensator-synthesis",
+    "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+    "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+    "skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-DCDC-01",
+      "name": "Thời gian chết Không chồng lấn Thích ứng (Adaptive Dead-Time) chống trùng dẫn xuyên thẳng trên mọi góc PVT",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "t_dead_HL > 0 và t_dead_LH > 0 tại mọi góc {SS, TT, FF, FS, SF} x {-40C, 125C} sao cho M_HS và M_LS không bao giờ dẫn đồng thời (I_shoot_through_peak < 5% * I_load_max), đồng thời t_dead <= 12 ns để hạn chế tổn hao dẫn diode thân và hồi phục ngược Q_rr",
+      "why_vi": "Các transistor công suất M_HS và M_LS có chiều rộng hàng chục milimet nên trễ tầng lái cổng thay đổi mạnh theo góc công nghệ và nhiệt độ. Nếu chuỗi trễ cố định quá ngắn ở góc FF/FS sẽ gây chập thẳng VIN xuống PGND đốt cháy tầng công suất; ngược lại nếu đặt t_dead quá dài sẽ ép toàn bộ dòng cuộn cảm chảy qua diode thân sụt áp 0.8 V gây sụt hiệu suất 3-6% và tiêm điện tử xuống đế.",
+      "cadence_check": "Chạy `tran` tại `VIN_max` qua 5 góc PVT x `-40/27/125 °C`: đo chồng lấn điện áp cổng `VGS_HS` và `VGS_LS` tại ngưỡng `VTH_min`, xác nhận xung dòng xuyên thẳng `ID(M_HS)` lúc `M_LS` chưa khóa bằng 0 và thời gian `V(SW) < -0.5 V` nằm trong cửa sổ `2..10 ns`.",
+      "related_nodes": [
+        "topo-power-stage-hs-bootstrap-driver-deadtime",
+        "topo-synchronous-buck-converter-architecture",
+        "topo-mos-and-cmos-sampling-switches"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-02",
+      "name": "Trần băng thông cắt vòng kín f_c dưới RHP Zero (Boost / Buck-Boost) và giới hạn lấy mẫu Nyquist f_sw",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Buck CCM: f_c <= f_sw / 5 (khuyến nghị f_sw / 10 .. f_sw / 6); Boost & Buck-Boost CCM: f_c <= min(f_sw / 6, f_z_RHP_min / 4) tính tại điểm xấu nhất VIN_min (D_max) và I_load_max (R_load_min)",
+      "why_vi": "Trong mạch Boost và Buck-Boost làm việc ở CCM, khi tăng chu kỳ nhiệm vụ D để đòi thêm áp ra, thời gian nối cuộn cảm sang tải (1-D)*T_sw lập tức bị co ngắn làm dòng trung bình đổ ra Cout tụt xuống trước khi tăng lên — sinh ra Right-Half-Plane (RHP) Zero wz_RHP = R_load*(1-D)^2 / L (Boost) vừa nâng biên độ +20 dB/dec vừa trừ thêm 90 độ pha! Không một mạng bù tuyến tính nào khử được RHP zero; cố đặt f_c vượt f_z_RHP/3 chắc chắn gây mất ổn định.",
+      "cadence_check": "Tính giải tích `f_z_RHP_min` tại `(VIN_min, I_load_max, L_max)` trước khi tổng hợp bộ bù, sau đó kiểm chứng bằng `stb` trên `pwm_switch_avg_ccm_dcm.va` và `pss + pstb` trên mạch transistor xác nhận `f_c <= 0.25 * f_z_RHP_min` và `PM >= 50 deg`.",
+      "related_nodes": [
+        "law-boost-buckboost-rhp-zero-and-bandwidth-limit",
+        "topo-boost-inverting-and-4switch-buckboost",
+        "law-miller-theorem-and-rhp-zero",
+        "skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-03",
+      "name": "Bù sụt pha kép -180 độ của bộ lọc cộng hưởng LC bằng Bộ bù Loại III (Type-III K-Factor) cho Điều khiển Chế độ Áp (VMC)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Trong VMC dùng tụ gốm MLCC ESR thấp (f_z_ESR > f_c): bắt buộc dùng bộ bù Type-III đặt cặp zero kép LHP quanh (0.5 .. 1.0) * f_0_LC để nâng pha tới +130..+160 deg, đồng thời GBW_EA >= 8 * f_c đạt Phase Margin >= 50 deg và Gain Margin >= 10 dB",
+      "why_vi": "Bộ lọc LC bậc hai không tải hoặc dùng tụ gốm MLCC (ESR chỉ vài mOhm) có hệ số phẩm chất Q cao tạo bước sập pha đột ngột -180 độ ngay tại f_0 = 1/(2*pi*sqrt(L*C)). Cộng thêm -90 độ từ cực tích phân tại gốc tọa độ, pha vòng chạm -270 độ khiến bộ bù Type-I hay Type-II (chỉ nâng tối đa +90 độ) bị âm dự trữ pha và dao động dữ dội.",
+      "cadence_check": "Chạy quét `stb` (mô hình trung bình) và `pss + pstb` qua `{VIN_min, VIN_nom, VIN_max}` x `{R_ESR_min, R_ESR_max}`: kiểm tra pha nhỏ nhất phía trước `f_c` không rơi xuống dưới `-150 deg` (không bị ổn định có điều kiện nguy hiểm) và không dội biên độ ở tần số cao do thiếu `GBW_EA`.",
+      "related_nodes": [
+        "tech-dcdc-vmc-type2-type3-compensator-synthesis",
+        "law-dcdc-volt-second-ccm-dcm-and-state-space",
+        "law-multipole-phase-margin"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-04",
+      "name": "Bù độ dốc (Slope Compensation) triệt tiêu dao động phân hài f_sw/2 cho Điều khiển Chế độ Dòng khi D > 0.5",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Peak-CMC: m_a >= 0.5 * m_2_max (khuyến nghị m_a thuộc [0.75, 1.0] * m_2_max để hệ số phẩm chất cực kép Ridley Q_p <= 1 tại f_sw/2); Valley-CMC: m_a >= 0.5 * m_1_max, tính tại L_min và chênh áp xấu nhất",
+      "why_vi": "Trong Peak Current-Mode Control không có dốc bù (m_a = 0), nhiễu loạn dòng điện truyền từ chu kỳ n sang n+1 theo tỷ số Delta_I[n+1] = -(D / (1-D)) * Delta_I[n]. Ngay khi D vượt quá 0.5 (ví dụ VIN giảm thấp làm D = VOUT/VIN > 0.5), nhiễu loạn tăng trưởng theo cấp số nhân xen kẽ rộng-hẹp ở đúng nửa tần số chuyển mạch f_sw/2 gây gợn áp lớn và bão hòa cuộn cảm.",
+      "cadence_check": "Chạy `pss + pstb` tại `VIN_min` (nơi `D > 0.65`) để kiểm tra đỉnh cộng hưởng Ridley tại `f = 0.49 * f_sw` nằm sâu dưới `-10 dB`, kết hợp `tran` bước nhảy tải kiểm tra chu kỳ xung PWM đều đặn không chia đôi chu kỳ.",
+      "related_nodes": [
+        "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+        "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        "skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-05",
+      "name": "Chắn gai dòng cạnh lên (Leading-Edge Blanking — LEB) và bù nhiệt đồng cho mạch cảm biến dòng SenseFET / DCR",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Tồn tại cửa sổ chắn mù t_LEB thuộc [15 ns, 40 ns] < t_on_min khóa ngõ ra so sánh dòng ngay sau cạnh bật công tắc chính, VÀ mạch kẹp máng ảo SenseFET có |V_OS_EA| << I_min_sense * R_DSon (hoặc hằng số lọc R_s * C_s khớp L / DCR có tính hệ số nhiệt đồng +3930 ppm/°C)",
+      "why_vi": "Tại thời điểm M_HS vừa bật dẫn, dòng nạp điện dung C_oss của nút SW cộng dòng phục hồi ngược diode thân M_LS và cộng hưởng dây hàn tạo gai dòng khổng lồ kéo dài 10-30 ns. Nếu không có mặt nạ LEB, bộ điều chế Peak-CMC hoặc khối OCP sẽ ngắt xung sai ngay lập tức làm sập áp ngõ ra.",
+      "cadence_check": "Mô phỏng `tran` có gắn điện cảm ký sinh chân nguồn/đất `L_pkg = 1 nH`: kiểm tra tín hiệu sau khối SenseFET + LEB sạch gai chuyển mạch và tỷ số dòng cảm biến bám sát `I(L) / N` trong sai số `< +-5%` từ `25..125 °C`.",
+      "related_nodes": [
+        "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+        "law-pelgrom-mismatch-and-sizing-duality"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-06",
+      "name": "Mạch tái nạp tụ Bootstrap (C_BST Refresh), bảo vệ UVLO_BST và chống lật giả bộ dịch mức do dV_SW/dt cao",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "C_BST >= 20 * C_gg_HS giữ (V_BST - V_SW) > V_UVLO_BST ở cả chế độ D -> 100% lẫn ngủ PFM kéo dài (nhờ xung refresh hoặc bơm phụ), VÀ bộ dịch mức cao áp (HV Level Shifter) dùng cấu trúc vi sai triệt nhiễu đồng pha C_par * dV_SW/dt >= 30 V/ns",
+      "why_vi": "Tầng công suất High-Side dùng NMOS để giảm 3 lần diện tích và điện dung cổng so với PMOS nên bắt buộc cần áp treo V_BST = V_SW + V_DRV. Khi hoạt động ở dropout (D ~ 100%) hoặc chế độ PFM ngắt cả hai công tắc lâu, C_BST bị rò cạn áp làm M_HS rơi vào vùng tuyến tính điện trở lớn gây quá nhiệt cháy chip; đồng thời sườn dốc dV_SW/dt tiêm dòng C_gd đồng pha dễ lật sai chốt mức cao.",
+      "cadence_check": "Chạy `tran` với sườn `SW` nhanh nhất (`VIN_max, FF, -40 °C`) và kịch bản `D = 98%` kéo dài `100 us`: xác nhận `V(BST, SW)` luôn giữ trên ngưỡng `UVLO_BST` và chốt điều khiển trên đỉnh không bao giờ lật nhầm.",
+      "related_nodes": [
+        "topo-power-stage-hs-bootstrap-driver-deadtime",
+        "topo-bootstrapped-sampling-switch"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-07",
+      "name": "Khởi động mềm (Soft-Start) khống chế dòng xung kích I_inrush dưới ngưỡng bão hòa từ của lõi cuộn cảm I_sat",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "I_L_peak_startup = I_load_startup + Cout * (VOUT_nom / t_ss) + Delta_i_L / 2 <= 0.80 * I_sat_inductor(125C), kết hợp giới hạn dòng từng chu kỳ (Cycle-by-Cycle OCP) kích hoạt ngay từ chu kỳ xung đầu tiên",
+      "why_vi": "Lúc mới cấp nguồn (VOUT = 0, sai lệch VREF - VFB cực đại), nếu không có dốc khởi động mềm V_SS(t) tăng tuyến tính chậm (0.2-2 ms), bộ điều chế sẽ mở chu kỳ nhiệm vụ tối đa D_max liên tục làm dòng cuộn cảm vọt vượt dòng bão hòa từ I_sat. Khi lõi ferit bão hòa, độ tự cảm L sụp xuống 10 lần khiến di_L/dt nổ tung phá hủy công tắc High-Side chỉ trong vài chu kỳ!",
+      "cadence_check": "Mô phỏng `tran` khởi động toàn trình từ `V(vout) = 0` (và kịch bản khởi động trên nền tải đã có áp sẵn `Pre-Biased VOUT = 0.5 * VOUT_nom`): xác nhận `ymax(I(L))` nằm gọn dưới ngưỡng `OCP` và không hút dòng ngược làm sập áp sẵn có.",
+      "related_nodes": [
+        "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
+        "topo-synchronous-buck-converter-architecture",
+        "law-dcdc-volt-second-ccm-dcm-and-state-space"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-08",
+      "name": "Bù trễ bộ so sánh Phát hiện Dòng Không (ZCD) ngăn dòng ngược cuộn cảm khi chạy tải nhẹ DCM / PFM",
+      "severity": "warn",
+      "method": "estimate",
+      "invariant": "Ở chế độ gián đoạn DCM/PFM: công tắc đồng bộ dưới M_LS (hoặc công tắc chỉnh lưu trên của Boost) phải ngắt ngay khi dòng cuộn cảm vừa chạm 0 (I_L_turnoff thuộc [0, +25 mA], tuyệt đối không để I_L âm sâu < -30 mA)",
+      "why_vi": "Khác với diode Schottky tự khóa khi dòng đổi chiều, MOSFET đồng bộ dẫn dòng cả hai chiều! Nếu bộ so sánh ZCD có trễ truyền t_d lớn hoặc offset âm làm M_LS tắt muộn ở tải nhẹ, cuộn cảm hút ngược điện tích từ Cout xả xuống đất gây tụt thảm hại hiệu suất tải nhẹ và khi M_LS cuối cùng ngắt dòng âm đó sẽ bơm vọt áp ngược nguy hiểm lên chân VIN!",
+      "cadence_check": "Chạy `tran` tại tải nhẹ `I_load = 1 mA` (chế độ DCM/Diode-Emulation) qua 5 góc PVT kèm lệch `V_OS = +-3*sigma` trên ZCD: xác nhận `ymin(I(L)) >= -20 mA` và nút `SW` chuyển mượt sang dao động tự do dung cảm thay vì dội áp cao.",
+      "related_nodes": [
+        "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        "topo-synchronous-buck-converter-architecture",
+        "topo-dynamic-strongarm-and-miyahara-comparator"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-09",
+      "name": "Quy chuẩn đo độ lợi vòng bộ nguồn chuyển mạch bằng SpectreRF pss + pstb (Cấm dùng .stb tĩnh trên mạch PWM đóng cắt)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Thiết kế đa góc nhanh dùng mô hình trung bình `pwm_switch_avg_ccm_dcm.va` với `.stb`; ký duyệt mạch transistor đóng cắt bắt buộc chạy `pss (shooting, fund=f_sw)` + `pstb (stop=0.49*f_sw)` với `iprobe` đặt trên nhánh hồi tiếp tương tự liên tục từ `VOUT` vào cầu chia/bộ bù, ép `Soft-Start = DONE`, gán `ic` xác lập cho `V(vout)` & `I(L)`, và không có khối Verilog-A chứa `hidden state`",
+      "why_vi": "Phép đo `.ac` / `.stb` thông thường đóng băng mạch tại một điểm DC nên bộ so sánh PWM bị bão hòa chết cứng ở mức 0 hoặc VDD (độ lợi điều chế bằng 0, trả về -inf dB!). Trong khi đó khi chạy `pss + pstb`, nếu đặt nhầm `iprobe` vào nút xung vuông `SW` hoặc để mạch đang leo dốc Soft-Start hay có bộ đếm số Verilog-A, `pss` sẽ báo lỗi `SPECTRE-HIDDEN-STATE` hoặc không hội tụ.",
+      "cadence_check": "Đối chiếu đường cong biên độ & pha `T(jf)` giữa Track 1 (`pwm_switch_avg_ccm_dcm.va` `.stb`) và Track 2 (`pss + pstb` cấp transistor): xác nhận hai đường khớp nhau sát trong dải `f < f_sw / 5` và `pstb` bộc lộ thêm độ suy giảm pha lấy mẫu quanh `f_sw / 2`.",
+      "related_nodes": [
+        "skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb",
+        "skill-spectre-pss-pac-pnoise-pstb",
+        "tech-bode-blackman-middlebrook-stb"
+      ]
+    },
+    {
+      "id": "CHK-DCDC-10",
+      "name": "Tối thiểu hóa vòng dòng nóng chuyển mạch (Hot Loop CIN-HS-LS-PGND), tách đất Kelvin AGND/PGND và vòng thu điện tử bảo vệ khi V_SW < -0.7 V",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Vòng diện tích di/dt cao (tụ CIN -> M_HS -> M_LS -> PGND) ngắn rộng nhất có thể; đất điều khiển tĩnh AGND nối với đất công suất PGND tại đúng 1 điểm hình sao Kelvin; vùng khuếch tán cực máng nối nút SW được bao quanh bởi vòng thu hạt tải thiểu số giếng N nối VDD (Deep N-Well / N-guard collector ring) bên trong vòng p+ nối đất",
+      "why_vi": "Trong khoảng thời gian chết t_dead khi dòng cuộn cảm chảy qua diode thân M_LS, điện áp nút SW sụt xuống âm (-0.7 V đến -1.2 V dưới đất đế p!). Miền n+ cực máng nối SW lập tức trở thành cực phát của BJT ngang NPN ký sinh tiêm ồ ạt điện tử thiểu số bay xa hàng trăm micromet trong đế bán dẫn p, làm sai lệch nặng Bandgap/Error Amp và kích hoạt chốt SCR Latch-up!",
+      "cadence_check": "Kiểm tra bố cục mặt bằng layout (Floorplan/DRC/LVS): xác nhận dải N-well collector ring bao trọn công tắc `M_LS` và các diode nối nút `SW`, đường cảm nhận `VOUT_SENSE` và `AGND` đi cặp vi sai che chắn riêng từ tụ tải về bộ khuếch đại sai lệch.",
+      "related_nodes": [
+        "topo-power-stage-hs-bootstrap-driver-deadtime",
+        "law-cmos-wells-and-latchup-guard-rings",
+        "tech-substrate-noise-coupling-and-shielding",
+        "tech-interconnect-rc-electromigration-and-ir-drop"
+      ]
+    }
+  ]
+}

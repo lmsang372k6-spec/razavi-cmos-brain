@@ -1,4 +1,4 @@
-/* Razavi CMOS Knowledge Brain v2 — Coordinate Graph, 19-Chapter Navigator & GitHub Skills Explorer
+/* Razavi CMOS Knowledge Brain v3 — 10-Domain Coordinate Graph, PMIC/AMS, 19-Chapter Navigator & Closed-Loop Cadence-Codex Explorer
  * Zero build dependencies. Works identically on GitHub Pages (./kb/*) and locally (../kb/*).
  */
 "use strict";
@@ -14,11 +14,31 @@
     layout_constrained_by: "#0f766e",
   };
 
+  const RAZAVI_CORE_DOMAINS = new Set([
+    "foundations",
+    "stages-and-mirrors",
+    "dynamics-noise-feedback",
+    "opamps-and-compensation",
+    "references-and-biasing",
+    "sampled-and-clocked",
+    "nonideal-and-physical",
+  ]);
+
+  const DEFAULT_DESIGN_CYCLE = [
+    { stage: 1, id: "1_spec_and_kb", title_vi: "1 · Tra cứu KB & Checklist", tool: "kb_lookup.py + checklists" },
+    { stage: 2, id: "2_hierarchical_budget", title_vi: "2 · Phân bổ Spec & Giao tiếp", tool: "spec.json + blocks[]" },
+    { stage: 3, id: "3_gmid_physics_sizing", title_vi: "3 · Định cỡ Vật lý gm/ID", tool: "gmid_lut.py (<5ms)" },
+    { stage: 4, id: "4_schematic_and_veriloga", title_vi: "4 · Dựng OA & Verilog-A", tool: "ic617_live_bridge.il" },
+    { stage: 5, id: "5_spectre_psf_audit", title_vi: "5 · Kiểm toán OP & STB/PSTB", tool: "cadence_exec + psf_audit.py" },
+    { stage: 6, id: "6_pareto_optimization", title_vi: "6 · Độ nhạy & Tối ưu Pareto", tool: "sizing_opt.py" },
+    { stage: 7, id: "7_pvt_mc_pex_signoff", title_vi: "7 · Nghiệm thu PVT / MC / PEX", tool: "psf_audit + CACE" },
+  ];
+
   const TRACK_META = [
     { id: "laws", index: 0, label: "Track 1 · Vật lý & Định luật (Concept / Law)", short: "Laws & Physics", tint: "rgba(52, 101, 56, 0.045)" },
-    { id: "topologies", index: 1, label: "Track 2 · Cấu trúc Mạch CMOS (Topology)", short: "Topologies", tint: "rgba(31, 108, 159, 0.045)" },
-    { id: "techniques", index: 2, label: "Track 3 · Định cỡ, Bù ổn định & Layout (Technique)", short: "Techniques", tint: "rgba(149, 100, 0, 0.045)" },
-    { id: "skills", index: 3, label: "Track 4 · Thực chiến GitHub Skills & Spectre/IC617 TB", short: "GitHub EDA Skills", tint: "rgba(91, 59, 140, 0.05)" },
+    { id: "topologies", index: 1, label: "Track 2 · Cấu trúc Mạch CMOS / PMIC / AMS (Topology)", short: "Topologies", tint: "rgba(31, 108, 159, 0.045)" },
+    { id: "techniques", index: 2, label: "Track 3 · Định cỡ, Bù ổn định & Hệ thống (Technique)", short: "Techniques", tint: "rgba(149, 100, 0, 0.045)" },
+    { id: "skills", index: 3, label: "Track 4 · Chu trình Tối ưu Khép kín Cadence IC617 / Spectre / GitHub Skills", short: "GitHub EDA Skills", tint: "rgba(91, 59, 140, 0.05)" },
   ];
 
   const state = {
@@ -41,8 +61,9 @@
     activeChecklistId: null,
     filterDomain: "all",
     filterChapter: null,
-    filterKind: "all", // all | razavi | skill | topology | law-concept | technique
-    graphScope: "all", // all | razavi | skill
+    filterKind: "all", // all | pmic | ams | razavi | skill | topology | law-concept | technique
+    filterStage: null, // null | 1..7 (7-Stage Optimal Design Cycle)
+    graphScope: "all", // all | razavi | pmic | ams | skill
     graphRel: "all",
     graphFocusNodeId: null,
     coordsTab: "sections", // sections | equations | index
@@ -154,6 +175,45 @@
 
   function isSkillNode(node) {
     return node.kind === "skill" || node.domain === "eda-and-github-skills" || String(node.id).startsWith("skill-");
+  }
+
+  function isPmicNode(node) {
+    return node.domain === "power-management-ic";
+  }
+
+  function isAmsNode(node) {
+    return node.domain === "ams-filters-and-system";
+  }
+
+  function isRazaviCoreNode(node) {
+    return RAZAVI_CORE_DOMAINS.has(node.domain);
+  }
+
+  function getDesignCycleList() {
+    return Array.isArray(state.router?.design_cycle) && state.router.design_cycle.length === 7
+      ? state.router.design_cycle
+      : DEFAULT_DESIGN_CYCLE;
+  }
+
+  function getNodeDesignStages(node) {
+    if (Array.isArray(node.design_stages) && node.design_stages.length > 0) {
+      return node.design_stages;
+    }
+    const nid = String(node.id || "");
+    const stages = new Set();
+    if (["concept", "law"].includes(node.kind) || nid.includes("octagon") || nid.includes("25-topology")) stages.add(1);
+    if (node.kind === "topology") {
+      stages.add(1);
+      stages.add(4);
+    }
+    if (/budget|interface|central-bias-hub|protections-por-uvlo|cace/.test(nid)) stages.add(2);
+    if (/gmid|gm-id|vdsmin|sizing|scaling|current-mirrors|pelgrom/.test(nid)) stages.add(3);
+    if (/ic617|schematic|veriloga|startup|cmfb/.test(nid)) stages.add(4);
+    if (/stb|pss|pnoise|pstb|psf|ocean|middlebrook|nyquist|phase-margin|compensat|type2|type3|slope-comp/.test(nid)) stages.add(5);
+    if (/closed-loop-sizing|pareto|slewing-vs-linear|octagon|tradeoff|charge-pump-dcdc|hs-bootstrap/.test(nid)) stages.add(6);
+    if (/pvt|montecarlo|layout|pex|latchup|esd|mismatch|substrate|interconnect|cace|protections/.test(nid) || node.domain === "nonideal-and-physical") stages.add(7);
+    if (stages.size === 0) stages.add(isSkillNode(node) ? 5 : 1);
+    return Array.from(stages).sort((a, b) => a - b);
   }
 
   function normalizeEqKey(raw) {
@@ -274,18 +334,18 @@
     if (!state.router) return;
     const st = state.router.stats || {};
     if (el.statNodes) el.statNodes.textContent = st.node_count ?? (state.router.nodes || []).length;
-    if (el.statDiagrams) el.statDiagrams.textContent = st.diagram_count ?? 56;
+    if (el.statDiagrams) el.statDiagrams.textContent = st.diagram_count ?? 72;
     if (el.statChecklists) el.statChecklists.textContent = st.checklist_count ?? (state.router.checklists || []).length;
-    if (el.statGlossary) el.statGlossary.textContent = st.glossary_count ?? 2200;
+    if (el.statGlossary) el.statGlossary.textContent = st.glossary_count ?? 2280;
     if (el.statSections) {
-      const secCnt = state.coords?.sections?.length ?? st.book_section_count ?? "130+";
+      const secCnt = state.coords?.sections?.length ?? st.book_section_count ?? 293;
       el.statSections.textContent = secCnt;
     }
     if (el.statRepos) {
-      const repoCnt = state.catalog?.repos?.length ?? st.github_repo_count ?? "20+";
+      const repoCnt = state.catalog?.repos?.length ?? st.github_repo_count ?? 52;
       el.statRepos.textContent = repoCnt;
     }
-    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.3";
+    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.4";
   }
 
   function normalizeCoordsPayload(raw) {
@@ -430,7 +490,7 @@
   function renderSidebarControls() {
     if (!state.router) return;
     const totalCount = (state.router.nodes || []).length;
-    const domainCount = (state.router.domains || []).length || 8;
+    const domainCount = (state.router.domains || []).length || 10;
     const domainItems = [
       `<li><button type="button" class="nav-item ${state.filterDomain === "all" ? "is-active" : ""}" data-domain="all"><span>Tất cả ${domainCount} Tầng Tri thức</span><span class="nav-count">${totalCount}</span></button></li>`,
     ];
@@ -462,6 +522,7 @@
       state.filterDomain !== "all" ||
       state.filterChapter !== null ||
       state.filterKind !== "all" ||
+      state.filterStage !== null ||
       Boolean(state.query);
     el.resetFilters.hidden = !hasFilter;
   }
@@ -586,7 +647,9 @@
 
   function passesKindFilter(node, kindFilter) {
     if (kindFilter === "all") return true;
-    if (kindFilter === "razavi") return !isSkillNode(node);
+    if (kindFilter === "pmic") return isPmicNode(node);
+    if (kindFilter === "ams") return isAmsNode(node);
+    if (kindFilter === "razavi") return isRazaviCoreNode(node);
     if (kindFilter === "skill") return isSkillNode(node);
     if (kindFilter === "topology") return node.kind === "topology";
     if (kindFilter === "technique") return node.kind === "technique";
@@ -610,6 +673,7 @@
       if (state.filterDomain !== "all" && node.domain !== state.filterDomain) continue;
       if (state.filterChapter !== null && !(node.chapters || []).includes(state.filterChapter)) continue;
       if (!passesKindFilter(node, state.filterKind)) continue;
+      if (state.filterStage !== null && !getNodeDesignStages(node).includes(state.filterStage)) continue;
 
       const sc = scoreNode(node, coordHits.parsed, qWords, qTokens, coordBoostIds);
       if (sc > 0) results.push({ node, score: sc });
@@ -886,6 +950,11 @@
       .map((r) => `Ch.${r.chapter}${r.section ? ` §${r.section}` : ""}${r.pages ? ` p.${r.pages}` : ""}`)
       .join(" · ");
     const ghRefs = n.github_refs || [];
+    const domPill = isPmicNode(n)
+      ? `<span class="badge badge-pmic">PMIC</span>`
+      : isAmsNode(n)
+      ? `<span class="badge badge-ams">AMS</span>`
+      : "";
     const ghBadge = ghRefs.length
       ? `<span class="badge badge-skill" style="text-transform:none;font-family:var(--font-mono)">${escapeHtml(ghRefs[0].repo || "GitHub")}</span>`
       : "";
@@ -897,6 +966,7 @@
         <div class="card-topline">
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             <span class="badge ${kindBadgeClass(n.kind)}">${escapeHtml(n.kind)}</span>
+            ${domPill}
             ${ghBadge}
           </div>
           <span class="badge badge-neutral">${escapeHtml(refs || n.domain)}</span>
@@ -1030,6 +1100,56 @@
     }
   }
 
+  function renderDesignCycleBannerHtml() {
+    const cycleList = getDesignCycleList();
+    const stageCounts = new Map();
+    for (let s = 1; s <= 7; s++) stageCounts.set(s, 0);
+    for (const n of state.router?.nodes || []) {
+      for (const s of getNodeDesignStages(n)) {
+        stageCounts.set(s, (stageCounts.get(s) || 0) + 1);
+      }
+    }
+    const flowSvgUrl = `${state.kbBase}/diagrams/closed-loop-cadence-codex-flow.svg`;
+
+    return `
+      <section class="cycle-banner" aria-label="Chu trình Tối ưu Khép kín 7 Bước Cadence-Codex">
+        <div class="cycle-banner-top">
+          <div>
+            <span class="eyebrow" style="margin:0;display:block">MANDATORY 7-STAGE CLOSED-LOOP OPTIMAL ANALOG DESIGN CYCLE (VIRTUOSO IC617 · SPECTRE 15.1 · CODEX)</span>
+            <h2>Chu trình Thiết kế &amp; Tối ưu Pareto Khép kín 7 Bước (Nhấp từng bước để lọc thẻ &amp; công cụ tương ứng)</h2>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            ${
+              state.filterStage !== null
+                ? `<button type="button" class="btn-primary" id="btn-clear-stage">Bỏ lọc Bước ${state.filterStage}</button>`
+                : ""
+            }
+            <button type="button" class="btn-subtle" id="btn-open-cycle-svg" data-svg="${escapeHtml(flowSvgUrl)}">Mở lưu đồ SVG 7 bước</button>
+          </div>
+        </div>
+        <div class="cycle-grid" role="group" aria-label="7 bước tối ưu thiết kế vi mạch">
+          ${cycleList
+            .map((st) => {
+              const sNum = Number(st.stage);
+              const active = state.filterStage === sNum ? "is-active" : "";
+              const cnt = stageCounts.get(sNum) || 0;
+              return `
+                <button type="button" class="cycle-step ${active}" data-stage="${sNum}" aria-pressed="${state.filterStage === sNum}">
+                  <div class="cycle-step-head">
+                    <span class="cycle-step-num">STAGE 0${sNum}</span>
+                    <span class="nav-count">${cnt}</span>
+                  </div>
+                  <div class="cycle-step-title">${escapeHtml(st.title_vi)}</div>
+                  <div class="cycle-step-tool">${escapeHtml(st.tool || "")}</div>
+                </button>
+              `;
+            })
+            .join("")}
+        </div>
+      </section>
+    `;
+  }
+
   // ---------------- View 0: Full Nodes Catalog + Coordinate Jump Bar ----------------
   function renderNodesCatalogView() {
     const { nodes, coordHits } = filterNodes();
@@ -1037,19 +1157,28 @@
     const chLabel = state.filterChapter ? ` · Chương ${String(state.filterChapter).padStart(2, "0")}` : "";
     const domMeta = (state.router.domains || []).find((d) => d.id === state.filterDomain);
     const domLabel = domMeta ? ` · ${domMeta.title_vi}` : "";
+    const stageMeta = state.filterStage
+      ? getDesignCycleList().find((s) => Number(s.stage) === state.filterStage)
+      : null;
+    const stageLabel = stageMeta ? ` · [${stageMeta.title_vi}]` : "";
 
+    const st = state.router.stats || {};
     const totalNodes = (state.router.nodes || []).length;
-    const skillCount = (state.router.nodes || []).filter(isSkillNode).length;
-    const razaviCount = totalNodes - skillCount;
-    const diagCount = state.router.stats?.diagram_count ?? 56;
+    const razaviCoreCount = st.razavi_core_node_count ?? (state.router.nodes || []).filter(isRazaviCoreNode).length;
+    const pmicCount = st.pmic_node_count ?? (state.router.nodes || []).filter(isPmicNode).length;
+    const amsCount = st.ams_node_count ?? (state.router.nodes || []).filter(isAmsNode).length;
+    const edaDomainCount =
+      st.eda_domain_node_count ?? (state.router.nodes || []).filter((n) => n.domain === "eda-and-github-skills").length;
+    const diagCount = st.diagram_count ?? 72;
     const clCount = (state.router.checklists || []).length;
+    const glCount = st.glossary_count ?? 2280;
 
     let glossaryStrip = "";
     if (state.query && glossaryHits.length > 0) {
       glossaryStrip = `
         <div class="section-bar">
           <h2>Thuật ngữ Chuẩn CLB khớp nhanh (${glossaryHits.length})</h2>
-          <button type="button" class="link-btn" id="jump-all-glossary">Xem toàn bộ kho 2.200 thuật ngữ →</button>
+          <button type="button" class="link-btn" id="jump-all-glossary">Xem toàn bộ kho ${glCount} thuật ngữ →</button>
         </div>
         <div class="node-grid" style="margin-bottom:22px">
           ${glossaryHits
@@ -1072,33 +1201,35 @@
 
     el.view.innerHTML = `
       <section class="hero-header">
-        <p class="eyebrow">RAZAVI 2ND ED. (19 CHAPTERS) + PRACTICAL GITHUB ANALOG / CADENCE EDA SKILLS</p>
-        <h1>Bản đồ Tọa độ Tri thức Vi mạch CMOS &amp; Thực chiến EDA</h1>
-        <p>Tra cứu tức thì <strong>${totalNodes}</strong> thẻ chuyên sâu 6 khối (${razaviCount} thẻ lý thuyết &amp; cấu trúc Razavi + ${skillCount} thẻ thực chiến GitHub/Spectre/SKILL), <strong>${diagCount}</strong> sơ đồ nguyên lý vector SVG, cây tọa độ chính xác theo Mục/Trang/Phương trình/20_Index và <strong>${clCount}</strong> bảng kiểm đa tiến trình.</p>
+        <p class="eyebrow">10 DOMAINS · RAZAVI 19 CH. + PMIC (BUCK/BOOST/LDO) + AMS (FILTER/DAC/ΔΣ/INA) + CLOSED-LOOP CADENCE-CODEX</p>
+        <h1>Bản đồ Tri thức Toàn Chip CMOS, PMIC, AMS &amp; Tối ưu Khép kín EDA</h1>
+        <p>Tra cứu tức thì <strong>${totalNodes}</strong> thẻ chuyên sâu 6 khối xuyên suốt <strong>10 tầng</strong> (${razaviCoreCount} thẻ Razavi Ch.01–19 + ${pmicCount} thẻ PMIC Nguồn chuyển mạch/LDO + ${amsCount} thẻ AMS Bộ lọc/DAC/ΔΣ/AFE + ${edaDomainCount} Playbook Cadence IC617/Spectre/Pareto), <strong>${diagCount}</strong> sơ đồ nguyên lý vector SVG và <strong>${clCount}</strong> bảng kiểm đa tiến trình.</p>
         <div class="quick-chips">
-          <span class="label">NHẢY TỌA ĐỘ MẪU:</span>
+          <span class="label">NHẢY NHANH V3:</span>
+          <button type="button" class="chip-query" data-q="4-switch buck-boost">4-Switch Buck-Boost</button>
+          <button type="button" class="chip-query" data-q="capless ldo fvf">Capless FVF/DFC LDO</button>
+          <button type="button" class="chip-query" data-q="type3 slope">Type-III &amp; Slope Comp</button>
+          <button type="button" class="chip-query" data-q="current steering dac">Segmented DAC</button>
+          <button type="button" class="chip-query" data-q="deltasigma ciff">ΔΣ CIFF Modulator</button>
+          <button type="button" class="chip-query" data-q="chopper cfia">Chopper CFIA / INA</button>
+          <button type="button" class="chip-query" data-q="sizing_opt">Pareto sizing_opt.py</button>
+          <button type="button" class="chip-query" data-q="psf_audit">PSF OP/STB Auditor</button>
           <button type="button" class="chip-query" data-q="§9.2">§9.2 (Cascode OTA)</button>
-          <button type="button" class="chip-query" data-q="Eq. 2.10">Eq. 2.10</button>
-          <button type="button" class="chip-query" data-q="trang 356">trang 356</button>
-          <button type="button" class="chip-query" data-q="pygmid">gm/ID LUT (pygmid)</button>
-          <button type="button" class="chip-query" data-q="pss pnoise">Spectre PSS/PNoise</button>
-          <button type="button" class="chip-query" data-q="strongarm">StrongARM Comparator</button>
-          <button type="button" class="chip-query" data-q="guong dong dien ap thap">Gương dòng LVCCML</button>
-          <button type="button" class="chip-query" data-q="sar adc">SAR ADC C-DAC</button>
         </div>
       </section>
 
+      ${renderDesignCycleBannerHtml()}
       ${renderCoordHitsStripHtml(coordHits)}
       ${glossaryStrip}
 
       <div class="section-bar">
-        <h2>Danh mục Thẻ Tri thức &amp; Playbook${escapeHtml(domLabel)}${escapeHtml(chLabel)}</h2>
+        <h2>Danh mục Thẻ Tri thức &amp; Playbook${escapeHtml(domLabel)}${escapeHtml(chLabel)}${escapeHtml(stageLabel)}</h2>
         <span class="meta">Hiển thị <strong>${nodes.length}</strong> / ${totalNodes} thẻ</span>
       </div>
 
       ${
         nodes.length === 0
-          ? `<div class="status-card"><h3>Không có thẻ khớp bộ lọc hiện tại</h3><p>Hãy thử gõ số mục (<code>§9.2</code>), phương trình (<code>Eq. 5.26</code>), số trang (<code>trang 342</code>), tiếng Việt không dấu hoặc bấm Đặt lại bộ lọc.</p></div>`
+          ? `<div class="status-card"><h3>Không có thẻ khớp bộ lọc hiện tại</h3><p>Hãy thử gõ số mục (<code>§9.2</code>), phương trình (<code>Eq. 5.26</code>), từ khóa PMIC/AMS (<code>buck</code>, <code>tow-thomas</code>), hoặc bấm Đặt lại bộ lọc.</p></div>`
           : `<div class="node-grid">${nodes.map(renderNodeCardHtml).join("")}</div>`
       }
     `;
@@ -1106,6 +1237,23 @@
     for (const chip of el.view.querySelectorAll(".chip-query")) {
       chip.addEventListener("click", () => setSearchQuery(chip.dataset.q || ""));
     }
+    for (const stepBtn of el.view.querySelectorAll("[data-stage]")) {
+      stepBtn.addEventListener("click", () => {
+        const s = Number(stepBtn.getAttribute("data-stage"));
+        state.filterStage = state.filterStage === s ? null : s;
+        renderNodesCatalogView();
+        renderSidebarControls();
+      });
+    }
+    document.getElementById("btn-clear-stage")?.addEventListener("click", () => {
+      state.filterStage = null;
+      renderNodesCatalogView();
+      renderSidebarControls();
+    });
+    document.getElementById("btn-open-cycle-svg")?.addEventListener("click", (ev) => {
+      const svgUrl = ev.currentTarget.getAttribute("data-svg");
+      openSvgModal(svgUrl, "Chu trình Thiết kế & Tối ưu Khép kín 7 Bước Cadence IC617 – Spectre – Codex");
+    });
     document.getElementById("jump-all-glossary")?.addEventListener("click", () => {
       location.hash = "#glossary";
     });
@@ -1159,14 +1307,16 @@
       if (n.coord_2d && Number.isFinite(n.coord_2d.grid_col)) {
         return n.coord_2d.grid_col;
       }
+      if (isPmicNode(n)) return 20;
+      if (isAmsNode(n)) return 21;
       if (isSkillNode(n)) {
         const chs = n.chapters || [];
         if (
-          /ic617|ocean|veriloga|pex|cace|25-topology|montecarlo/.test(n.id) ||
+          /ic617|ocean|psf|techsweep|gmid-lut|gm-id-lookup|closed-loop-sizing|veriloga|pex|cace|25-topology|montecarlo|layout-common-centroid/.test(n.id) ||
           chs.length === 0 ||
           chs.length > 4
         ) {
-          return 20;
+          return 22;
         }
         return chs[0];
       }
@@ -1177,11 +1327,11 @@
       return Number(n.chapters?.[0] || 1);
     }
 
-    // Group nodes into cells [trackIdx][col]
+    // Group nodes into cells [trackIdx][col] across Columns 1..22
     const cells = [new Map(), new Map(), new Map(), new Map()];
     for (const n of nodes) {
       const tIdx = getTrackIdx(n);
-      const col = Math.max(1, Math.min(20, getGridCol(n)));
+      const col = Math.max(1, Math.min(22, getGridCol(n)));
       if (!cells[tIdx].has(col)) cells[tIdx].set(col, []);
       cells[tIdx].get(col).push(n);
     }
@@ -1303,11 +1453,14 @@
       const qTokens = qWords ? qWords.split(/\s+/).filter(Boolean) : [];
 
       const visibleNodes = (state.router.nodes || []).filter((n) => {
-        if (state.graphScope === "razavi" && isSkillNode(n)) return false;
+        if (state.graphScope === "razavi" && !isRazaviCoreNode(n)) return false;
+        if (state.graphScope === "pmic" && !isPmicNode(n)) return false;
+        if (state.graphScope === "ams" && !isAmsNode(n)) return false;
         if (state.graphScope === "skill" && !isSkillNode(n)) return false;
         if (state.filterDomain !== "all" && n.domain !== state.filterDomain) return false;
         if (state.filterChapter !== null && !(n.chapters || []).includes(state.filterChapter)) return false;
         if (!passesKindFilter(nodeOrSelf(n), state.filterKind)) return false;
+        if (state.filterStage !== null && !getNodeDesignStages(n).includes(state.filterStage)) return false;
         if (qTokens.length > 0) {
           const hay = `${n.search_text || ""} ${foldWords(`${n.id} ${n.title_vi} ${n.title_en}`)}`;
           if (!qTokens.every((t) => hay.includes(t))) return false;
@@ -1337,8 +1490,18 @@
         .map((col, idx) => {
           const cx = layout.LEFT_PAD + idx * layout.COL_W;
           const chMeta = (state.router.chapters || []).find((c) => c.chapter === col);
-          const badge = col === 20 ? "EDA · Layer 8" : `Ch.${String(col).padStart(2, "0")}`;
-          const sub = col === 20 ? "SKILL / Spectre / CACE" : (chMeta?.title_vi || "").slice(0, 22);
+          let badge = `Ch.${String(col).padStart(2, "0")}`;
+          let sub = (chMeta?.title_vi || "").slice(0, 22);
+          if (col === 20) {
+            badge = "PMIC · Layer 8";
+            sub = "Buck / Boost / Capless LDO";
+          } else if (col === 21) {
+            badge = "AMS · Layer 9";
+            sub = "Filter / DAC / ΔΣ / INA";
+          } else if (col === 22) {
+            badge = "EDA · Layer 10";
+            sub = "IC617 / psf_audit / Opt";
+          }
           return `
             <g class="g-col-header">
               <line x1="${cx}" y1="56" x2="${cx}" y2="${layout.totalHeight - 24}" stroke="var(--border-hairline)" stroke-width="1" stroke-dasharray="4,4"></line>
@@ -1461,7 +1624,11 @@
         const fill = isCenter ? "var(--accent-bg)" : "var(--bg-surface)";
         const shortLabel = (n.title_vi || n.title_en || n.id).slice(0, 24) + ((n.title_vi || n.title_en || n.id).length > 24 ? "…" : "");
         const secTag = n.razavi_refs?.[0]?.section ? `§${n.razavi_refs[0].section.split(/[,;\s-]/)[0]}` : "";
-        const chTag = isSkillNode(n)
+        const chTag = isPmicNode(n)
+          ? `PMIC · ${n.kind}`
+          : isAmsNode(n)
+          ? `AMS · ${n.kind}`
+          : isSkillNode(n)
           ? `Skill · Ch.${n.chapters?.[0] || "EDA"}`
           : `Ch.${n.chapters?.[0] || "?"}${secTag ? ` ${secTag}` : ""} · ${n.kind}`;
         return `
@@ -1625,9 +1792,11 @@
   function renderGlobalGraphView() {
     const controls = {};
     const scopeBtns = [
-      ["all", "Tất cả (Razavi + GitHub)"],
-      ["razavi", "Chỉ Lý thuyết Razavi"],
-      ["skill", "Chỉ Skills Thực chiến GitHub"],
+      ["all", "Tất cả 10 Tầng"],
+      ["razavi", "Razavi Ch.01–19"],
+      ["pmic", "PMIC (Col 20)"],
+      ["ams", "AMS & Hệ thống (Col 21)"],
+      ["skill", "Cadence-Codex Skills"],
     ];
     const relBtns = [
       ["all", "Mọi quan hệ"],
@@ -1641,9 +1810,9 @@
 
     el.view.innerHTML = `
       <section class="hero-header" style="margin-bottom:14px;padding-bottom:12px">
-        <p class="eyebrow">DETERMINISTIC 2D COORDINATE ARCHITECTURE GRAPH (X = CHAPTER / EDA · Y = FUNCTIONAL TRACK)</p>
-        <h1>Bản đồ Đồ thị Tọa độ 2D Toàn cục (19 Chương Razavi &amp; Tầng 8 EDA)</h1>
-        <p>Mỗi thẻ được định vị tất định trên lưới <strong>(X = Chương 01–19 + Cột 20 EDA, Y = 4 Làn Vai trò Vật lý → Cấu trúc → Kỹ thuật → GitHub Testbench)</strong>. Rê chuột lên thẻ để làm nổi bật mạng lân cận, <code>Shift + Nhấp</code> để ghim tâm, hoặc nhấp thẻ để đọc chi tiết.</p>
+        <p class="eyebrow">DETERMINISTIC 22-COLUMN 2D ARCHITECTURE GRAPH (X = CH.01–19 + PMIC + AMS + EDA · Y = 4 TRACKS)</p>
+        <h1>Bản đồ Đồ thị Tọa độ 2D Toàn cục (10 Tầng · 22 Cột Không Chồng Lấn)</h1>
+        <p>Mỗi thẻ được định vị tất định trên lưới <strong>(X = Chương 01–19 + Cột 20 PMIC + Cột 21 AMS + Cột 22 EDA Khép kín, Y = 4 Làn Vai trò Vật lý → Cấu trúc → Kỹ thuật → GitHub/Spectre Testbench)</strong>. Rê chuột lên thẻ để làm nổi bật mạng lân cận, <code>Shift + Nhấp</code> để ghim tâm, hoặc nhấp thẻ để đọc chi tiết.</p>
       </section>
 
       <section class="graph-panel">
@@ -1675,8 +1844,11 @@
           </div>
           <div class="graph-filter-row" aria-label="Nhảy nhanh tới cột chương">
             <span style="font-size:11px;color:var(--ink-muted)">Nhảy cột:</span>
-            ${[1, 3, 5, 8, 9, 10, 12, 13, 15, 16, 19, 20]
-              .map((c) => `<button type="button" class="clear-btn" data-gcol="${c}">${c === 20 ? "EDA" : `Ch.${c}`}</button>`)
+            ${[1, 3, 5, 8, 9, 10, 12, 13, 15, 16, 19, 20, 21, 22]
+              .map((c) => {
+                const lbl = c === 20 ? "PMIC" : c === 21 ? "AMS" : c === 22 ? "EDA" : `Ch.${c}`;
+                return `<button type="button" class="clear-btn" data-gcol="${c}">${lbl}</button>`;
+              })
               .join("")}
           </div>
         </div>
@@ -2000,15 +2172,15 @@
 
     el.view.innerHTML = `
       <section class="hero-header" style="margin-bottom:18px;padding-bottom:16px">
-        <p class="eyebrow">LAYER 8 · PRACTICAL GITHUB SKILLS, VIRTUOSO IC617 SKILL/OCEAN &amp; SPECTRE TESTBENCHES</p>
-        <h1>Kho Skills Thực chiến GitHub &amp; Quy trình Kiểm chứng Cadence</h1>
-        <p>Kết nối trực tiếp <strong>${skillPlaybooks.length}</strong> thẻ Playbook thực chiến (<code>skill-*</code>) và <strong>${repos.length}</strong> kho mã nguồn mở Analog/EDA đã kiểm định giấy phép, độ tương thích Virtuoso IC617 / Spectre 15.1 và liên kết ngược tới lý thuyết Razavi.</p>
+        <p class="eyebrow">LAYER 10 · CLOSED-LOOP CADENCE IC617, SPECTRERF, GM/ID LUT, PARETO OPTIMIZER &amp; 52 VETTED GITHUB REPOS</p>
+        <h1>Kho Skills Tối ưu Khép kín Cadence–Codex &amp; 52 Kho GitHub Kiểm định</h1>
+        <p>Kết nối trực tiếp <strong>${skillPlaybooks.length}</strong> thẻ Playbook thực chiến (<code>skill-*</code>) và <strong>${repos.length}</strong> kho mã nguồn mở Analog/PMIC/AMS/EDA đã kiểm định giấy phép, commit khóa cứng, độ tương thích Virtuoso IC617 / Spectre 15.1 (RHEL 6.5 Python 2.6.6) và liên kết ngược tới 10 tầng lý thuyết.</p>
       </section>
 
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px">
         <div class="sub-tabs" style="margin-bottom:0" role="tablist">
           <button type="button" class="sub-tab ${state.skillsTab === "all" ? "is-active" : ""}" data-stab="all">Tất cả Playbooks &amp; Repos</button>
-          <button type="button" class="sub-tab ${state.skillsTab === "playbooks" ? "is-active" : ""}" data-stab="playbooks">22 Playbooks Thực chiến (${skillPlaybooks.length})</button>
+          <button type="button" class="sub-tab ${state.skillsTab === "playbooks" ? "is-active" : ""}" data-stab="playbooks">Playbooks Thực chiến (${skillPlaybooks.length})</button>
           <button type="button" class="sub-tab ${state.skillsTab === "repos" ? "is-active" : ""}" data-stab="repos">Vetted GitHub Repos (${filteredRepos.length})</button>
         </div>
         ${
@@ -2148,6 +2320,8 @@
     const neighborIds = Array.from(new Set([...inEdges.map((e) => e.from), ...outEdges.map((e) => e.to)]));
     const pairedSkills = neighborIds.filter((id) => state.nodeMap.has(id) && isSkillNode(state.nodeMap.get(id)));
     const c2d = node.coord_2d;
+    const nodeStages = getNodeDesignStages(node);
+    const cycleMap = new Map(getDesignCycleList().map((c) => [Number(c.stage), c]));
 
     el.view.innerHTML = `
       <div class="reader-layout">
@@ -2164,6 +2338,8 @@
             <div class="card-topline">
               <div style="display:flex;gap:6px;flex-wrap:wrap">
                 <span class="badge ${kindBadgeClass(node.kind)}">${escapeHtml(node.kind)}</span>
+                ${isPmicNode(node) ? `<span class="badge badge-pmic">PMIC · Layer 8</span>` : ""}
+                ${isAmsNode(node) ? `<span class="badge badge-ams">AMS · Layer 9</span>` : ""}
                 <span class="badge badge-neutral">PDK-Agnostic · 180nm / 90nm / 65nm / 45nm</span>
                 ${refsStr ? `<span class="badge badge-neutral">${escapeHtml(refsStr)}</span>` : ""}
                 ${c2d ? `<span class="badge badge-neutral">Grid [Col ${c2d.grid_col}, Row ${c2d.grid_row}]</span>` : ""}
@@ -2172,6 +2348,19 @@
             <h1>${escapeHtml(node.title_vi)}</h1>
             <p class="en-title">${escapeHtml(node.title_en)}</p>
             <p class="reader-summary">${escapeHtml(node.summary)}</p>
+            ${
+              nodeStages.length > 0
+                ? `<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:var(--ink-muted)">CHU TRÌNH 7 BƯỚC:</span>
+                    ${nodeStages
+                      .map((s) => {
+                        const meta = cycleMap.get(Number(s));
+                        return `<a class="node-ref-pill" href="#stage/${s}">${escapeHtml(meta ? meta.title_vi : `Stage ${s}`)}</a>`;
+                      })
+                      .join("")}
+                  </div>`
+                : ""
+            }
             <div class="reader-actions">
               <button type="button" class="btn-primary" id="btn-copy-link">Sao chép liên kết #node</button>
               <button type="button" class="btn-subtle" id="btn-locate-2d">Định vị trên Đồ thị Tọa độ 2D</button>
@@ -2499,10 +2688,10 @@
     }
   }
 
-  // ---------------- View 5: CLB 2,200 Bilingual Glossary ----------------
+  // ---------------- View 5: CLB 2,280 Bilingual Glossary ----------------
   async function renderGlossaryView() {
     if (!state.glossary) {
-      el.view.innerHTML = `<div class="status-card"><p class="eyebrow">ĐANG NẠP KHO THUẬT NGỮ CLB</p><h2>Đang tải 2.200 mục T001–T2200…</h2></div>`;
+      el.view.innerHTML = `<div class="status-card"><p class="eyebrow">ĐANG NẠP KHO THUẬT NGỮ CLB</p><h2>Đang tải 2.280 mục T001–T2280…</h2></div>`;
       await ensureGlossaryLoaded();
     }
 
@@ -2533,12 +2722,13 @@
 
     matches.sort((a, b) => a.rank - b.rank || Number(a.term.id.slice(1)) - Number(b.term.id.slice(1)));
     const slice = matches.slice(0, state.glossaryLimit);
+    const totalTerms = (state.glossary || []).length || 2280;
 
     el.view.innerHTML = `
       <section class="hero-header">
-        <p class="eyebrow">CHUẨN DỊCH THUẬT CLB VI MẠCH · T001 – T2200</p>
-        <h1>Kho 2.200 Thuật ngữ Song ngữ Anh – Việt Chuẩn hóa</h1>
-        <p>Đồng bộ nguyên bản 2.134 mục đã hiệu đính của CLB Vi Mạch (Ch.01–Ch.12) cùng 66 thuật ngữ mở rộng chuẩn xác cho các chương Ch.13–Ch.19 (Switched-Capacitor, Pelgrom, VCO, PLL, Latch-Up, Layout &amp; LDO).</p>
+        <p class="eyebrow">CHUẨN DỊCH THUẬT CLB VI MẠCH · T001 – T2280</p>
+        <h1>Kho ${totalTerms} Thuật ngữ Song ngữ Anh – Việt Chuẩn hóa</h1>
+        <p>Đồng bộ nguyên bản 2.134 mục đã hiệu đính của CLB Vi Mạch (Ch.01–Ch.12) cùng 146 thuật ngữ mở rộng chuẩn xác cho Ch.13–Ch.19, Quản lý Nguồn PMIC (Buck, Boost, Buck-Boost, Capless LDO, POR/UVLO/OCP) và Vi mạch Hỗn hợp AMS (CFIA, Tow-Thomas, $G_m\\text{-}C$, DAC, $\\Delta\\Sigma$, Pipeline MDAC &amp; Central Bias Bus).</p>
       </section>
       <div class="section-bar">
         <h2>Kết quả tra cứu thuật ngữ${state.filterChapter ? ` · Chương ${state.filterChapter}` : ""}</h2>
@@ -2637,6 +2827,10 @@
       state.mode = "skills";
     } else if (h.startsWith("domain/")) {
       state.filterDomain = h.slice(7).trim() || "all";
+      state.mode = "nodes";
+    } else if (h.startsWith("stage/")) {
+      const s = Number(h.slice(6));
+      state.filterStage = s >= 1 && s <= 7 ? s : null;
       state.mode = "nodes";
     } else if (h.startsWith("chapter/")) {
       const n = Number(h.slice(8));
@@ -2739,6 +2933,7 @@
       state.filterDomain = "all";
       state.filterChapter = null;
       state.filterKind = "all";
+      state.filterStage = null;
       state.graphScope = "all";
       state.graphRel = "all";
       state.graphFocusNodeId = null;

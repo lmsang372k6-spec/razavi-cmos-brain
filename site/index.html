@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Razavi CMOS Knowledge Brain · Bản đồ Tọa độ 19 Chương &amp; Kho GitHub EDA Skills</title>
-  <meta name="description" content="Bản đồ tri thức cấu trúc 134 thẻ (112 thẻ Razavi 19 chương + 22 thẻ thực chiến GitHub Analog/Cadence EDA Skills), 56 sơ đồ nguyên lý vector SVG, tra cứu tọa độ chính xác theo Mục/Trang/Phương trình/20_Index, đồ thị tọa độ 2D và 16 bảng kiểm bất biến đa tiến trình.">
+  <title>Razavi CMOS Brain v3 · 10 Tầng Tri thức, PMIC, AMS &amp; Chu trình Tối ưu Khép kín Cadence–Codex</title>
+  <meta name="description" content="Bản đồ tri thức cấu trúc 162 thẻ xuyên suốt 10 tầng (112 thẻ Razavi 19 chương + 12 thẻ PMIC Buck/Boost/LDO + 12 thẻ AMS Filter/DAC/ΔΣ/INA + 26 thẻ Chu trình Tối ưu Khép kín Cadence IC617/Spectre/Codex), 72 sơ đồ vector SVG, 21 bảng kiểm bất biến, 52 kho GitHub và 2.280 thuật ngữ CLB.">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -19,8 +19,8 @@
       <a href="#overview" class="brand" id="brand-home">
         <span class="brand-monogram" aria-hidden="true">R</span>
         <span class="brand-text">
-          <span class="brand-title">RAZAVI CMOS BRAIN</span>
-          <span class="brand-sub">19 Chapters · Exact Coordinates · GitHub EDA Skills</span>
+          <span class="brand-title">RAZAVI CMOS BRAIN · V3</span>
+          <span class="brand-sub">10 Domains · PMIC &amp; AMS · Closed-Loop Cadence–Codex</span>
         </span>
       </a>
     </div>
@@ -30,7 +30,7 @@
         <circle cx="10.5" cy="10.5" r="6.5"></circle>
         <path d="M15.5 15.5L20 20"></path>
       </svg>
-      <input id="global-search" type="search" placeholder="Tra tọa độ §9.2, Eq. 10.25, trang 342, 20_Index, mạch, triệu chứng hoặc GitHub skill…" autocomplete="off" spellcheck="false" aria-label="Tra cứu tọa độ mục, phương trình, trang sách, thuật ngữ không dấu và GitHub EDA skills">
+      <input id="global-search" type="search" placeholder="Tra §9.2, Eq. 10.25, trang 342, buck-boost, capless LDO, ΔΣ DAC, psf_audit, sizing_opt…" autocomplete="off" spellcheck="false" aria-label="Tra cứu tọa độ mục, phương trình, trang sách, PMIC, AMS, thuật ngữ không dấu và Cadence-Codex skills">
       <div class="search-kbd-group">
         <button id="clear-search" class="clear-btn" type="button" hidden aria-label="Xóa từ khóa">Xóa</button>
         <kbd>Ctrl K</kbd>
@@ -41,7 +41,7 @@
       <button class="mode-tab is-active" type="button" data-mode="nodes">Thẻ Tri thức</button>
       <button class="mode-tab" type="button" data-mode="graph">Đồ thị Tọa độ 2D</button>
       <button class="mode-tab" type="button" data-mode="coords">Tọa độ Sách 19 Ch.</button>
-      <button class="mode-tab" type="button" data-mode="skills">GitHub Skills</button>
+      <button class="mode-tab" type="button" data-mode="skills">GitHub &amp; EDA Skills</button>
       <button class="mode-tab" type="button" data-mode="checklists">Chẩn đoán &amp; Checklist</button>
       <button class="mode-tab" type="button" data-mode="glossary">Thuật ngữ CLB</button>
       <button id="theme-toggle" class="icon-btn" type="button" title="Chuyển chế độ Sáng / Tối" aria-label="Chuyển chế độ giao diện Sáng hoặc Tối">
@@ -52,16 +52,18 @@
   </header>
 
   <div class="app-shell">
-    <aside id="sidebar" class="sidebar" aria-label="Bộ lọc Kiến trúc, Chương sách và Vai trò">
+    <aside id="sidebar" class="sidebar" aria-label="Bộ lọc 10 Tầng Kiến trúc, Chương sách và Vai trò">
       <div class="sidebar-section">
         <div class="sidebar-heading">
-          <span>PHÂN LOẠI NGUỒN &amp; VAI TRÒ</span>
+          <span>LỌC NHANH MIỀN &amp; VAI TRÒ</span>
           <button id="reset-filters" class="link-btn" type="button" hidden>Đặt lại</button>
         </div>
-        <div id="kind-filters" class="role-pills" role="group" aria-label="Lọc theo vai trò thẻ">
+        <div id="kind-filters" class="role-pills" role="group" aria-label="Lọc theo miền chuyên sâu và vai trò thẻ">
           <button class="pill is-active" type="button" data-kind="all">Tất cả</button>
-          <button class="pill" type="button" data-kind="razavi">Chỉ Lý thuyết Razavi</button>
-          <button class="pill" type="button" data-kind="skill">GitHub Skill</button>
+          <button class="pill" type="button" data-kind="pmic">PMIC (Buck/Boost/LDO)</button>
+          <button class="pill" type="button" data-kind="ams">AMS (Filter/DAC/ΔΣ/INA)</button>
+          <button class="pill" type="button" data-kind="razavi">Razavi Ch.01–19</button>
+          <button class="pill" type="button" data-kind="skill">Cadence-Codex Closed-Loop Skills</button>
           <button class="pill" type="button" data-kind="topology">Topology</button>
           <button class="pill" type="button" data-kind="law-concept">Law / Concept</button>
           <button class="pill" type="button" data-kind="technique">Technique</button>
@@ -70,7 +72,7 @@
 
       <div class="sidebar-section">
         <div class="sidebar-heading">
-          <span>8 TẦNG KIẾN TRÚC &amp; EDA</span>
+          <span>10 TẦNG KIẾN TRÚC, PMIC, AMS &amp; EDA</span>
         </div>
         <ul id="domain-list" class="nav-list" role="list"></ul>
       </div>
@@ -84,15 +86,15 @@
 
       <div class="sidebar-section sidebar-footer">
         <div class="stat-grid" id="sidebar-stats">
-          <div><strong id="stat-nodes">134</strong><span>Thẻ sâu</span></div>
-          <div><strong id="stat-diagrams">56</strong><span>Sơ đồ SVG</span></div>
-          <div><strong id="stat-sections">130+</strong><span>Mục tọa độ</span></div>
-          <div><strong id="stat-repos">20+</strong><span>GitHub Repos</span></div>
-          <div><strong id="stat-checklists">16</strong><span>Checklist</span></div>
-          <div><strong id="stat-glossary">2200</strong><span>Thuật ngữ</span></div>
+          <div><strong id="stat-nodes">162</strong><span>Thẻ 10 tầng</span></div>
+          <div><strong id="stat-diagrams">72</strong><span>Sơ đồ SVG</span></div>
+          <div><strong id="stat-sections">293</strong><span>Mục tọa độ</span></div>
+          <div><strong id="stat-repos">52</strong><span>GitHub Repos</span></div>
+          <div><strong id="stat-checklists">21</strong><span>Checklist</span></div>
+          <div><strong id="stat-glossary">2280</strong><span>Thuật ngữ</span></div>
         </div>
         <p class="release-caption">
-          Release <code id="release-version">2026.11.18.3</code> · API tĩnh:
+          Release <code id="release-version">2026.11.18.4</code> · API tĩnh:
           <a id="raw-index-link" href="./kb/router-index.json" target="_blank" rel="noopener">router</a> ·
           <a id="raw-coords-link" href="./kb/coordinates/book-coordinates.json" target="_blank" rel="noopener">coords</a> ·
           <a id="raw-catalog-link" href="./kb/github-skills/catalog.json" target="_blank" rel="noopener">skills</a>
@@ -102,8 +104,8 @@
 
     <main id="main-stage" class="main-stage" tabindex="-1">
       <div id="loading-banner" class="status-card">
-        <p class="eyebrow">ĐANG KHỞI TẠO BỘ NÃO TRI THỨC TỌA ĐỘ</p>
-        <h2>Đang nạp chỉ mục định tuyến, tọa độ 19 chương và đồ thị 2D…</h2>
+        <p class="eyebrow">ĐANG KHỞI TẠO BỘ NÃO TRI THỨC 10 TẦNG V3</p>
+        <h2>Đang nạp 162 thẻ tri thức, PMIC/AMS, chu trình tối ưu 7 bước và đồ thị 2D…</h2>
         <p>Tự động nhận diện môi trường cục bộ hoặc GitHub Pages.</p>
       </div>
       <div id="view-container" hidden></div>
@@ -115,7 +117,7 @@
     <div class="modal-frame">
       <header class="modal-header">
         <div>
-          <p class="eyebrow">SƠ ĐỒ NGUYÊN LÝ &amp; LƯU ĐỒ KIỂM CHỨNG VECTOR (RAZAVI 2ND ED. &amp; SPECTRE)</p>
+          <p class="eyebrow">SƠ ĐỒ NGUYÊN LÝ VECTOR · RAZAVI / PMIC / AMS / CADENCE SPECTRE</p>
           <h3 id="svg-modal-title">Schematic Viewer</h3>
         </div>
         <div class="modal-controls">

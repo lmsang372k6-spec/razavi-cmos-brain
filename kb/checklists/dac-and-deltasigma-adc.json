@@ -1,0 +1,141 @@
+{
+  "checklist_id": "dac-and-deltasigma-adc",
+  "title_vi": "Bảng kiểm Cấu trúc Bất biến cho Bộ Chuyển đổi DAC (R-String / R-2R / Current-Steering), Bộ Điều chế ΔΣ (SC / CT) và Pipelined MDAC",
+  "applies_to": [
+    "topo-resistor-string-r2r-and-current-steering-dacs",
+    "topo-deltasigma-modulator-sc-and-ct-architectures",
+    "topo-flash-and-pipelined-mdac-rsd-adcs",
+    "topo-switched-capacitor-integrator-parasitic-insensitive",
+    "topo-switched-capacitor-unity-and-multiplying-amps"
+  ],
+  "process_agnostic": true,
+  "checks": [
+    {
+      "id": "CHK-CNV-01",
+      "name": "Định cỡ diện tích nguồn dòng đơn vị theo Pelgrom và phân đoạn Nhị phân + Nhiệt kế (Segmented DAC) đảm bảo hiệu suất thu hoạch INL < 0.5 LSB (> 99.7%)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "sigma(Delta_Iu / Iu) <= 1 / (2 * C_inv * sqrt(2^N)) với C_inv >= 3.10 cho yield 99.7%, kết hợp mã hóa nhiệt kế M = 4..6 bit MSB để ép sigma(DNL_max) = sqrt(2^(N - M + 1) - 1) * sigma(Delta_Iu / Iu) << 0.5 LSB",
+      "why_vi": "Phân đoạn nhiệt kế M bit cao giúp giảm đột biến bước nhảy DNL và diện tích xung nhiễu chuyển mã giữa thang (mid-scale glitch), nhưng hoàn toàn KHÔNG làm giảm phương sai tích lũy ngẫu nhiên của INL toàn thang! Để đạt tỷ lệ thu hoạch > 99.7% số chip có |INL_max| < 0.5 LSB mà không cần hiệu chỉnh, tích diện tích (W*L) và mức quá áp V_OV của transistor nguồn dòng đơn vị bắt buộc phải thỏa mãn giới hạn Pelgrom toàn dải.",
+      "cadence_check": "Chạy Spectre `montecarlo` (`variations=mismatch`, `numruns=200`) quét toàn thang mã (hoặc kiểm tra trực tiếp `sigma(Ids)` của 1 ô nguồn dòng đơn vị ở góc xấu nhất nhiệt độ), xác nhận `sigma(Id)/Id` đạt ngưỡng giải tích trước khi nhân bản mảng tâm chung 2D.",
+      "related_nodes": [
+        "topo-resistor-string-r2r-and-current-steering-dacs",
+        "law-pelgrom-mismatch-and-sizing-duality",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-CNV-02",
+      "name": "Trở kháng ra phức của ô dòng đơn vị Z_unit(f) duy trì trên ngưỡng trần SFDR tới tận tần số Nyquist",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "|Z_unit(f_out)| >= (2^N * R_load / 4) * 10^(SFDR_target_dB / 20) cho ngõ ra vi sai (hoặc nhân đôi ngưỡng này cho ngõ ra đơn đầu) tại f_out = f_s / 2 trên mọi góc PVT",
+      "why_vi": "Khi K ô nguồn dòng cùng đổ vào tải R_load, trở kháng hữu hạn Z_unit(f) song song với R_load làm tổng trở nút ra phụ thuộc trực tiếp vào mã số D[n], gây méo hài bậc hai (đơn đầu) và bậc ba (vi sai). Ở tần số cao, tụ ký sinh C_X tại nút giữa nguồn dòng và cascode nối tắt r_o làm |Z_unit(f)| sụt dốc -20 dB/dec, đánh sập SFDR dù INL tĩnh ở DC hoàn hảo!",
+      "cadence_check": "Dùng phân tích Spectre `xf` hoặc `ac` bơm áp thử vào ngõ ra của 1 ô nguồn dòng đơn vị (gồm cả cặp công tắc chuyển hướng dòng và transistor cascode che chắn luôn bật), vẽ `|Z_unit(f)|` từ DC tới `f_s/2` sau trích xuất `PEX` để xác nhận dự trữ >= 6 dB.",
+      "related_nodes": [
+        "topo-resistor-string-r2r-and-current-steering-dacs",
+        "law-cascode-and-cg-high-frequency-poles",
+        "law-differential-imbalance-hd2-and-cm-nonlinearity"
+      ]
+    },
+    {
+      "id": "CHK-CNV-03",
+      "name": "Chốt đồng bộ lại xung nhịp giao cắt lệch biên độ nhỏ cho DAC lái dòng và nhân nhị phân bề rộng công tắc W_k trong thang R-2R",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Current-Steering DAC: chốt cục bộ đặt điểm giao cắt THẤP cho công tắc PMOS (hoặc CAO cho công tắc NMOS) sao cho 2 nhánh không bao giờ tắt đồng thời; R-2R Ladder DAC: bề rộng công tắc nhánh k bắt buộc W_sw,k = 2^k * W_sw,0 (với R_on,MSB << 2R / 2^N hoặc chèn công tắc giả cân bằng áp rơi)",
+      "why_vi": "Trong DAC lái dòng, nếu hai công tắc vi sai cùng tắt trong vài picogiây chuyển cạnh, nút đuôi chung sập áp làm transistor nguồn dòng lún vào triode và phóng gói điện tích khổng lồ C_tail*Delta_V tạo gai glitch giữa thang. Trong thang R-2R, điện trở dẫn công tắc nằm nối tiếp với nhánh 2R mang dòng nhị phân I_REF / 2^(N-k): dùng công tắc kích thước bằng nhau làm hỏng điều kiện quy nạp Thévenin R_eq = R và phá nát DNL tại MSB!",
+      "cadence_check": "Trong Spectre `tran`, kích chuyển mã nguy hiểm nhất `011...1 <-> 100...0` ở góc `SS` và `FF`, kiểm tra điện áp nút đuôi `V_tail` của ô dòng biến thiên `< 80 mV` và tích diện tích xung glitch `< 0.5 LSB * T_s`.",
+      "related_nodes": [
+        "topo-resistor-string-r2r-and-current-steering-dacs",
+        "topo-mos-and-cmos-sampling-switches",
+        "tech-charge-injection-and-bottom-plate-sampling"
+      ]
+    },
+    {
+      "id": "CHK-CNV-04",
+      "name": "Giới hạn độ lợi ngoài dải của hàm truyền nhiễu NTF theo quy tắc Lee (||H_inf|| < 1.5) và cân bằng biên độ trạng thái tích phân (Dynamic Range Scaling)",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "max_omega |NTF(exp(j*omega))| = ||H_inf|| < 1.5 (cho bộ lượng tử 1-bit bậc L >= 2) VÀ biên độ đỉnh tại ngõ ra mọi bộ tích phân |V_int,i|_peak <= 0.75 * V_swing_linear_OTA tại mức đầu vào cực đại ổn định (MSA)",
+      "why_vi": "Hàm vi phân thuần túy (1 - z^-1)^L có độ lợi tần số cao 2^L = 4..8 làm quá tải bộ lượng tử 1-bit khiến vòng lặp ΔΣ bậc >= 3 dao động kẹt biên không thể phục hồi. Đồng thời nếu chưa cân bằng ma trận hệ số (scaleABCD) hoặc dùng CIFB không có nhánh truyền thẳng CIFF, ngõ ra các bộ tích phân chạm trần bão hòa của OTA sớm hơn rất nhiều so với dự báo tuyến tính.",
+      "cadence_check": "Tổng hợp hệ số bằng `python-deltasigma` (`synthesizeNTF` + `scaleABCD`), kiểm tra biểu đồ cực-zero và histogram biên độ từng nút tích phân trên mô phỏng hành vi Verilog-A 16384 chu kỳ với sóng sin quét biên độ tới `-2 dBFS` trước khi đóng băng tỷ số tụ/điện trở.",
+      "related_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "tech-nyquist-stability-criterion",
+        "skill-veriloga-mixed-signal-behavioral-models"
+      ]
+    },
+    {
+      "id": "CHK-CNV-05",
+      "name": "Tầng tích phân đầu tiên quyết định ngân sách nhiễu nhiệt quy về ngõ vào (kT/C_s1 trong SC-ΔΣ hoặc 4kT*R_in trong CT-ΔΣ) và méo phi tuyến",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "SC-ΔΣ (vi sai 2 pha): (4 * k * T) / (OSR * C_s1) + V_n_OTA1_inband^2 <= 0.65 * V_n_budget^2; CT-ΔΣ: 8 * k * T * (R_in + R_DAC_eq) * f_B <= 0.65 * V_n_budget^2, cho phép thu nhỏ công suất các tầng 2..L đi 3x-5x",
+      "why_vi": "Mọi nhiễu nhiệt và méo hài sinh ra tại đầu vào bộ tích phân số 1 cùng nhánh DAC hồi tiếp ngoài cùng cộng trực tiếp vào tín hiệu đầu vào mà KHÔNG hề được định dạng nhiễu (unshaped), trong khi nhiễu của tầng thứ hai bị nén đi |A_int1(f_B)|^2 ~ (OSR / pi)^2 lần! Đặt tụ C_s1 quá nhỏ khiến SNR bị chặn cứng bởi sàn nhiễu trắng bất chấp bậc L cao tới đâu.",
+      "cadence_check": "Chạy SpectreRF `pss + pnoise` (cho SC-ΔΣ) hoặc `ac noise` / `tran noise` (cho CT-ΔΣ) trên riêng tầng tích phân 1 + DAC hồi tiếp, tích phân mật độ nhiễu từ `f_min` tới `f_B` xác nhận đóng góp `< -3 dB` dưới tổng ngân sách nhiễu toàn bộ ADC.",
+      "related_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "topo-switched-capacitor-integrator-parasitic-insensitive",
+        "law-noise-bandwidth-and-snr-power-scaling"
+      ]
+    },
+    {
+      "id": "CHK-CNV-06",
+      "name": "Bù trễ vòng dư (Excess Loop Delay - ELD) bằng nhánh phản hồi trực tiếp k_0 và ngân sách jitter xung nhịp DAC trong CT-ΔΣ",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "Nhánh hồi tiếp nhanh k_0 quanh bộ lượng tử khôi phục tương đương bất biến xung L^-1{L_CT(s)*H_DAC(s)*exp(-s*tau_d)} == Z^-1{L_DT(z)} tại trễ cố định tau_d = (0.5..1.0)*T_s, VÀ sigma_t_clk <= V_FS_rms / (2*pi*f_B * 10^(SNR_jitter/20)) * sqrt(OSR) * K_DAC_step",
+      "why_vi": "Trong CT-ΔΣ, thời gian tái sinh hữu hạn của bộ so sánh + logic DWA đẩy sườn xung dòng DAC hồi tiếp trễ quá mốc lấy mẫu, làm tăng bậc hệ thống và đánh mất dự trữ pha. Hơn nữa, nhiễu pha xung nhịp (clock jitter) làm dao động độ rộng xung dòng DAC hồi tiếp cuối cùng, biến nhiễu thời gian ngoài dải gấp thẳng thành sàn nhiễu trắng trong dải tín hiệu!",
+      "cadence_check": "Cố định thời điểm chốt DAC bằng thanh ghi đồng bộ ở `t = 0.5 * T_s` (`tau_d = 0.5 * T_s`), kiểm tra phổ FFT của CT-ΔΣ khi quét trễ comparator `+-20%` qua PVT và bơm jitter Gaussian `sigma_t` vào nguồn xung nhịp testbench.",
+      "related_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "law-oscillator-phase-noise-leeson-and-isf",
+        "topo-dynamic-strongarm-and-miyahara-comparator"
+      ]
+    },
+    {
+      "id": "CHK-CNV-07",
+      "name": "Định dạng nhiễu sai lệch phần tử động bậc một (Data-Weighted Averaging - DWA) cho DAC hồi tiếp đa bit trong ΔΣ",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Con trỏ chọn phần tử nhiệt kế xoay vòng p[n+1] = (p[n] + D[n]) mod M đảm bảo phổ sai lệch tĩnh của các ô DAC bị nhân với hàm truyền (1 - z^-1) triệt tiêu tại DC và suy giảm theo OSR^3 trong dải gốc",
+      "why_vi": "Dùng bộ lượng tử nội 3-4 bit giúp giảm bước lượng tử, tăng MSA, nới lỏng tốc độ slew OTA và giảm mạnh độ nhạy jitter cho CT-ΔΣ; tuy nhiên DAC hồi tiếp M mức nằm ngay trên đường hồi tiếp tổng nên sai lệch Pelgrom 0.2% của nó sẽ khóa chết SNDR của toàn bộ ADC 16-bit xuống còn ~54 dB nếu không bật thuật toán xoay vòng con trỏ DWA!",
+      "cadence_check": "Bơm sai lệch ngẫu nhiên `sigma = 0.5%` vào các phần tử DAC hồi tiếp trong testbench Spectre/Verilog-A, so sánh phổ FFT có bật và tắt khối logic `DWA`: xác nhận hài méo biến mất và sàn nhiễu dốc +20 dB/dec ngoài dải.",
+      "related_nodes": [
+        "topo-deltasigma-modulator-sc-and-ct-architectures",
+        "topo-resistor-string-r2r-and-current-steering-dacs",
+        "law-differential-nonlinearity-and-feedback"
+      ]
+    },
+    {
+      "id": "CHK-CNV-08",
+      "name": "Cửa sổ chịu lệch bộ so sánh +-V_REF/4 nhờ sửa lỗi số RSD và ngân sách độ lợi DC / xác lập nửa chu kỳ của tầng MDAC 1.5-bit đầu tiên",
+      "severity": "error",
+      "method": "estimate",
+      "invariant": "|V_OS,subADC| <= V_REF / 4 giữ nguyên |V_res| = |2*V_in - D*V_REF| <= V_REF, ĐỒNG THỜI Op-Amp tầng MDAC 1 thỏa mãn A_0,1 >= 2^(N_rem + 2) (với beta_flip = 1/2) và T_s/2 - T_nonov - T_slew >= (N_rem + 1) * ln(2) / (2 * pi * beta_flip * f_u)",
+      "why_vi": "Thuật toán chữ số có dấu dư thừa (RSD 1.5-bit/tầng) triệt tiêu hoàn toàn lỗi ngưỡng bộ so sánh phụ tới +-V_REF/4, nhưng TUYỆT ĐỐI KHÔNG tự sửa được sai số độ lợi khép kín 1/(beta*A_0), sai số chưa kịp xác lập hàm mũ của Op-Amp, hay lệch tụ C_1 != C_2 ở tầng MDAC đầu tiên! Thiếu độ lợi DC hoặc thiếu băng thông xác lập tạo ra các bước nhảy gãy khúc định kỳ trên hàm truyền và làm sụp ENOB.",
+      "cadence_check": "Dựng sơ đồ đặc tính truyền dư tĩnh và động `V_res(V_in)` của tầng `Flip-Around MDAC 1` ở góc `SS, VDD_min`, xác nhận hai điểm chuyển ngưỡng nằm trong `+-V_REF/4`, biên độ dư không vượt `+-V_REF`, và sai số xác lập cuối pha giữ `< 0.25 LSB_rem`.",
+      "related_nodes": [
+        "topo-flash-and-pipelined-mdac-rsd-adcs",
+        "topo-switched-capacitor-unity-and-multiplying-amps",
+        "topo-gain-boosted-cascode",
+        "law-slewing-vs-linear-settling-time-budget"
+      ]
+    },
+    {
+      "id": "CHK-CNV-09",
+      "name": "Chống uốn cong thang điện trở tham chiếu (Ladder Bowing) và triệt lỗi bọt khí mã nhiệt kế (Bubble / Sparkle Suppression) trong Flash ADC",
+      "severity": "warn",
+      "method": "structural",
+      "invariant": "(2^N / 8) * I_kick_avg * R_ladder_tot < 0.25 * V_LSB (hoặc gắn tụ lọc tại các nốt giữa thang) VÀ bộ giải mã chuyển từ mã nhiệt kế sang nhị phân bắt buộc qua tầng cổng NAND 3 ngõ vào triệt bọt / mã Gray / cây cộng đếm bit 1 (Wallace Tree)",
+      "why_vi": "Trong Flash ADC tốc độ GHz, dòng giật ngược từ hàng trăm bộ so sánh rút ra khỏi thang điện trở tham chiếu làm sụt áp dạng parabol cực đại ở giữa thang gây lỗi INL. Ngoài ra khi một bộ so sánh rơi vào siêu ổn định hoặc lệch trễ xung nhịp tạo mẫu bọt khí `...0010111...`, bộ giải mã ROM `1-of-N` đơn giản sẽ kích hoạt đồng thời hai hàng từ tuyến và sinh gai lỗi biên độ nửa toàn thang (sparkle error)!",
+      "cadence_check": "Mô phỏng quá độ mảng thang điện trở + tiền khuếch đại/so sánh ở tần số đầu vào sát Nyquist để đo độ trôi động của các nốt chia áp giữa thang, đồng thời kiểm tra bảng chân trị bộ mã hóa Gray/Majority với các mẫu nhiễu bọt khí bậc 1 và bậc 2.",
+      "related_nodes": [
+        "topo-flash-and-pipelined-mdac-rsd-adcs",
+        "topo-dynamic-strongarm-and-miyahara-comparator",
+        "skill-comparator-kickback-offset-metastability-tb"
+      ]
+    }
+  ]
+}
