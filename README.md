@@ -1,5 +1,9 @@
 # Razavi CMOS Knowledge Brain (`2026.11.18.1`)
 
+- **Kho lưu trữ GitHub chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
+- **Bản đồ Tri thức Tương tác & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
+- **Endpoint Raw tức thì cho Codex / CLI:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
+
 **Bộ não Bản đồ Tri thức Thiết kế Vi mạch Tương tự CMOS** (Structured Knowledge Graph, Process-Agnostic Structural Checklists & Interactive Engineering Reference) được chưng cất có hệ thống từ toàn bộ **19 chương** của giáo trình kinh điển *Design of Analog CMOS Integrated Circuits (2nd Edition)* — Behzad Razavi, kết hợp kho **2.200 thuật ngữ song ngữ Anh–Việt chuẩn CLB Vi Mạch (`T001–T2200`)**.
 
 Kho tri thức này được thiết kế kép cho cả **kỹ sư / người học thiết kế vi mạch** (qua ứng dụng Web Bản đồ Tri thức tương tác trên GitHub Pages) lẫn **tác tử AI thiết kế mạch Codex trên Cadence Virtuoso IC617 / Spectre 15.1** (qua các endpoint JSON/Markdown tĩnh tất định và bộ định tuyến cục bộ `< 10 ms` tương thích Python 2.6.6 trên RHEL 6.5).
@@ -40,11 +44,15 @@ razavi-cmos-brain/
 │   ├── index.html                    # Ứng dụng Web Bản đồ Tri thức & Đồ thị Nâng cấp Tương tác
 │   ├── styles.css                    # Giao diện học thuật độ tương phản cao (Light / Dark)
 │   └── app.js                        # Tìm kiếm không dấu tiếng Việt + Anh, đồ thị SVG pan/zoom, KaTeX
+├── skills/
+│   └── razavi-cmos-brain/            # Skill chuẩn cho Codex / AI Agent (SKILL.md + agents/openai.yaml)
 ├── tools/
 │   ├── generate_diagrams.py          # Trình sinh 38 sơ đồ mạch vector SVG thuần Python 3 stdlib
-│   └── build_index.py                # Trình biên dịch router-index.json & manifest.json
+│   ├── build_index.py                # Trình biên dịch router-index.json & manifest.json
+│   └── manage_kb.py                  # CLI 1 lệnh: thêm thẻ mới, nối cạnh nâng cấp, rebuild & kiểm định
 ├── validators/
 │   └── validate_brain.py             # Kiểm định 100% schema 6 khối, LaTeX, SVG, Checklist & Đồ thị cạnh
+├── HUONG-DAN-CAP-NHAT.md             # Quy trình 3 bước thêm thẻ mới & đồng bộ tức thì sang ổ F:
 └── .github/workflows/deploy.yml      # Kiểm định tự động & triển khai GitHub Pages
 ```
 
@@ -68,11 +76,17 @@ python -m http.server 8080
 
 ---
 
-## 4. Tích hợp với `SKILL-ANALOG` trên Máy ảo Cadence RHEL 6.5 (`Python 2.6.6`)
+## 4. Mở rộng Kho Tri thức & Tích hợp `SKILL-ANALOG` trên Máy ảo Cadence RHEL 6.5 (`Python 2.6.6`)
 
-Phân hệ định tuyến mỏng trong `SKILL-ANALOG` (`library/tools/kb_lookup.py` và `library/tools/kb_fetch.py`) tương thích nghiêm ngặt với cả **Python 2.6.6** và **Python 3**:
-- **Tra cứu định tuyến cục bộ (`< 10 ms`):** Tìm thẻ mạch, chẩn đoán triệu chứng lỗi, tra đường nâng cấp cấu trúc (`upgrades_to`, `fixes`, `compensated_by`), lọc theo chương sách Razavi, đọc bảng kiểm bất biến (`checklists`) và tra cứu 2.200 thuật ngữ Anh–Việt không dấu.
-- **Tải thẻ lai Offline / Online:** Hoạt động đầy đủ 100% ngay khi ngoại tuyến nhờ gói nén cục bộ `nodes-bundle.json.gz`, và tự động đồng bộ bản mới qua HTTPS (kèm kiểm tra toàn vẹn SHA-256 và bộ đệm đọc xuyên suốt) khi cấu hình `RAZAVI_BRAIN_BASE_URL` trỏ tới địa chỉ GitHub Pages của kho này.
+- **Cập nhật & mở rộng siêu nhanh ([HUONG-DAN-CAP-NHAT.md](HUONG-DAN-CAP-NHAT.md)):**
+  - `python tools/manage_kb.py status` — thống kê toàn bộ thẻ, chương, cạnh đồ thị, checklist, sơ đồ SVG và thuật ngữ.
+  - `python tools/manage_kb.py new-card <domain> <id> "<title_vi>" "<title_en>" --chapter <N>` — sinh khung thẻ chuẩn 6 khối.
+  - `python tools/manage_kb.py add-edge <from> <to> <rel> "<when>" "<cost>" "<ref>"` — thêm cạnh nâng cấp vào `edges.jsonl`.
+  - `python tools/manage_kb.py rebuild` — tự động biên dịch lại chỉ mục và chạy bộ kiểm định toàn vẹn `validate_brain.py`.
+- **Định tuyến trực tiếp cho Codex trên ổ `F:` (`F:\SKILL-ANALOG` / RHEL 6.5):**
+  - Phân hệ định tuyến mỏng (`library/tools/kb_lookup.py` và `library/tools/kb_fetch.py`) tương thích nghiêm ngặt với **Python 2.6.6** và **Python 3**.
+  - **Định tuyến tức thì (`< 10 ms`):** Tìm thẻ mạch, chẩn đoán triệu chứng lỗi, tra đường nâng cấp cấu trúc (`upgrades_to`, `fixes`, `compensated_by`), lọc theo 19 chương sách Razavi, đọc 13 bảng kiểm bất biến (`checklists`) và tra cứu 2.200 thuật ngữ Anh–Việt không dấu.
+  - **Đồng bộ trực tiếp từ GitHub (`kb_fetch.py --sync`) + Dự phòng Offline 100%:** Tự động tải chỉ mục và thẻ mới nhất qua HTTPS từ GitHub Pages / Raw GitHub (hỗ trợ gói chứng chỉ CA mới trên RHEL 6.5 kèm xác thực SHA-256 vào bộ đệm ngoài thư viện), và tự động chuyển mượt sang gói nén cục bộ `nodes-bundle.json.gz` khi ngoại tuyến.
 
 ---
 
