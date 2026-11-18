@@ -10,21 +10,34 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.2.1, 8.3.1, 8.5.1",
-      "pages": "290-292, 297-298, 302-305",
-      "equations": ["8.36", "8.66", "8.73"]
+      "section": "8.2.1, 8.3, 8.5.2",
+      "pages": "286-291, 298-299, 304-308",
+      "equations": [
+        "8.36",
+        "8.66",
+        "8.73"
+      ]
     },
     {
       "chapter": 10,
       "section": "10.5-10.7",
       "pages": "426-439",
-      "equations": ["10.25", "10.30", "10.33", "10.46", "10.50"]
+      "equations": [
+        "10.25",
+        "10.30",
+        "10.33",
+        "10.46",
+        "10.50"
+      ]
     },
     {
       "chapter": 12,
       "section": "12.6, 12.8",
-      "pages": "525-529, 533-536",
-      "equations": ["12.55", "12.76"]
+      "pages": "525-529, 533-535",
+      "equations": [
+        "12.55",
+        "12.76"
+      ]
     }
   ],
   "github_refs": [
@@ -44,7 +57,17 @@
       "use": "Tổ chức bảng kiểm đặc tả Line Regulation, Load Regulation, Dropout Voltage, Quiescent Current và PSRR qua đa góc PVT"
     }
   ],
-  "glossary_codes": ["T051", "T063", "T528", "T874", "T1215", "T1301", "T2191", "T2199", "T2200"],
+  "glossary_codes": [
+    "T051",
+    "T063",
+    "T528",
+    "T874",
+    "T1215",
+    "T1301",
+    "T2191",
+    "T2199",
+    "T2200"
+  ],
   "process_agnostic": true,
   "roles": {
     "pass_transistor_stage": "Phần tử truyền công suất M_pass (PMOS nguồn chung cho dropout thấp V_DO = Vds,min, hoặc NMOS theo nguồn cho Zout thấp và PSRR cao nếu có áp bơm cổng)",
@@ -64,13 +87,20 @@
     "nmos-source-follower-pass-requires-charge-pump-or-secondary-high-voltage-rail-for-low-dropout",
     "increasing-miller-cc-for-stability-degrades-high-frequency-load-transient-and-psrr-if-feedforward-unblocked"
   ],
-  "checklists": ["common-mos", "ldo-regulator", "feedback-and-stb", "two-stage-miller", "bandgap-and-bias", "layout-and-matching"]
+  "checklists": [
+    "common-mos",
+    "ldo-regulator",
+    "feedback-and-stb",
+    "two-stage-miller",
+    "bandgap-and-bias",
+    "layout-and-matching"
+  ]
 }
 ---
 
 ## 1. Bản chất Động học Của LDO: Hệ Hồi tiếp Có Cực Trượt 4 Thập kỷ!
 
-Khác hoàn toàn với một Op-Amp thông thường làm việc quanh một tải cố định, **bộ ổn áp tuyến tính sụt áp thấp (`T2199`, Low-Dropout Regulator — LDO)** là một hệ hồi tiếp âm Điện áp–Điện áp (Razavi Chương 8 §8.3.1: cảm nhận $V_{\text{OUT}}$ song song qua cầu điện trở $R_{\text{FB1}}\text{–}R_{\text{FB2}}$, hồi tiếp nối tiếp vào ngõ vào bộ khuếch đại lỗi) phải đối mặt với **sự dịch chuyển cực đoan của điểm làm việc theo dòng tải $I_{\text{load}}$ từ $0\text{ A}$ đến hàng trăm $\text{mA}$**!
+Khác hoàn toàn với một Op-Amp thông thường làm việc quanh một tải cố định, **bộ ổn áp tuyến tính sụt áp thấp (`T2199`, Low-Dropout Regulator — LDO)** là một hệ hồi tiếp âm Điện áp–Điện áp (Razavi Chương 8 §8.2.1: cảm nhận $V_{\text{OUT}}$ song song qua cầu điện trở $R_{\text{FB1}}\text{–}R_{\text{FB2}}$, hồi tiếp nối tiếp vào ngõ vào bộ khuếch đại lỗi) phải đối mặt với **sự dịch chuyển cực đoan của điểm làm việc theo dòng tải $I_{\text{load}}$ từ $0\text{ A}$ đến hàng trăm $\text{mA}$**!
 
 ![Cấu trúc bộ ổn áp CMOS LDO dùng PMOS truyền công suất: sự dịch chuyển của cực tải, zero ESR và các đường xuyên nhiễu nguồn PSRR](../../diagrams/cmos-ldo-regulator.svg)
 
@@ -225,9 +255,9 @@ exit()
 ## 6. Đối chiếu Sách Razavi, Nguồn GitHub Đã Kiểm định & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Mốc Tọa độ Sách Razavi (2nd Edition) & Nguồn GitHub
-- **Chương 8:** §8.2.1 & §8.3.1 *Voltage-Voltage Feedback* (tr. 290–298), §8.5.1 *Loading in Voltage-Voltage Feedback* (tr. 302–305 — quy tắc giữ nguyên cầu điện trở $R_{\text{FB1}} + R_{\text{FB2}}$ khi mở vòng).
+- **Chương 8:** §8.2.1 *Voltage-Voltage Feedback* & §8.3 *Effect of Feedback on Noise* (tr. 286–291, 298–299), §8.5.2 *Loading in Voltage-Voltage Feedback* (tr. 304–308 — quy tắc giữ nguyên cầu điện trở $R_{\text{FB1}} + R_{\text{FB2}}$ khi mở vòng).
 - **Chương 10:** §10.5 *Miller Compensation & RHP Zero* (tr. 426–433), §10.7 *Other Compensation Techniques / Cascode Compensation* (tr. 436–439 — chìa khóa cho Capless LDO ổn định rộng!).
-- **Chương 12:** §12.6 & §12.8 *Regulated Supply / LDO Application of Bandgap References* (tr. 525–529, 533–536, Hình 12.39–12.41).
+- **Chương 12:** §12.6 & §12.8 *Regulated Supply / LDO Application of Bandgap References* (tr. 525–529, 533–535, Hình 12.39–12.41).
 - **Kho GitHub Đối chiếu:** `Arcadia-1/sar-adc-skills` (`27de09a34e`, tệp `references/ldo.md` phân tích ngân sách PSRR và dòng xung CDAC cho LDO nuôi ADC), `iic-jku/analog-circuit-design` (`6075ea0ebc`, ví dụ LDO và đo vòng Middlebrook) và `efabless/cace` (`d71c8da5f8`).
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch

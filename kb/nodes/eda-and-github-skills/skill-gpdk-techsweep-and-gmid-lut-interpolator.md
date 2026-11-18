@@ -12,25 +12,41 @@
       "chapter": 2,
       "section": "2.3-2.4.2",
       "pages": "24-31",
-      "equations": ["2.32", "2.36", "2.42"]
+      "equations": [
+        "2.32",
+        "2.36",
+        "2.42"
+      ]
     },
     {
       "chapter": 11,
       "section": "11.2-11.6",
       "pages": "460-507",
-      "equations": ["11.1", "11.4", "11.6", "11.10"]
+      "equations": [
+        "11.1",
+        "11.4",
+        "11.6",
+        "11.10"
+      ]
     },
     {
       "chapter": 14,
       "section": "14.2.1",
       "pages": "597-605",
-      "equations": ["14.78", "14.82"]
+      "equations": [
+        "14.78",
+        "14.82"
+      ]
     },
     {
       "chapter": 17,
       "section": "17.1-17.4",
-      "pages": "693-712",
-      "equations": ["17.12", "17.32", "17.51"]
+      "pages": "691-711",
+      "equations": [
+        "17.12",
+        "17.32",
+        "17.51"
+      ]
     }
   ],
   "github_refs": [
@@ -55,7 +71,17 @@
       "use": "Quy trình chuẩn kết hợp khảo sát đường cong gm/ID với phân chia ngón đồng nhất và kiểm chứng góc quy trình"
     }
   ],
-  "glossary_codes": ["T276", "T326", "T355", "T394", "T1851", "T2153", "T2154", "T2186", "T2278"],
+  "glossary_codes": [
+    "T276",
+    "T326",
+    "T355",
+    "T394",
+    "T1851",
+    "T2153",
+    "T2154",
+    "T2186",
+    "T2278"
+  ],
   "process_agnostic": true,
   "roles": {
     "safe_techsweep_compiler": "Công cụ tools/gpdk_techsweep.py sinh netlist Spectre 15.1 đúng trần điện áp SOA và đúng tên góc của GPDK090/GPDK045, nén kết quả thành tệp .lut.json.gz gọn nhẹ ngoài thư viện gốc",
@@ -75,7 +101,12 @@
     "extreme-high-frequency-rf-above-ft-over-5-requires-non-quasi-static-gate-resistance-modeling",
     "separate-lut-files-must-be-queried-when-evaluating-ff-or-ss-corners-directly"
   ],
-  "checklists": ["closed-loop-sizing-and-signoff", "common-mos", "differential-pair", "current-mirror"]
+  "checklists": [
+    "closed-loop-sizing-and-signoff",
+    "common-mos",
+    "differential-pair",
+    "current-mirror"
+  ]
 }
 ---
 
@@ -98,7 +129,7 @@ Cặp công cụ **`tools/gpdk_techsweep.py`** và **`tools/gmid_lut.py`** giả
 ## 2. Toán học Nội suy Đa Tuyến tính Trên Không gian Logarit & Giải Ngược Cắt Đuôi GIDL
 
 ### 2.1. Cấu trúc Ten-xơ Chuẩn hóa Bất biến Bề rộng Trong `.lut.json.gz`
-Trên lưới quét 4 chiều rời rạc $\mathcal{G} = \mathbf{L} \times \mathbf{V}_{GS} \times \mathbf{V}_{DS} \times \mathbf{V}_{SB}$ với ngón đơn vị chuẩn $W_{\text{ref}} = N_{f,\text{ref}} \cdot W_{f,\text{ref}}$ (ví dụ $W_{f,\text{ref}} = 2\text{ }\mu\text{m}, N_{f,\text{ref}} = 2 \Rightarrow W_{\text{ref}} = 4\text{ }\mu\text{m}$), `gpdk_techsweep.py` thu thập và chuẩn hóa mọi đại lượng mở rộng về mật độ trên một mét bề rộng kênh (`T2278`):
+Trên lưới quét 4 chiều rời rạc theo đúng thứ tự vòng lặp lồng nhau `[L, VDS, VSB, VGS]` ($\mathcal{G} = \mathbf{L} \times \mathbf{V}_{DS} \times \mathbf{V}_{SB} \times \mathbf{V}_{GS}$) với ngón đơn vị chuẩn $W_{\text{ref}} = N_{f,\text{ref}} \cdot W_{f,\text{ref}}$ (ví dụ $W_{f,\text{ref}} = 2\text{ }\mu\text{m}, N_{f,\text{ref}} = 2 \Rightarrow W_{\text{ref}} = 4\text{ }\mu\text{m}$), `gpdk_techsweep.py` thu thập và chuẩn hóa mọi đại lượng mở rộng về mật độ trên một mét bề rộng kênh (`T2278`):
 
 $$
 J_D = \frac{|I_D|}{W_{\text{ref}}}, \quad \frac{g_m}{I_D} = \frac{g_m}{|I_D|}, \quad \frac{g_m}{g_{ds}}, \quad f_T = \frac{g_m}{2\pi |C_{gg}|}, \quad c_{gg} = \frac{|C_{gg}|}{W_{\text{ref}}}, \quad c_{gd} = \frac{|C_{gd}|}{W_{\text{ref}}}, \quad c_{dd} = \frac{|C_{dd}|}{W_{\text{ref}}}, \quad V_{DS,\text{sat}}, \quad V_{TH}
@@ -143,7 +174,7 @@ với lưới chế tạo $\Delta_{\text{mfg}} = 5\text{ nm}$ và số ngón $N_
 
 | Công cụ & Lệnh Con | Tham số Đầu vào Chính | Đầu ra JSON Chuẩn | Thời gian Chạy & Ngữ cảnh Sử dụng |
 |---|---|---|---|
-| `gpdk_techsweep.py --pdk gpdk090 --corners NN,SS,FF` | Đường dẫn model PDK, danh sách góc, bước lưới `L/VGS/VDS/VSB` | Tệp `~/.cache/skill-analog/gmid-luts/gpdk090_1v_<corner>.lut.json.gz` | Chạy **1 lần duy nhất** mỗi PDK (`2–6 phút`), tái sử dụng vĩnh viễn cho mọi dự án |
+| `gpdk_techsweep.py --pdk gpdk090 --corners NN,SS,FF` | Đường dẫn model PDK, danh sách góc, bước lưới `L/VDS/VSB/VGS` | Tệp `~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_<corner>_27C.lut.json.gz` | Chạy **1 lần duy nhất** mỗi PDK (`2–6 phút`), tái sử dụng vĩnh viễn cho mọi dự án |
 | `gpdk_techsweep.py --generate-demo-lut <path>` | Đường dẫn xuất tệp LUT mẫu | Bảng tra vật lý chuẩn EKV/BSIM đa chiều dài kênh cho NMOS & PMOS | `< 0.5 s` — phục vụ tự kiểm thử ngoại tuyến (`--self-test`) khi chưa bật Spectre |
 | `gmid_lut.py query` | `--lut`, `--dev nmos\|pmos`, `--l`, `--gm-id`, `--vds`, `[--vsb]` | `{jd_a_per_m, gm_gds, ft_hz, vgs, vdsat, vth, cgg_f_per_m, cgd_cgg, cdd_cgg}` | **`< 5 ms`** — khảo sát điểm phân cực và lấy hệ số tự tải ký sinh |
 | `gmid_lut.py size` | `--lut`, `--dev`, `--gm`, `--gm-id`, `--l`, `--vds`, `[--w-finger-max]` | `{id_a, w_total_m, nf, w_finger_m, ro_ohm, intrinsic_gain_db, cgg_f, vds_min}` | **`< 5 ms`** — Giai đoạn 3 định cỡ trực tiếp từng nhánh transistor |
@@ -175,17 +206,17 @@ Giả sử ta cần thiết kế tầng đầu OTA đạt $\text{GBW} = 100\text
 ```bash
 # 1. Xem ma trận đánh đổi giữa các chiều dài kênh L = 100n, 180n, 360n, 540n và gm/ID từ 8 đến 20 V^-1
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gmid_lut.py tradeoff \
-  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_1v_NN.lut.json.gz \
+  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_NN_27C.lut.json.gz \
   --dev nmos --l-list 100e-9,180e-9,360e-9,540e-9 --gm-id-range 8,20 --vds 0.45
 
 # 2. Định cỡ cặp vi sai đầu vào M1/M2 ở vùng nghịch đảo vừa-yếu (gm/ID = 16 V^-1, L = 250n, VDS = 0.35V, VSB = 0.25V)
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gmid_lut.py size \
-  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_1v_NN.lut.json.gz \
+  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_NN_27C.lut.json.gz \
   --dev nmos --gm 0.95e-3 --gm-id 16.0 --l 250e-9 --vds 0.35 --vsb 0.25 --w-finger-max 4e-6
 
 # 3. Định cỡ gương dòng tải PMOS M3/M4 ở vùng nghịch đảo mạnh (gm/ID = 7.5 V^-1, L = 500n) để nén nhiễu & mismatch
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gmid_lut.py size \
-  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_1v_NN.lut.json.gz \
+  --lut ~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_NN_27C.lut.json.gz \
   --dev pmos --gm 0.445e-3 --gm-id 7.5 --l 500e-9 --vds 0.40 --vsb 0.0 --w-finger-max 4e-6
 ```
 
@@ -220,7 +251,7 @@ Toàn bộ cặp số `l=250n`, `fingers=4`, `w=14.4u` (với `w_finger=3.6u` l�
 ## 6. Đối chiếu Sách Razavi, Nguồn GitHub Đã Kiểm định & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Nguồn Mở GitHub
-- **Razavi Chương 11 (§11.2–11.6, tr. 460–507) & Chương 17 (§17.1–17.4, tr. 693–712):** Nền tảng trích xuất đặc tính transistor nanomet theo $V_{DS,\min}$ và mật độ dòng chuẩn hóa khi luật bình phương mất hiệu lực do bão hòa vận tốc và DIBL.
+- **Razavi Chương 11 (§11.2–11.6, tr. 460–507) & Chương 17 (§17.1–17.4, tr. 693–711):** Nền tảng trích xuất đặc tính transistor nanomet theo $V_{DS,\min}$ và mật độ dòng chuẩn hóa khi luật bình phương mất hiệu lực do bão hòa vận tốc và DIBL.
 - **Razavi Chương 14 (§14.2.1, tr. 597–605, Phương trình 14.78–14.82):** Định luật Pelgrom và nguyên lý đối ngẫu định cỡ giữa cặp khuếch đại vi sai đầu vào với gương dòng phân cực.
 - **Nguồn GitHub Đã Kiểm định:**
   - [`bmurmann/Book-on-gm-ID-design`](https://github.com/bmurmann/Book-on-gm-ID-design) (commit `9bc96fbcfc0d`, AGPL-3.0) & [`bmurmann/Book-on-MOS-stages`](https://github.com/bmurmann/Book-on-MOS-stages) (commit `de27e862689b`, CC-BY-4.0): Phương pháp luận thiết kế theo bảng tra đa chiều và phương trình tầng khuếch đại kênh ngắn.

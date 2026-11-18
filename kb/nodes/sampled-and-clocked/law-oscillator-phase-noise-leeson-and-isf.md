@@ -91,7 +91,7 @@ $$V_{out}(t) \approx V_0 \cos(\omega_0 t) - \frac{K_{VCO} V_m V_0}{2\omega_m}\le
 
 Bình phương tỉ số biên độ dải biên trên sóng mang cho ta công thức chuyển đổi trực tiếp từ mật độ phổ nhiễu điện áp đơn biên $S_{v,\text{cont}}(\Delta f)$ $[\text{V}^2/\text{Hz}]$ trên chân $V_{cont}$ (hoặc chân nguồn qua $K_{VDD}$) sang mật độ phổ nhiễu pha đơn biên $\mathcal{L}(\Delta f)$ $[\text{dBc/Hz}]$ tại độ lệch $\Delta f = \frac{\omega_m}{2\pi}$:
 
-$$\mathcal{L}_{\text{cont}}(\Delta f) = 10\log_{10}\left(\frac{P_{\text{sideband,1Hz}}}{P_{\text{carrier}}}\right) = 10\log_{10}\left[\left(\frac{K_{VCO}}{2\omega_m}\right)^2 \cdot 2 S_{v,\text{cont}}(\Delta f)\right] \quad \left(\text{với } S_v \text{ một phía: } \left(\frac{K_{VCO,\text{Hz}}}{2 \Delta f}\right)^2 S_{v,\text{1-sided}}(\Delta f)\right)$$
+$$\mathcal{L}_{\text{cont}}(\Delta f) = 10\log_{10}\!\left(\frac{P_{\text{sideband,1Hz}}}{P_{\text{carrier}}}\right) = 10\log_{10}\!\left[\left(\frac{K_{VCO}}{2\omega_m}\right)^2 \cdot 2 S_{v,\text{cont}}(\Delta f)\right] = 10\log_{10}\!\left[\frac{1}{2}\left(\frac{K_{VCO,\text{Hz}}}{\Delta f}\right)^2 S_{v,\text{1-sided}}(\Delta f)\right]$$
 
 *Chú ý hệ số $1/2$ sống còn trong nhiễu nhiệt khung cộng hưởng*: Nếu bơm một dòng nhiễu trắng tĩnh vào khung cộng hưởng có trở kháng quanh $\omega_0$ là $|Z_{\text{tank}}(\omega_0 + \Delta\omega)| \approx \frac{R_P}{\sqrt{1 + (2 Q \Delta\omega / \omega_0)^2}} \approx \frac{R_P \omega_0}{2 Q \Delta\omega}$ (khi $\Delta\omega \gg \frac{\omega_0}{2Q}$), định lý phân bố đều năng lượng chỉ ra **một nửa công suất nhiễu đi vào biến thiên biên độ (AM — bị cặp chéo dập tắt)** và **chỉ một nửa công suất nhiễu đi vào biến thiên pha (PM)**!
 

@@ -10,27 +10,36 @@
   "razavi_refs": [
     {
       "chapter": 1,
-      "section": "1.3-1.4",
-      "pages": "6-10",
+      "section": "1.3-1.5",
+      "pages": "5-6",
       "equations": []
     },
     {
       "chapter": 7,
       "section": "7.3, 7.8",
-      "pages": "214-219, 238-241",
-      "equations": ["7.54", "7.146"]
+      "pages": "236-243, 264",
+      "equations": [
+        "7.54",
+        "7.146"
+      ]
     },
     {
       "chapter": 8,
       "section": "8.5",
-      "pages": "278-296",
-      "equations": ["8.59"]
+      "pages": "303-315",
+      "equations": [
+        "8.59"
+      ]
     },
     {
       "chapter": 14,
       "section": "14.1.1-14.2.2",
       "pages": "576-600",
-      "equations": ["14.5", "14.17", "14.75"]
+      "equations": [
+        "14.5",
+        "14.17",
+        "14.75"
+      ]
     }
   ],
   "github_refs": [
@@ -248,7 +257,7 @@ endmodule
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 1 & Chương 7:** §1.3–§1.4 *Levels of Abstraction & Analog Design Octagon* (tr. 6–10 — nguyên lý trừu tượng hóa phân cấp); §7.3 & §7.8 *Representation of Noise in Two-Ports & Noise Bandwidth* (tr. 214–219, 238–241 — cơ sở quy đổi nhiễu dây chuyền nhiều khối về cổng đầu vào).
+- **Chương 1 & Chương 7:** §1.3–§1.4 *Levels of Abstraction & Analog Design Octagon* (tr. 5–6 — nguyên lý trừu tượng hóa phân cấp); §7.3 & §7.8 *Representation of Noise in Two-Ports & Noise Bandwidth* (tr. 236–243, 264 — cơ sở quy đổi nhiễu dây chuyền nhiều khối về cổng đầu vào).
 - **Chương 8 & Chương 14:** §8.5 *Effect of Loading* (tr. 278–296 — phân tích tải hai cửa và điều kiện tách trở kháng Middlebrook); §14.1–§14.2 *Nonlinearity & Mismatch* (tr. 576–600 — nén méo hài bằng hồi tiếp, cộng méo dây chuyền và luật Pelgrom).
 - **Đối chiếu GitHub:** Chuẩn hợp đồng đặc tả `efabless/cace`, quy chuẩn hành vi `Arcadia-1/veriloga-skills`, kiểm toán độc lập `Arcadia-1/analog-agents` và quy ước sơ đồ `iic-jku/Circuit-Designers-Etiquette`.
 

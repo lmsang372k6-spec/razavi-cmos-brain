@@ -23,7 +23,7 @@
     {
       "chapter": 17,
       "section": "17.1-17.3",
-      "pages": "691-715",
+      "pages": "691-709",
       "equations": []
     }
   ],
@@ -194,4 +194,4 @@ pnoise_b (vout_p vout_n) pnoise start=1 stop=fs/2 dec=25 maxsideband=40 \
 | Giới hạn biên độ dẫn $V_{DD} - V_{TH}$ và sự phụ thuộc $R_{on}(V_{in})$ | §13.2.1–13.2.2, PT (13.22)–(13.24), tr. 543–550 | `T074` Lấy mẫu; `T086` điện áp nguồn cấp; `T088` Chuyển mạch; `T095` Dải dao động điện áp; `T109` MOSFET hoạt động như một công tắc |
 | Điện tích kênh dẫn $Q_{ch}$ và phi tuyến hiệu ứng thân khi lấy mẫu | §13.2.3, PT (13.25)–(13.30), tr. 550–552 | `T014` Phun điện tích; `T056` transistor loại n; `T057` Tính phi tuyến; `T080` cực nguồn |
 | Méo phi tuyến của công tắc lấy mẫu trong miền thời gian | §14.1.5, tr. 586–588 | `T024` MOS bổ sung; `T786` méo dạng; `T2015` được tự thiết lập nhờ hồi tiếp (bootstrapped) |
-| Thu nhỏ linh kiện nanomet, co hẹp nguồn cấp và giếng n sâu | §17.1–17.3, tr. 691–715 & §2.1, tr. 9 | `T031` Thu nhỏ kích thước linh kiện; `T069` Biến thiên PVT; `T132` Giếng n sâu |
+| Thu nhỏ linh kiện nanomet, co hẹp nguồn cấp và giếng n sâu | §17.1–17.3, tr. 691–709 & §2.1, tr. 9 | `T031` Thu nhỏ kích thước linh kiện; `T069` Biến thiên PVT; `T132` Giếng n sâu |

@@ -10,21 +10,27 @@
   "razavi_refs": [
     {
       "chapter": 1,
-      "section": "1.4",
-      "pages": "6-8",
+      "section": "1.4-1.5",
+      "pages": "5-6",
       "equations": []
     },
     {
       "chapter": 9,
       "section": "9.1, 9.5-9.6",
       "pages": "345-349, 373-374",
-      "equations": ["9.44", "9.46"]
+      "equations": [
+        "9.44",
+        "9.46"
+      ]
     },
     {
       "chapter": 11,
       "section": "11.5-11.6",
       "pages": "472-507",
-      "equations": ["11.14", "11.20"]
+      "equations": [
+        "11.14",
+        "11.20"
+      ]
     }
   ],
   "github_refs": [
@@ -44,7 +50,15 @@
       "use": "Mẫu hàm bọc an toàn tránh kết quả nil khi trích xuất sóng trong môi trường SKILL/OCEAN"
     }
   ],
-  "glossary_codes": ["T051", "T063", "T079", "T527", "T1214", "T1437", "T2186"],
+  "glossary_codes": [
+    "T051",
+    "T063",
+    "T079",
+    "T527",
+    "T1214",
+    "T1437",
+    "T2186"
+  ],
   "process_agnostic": true,
   "roles": {
     "ocean_batch_driver": "Trình thông dịch ocean -nograph -restore điều phối thiết kế, gán desVar, chọn modelFile theo góc PVT, chạy run() và đánh giá hàm đo sóng chuẩn Cadence",
@@ -63,7 +77,11 @@
     "psfascii-is-larger-on-disk-than-psfbin-unless-paired-with-save-selected-and-strobing",
     "ocean-v-and-getData-naming-conventions-differ-between-schematic-hierarchy-and-flat-scs"
   ],
-  "checklists": ["common-mos", "feedback-and-stb", "single-stage"]
+  "checklists": [
+    "common-mos",
+    "feedback-and-stb",
+    "single-stage"
+  ]
 }
 ---
 
@@ -244,7 +262,7 @@ def run_spectre_psfascii(template_scs, run_dir, param_overrides):
 ## 6. Đối chiếu Sách Razavi, Nguồn GitHub Đã Kiểm định & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Nguồn Mở GitHub
-- **Razavi Chương 1 (§1.4, tr. 6–8) & Chương 9 (§9.1, §9.5–9.6, tr. 345–349, 373–374):** Định nghĩa 8 trục của Bát giác Thiết kế Tương tự và hợp đồng chỉ tiêu hiệu năng của bộ khuếch đại thuật toán.
+- **Razavi Chương 1 (§1.4, tr. 5–6) & Chương 9 (§9.1, §9.5–9.6, tr. 345–349, 373–374):** Định nghĩa 8 trục của Bát giác Thiết kế Tương tự và hợp đồng chỉ tiêu hiệu năng của bộ khuếch đại thuật toán.
 - **Razavi Chương 11 (§11.5–11.6, tr. 472–507):** Các nghiên cứu thiết kế từng bước kiểm chứng trên mô phỏng qua nhiều góc công nghệ nanomet.
 - **Nguồn GitHub Đã Kiểm định:**
   - [`Arcadia-1/virtuoso-bridge-lite`](https://github.com/Arcadia-1/virtuoso-bridge-lite) (commit `1f186abfbb3d`, MIT): Quy tắc cô lập thư mục chạy, bẫy `-param` / biểu thức phụ thuộc và đọc PSF nghiêm ngặt.

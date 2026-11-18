@@ -10,8 +10,8 @@
   "razavi_refs": [
     {
       "chapter": 1,
-      "section": "1.4",
-      "pages": "6-8",
+      "section": "1.4-1.5",
+      "pages": "5-6",
       "equations": []
     },
     {
@@ -24,13 +24,19 @@
       "chapter": 14,
       "section": "14.2.1",
       "pages": "593-598",
-      "equations": ["14.75", "14.79"]
+      "equations": [
+        "14.75",
+        "14.79"
+      ]
     },
     {
       "chapter": 17,
       "section": "17.3.7-17.4",
       "pages": "707-710",
-      "equations": ["17.52", "17.53"]
+      "equations": [
+        "17.52",
+        "17.53"
+      ]
     }
   ],
   "github_refs": [
@@ -258,7 +264,7 @@ def evaluate_parameter(spec, pvt_records, mc_samples=None):
 ## 6. Đối chiếu Sách Razavi, Nguồn GitHub Đã Kiểm định & Bảng Thuật ngữ Chuẩn CLB
 
 ### 6.1. Mốc Tọa độ Chính xác Trong Sách Razavi (2nd Edition) & Kho GitHub
-- **Razavi Chương 1, 9, 14 & 17:** §1.4 *Analog Design Octagon* (tr. 6–8 — không gian 8 trục đánh đổi chặt chẽ đòi hỏi kiểm chứng đồng thời mọi chỉ tiêu), §9.1 *General Considerations: Performance Parameters* (tr. 345–349 — định nghĩa hợp đồng đặc tả của Op-Amp), §14.2.1 *Pelgrom's Law* (tr. 593–598, Phương trình 14.75, 14.79 — cơ sở vật lý của thống kê mismatch Monte Carlo), §17.3.7 *Temperature Dependence* & §17.4 *Process Corners* (tr. 707–710, Phương trình 17.52–17.53 — điểm cân bằng nhiệt ZTC và miền bao góc quy trình `SS/FF/FS/SF`).
+- **Razavi Chương 1, 9, 14 & 17:** §1.4 *Analog Design Octagon* (tr. 5–6 — không gian 8 trục đánh đổi chặt chẽ đòi hỏi kiểm chứng đồng thời mọi chỉ tiêu), §9.1 *General Considerations: Performance Parameters* (tr. 345–349 — định nghĩa hợp đồng đặc tả của Op-Amp), §14.2.1 *Pelgrom's Law* (tr. 593–598, Phương trình 14.75, 14.79 — cơ sở vật lý của thống kê mismatch Monte Carlo), §17.3.7 *Temperature Dependence* & §17.4 *Process Corners* (tr. 707–710, Phương trình 17.52–17.53 — điểm cân bằng nhiệt ZTC và miền bao góc quy trình `SS/FF/FS/SF`).
 - **Đối chiếu Nguồn Mở Đã Kiểm Định:**
   - `efabless/cace` (`d71c8da5f8d8`, Apache-2.0): Chuẩn công nghiệp mã nguồn mở về đặc tính hóa tự động hướng hợp đồng datasheet qua đa góc PVT, Monte Carlo và chế độ Schematic/PEX.
   - `Arcadia-1/analog-agents` (`4d6bd218ceff`), `Arcadia-1/razavi-bench` (`30e6a5e3657f`) & `iic-jku/Circuit-Designers-Etiquette` (`e330aea62574`, Apache-2.0): Kỷ luật kiểm toán độc lập chống sửa spec, chuẩn hóa chỉ số đo và quy trình nghiệm thu trước tape-out.

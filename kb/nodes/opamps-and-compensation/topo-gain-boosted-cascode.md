@@ -10,18 +10,42 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.6.4 (Example 8.26)",
+      "section": "8.6.4",
       "pages": "327",
-      "equations": ["8.184", "8.185"]
+      "equations": [
+        "8.184",
+        "8.185"
+      ]
     },
     {
       "chapter": 9,
       "section": "9.4",
       "pages": "364-373",
-      "equations": ["9.21", "9.24", "9.25", "9.34", "9.38", "9.39", "9.40", "9.41", "9.42", "9.44"]
+      "equations": [
+        "9.21",
+        "9.24",
+        "9.25",
+        "9.34",
+        "9.38",
+        "9.39",
+        "9.40",
+        "9.41",
+        "9.42",
+        "9.44"
+      ]
     }
   ],
-  "glossary_codes": ["T499", "T1393", "T1492", "T1499", "T1505", "T1506", "T1508", "T1707", "T1708"],
+  "glossary_codes": [
+    "T499",
+    "T1393",
+    "T1492",
+    "T1499",
+    "T1505",
+    "T1506",
+    "T1508",
+    "T1707",
+    "T1708"
+  ],
   "process_agnostic": true,
   "roles": {
     "main_cascode_branch": "Đường truyền tín hiệu chính (M1-M2) dẫn gần như toàn bộ dòng tín hiệu tần số cao thẳng ra tải CL mà không bị làm chậm bởi cực của bộ khuếch đại phụ",
@@ -40,7 +64,13 @@
     "inner-auxiliary-loop-oscillation-if-aux-bandwidth-approaches-main-cascode-pole",
     "extra-silicon-area-and-bias-current-for-two-auxiliary-amplifiers"
   ],
-  "checklists": ["common-mos", "differential-pair", "folded-cascode", "feedback-and-stb", "cmfb"]
+  "checklists": [
+    "common-mos",
+    "differential-pair",
+    "folded-cascode",
+    "feedback-and-stb",
+    "cmfb"
+  ]
 }
 ---
 

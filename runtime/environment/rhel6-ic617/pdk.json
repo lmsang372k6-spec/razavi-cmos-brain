@@ -1,0 +1,10 @@
+{
+  "schema": "skill-analog.pdk-inventory.v1",
+  "observed_at": "2026-11-04",
+  "pdks": [
+    {"id": "GPDK045", "directory_version": "gpdk045_v_5_0", "path": "/home/disk/eda/apps/cadence/pdks/gpdk045_v_5_0", "home_alias": "/home/work/gpdk045_v_5_0", "models": [], "sections": [], "cdf_validated": false, "runtime_verified": false},
+    {"id": "GPDK090", "directory_version": "gpdk090_v4.6", "path": "/home/disk/eda/apps/cadence/pdks/gpdk090_v4.6", "home_alias": "/home/work/gpdk090_v4.6", "models": [], "sections": [], "cdf_validated": false, "runtime_verified": false}
+  ],
+  "selection": "No default PDK. Read actual project cds.lib, attached tech library, CDF and model include before choosing devices/sections.",
+  "limits": "Directory names identify inventory only. Do not import GPDK090 model names/corner labels from pygmid examples without verifying local files. Foundry signoff readiness is not established."
+}

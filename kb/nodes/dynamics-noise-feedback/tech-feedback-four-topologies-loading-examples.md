@@ -5,17 +5,42 @@
   "domain": "dynamics-noise-feedback",
   "title_vi": "Quy trình Giải Mạch Hồi tiếp Hai Cửa Từng Bước & Chuỗi Ví dụ Mẫu Transistor CMOS Cho Cả 4 Cấu hình (Two-Port Loading Algorithm & Worked Examples)",
   "title_en": "Step-by-Step Two-Port Feedback Port-Breaking Algorithm and Worked Transistor-Level CMOS Examples (VV, CV, VC, CC)",
-  "summary": "Cẩm nang thực hành giải tích tay trọn vẹn từ ma trận hai cửa (g, z, y, h) sang quy tắc cắt vòng trực quan của Razavi (Bảng 8.67) kèm lời giải từng bước 7 mạch transistor CMOS kinh điển (Ví dụ 8.11–8.17): hai tầng CS hồi tiếp về nguồn (VV), mạch ổn dòng sạc pin PMOS + rM (CV), khuếch đại hỗ trở & đảo có RS-RF (VC), và bộ khuếch đại dòng hai tầng cảm nhận nguồn RS-RF (CC).",
+  "summary": "Cẩm nang thực hành giải tích tay trọn vẹn từ ma trận hai cửa (g, z, y, h) sang quy tắc cắt vòng trực quan của Razavi (Hình 8.67) kèm lời giải từng bước 7 mạch transistor CMOS kinh điển (Ví dụ 8.11–8.17): hai tầng CS hồi tiếp về nguồn (VV), mạch ổn dòng sạc pin PMOS + rM (CV), khuếch đại hỗ trở & đảo có RS-RF (VC), và bộ khuếch đại dòng hai tầng cảm nhận nguồn RS-RF (CC).",
   "diagram": "../../diagrams/feedback-four-topologies.svg",
   "razavi_refs": [
     {
       "chapter": 8,
       "section": "8.2-8.5.6",
       "pages": "286-315",
-      "equations": ["8.31", "8.45", "8.51", "8.57", "8.61", "8.66", "8.73", "8.75", "8.82", "8.86", "8.88", "8.96", "8.102", "8.106"]
+      "equations": [
+        "8.31",
+        "8.45",
+        "8.51",
+        "8.57",
+        "8.61",
+        "8.66",
+        "8.73",
+        "8.75",
+        "8.82",
+        "8.86",
+        "8.88",
+        "8.96",
+        "8.102",
+        "8.106"
+      ]
     }
   ],
-  "glossary_codes": ["T042", "T051", "T534", "T812", "T1142", "T1182", "T1186", "T1187", "T1192"],
+  "glossary_codes": [
+    "T042",
+    "T051",
+    "T534",
+    "T812",
+    "T1142",
+    "T1182",
+    "T1186",
+    "T1187",
+    "T1192"
+  ],
   "process_agnostic": true,
   "roles": {
     "two_port_parameter_selector": "Bộ ánh xạ kiểu ghép cửa (nối tiếp cộng áp hay song song cộng dòng) sang đúng mô hình ma trận hai cửa (G cho VV, Y+Z cho CV, Z+Y cho VC, H cho CC) sao cho tham số truyền thuận hữu hạn với cổng MOSFET",
@@ -35,7 +60,10 @@
     "slight-discrepancy-between-arbitrary-gate-break-loop-gain-and-two-port-beta-times-aol-when-rd-comparable-to-rf",
     "cannot-directly-solve-noncanonical-source-degenerated-drain-output-stage-without-bode-blackman"
   ],
-  "checklists": ["common-mos", "feedback-and-stb"]
+  "checklists": [
+    "common-mos",
+    "feedback-and-stb"
+  ]
 }
 ---
 

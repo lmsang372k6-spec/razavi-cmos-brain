@@ -128,7 +128,7 @@ Yêu cầu tổng hợp sóng mang quanh $f_{\text{out}} = 2.4\text{ GHz}$ với
    - Băng thông vòng tối đa: $f_c \le 25\text{ kHz} \implies$ thời gian khóa kênh $> 150\,\mu\text{s}$; không nén được nhiễu VCO ở $100\text{ kHz}$.
 2. **Thiết kế MASH 1-1-1 Fractional-$N$ ($f_{\text{REF}} = 50\text{ MHz}$ kèm bộ tích lũy 20-bit cho bước kênh $47.7\text{ Hz}$, $N = 48$)**:
    - Sàn nhiễu nội dải: $-222 + 10\log_{10}(5\times 10^7) + 20\log_{10}(48) = -222 + 77.0 + 33.6 = \mathbf{-111.4\text{ dBc/Hz}}$ (**sạch hơn $23.0\text{ dB}$**!).
-   - Chọn băng thông vòng $f_c = 800\text{ kHz}$ ($\ll 50\text{ MHz} / 10$, khóa kênh siêu tốc trong $< 5\,\mu\text{s}$!): tại $f = 800\text{ kHz}$, nhiễu lượng tử mở của MASH 1-1-1 là $10\log_{10}\left[\frac{4\pi^2}{12 \times 50\times 10^6} \left(2\sin\frac{0.8\pi}{50}\right)^4\right] \approx -101.8\text{ dBc/Hz}$, sau khi trừ $3\text{ dB}$ cắt vòng và lọc bậc 4 ($f_{p3} = 2.8\text{ MHz}, f_{p4} = 4.5\text{ MHz}$) nằm hoàn toàn dưới mặt nạ phổ của VCO!
+   - Chọn băng thông vòng $f_c = 800\text{ kHz}$ ($\ll 50\text{ MHz} / 10$, khóa kênh siêu tốc trong $< 5\,\mu\text{s}$!): tại $f = 800\text{ kHz}$, nhiễu lượng tử mở của MASH 1-1-1 là $10\log_{10}\!\left[\frac{4\pi^2}{12 \times 50\times 10^6} \left(2\sin\frac{0.8\pi}{50}\right)^4\right] \approx \mathbf{-111.7\text{ dBc/Hz}}$, sau khi trừ $3\text{ dB}$ cắt vòng và lọc bậc 4 ($f_{p3} = 2.8\text{ MHz}, f_{p4} = 4.5\text{ MHz}$) nằm hoàn toàn dưới mặt nạ phổ của VCO!
 
 ---
 

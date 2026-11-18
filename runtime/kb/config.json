@@ -1,0 +1,33 @@
+{
+  "base_url": "https://lmsang372k6-spec.github.io/razavi-cmos-brain",
+  "bundle_path": "kb/nodes-bundle.json.gz",
+  "ca_bundle_candidates": [
+    "/home/disk/eda/apps/codex/support/mozilla-cacert.pem",
+    "/home/work/cadence/tools/codex/mozilla-cacert.pem"
+  ],
+  "checklists_dir": "kb/checklists",
+  "coordinates_path": "kb/coordinates/book-coordinates.json",
+  "diagrams_dir": "kb/diagrams",
+  "edges_path": "kb/edges.jsonl",
+  "env_base_url": "RAZAVI_BRAIN_BASE_URL",
+  "env_ca_bundle": "RAZAVI_CA_BUNDLE",
+  "env_cache_dir": "RAZAVI_BRAIN_CACHE_DIR",
+  "env_https_client": "RAZAVI_HTTPS_CLIENT",
+  "env_offline": "SKILL_ANALOG_OFFLINE",
+  "env_raw_base_url": "RAZAVI_BRAIN_RAW_URL",
+  "github_api_ref_url": "https://api.github.com/repos/lmsang372k6-spec/razavi-cmos-brain/git/refs/heads/main",
+  "github_skills_catalog_path": "kb/github-skills/catalog.json",
+  "glossary_path": "kb/terms-vi-en.json",
+  "http_timeout_sec": 8,
+  "ota_ttl_sec": 60,
+  "raw_base_url": "https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main",
+  "raw_sha_template": "https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/%s",
+  "release": "2026.11.18.6",
+  "repo_url": "https://github.com/lmsang372k6-spec/razavi-cmos-brain",
+  "router_index_path": "kb/router-index.json",
+  "runtime_manifest_path": "runtime/manifest.json",
+  "schema": "razavi-brain-client.v4",
+  "sha_timeout_sec": 1.5,
+  "verify_sha256": true,
+  "web_url": "https://lmsang372k6-spec.github.io/razavi-cmos-brain"
+}

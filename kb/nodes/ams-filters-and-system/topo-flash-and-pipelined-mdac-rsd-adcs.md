@@ -11,26 +11,38 @@
     {
       "chapter": 8,
       "section": "8.1-8.2",
-      "pages": "258-267",
-      "equations": ["8.3"]
+      "pages": "274-298",
+      "equations": [
+        "8.3"
+      ]
     },
     {
       "chapter": 9,
       "section": "9.9-9.10",
       "pages": "393-400",
-      "equations": ["9.62", "9.76"]
+      "equations": [
+        "9.62",
+        "9.76"
+      ]
     },
     {
       "chapter": 13,
       "section": "13.3.2",
       "pages": "560-563",
-      "equations": ["13.40", "13.42", "13.44"]
+      "equations": [
+        "13.40",
+        "13.42",
+        "13.44"
+      ]
     },
     {
       "chapter": 14,
       "section": "14.1.4-14.2.1",
       "pages": "583-598",
-      "equations": ["14.37", "14.75"]
+      "equations": [
+        "14.37",
+        "14.75"
+      ]
     }
   ],
   "github_refs": [

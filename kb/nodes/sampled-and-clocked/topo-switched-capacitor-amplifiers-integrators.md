@@ -147,7 +147,7 @@ V_{out}[k] = V_{out}[k - 1] + \frac{C_1}{C_2}\,V_{in}[k - 1]
 \xrightarrow{\mathcal{Z}}
 H(z) = \frac{V_{out}(z)}{V_{in}(z)} = \frac{C_1}{C_2}\,\frac{z^{-1}}{1 - z^{-1}}
 $$
-(Nếu giữ cùng chiều nối bản cực như mạch 2 công tắc Hình 13.57 hoặc đảo chéo nhánh vi sai, ta thu được bộ tích phân đảo $H_{inv}(z) = -\frac{C_1}{C_2}\frac{z^{-1}}{1 - z^{-1}}$ theo Phương trình 13.63). Với tần số tín hiệu thấp hơn nhiều tần số xung nhịp ($\omega T_{CK} \ll 1 \implies z = e^{j\omega T_{CK}} \approx 1 + j\omega T_{CK}$), hàm truyền hội tụ về $H(e^{j\omega T_{CK}}) \approx \frac{C_1 f_{CK}}{j\omega C_2}$, cho tần số độ lợi đơn vị $\omega_u = \frac{C_1}{C_2} f_{CK}$ chỉ phụ thuộc vào **tỷ số hình học hai tụ điện và tần số thạch anh chính xác**!
+(Nếu giữ cùng chiều nối bản cực như mạch 2 công tắc Hình 13.57 hoặc đảo chéo nhánh vi sai, ta thu được bộ tích phân đảo $H_{inv}(z) = -\frac{C_1}{C_2}\frac{z^{-1}}{1 - z^{-1}}$ theo Phương trình 13.63). Với tần số tín hiệu thấp hơn nhiều tần số xung nhịp ($\omega T_{CK} \ll 1 \implies z = e^{j\omega T_{CK}} \approx 1 + j\omega T_{CK}$), hàm truyền hội tụ về $H(e^{j\omega T_{CK}}) \approx \frac{C_1 f_{CK}}{j\omega C_2}$, cho tần số góc độ lợi đơn vị $\omega_u = \frac{C_1}{C_2} f_{CK}\;[\text{rad/s}]$ (tức $f_u = \frac{\omega_u}{2\pi} = \frac{1}{2\pi}\frac{C_1}{C_2} f_{CK}\;[\text{Hz}]$) chỉ phụ thuộc vào **tỷ số hình học hai tụ điện và tần số thạch anh chính xác**!
 
 ## 3. Bất biến Cấu trúc & Các Bẫy Lỗi Kinh điển (Structural Invariants & Traps)
 

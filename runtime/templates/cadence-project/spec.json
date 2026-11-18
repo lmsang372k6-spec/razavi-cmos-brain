@@ -1,0 +1,42 @@
+{
+  "schema": "skill-analog.spec.v1",
+  "schema_revision": 2,
+  "project_name": "{{PROJECT_NAME}}",
+  "revision": 1,
+  "approval": {
+    "status": "draft",
+    "approved_by": null,
+    "approved_at": null,
+    "source": null
+  },
+  "user_theory_constraints": [],
+  "design_constraints": [],
+  "requirements": [],
+  "subblock_budgets": [],
+  "coverage": {
+    "analyses": [],
+    "corners": [],
+    "supplies_V": [],
+    "temperatures_C": [],
+    "monte_carlo": null,
+    "post_layout": false
+  },
+  "optimization": {
+    "enabled": false,
+    "engine": "/home/disk/eda/references/SKILL-ANALOG/tools/sizing_opt.py",
+    "gmid_sizer": "/home/disk/eda/references/SKILL-ANALOG/tools/gmid_lut.py",
+    "lut_path": null,
+    "mos_sat_margin_min_v": 0.05,
+    "step_grid_m": 5e-09,
+    "max_evaluations": 35,
+    "objective": {
+      "goal": "minimize",
+      "metric": "power_w",
+      "secondary_fom": null
+    },
+    "variables": [],
+    "pvt_corners": ["TT", "SS", "FF"]
+  },
+  "measurement_contract": "Each requirement needs id, quantity, operator, target, unit, conditions and measurement definition before evaluation. Unknown targets remain unknown. Per-requirement approval may be recorded when only part of the spec is approved.",
+  "notes": "No targets are supplied by this template. Record user-approved requirements exactly, preserving original units/source. Allocate hierarchical subblock_budgets[] with RSS noise/offset and Middlebrook impedance margins before transistor sizing."
+}

@@ -10,33 +10,48 @@
   "razavi_refs": [
     {
       "chapter": 1,
-      "section": "1.4",
-      "pages": "6-8",
+      "section": "1.4-1.5",
+      "pages": "5-6",
       "equations": []
     },
     {
       "chapter": 9,
       "section": "9.1-9.6, 9.9",
       "pages": "345-374, 391-395",
-      "equations": ["9.15", "9.44", "9.46"]
+      "equations": [
+        "9.15",
+        "9.44",
+        "9.46"
+      ]
     },
     {
       "chapter": 10,
       "section": "10.5-10.6",
       "pages": "426-446",
-      "equations": ["10.29", "10.36", "10.38"]
+      "equations": [
+        "10.29",
+        "10.36",
+        "10.38"
+      ]
     },
     {
       "chapter": 11,
       "section": "11.4-11.6",
       "pages": "466-507",
-      "equations": ["11.10", "11.16", "11.21"]
+      "equations": [
+        "11.10",
+        "11.16",
+        "11.21"
+      ]
     },
     {
       "chapter": 14,
       "section": "14.2.1",
       "pages": "597-605",
-      "equations": ["14.78", "14.82"]
+      "equations": [
+        "14.78",
+        "14.82"
+      ]
     }
   ],
   "github_refs": [
@@ -61,7 +76,18 @@
       "use": "Khởi tạo điểm thiết kế vật lý chuẩn xác bằng bảng tra gm/ID trước khi chạy tinh chỉnh số"
     }
   ],
-  "glossary_codes": ["T051", "T063", "T079", "T1851", "T2153", "T2186", "T2274", "T2278", "T2279", "T2280"],
+  "glossary_codes": [
+    "T051",
+    "T063",
+    "T079",
+    "T1851",
+    "T2153",
+    "T2186",
+    "T2274",
+    "T2278",
+    "T2279",
+    "T2280"
+  ],
   "process_agnostic": true,
   "roles": {
     "seven_stage_orchestrator": "Khung điều phối xuyên suốt 7 giai đoạn từ tra cứu KB/Checklist -> Ngân sách RSS đa khối -> Định cỡ ấm gm/ID -> Dựng Verilog-A/Schematic -> Hậu kiểm PSF -> Tối ưu sizing_opt.py -> Sign-off PVT/MC/PEX",
@@ -80,7 +106,12 @@
     "local-trust-region-converges-to-nearest-pareto-basin-requires-physics-warm-start-from-gmid-lut",
     "full-200-run-monte-carlo-should-be-run-at-stage-7-signoff-not-inside-every-inner-optimizer-step"
   ],
-  "checklists": ["closed-loop-sizing-and-signoff", "common-mos", "feedback-and-stb", "two-stage-miller"]
+  "checklists": [
+    "closed-loop-sizing-and-signoff",
+    "common-mos",
+    "feedback-and-stb",
+    "two-stage-miller"
+  ]
 }
 ---
 
@@ -215,7 +246,7 @@ Sau khi `sizing_opt.py` xuất tệp `opt_pareto_result.json` với cờ `"all_c
 ## 6. Đối chiếu Sách Razavi, Nguồn GitHub Đã Kiểm định & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Nguồn Mở GitHub
-- **Razavi Chương 1 (§1.4, tr. 6–8) & Chương 9 (§9.1–9.6, §9.9, tr. 345–395):** Không gian đánh đổi đa chiều của Bát giác Thiết kế Tương tự và quy trình định cỡ từng bước cho các họ Op-Amp chuẩn.
+- **Razavi Chương 1 (§1.4, tr. 5–6) & Chương 9 (§9.1–9.6, §9.9, tr. 345–395):** Không gian đánh đổi đa chiều của Bát giác Thiết kế Tương tự và quy trình định cỡ từng bước cho các họ Op-Amp chuẩn.
 - **Razavi Chương 10 (§10.5–10.6, tr. 426–446) & Chương 11 (§11.4–11.6, tr. 466–507):** Tương tác chặt giữa tụ bù Miller $C_c$, điện trở khử điểm không $R_z$, tốc độ biến thiên Slew Rate và thời gian xác lập trong công nghệ nanomet.
 - **Nguồn GitHub Đã Kiểm định:**
   - [`dimplekochar/LEDRO`](https://github.com/dimplekochar/LEDRO) (commit `e970d3059e37`, arXiv:2411.12930): Cơ sở phương pháp cắt tỉa hộp tìm kiếm tham số bằng lập luận vật lý mạch kết hợp tối ưu vùng tin cậy tiết kiệm số lần chạy mô phỏng.

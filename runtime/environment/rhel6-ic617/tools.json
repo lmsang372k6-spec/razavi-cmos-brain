@@ -1,0 +1,16 @@
+{
+  "schema": "skill-analog.environment.v1",
+  "observed_at": "2026-11-04",
+  "observation": "Offline read-only VM filesystem inspection; path presence is not runtime validation.",
+  "os": {"name": "Red Hat Enterprise Linux Server", "release": "6.5 Santiago", "runtime_verified": false},
+  "tools": [
+    {"id": "virtuoso", "version_family": "IC617", "path": "/home/disk/eda/apps/cadence/software/IC617", "alias": "/opt/IC617", "runtime_verified": false},
+    {"id": "legacy-virtuoso", "version_family": "IC5141", "path": "/home/disk/eda/apps/cadence/software/IC5141", "alias": "/opt/IC5141", "runtime_verified": false},
+    {"id": "spectre", "version_family": "MMSIM151 / Spectre 15.1", "path": "/opt/MMSIM151", "runtime_verified": false},
+    {"id": "legacy-mmsim", "version_family": "MMSIM121", "path": "/opt/MMSIM121", "runtime_verified": false},
+    {"id": "calibre", "version_family": "2015", "path": "/opt/calibre2015", "runtime_verified": false},
+    {"id": "codex-cli", "version_family": "0.166.0 standalone", "path": "/home/work/.local/bin/codex", "codex_home": "/home/disk/eda/apps/codex/data", "runtime_verified": false}
+  ],
+  "project_roots": {"cadence": "/home/disk/eda/projects/cadence", "codex": "/home/disk/eda/projects/codex"},
+  "legacy_project": {"logical": "/home/disk/eda/projects/cadence/01-inverter", "actual": "/home/work/cadence/projects/01-inverter"}
+}

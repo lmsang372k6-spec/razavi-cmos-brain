@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain (release 2026.11.18.4).
+"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain & v4.0 Runtime (release 2026.11.18.6).
 
 Validates all 10 domains (162 cards: 112 Razavi Ch.01-19 cards + 12 PMIC cards + 12 AMS/System cards
 + 26 Closed-Loop Cadence/GitHub Skill cards), 72 vector SVGs, 21 structural checklists, 2,280 CLB
-glossary terms (T001-T2280), Exact Book Coordinates (`book-coordinates.json`), 52-repo GitHub Skills
-Catalog (`catalog.json`), 22-column 2D coordinates, balanced LaTeX, and SHA-256 manifest integrity.
+glossary terms (T001-T2280), Exact Book Coordinates (`book-coordinates.json` with 100% section/equation
+verification), 52-repo GitHub Skills Catalog (`catalog.json`), 22-column 2D coordinates, balanced LaTeX,
+deterministic `nodes-bundle.json.gz`, `runtime/manifest.json` SHA-256 integrity, and Python 2.6 AST/LF safety.
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
 """
@@ -14,6 +15,8 @@ import sys
 sys.dont_write_bytecode = True
 
 import argparse
+import ast
+import gzip
 import hashlib
 import json
 import os
@@ -23,7 +26,8 @@ from collections import defaultdict
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
-EXPECTED_RELEASE = "2026.11.18.4"
+RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
+EXPECTED_RELEASE = "2026.11.18.6"
 
 EXPECTED_DOMAINS = {
     "foundations",
@@ -224,8 +228,8 @@ def validate(
                     errors.append(f"SVG {fn} is trivially small ({elem_count} XML elements)")
             except Exception as exc:
                 errors.append(f"SVG {fn} XML parse failure: {exc}")
-        if expected_diagrams and len(svg_files) < expected_diagrams:
-            errors.append(f"Expected >= {expected_diagrams} SVG diagrams, found {len(svg_files)}")
+        if expected_diagrams and len(svg_files) != expected_diagrams:
+            errors.append(f"Expected {expected_diagrams} SVG diagrams, found {len(svg_files)}")
         diag_man_fp = os.path.join(diag_dir, "diagrams-manifest.json")
         if not os.path.isfile(diag_man_fp):
             errors.append("Missing kb/diagrams/diagrams-manifest.json")
@@ -477,7 +481,7 @@ def validate(
                 if node_ids and ln not in node_ids:
                     errors.append(f"catalog.json repo {r.get('repo')}: unknown linked_node {ln!r}")
 
-    # 6. Book Coordinates validation (kb/coordinates/book-coordinates.json)
+    # 6. Book Coordinates validation (kb/coordinates/book-coordinates.json) + 100% card ref check
     coords_fp = os.path.join(KB_ROOT, "coordinates", "book-coordinates.json")
     sec_count = 0
     eq_count = 0
@@ -490,7 +494,10 @@ def validate(
                 bcoords = json.load(f)
             if bcoords.get("schema") != "razavi-book-coordinates.v1":
                 errors.append(f"book-coordinates.json unexpected schema: {bcoords.get('schema')!r}")
+            if bcoords.get("release") != EXPECTED_RELEASE:
+                errors.append(f"book-coordinates.json unexpected release: {bcoords.get('release')!r}")
             b_chapters = bcoords.get("chapters") or []
+            ch_by_num = {int(c["chapter"]): c for c in b_chapters if "chapter" in c}
             if len(b_chapters) != 19:
                 errors.append(f"book-coordinates.json expected 19 chapters, got {len(b_chapters)}")
             for ch_obj in b_chapters:
@@ -500,11 +507,15 @@ def validate(
 
             b_sections = bcoords.get("sections") or []
             sec_count = len(b_sections)
-            if sec_count < 130:
-                errors.append(f"book-coordinates.json expected >= 130 sections, got {sec_count}")
+            sec_by_id = {}
+            if sec_count < 290:
+                errors.append(f"book-coordinates.json expected >= 290 sections, got {sec_count}")
             for s_obj in b_sections:
-                if not s_obj.get("section_id") or not s_obj.get("chapter"):
+                sid = str(s_obj.get("section_id", ""))
+                if not sid or not s_obj.get("chapter"):
                     errors.append(f"book-coordinates.json section missing section_id/chapter: {s_obj!r}")
+                else:
+                    sec_by_id[sid] = s_obj
                 for nid in s_obj.get("primary_nodes") or []:
                     if node_ids and nid not in node_ids:
                         errors.append(
@@ -513,17 +524,62 @@ def validate(
 
             b_eqs = bcoords.get("equations") or []
             eq_count = len(b_eqs)
-            if eq_count < 180:
-                errors.append(f"book-coordinates.json expected >= 180 equations, got {eq_count}")
+            eq_nums_present = set()
+            if eq_count < 1400:
+                errors.append(f"book-coordinates.json expected >= 1400 equations, got {eq_count}")
             for e_obj in b_eqs:
-                if not e_obj.get("eq_id") or not e_obj.get("latex"):
-                    errors.append(f"book-coordinates.json equation missing eq_id/latex: {e_obj!r}")
+                enum_val = str(e_obj.get("eq_num", ""))
+                if not e_obj.get("eq_id") or not enum_val or not e_obj.get("latex"):
+                    errors.append(f"book-coordinates.json equation missing eq_id/eq_num/latex: {e_obj!r}")
+                if enum_val in eq_nums_present:
+                    errors.append(f"book-coordinates.json duplicate eq_num: {enum_val!r}")
+                eq_nums_present.add(enum_val)
                 nid_primary = e_obj.get("node_id")
                 if nid_primary and node_ids and nid_primary not in node_ids:
                     errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown node_id {nid_primary!r}")
                 for rn in e_obj.get("related_nodes") or []:
                     if node_ids and rn not in node_ids:
                         errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown related_node {rn!r}")
+
+            for s_obj in b_sections:
+                for ke in s_obj.get("key_equations") or []:
+                    ke_clean = str(ke).strip("() ")
+                    if ke_clean not in eq_nums_present:
+                        errors.append(
+                            f"book-coordinates.json section {s_obj.get('section_id')} key_equation {ke!r} missing from equations[]"
+                        )
+
+            # Verify 100% of razavi_refs sections, page bounds & equations across all 162 cards
+            for dom in sorted(EXPECTED_DOMAINS):
+                dom_dir = os.path.join(nodes_root, dom)
+                if not os.path.isdir(dom_dir):
+                    continue
+                for fn in sorted(os.listdir(dom_dir)):
+                    if not fn.endswith(".md"):
+                        continue
+                    rel = f"kb/nodes/{dom}/{fn}"
+                    with open(os.path.join(dom_dir, fn), "r", encoding="utf-8-sig") as nf:
+                        m_card, _, _, _ = split_frontmatter(nf.read())
+                    if not m_card:
+                        continue
+                    for r in m_card.get("razavi_refs") or []:
+                        ch = int(r["chapter"])
+                        ch_info = ch_by_num.get(ch)
+                        sec_raw = str(r.get("section", ""))
+                        for tok in [t.strip().lstrip("§") for t in re.split(r"[,;–-]", sec_raw) if t.strip()]:
+                            if tok not in sec_by_id or int(sec_by_id[tok]["chapter"]) != ch:
+                                errors.append(f"{rel}: razavi_refs section token {tok!r} (ch.{ch}) missing in book-coordinates.json")
+                        if ch_info:
+                            for pno in [int(x) for x in re.findall(r"\d+", str(r.get("pages", "")))]:
+                                if not (ch_info["book_page_start"] <= pno <= ch_info["book_page_end"]):
+                                    errors.append(
+                                        f"{rel}: razavi_refs page {pno} outside ch.{ch} ({ch_info['book_page_start']}-{ch_info['book_page_end']})"
+                                    )
+                                    break
+                        for eq_r in r.get("equations") or []:
+                            eq_clean = re.sub(r"^Eq\.?\s*", "", str(eq_r).strip("() "))
+                            if eq_clean not in eq_nums_present:
+                                errors.append(f"{rel}: razavi_refs equation {eq_r!r} missing from book-coordinates.json")
 
             b_idx = bcoords.get("index_terms") or []
             idx_term_count = len(b_idx)
@@ -661,9 +717,20 @@ def validate(
                         errors.append(f"manifest.json byte size mismatch: {p}")
                     if sha256_file(abs_p) != entry.get("sha256"):
                         errors.append(f"manifest.json SHA-256 mismatch: {p}")
-            for req_rel in ("kb/coordinates/book-coordinates.json", "kb/github-skills/catalog.json"):
+            for req_rel in (
+                "kb/coordinates/book-coordinates.json",
+                "kb/github-skills/catalog.json",
+                "kb/nodes-bundle.json.gz",
+                "kb/diagrams/diagrams-manifest.json",
+            ):
                 if req_rel not in recorded:
                     errors.append(f"manifest.json missing required file: {req_rel}")
+            bundle_fp = os.path.join(KB_ROOT, "nodes-bundle.json.gz")
+            if os.path.isfile(bundle_fp):
+                with gzip.open(bundle_fp, "rb") as gzf:
+                    bdata = json.loads(gzf.read().decode("utf-8"))
+                if bdata.get("release") != EXPECTED_RELEASE or bdata.get("node_count") != len(node_ids):
+                    errors.append("nodes-bundle.json.gz out of sync with release or node_count")
             for root_dir, dirs, files in os.walk(KB_ROOT):
                 dirs[:] = [d for d in dirs if d != "__pycache__"]
                 for fn in files:
@@ -675,6 +742,70 @@ def validate(
                         errors.append(f"Untracked file under kb/ missing from manifest.json: {rel}")
         except Exception as exc:
             errors.append(f"manifest.json parse error: {exc}")
+
+    # 9. Runtime Engine Manifest & Python 2.6.6 Compatibility Validation (`runtime/`)
+    rt_manifest_fp = os.path.join(RUNTIME_ROOT, "manifest.json")
+    rt_file_count = 0
+    if not os.path.isdir(RUNTIME_ROOT) or not os.path.isfile(rt_manifest_fp):
+        errors.append("Missing runtime/manifest.json")
+    else:
+        try:
+            with open(rt_manifest_fp, "r", encoding="utf-8-sig") as rf:
+                rt_man = json.load(rf)
+            if rt_man.get("schema") != "skill-analog-runtime.v4":
+                errors.append(f"runtime/manifest.json unexpected schema: {rt_man.get('schema')!r}")
+            if rt_man.get("release") != EXPECTED_RELEASE:
+                errors.append(f"runtime/manifest.json unexpected release: {rt_man.get('release')!r}")
+            rt_recorded = {}
+            for entry in rt_man.get("files", []):
+                p = entry.get("path")
+                rt_recorded[p] = entry
+                abs_p = os.path.join(RUNTIME_ROOT, *p.split("/"))
+                if not os.path.isfile(abs_p):
+                    errors.append(f"runtime/manifest.json references missing file: {p}")
+                else:
+                    if os.path.getsize(abs_p) != entry.get("bytes"):
+                        errors.append(f"runtime/manifest.json byte size mismatch: {p}")
+                    if sha256_file(abs_p) != entry.get("sha256"):
+                        errors.append(f"runtime/manifest.json SHA-256 mismatch: {p}")
+            rt_file_count = len(rt_recorded)
+
+            py26_forbidden = {
+                "JoinedStr", "DictComp", "SetComp", "Set",
+                "AsyncFunctionDef", "Await", "Nonlocal", "YieldFrom", "AnnAssign",
+            }
+            for root_dir, dirs, files in os.walk(RUNTIME_ROOT):
+                if "__pycache__" in dirs:
+                    errors.append(f"Bytecode directory __pycache__ found in runtime/: {root_dir}")
+                dirs[:] = [d for d in dirs if d not in ("__pycache__", "sources")]
+                for fn in sorted(files):
+                    full = os.path.join(root_dir, fn)
+                    if fn.endswith((".pyc", ".pyo", ".tmp", ".lock")):
+                        errors.append(f"Trash file found in runtime/: {full}")
+                        continue
+                    if os.path.abspath(full) == os.path.abspath(rt_manifest_fp):
+                        continue
+                    rel_rt = os.path.relpath(full, RUNTIME_ROOT).replace("\\", "/")
+                    if rel_rt != "sources.lock.json" and rel_rt not in rt_recorded:
+                        errors.append(f"Untracked file under runtime/ missing from runtime/manifest.json: {rel_rt}")
+                    raw_b = open(full, "rb").read()
+                    if b"\r" in raw_b and not fn.endswith(".gz"):
+                        errors.append(f"CRLF/CR line endings in runtime/{rel_rt} (must be pure LF)")
+                    if fn.endswith(".py"):
+                        src_txt = raw_b.decode("utf-8")
+                        tree = ast.parse(src_txt, filename=rel_rt)
+                        for ast_node in ast.walk(tree):
+                            cname = type(ast_node).__name__
+                            if cname in py26_forbidden:
+                                errors.append(
+                                    f"Python 2.6 incompatible syntax {cname} in runtime/{rel_rt}:{getattr(ast_node, 'lineno', 0)}"
+                                )
+                            elif cname == "Import" and any(a.name == "argparse" for a in ast_node.names):
+                                errors.append(f"Forbidden argparse import in runtime/{rel_rt}:{ast_node.lineno}")
+                            elif cname == "ImportFrom" and ast_node.module == "argparse":
+                                errors.append(f"Forbidden argparse import in runtime/{rel_rt}:{ast_node.lineno}")
+        except Exception as exc:
+            errors.append(f"runtime/manifest.json validation error: {exc}")
 
     razavi_core_cnt = sum(domain_node_counts.get(d, 0) for d in RAZAVI_CORE_DOMAINS)
     return {

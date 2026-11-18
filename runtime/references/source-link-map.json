@@ -1,0 +1,203 @@
+{
+  "checked_at": "2026-11-06", 
+  "links": [
+    {
+      "destination": "AGENTS.md", 
+      "origin": "sources/Arcadia-1--virtuoso-bridge-lite/README.md", 
+      "source": "Arcadia-1--virtuoso-bridge-lite", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/Arcadia-1/virtuoso-bridge-lite/blob/1f186abfbb3d658211743cd707f3156ed2f59a87/AGENTS.md"
+    }, 
+    {
+      "destination": "../../../docs/adr/0004-instance-discovery.md", 
+      "origin": "sources/Arcadia-1--virtuoso-bridge-lite/skills/virtuoso/references/connection.md", 
+      "source": "Arcadia-1--virtuoso-bridge-lite", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/Arcadia-1/virtuoso-bridge-lite/blob/1f186abfbb3d658211743cd707f3156ed2f59a87/docs/adr/0004-instance-discovery.md"
+    }, 
+    {
+      "destination": "x.png", 
+      "origin": "sources/iic-jku--analog-circuit-design/README.md", 
+      "source": "iic-jku--analog-circuit-design", 
+      "status": "unavailable-at-pinned-path", 
+      "target": null
+    }, 
+    {
+      "destination": "../CircuitCollector/README.md", 
+      "origin": "sources/jiyuanduan001-oss--LLM_Amplifier_Sizing/README.md", 
+      "source": "jiyuanduan001-oss--LLM_Amplifier_Sizing", 
+      "status": "unavailable-at-pinned-path", 
+      "target": null
+    }, 
+    {
+      "destination": "comparison_report_tsm_single.md", 
+      "origin": "sources/jiyuanduan001-oss--LLM_Amplifier_Sizing/README.md", 
+      "source": "jiyuanduan001-oss--LLM_Amplifier_Sizing", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/jiyuanduan001-oss/LLM_Amplifier_Sizing/blob/2cbff780e74e84e93475879761311a7f94631e04/comparison_report_tsm_single.md"
+    }, 
+    {
+      "destination": "./README.zh-CN.md", 
+      "origin": "sources/AmpCopilot--Amplifier-Copilot/readme.md", 
+      "source": "AmpCopilot--Amplifier-Copilot", 
+      "status": "not-verified-upstream", 
+      "target": null
+    }, 
+    {
+      "destination": "LICENSE", 
+      "origin": "sources/AmpCopilot--Amplifier-Copilot/readme.md", 
+      "source": "AmpCopilot--Amplifier-Copilot", 
+      "status": "not-verified-upstream", 
+      "target": null
+    }, 
+    {
+      "destination": "Pic_for_readme/Copilot_Video_UG.mp4", 
+      "origin": "sources/AmpCopilot--Amplifier-Copilot/readme.md", 
+      "source": "AmpCopilot--Amplifier-Copilot", 
+      "status": "not-verified-upstream", 
+      "target": null
+    }, 
+    {
+      "destination": "references/bootstrap.md", 
+      "origin": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-adc-11b-zzs.md", 
+      "source": "Arcadia-1--sar-adc-skills", 
+      "status": "local-alternative", 
+      "target": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/bootstrap_switch.md"
+    }, 
+    {
+      "destination": "references/cdac.md", 
+      "origin": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-adc-11b-zzs.md", 
+      "source": "Arcadia-1--sar-adc-skills", 
+      "status": "local-alternative", 
+      "target": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/cdac.md"
+    }, 
+    {
+      "destination": "references/comparator.md", 
+      "origin": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-adc-11b-zzs.md", 
+      "source": "Arcadia-1--sar-adc-skills", 
+      "status": "local-alternative", 
+      "target": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/comparator.md"
+    }, 
+    {
+      "destination": "references/integration.md", 
+      "origin": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-adc-11b-zzs.md", 
+      "source": "Arcadia-1--sar-adc-skills", 
+      "status": "local-alternative", 
+      "target": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/integration.md"
+    }, 
+    {
+      "destination": "references/sar-logic.md", 
+      "origin": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-adc-11b-zzs.md", 
+      "source": "Arcadia-1--sar-adc-skills", 
+      "status": "local-alternative", 
+      "target": "sources/Arcadia-1--sar-adc-skills/sar-adc-skill/references/sar-logic.md"
+    }, 
+    {
+      "destination": "docs/experiments/dither-results.md", 
+      "origin": "sources/Arcadia-1--ADCToolbox/README.md", 
+      "source": "Arcadia-1--ADCToolbox", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/Arcadia-1/ADCToolbox/blob/372b714011db9c3f366bd0223d066e1fbde8dfb6/docs/experiments/dither-results.md"
+    }, 
+    {
+      "destination": "docs/experiments/hdc-physical-state-and-phases.md", 
+      "origin": "sources/Arcadia-1--ADCToolbox/README.md", 
+      "source": "Arcadia-1--ADCToolbox", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/Arcadia-1/ADCToolbox/blob/372b714011db9c3f366bd0223d066e1fbde8dfb6/docs/experiments/hdc-physical-state-and-phases.md"
+    }, 
+    {
+      "destination": "python/src/adctoolbox/examples/11_calibration/DITHER_GUIDE.md", 
+      "origin": "sources/Arcadia-1--ADCToolbox/README.md", 
+      "source": "Arcadia-1--ADCToolbox", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/Arcadia-1/ADCToolbox/blob/372b714011db9c3f366bd0223d066e1fbde8dfb6/python/src/adctoolbox/examples/11_calibration/DITHER_GUIDE.md"
+    }, 
+    {
+      "destination": "docs/figures/closed_loop_sine_tracking.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/closed_loop_sine_tracking.png"
+    }, 
+    {
+      "destination": "docs/figures/cmrr_response.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/cmrr_response.png"
+    }, 
+    {
+      "destination": "docs/figures/compensation_phase_margin.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/compensation_phase_margin.png"
+    }, 
+    {
+      "destination": "docs/figures/compensation_ugb.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/compensation_ugb.png"
+    }, 
+    {
+      "destination": "docs/figures/final_compensated_schematic.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/final_compensated_schematic.png"
+    }, 
+    {
+      "destination": "docs/figures/load_capacitance_stability.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/load_capacitance_stability.png"
+    }, 
+    {
+      "destination": "docs/figures/nulling_resistor_phase_margin.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/nulling_resistor_phase_margin.png"
+    }, 
+    {
+      "destination": "docs/figures/output_swing.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/output_swing.png"
+    }, 
+    {
+      "destination": "docs/figures/psrr_response.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/psrr_response.png"
+    }, 
+    {
+      "destination": "docs/figures/unity_feedback_large_signal_step.png", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/figures/unity_feedback_large_signal_step.png"
+    }, 
+    {
+      "destination": "docs/two_stage_cmos_opamp_design_report.pdf", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/blob/c5d568a2d08b07d92eba0b3279e70c140b9f477d/docs/two_stage_cmos_opamp_design_report.pdf"
+    }, 
+    {
+      "destination": "results/", 
+      "origin": "sources/SrinivasNv0031--two-stage-cmos-opamp-gpdk090/README.md", 
+      "source": "SrinivasNv0031--two-stage-cmos-opamp-gpdk090", 
+      "status": "remote-only-verified-tree", 
+      "target": "https://github.com/SrinivasNv0031/two-stage-cmos-opamp-gpdk090/tree/c5d568a2d08b07d92eba0b3279e70c140b9f477d/results"
+    }
+  ], 
+  "schema": "skill-analog.source-links.v1", 
+  "scope": "Relative inline Markdown file links in curated sources; remote existence verified through pinned Git tree, not runtime or factual validation."
+}

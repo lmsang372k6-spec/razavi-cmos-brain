@@ -173,43 +173,67 @@ Trong Làn 2 trên mạch transistor thực tế:
 ### 5.1. Làn 1 — Mô hình Verilog-A 3 Cực Trơn $C^\infty$ Không Trạng Thái Ẩn (`pwm_switch_avg_ccm_dcm.va`)
 ```verilog
 // Spectre 15.1 Compatible, 100% Hidden-State-Free Averaged CCM/DCM 3-Terminal PWM Switch
-`include "disciplines.vams"
 `include "constants.vams"
+`include "disciplines.vams"
 
 module pwm_switch_avg_ccm_dcm(a, p, c, d_in);
-    inout a, p, c;
-    input d_in;
-    electrical a, p, c, d_in;
+    inout electrical a, p, c;
+    input electrical d_in;
 
-    parameter real fsw    = 2.0e6 from (1.0e3:1.0e9);
-    parameter real l_ind  = 1.0e-6 from (1.0e-9:1.0);
-    parameter real r_on   = 0.08  from [0.0:10.0];
-    parameter real d_min  = 0.01  from [0.001:0.2];
-    parameter real d_max  = 0.96  from [0.5:0.999];
+    parameter real l_ind     = 1.0e-6  from (1.0e-12:inf);
+    parameter real f_sw      = 2.0e6   from (1.0:inf);
+    parameter real v_ramp    = 1.0     from (1.0e-6:inf);
+    parameter real v_offset  = 0.0;
+    parameter real d_min     = 0.01    from [0.0:0.49];
+    parameter real d_max     = 0.95    from [0.50:0.999];
+    parameter real r_on_a    = 0.050   from [0.0:1.0e6];
+    parameter real r_on_p    = 0.050   from [0.0:1.0e6];
+    parameter real eps_d     = 4.0e-3  from (1.0e-6:0.1);
+    parameter real eps_mode  = 4.0e-3  from (1.0e-6:0.1);
+    parameter real eps_ceil  = 1.0e-5  from (1.0e-9:1.0e-2);
+    parameter real delta_min = 1.0e-3  from (1.0e-6:0.2);
+    parameter real v_eps     = 1.0e-4  from (1.0e-9:1.0e-1);
+    parameter real i_eps     = 1.0e-7  from (1.0e-12:1.0e-2);
+    parameter real gmin_par  = 1.0e-12 from [0.0:1.0e-6];
 
-    real d_cmd, vap, ic_now, vcp_mag, k_dcm, mu_dcm, delta_mu, mu_eff;
+    branch (a, p) br_ap;
+    branch (c, p) br_cp;
 
-    analog begin
-        // Kẹp trơn C^inf chu kỳ nhiệm vụ d_cmd trong khoảng [d_min, d_max]
-        d_cmd   = 0.5 * (V(d_in) + d_min + sqrt(pow(V(d_in) - d_min, 2) + 1.0e-6));
-        d_cmd   = 0.5 * (d_cmd + d_max - sqrt(pow(d_cmd - d_max, 2) + 1.0e-6));
+    analog begin : avg_pwm_core
+        real vap, ic, abs_vap, abs_ic, d_raw, d_lo, d_cmd;
+        real g_dcm, mu_dcm, diff_mu, w_dcm, mu_raw, mu_ceil, mu_eff;
+        real delta, delta_reg, shape_eff, r_sw_avg, r_eff;
 
-        vap     = V(a, p);
-        // Đo dòng đi ra khỏi cực chung c qua điện trở cảm biến nội cực nhỏ r_on (hoặc áp rơi nhánh)
-        ic_now  = I(c_int, c);
-        vcp_mag = sqrt(pow(vap * (1.0 - d_cmd), 2) + 1.0e-4);
+        vap     = V(br_ap);
+        ic      = -I(br_cp);
+        abs_vap = sqrt(vap * vap + v_eps * v_eps);
+        abs_ic  = sqrt(ic * ic + i_eps * i_eps);
 
-        // Tỷ số chuyển đổi tự động nâng ở tải nhẹ DCM, ghép trơn C^inf với CCM: mu_eff = smooth_max(d_cmd, mu_dcm)
-        k_dcm    = 2.0 * l_ind * fsw * max(abs(ic_now), 0.0) / vcp_mag;
-        mu_dcm   = (d_cmd * d_cmd) / (d_cmd * d_cmd + k_dcm + 1.0e-9);
-        delta_mu = mu_dcm - d_cmd;
-        mu_eff   = d_cmd + 0.5 * (delta_mu + sqrt(delta_mu * delta_mu + 1.0e-6));
+        // Kep tron C^inf chu ky nhiem vu d_cmd trong [d_min, d_max]
+        d_raw = (V(d_in) - v_offset) / v_ramp;
+        d_lo  = 0.5 * (d_raw + d_min + sqrt((d_raw - d_min) * (d_raw - d_min) + eps_d * eps_d));
+        d_cmd = 0.5 * (d_lo  + d_max - sqrt((d_lo  - d_max) * (d_lo  - d_max) + eps_d * eps_d));
 
-        I(a, p)       <+ mu_eff * ic_now;
-        V(c_int, p)   <+ mu_eff * vap;
-        V(c_int, c)   <+ r_on * I(c_int, c);
+        // Ty so chuyen doi Vorperian DCM ghep tron C^inf voi CCM + tran mu_eff < 1 - 1e-6 tai tai bang 0
+        g_dcm   = (d_cmd * d_cmd * abs_vap) / (2.0 * l_ind * f_sw);
+        mu_dcm  = g_dcm / (abs_ic + g_dcm + 1.0e-15);
+        diff_mu = mu_dcm - d_cmd;
+        w_dcm   = 0.5 * (1.0 + tanh(diff_mu / eps_mode));
+        mu_raw  = 0.5 * (d_cmd + mu_dcm + sqrt(diff_mu * diff_mu + eps_mode * eps_mode));
+        mu_ceil = 1.0 - 1.0e-6;
+        mu_eff  = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_ceil * eps_ceil));
+
+        // Ton hao dan RMS chinh xac cua song tam giac DCM: P_cond,DCM = (4/(3*delta)) * r_sw_avg * I_avg^2
+        delta     = d_cmd / mu_eff;
+        delta_reg = sqrt(delta * delta + delta_min * delta_min);
+        shape_eff = (1.0 - w_dcm) * 1.0 + w_dcm * (4.0 / (3.0 * delta_reg));
+        r_sw_avg  = mu_eff * r_on_a + (1.0 - mu_eff) * r_on_p;
+        r_eff     = shape_eff * r_sw_avg;
+
+        I(br_ap) <+ mu_eff * ic + gmin_par * vap;
+        V(br_cp) <+ mu_eff * vap - r_eff * ic;
+        I(d_in)  <+ gmin_par * V(d_in);
     end
-    electrical c_int;
 endmodule
 ```
 

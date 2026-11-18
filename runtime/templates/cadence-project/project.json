@@ -1,0 +1,75 @@
+{
+  "schema": "skill-analog.project.v1",
+  "schema_revision": 2,
+  "name": "{{PROJECT_NAME}}",
+  "project_root": "{{PROJECT_ROOT}}",
+  "library_root": "/home/disk/eda/references/SKILL-ANALOG",
+  "environment": "rhel6-ic617",
+  "design_cycle_stage": "1_spec_and_kb",
+  "design_cycle_stages": [
+    "1_spec_and_kb",
+    "2_hierarchical_budget",
+    "3_gmid_lut_sizing",
+    "4_schematic_and_veriloga",
+    "5_op_and_stb_audit",
+    "6_sensitivity_pareto_opt",
+    "7_pvt_mc_pex_signoff"
+  ],
+  "pdk": {
+    "id": null,
+    "path": null,
+    "model_files": [],
+    "section": null,
+    "gmid_lut_paths": {},
+    "manufacturing_grid_m": 5e-09,
+    "validated": false
+  },
+  "dut": {
+    "library": null,
+    "cell": null,
+    "view": null
+  },
+  "architecture": {
+    "topology_node_id": null,
+    "checklist_ids": [],
+    "sim_view_list": ["spectre", "veriloga", "schematic", "cmos_sch"],
+    "stop_view_list": ["spectre", "veriloga"],
+    "blocks": [],
+    "interfaces": [],
+    "block_contract_example": {
+      "id": "error_amp",
+      "library": null,
+      "cell": null,
+      "role": "subblock",
+      "depends_on": ["bias_hub"],
+      "active_view": "veriloga",
+      "available_views": ["veriloga", "schematic", "symbol"],
+      "signoff_status": "not_started"
+    },
+    "interface_contract_example": {
+      "id": "ea_to_modulator",
+      "from_block": "error_amp",
+      "from_pin": "vcomp",
+      "to_block": "pwm_modulator",
+      "to_pin": "vc_in",
+      "pin_direction": "output->input",
+      "vcm_window_v": [null, null],
+      "swing_window_v": [null, null],
+      "bias_current_polarity": "zero_dc_gate_load | sink_into_receiver | source_from_driver",
+      "impedance_contract": "|Z_out| <= 0.1 * |Z_in| across signal/loop bandwidth",
+      "loop_polarity_sign": "negative_feedback_verified",
+      "verified": false
+    }
+  },
+  "testbenches": [],
+  "paths": {
+    "design": "design",
+    "netlists": "netlists",
+    "scripts": "scripts",
+    "runs": "sim/runs",
+    "logs": "sim/logs",
+    "docs": "docs",
+    "exports": "exports"
+  },
+  "notes": "Fill from actual cds.lib/CDF/model files and user selection; null means unknown, not a default. Use architecture.blocks[] (active_view: veriloga|schematic) and architecture.interfaces[] for hierarchical multi-block signoff. Paths are project-relative unless absolute."
+}

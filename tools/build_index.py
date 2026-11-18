@@ -1,29 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.4).
+"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.6).
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
-Builds across all 10 knowledge & EDA domains:
+Builds across all 10 knowledge & EDA domains under `.build.lock` concurrency guard:
   - kb/graph/edges.jsonl (when --merge-edges is passed; cleans temporary edges-*.jsonl shards)
   - kb/router-index.json (with deterministic 22-column 2D coordinates, section_coords & 7-stage cycle tags)
-  - kb/manifest.json (tracking all files under kb/, including coordinates/, checklists/ & github-skills/)
+  - kb/nodes-bundle.json.gz (deterministic mtime=0 offline 162-card bundle)
+  - kb/manifest.json (tracking all files under kb/, including nodes-bundle.json.gz, diagrams/, coordinates/, checklists/ & github-skills/)
+  - runtime/manifest.json (tracking all v4.0 runtime tools, SKILL/Verilog-A adapters, references & skills)
 """
 import sys
 
 sys.dont_write_bytecode = True
 
 import argparse
+import errno
+import gzip
 import hashlib
 import json
 import os
 import re
+import shutil
+import time
 import unicodedata
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
-RELEASE_VERSION = "2026.11.18.4"
+RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
+RELEASE_VERSION = "2026.11.18.6"
 
 DOMAIN_METADATA = [
     {
@@ -1055,11 +1062,39 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         json.dump(router_index, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
+    # Deterministic offline 162-card gzip bundle (`kb/nodes-bundle.json.gz`, mtime=0)
+    diagrams_by_file = {d["file"]: d for d in diagrams_list if "file" in d}
+    bundle_nodes = {}
+    for n in nodes:
+        nid = n["id"]
+        n_fp = os.path.join(REPO_ROOT, *n["raw_rel_path"].split("/"))
+        with open(n_fp, "r", encoding="utf-8") as nf:
+            _, n_body, _ = split_frontmatter(nf.read(), n_fp)
+        d_fn = os.path.basename(n.get("diagram", ""))
+        bundle_nodes[nid] = {
+            "id": nid,
+            "markdown": n_body.strip(),
+            "diagram_info": diagrams_by_file.get(d_fn, {"file": d_fn, "path": f"kb/diagrams/{d_fn}"}),
+        }
+    bundle_payload = {
+        "schema": "razavi-nodes-bundle.v1",
+        "release": RELEASE_VERSION,
+        "node_count": len(bundle_nodes),
+        "nodes": bundle_nodes,
+    }
+    bundle_fp = os.path.join(KB_ROOT, "nodes-bundle.json.gz")
+    bundle_raw = json.dumps(bundle_payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    with open(bundle_fp, "wb") as bf:
+        with gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=bf, mtime=0) as gz:
+            gz.write(bundle_raw)
+
     manifest_fp = os.path.join(KB_ROOT, "manifest.json")
     kb_files = []
     for root_dir, dirs, files in os.walk(KB_ROOT):
         dirs[:] = sorted(d for d in dirs if d != "__pycache__")
         for fn in sorted(files):
+            if fn.endswith((".pyc", ".pyo", ".tmp", ".lock")):
+                continue
             full = os.path.join(root_dir, fn)
             if os.path.abspath(full) == os.path.abspath(manifest_fp):
                 continue
@@ -1100,6 +1135,48 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         json.dump(manifest, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
+    # Sync canonical SKILL.md into runtime/skills/analog-design/SKILL.md and build runtime/manifest.json
+    runtime_file_count = 0
+    if os.path.isdir(RUNTIME_ROOT):
+        ssot_skill_md = os.path.join(REPO_ROOT, "skills", "analog-design", "SKILL.md")
+        rt_skill_md = os.path.join(RUNTIME_ROOT, "skills", "analog-design", "SKILL.md")
+        if os.path.isfile(ssot_skill_md):
+            os.makedirs(os.path.dirname(rt_skill_md), exist_ok=True)
+            shutil.copy2(ssot_skill_md, rt_skill_md)
+
+        rt_manifest_fp = os.path.join(RUNTIME_ROOT, "manifest.json")
+        rt_entries = []
+        for root_dir, dirs, files in os.walk(RUNTIME_ROOT):
+            dirs[:] = sorted(d for d in dirs if d not in ("__pycache__", "sources"))
+            for fn in sorted(files):
+                if fn.endswith((".pyc", ".pyo", ".tmp", ".lock")):
+                    continue
+                full = os.path.join(root_dir, fn)
+                if os.path.abspath(full) == os.path.abspath(rt_manifest_fp):
+                    continue
+                rt_rel = os.path.relpath(full, RUNTIME_ROOT).replace("\\", "/")
+                if rt_rel == "sources.lock.json":
+                    continue
+                rt_entries.append(
+                    {
+                        "path": rt_rel,
+                        "repo_path": f"runtime/{rt_rel}",
+                        "bytes": os.path.getsize(full),
+                        "sha256": sha256_file(full),
+                    }
+                )
+        rt_entries.sort(key=lambda x: x["path"])
+        runtime_file_count = len(rt_entries)
+        rt_manifest = {
+            "schema": "skill-analog-runtime.v4",
+            "release": RELEASE_VERSION,
+            "file_count": runtime_file_count,
+            "files": rt_entries,
+        }
+        with open(rt_manifest_fp, "w", encoding="utf-8", newline="\n") as rf:
+            json.dump(rt_manifest, rf, ensure_ascii=True, indent=2, sort_keys=True)
+            rf.write("\n")
+
     return {
         "ok": True,
         "release": RELEASE_VERSION,
@@ -1121,7 +1198,30 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         "book_equation_count": book_equation_count,
         "github_repo_count": github_repo_count,
         "manifest_files": len(kb_files),
+        "runtime_manifest_files": runtime_file_count,
     }
+
+
+def _acquire_build_lock(lock_path, timeout_sec=15.0):
+    deadline = time.time() + timeout_sec
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.write(fd, f"{os.getpid()} {int(time.time())}\n".encode("utf-8"))
+            os.close(fd)
+            return
+        except OSError as exc:
+            if exc.errno != errno.EEXIST:
+                raise
+            try:
+                if time.time() - os.path.getmtime(lock_path) > 120.0:
+                    os.unlink(lock_path)
+                    continue
+            except OSError:
+                continue
+            if time.time() >= deadline:
+                raise RuntimeError(f"Timed out waiting for concurrent build lock: {lock_path}")
+            time.sleep(0.1)
 
 
 def main():
@@ -1132,11 +1232,20 @@ def main():
     parser.add_argument("--keep-fragments", action="store_true", help="Keep edges-*.jsonl shards on disk after --merge-edges")
     args = parser.parse_args()
     cleanup = not args.keep_fragments
-    report = build_indices(
-        normalize_cards=args.normalize_cards,
-        merge_edges=args.merge_edges,
-        cleanup_fragments=cleanup,
-    )
+    lock_fp = os.path.join(REPO_ROOT, ".build.lock")
+    _acquire_build_lock(lock_fp)
+    try:
+        report = build_indices(
+            normalize_cards=args.normalize_cards,
+            merge_edges=args.merge_edges,
+            cleanup_fragments=cleanup,
+        )
+    finally:
+        try:
+            if os.path.exists(lock_fp):
+                os.unlink(lock_fp)
+        except OSError:
+            pass
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

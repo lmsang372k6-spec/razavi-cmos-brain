@@ -1,12 +1,14 @@
-# Razavi CMOS Knowledge Brain (`2026.11.18.4` · v3 Full-Chip PMIC, AMS & Closed-Loop EDA)
+# Razavi CMOS Knowledge Brain & SKILL-ANALOG Runtime (`2026.11.18.6` · v4.0 Unified SSOT + 60s-TTL OTA)
 
-- **Kho lưu trữ GitHub chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
-- **Bản đồ Tọa độ Tri thức Tương tác v3 & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
-- **Endpoint Raw tức thì cho Codex / CLI:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
+- **Kho lưu trữ GitHub SSOT chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
+- **Bản đồ Tọa độ Tri thức Tương tác & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
+- **Endpoint Raw tức thì cho Codex / Antigravity / RHEL 6.5 OTA:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
 
-**Bộ não Tri thức Toàn Chip CMOS, Quản lý Nguồn PMIC, Vi mạch Hỗn hợp AMS & Chu trình Tối ưu Khép kín Cadence–Codex** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), tích hợp **72 sơ đồ nguyên lý vector SVG**, **482 cạnh đồ thị tiến hóa có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách chính xác (`293` mục, `230` phương trình cột mốc, `423` mục `20_Index`)**, **52 kho GitHub Analog/PMIC/AMS/EDA đã kiểm định**, và **2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB Vi Mạch (`T001–T2280`)**.
+**Nguồn Chân lý Duy nhất (Unified Single-Source-of-Truth v4.0)** hợp nhất trọn vẹn **Bộ não Tri thức Toàn Chip CMOS, PMIC & AMS** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), **72 sơ đồ nguyên lý vector SVG offline**, **482 cạnh đồ thị có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách đầy đủ (`293` mục, `1.475` phương trình Razavi, `423` mục `20_Index`)**, **52 kho GitHub đã kiểm định**, **2.280 thuật ngữ chuẩn CLB (`T001–T2280`)**, cùng **trọn bộ Runtime Engine `SKILL-ANALOG` (`runtime/`)** tương thích kép Python 2.6.6 (RHEL 6.5) & Python 3.x!
 
-Kho tri thức được thiết kế kép cho cả **kỹ sư / người học thiết kế vi mạch toàn chip** (qua ứng dụng Web Bản đồ Tọa độ 2D v3 gồm 22 cột không chồng lấn & Bộ lọc Chu trình 7 Bước) lẫn **tác tử AI thiết kế mạch Codex trên Cadence Virtuoso IC617 / Spectre 15.1 (RHEL 6.5 `Python 2.6.6`)** qua định tuyến cục bộ `< 5 ms`, cầu nối trực tiếp `ic617_live_bridge.il`, bộ kiểm toán `psf_audit.py`, bảng tra `gmid_lut.py` và bộ tối ưu vùng tin cậy `sizing_opt.py`.
+Kiến trúc đa tác tử đồng bộ tức thì không cần remount `.iso`:
+- **Windows (`Codex Desktop` + `Antigravity Desktop`):** Kết nối trực tiếp `0 ms` qua NTFS Directory Junctions (`setup_windows_agents.py --install`), tra cứu NVMe `< 20 ms`, biên soạn & xuất bản 1 lệnh (`manage_kb.py publish`).
+- **Linux RHEL 6.5 VM (`Codex Linux` + `Cadence IC617` + `Spectre 15.1`):** Tự động đồng bộ nền **60s TTL** qua GitHub Commit SHA (`ota_sync.py`, hoán đổi thư mục nguyên tử kiểm định SHA-256, bảo toàn `sources/`), tự khóa mạng tuyệt đối khi đặt `--offline` hoặc `SKILL_ANALOG_OFFLINE=1`, và khởi tạo/nâng cấp toàn bộ máy ảo + biên dịch lại bảng tra `GPDK090`/`GPDK045` chỉ bằng 1 dòng lệnh `curl | python -B -` (`runtime/bootstrap_rhel6_ota.py`).
 
 ---
 
@@ -46,10 +48,11 @@ Khi xuất bản qua `.github/workflows/deploy.yml`, thư mục `_site/` phục 
 ```text
 razavi-cmos-brain/
 ├── kb/
-│   ├── manifest.json                     # Phiên bản 2026.11.18.4, thống kê 10 miền & SHA-256 toàn bộ 261 tệp trong kb/
+│   ├── manifest.json                     # Phiên bản 2026.11.18.6, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
 │   ├── router-index.json                 # Chỉ mục định tuyến tức thì (162 Nodes + 22-col coord_2d + design_cycle + Symptoms)
+│   ├── nodes-bundle.json.gz              # Gói nén tất định 162 thẻ phục vụ tra cứu offline < 15 ms
 │   ├── coordinates/
-│   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 293 mục, 230 phương trình & 423 mục 20_Index
+│   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 293 mục, 1.475 phương trình & 423 mục 20_Index
 │   ├── github-skills/
 │   │   └── catalog.json                  # Danh mục 52 kho GitHub Analog/PMIC/AMS/EDA đã kiểm định giấy phép & IC617
 │   ├── graph/
@@ -59,18 +62,26 @@ razavi-cmos-brain/
 │   ├── checklists/*.json                 # 21 Bảng kiểm bất biến cấu trúc độc lập tiến trình (180nm / 90nm / 65nm / 45nm)
 │   └── glossary/
 │       └── terms-vi-en.json              # 2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB & PMIC/AMS (T001–T2280)
+├── runtime/                              # Trọn bộ Runtime Engine SKILL-ANALOG v4.0 (Python 2.6.6 + Python 3 stdlib)
+│   ├── manifest.json                     # Danh mục SHA-256 toàn bộ công cụ runtime phục vụ đồng bộ nguyên tử OTA
+│   ├── bootstrap_rhel6_ota.py            # Kịch bản 1 dòng nâng cấp máy ảo RHEL 6.5 & biên dịch lại LUT GPDK090/045
+│   ├── tools/                            # analogctl, ota_sync, kb_lookup, kb_fetch, psf_audit, gmid_lut, sizing_opt, ic617_*
+│   ├── models/veriloga/                  # pwm_switch_avg_ccm_dcm.va (Vorperian CCM/DCM trơn C^inf, đúng tổn hao RMS DCM)
+│   ├── integration/                      # install.py (RHEL 6.5) & setup_windows_agents.py (Windows Junctions)
+│   └── references/                       # Tài liệu vận hành Cadence IC617, Spectre 15.1, gm/ID & hợp đồng phép đo
 ├── site/
-│   ├── index.html                        # Ứng dụng Web v3: 10 Tầng, Bộ lọc PMIC/AMS/Skills, Chu trình 7 Bước & Đồ thị 22 Cột
+│   ├── index.html                        # Ứng dụng Web: 10 Tầng, Bộ lọc PMIC/AMS/Skills, Chu trình 7 Bước & Đồ thị 22 Cột
 │   ├── styles.css                        # Giao diện học thuật tối giản ấm độ tương phản cao (Light / Dark)
 │   └── app.js                            # Tra cứu tọa độ / PMIC / AMS / Tiếng Việt không dấu, Đồ thị 2D 22 cột, KaTeX
 ├── skills/
-│   └── razavi-cmos-brain/                # Skill chuẩn cho Codex / AI Agent (SKILL.md + agents/openai.yaml)
+│   ├── analog-design/                    # Unified Skill cho Codex Desktop, Antigravity Desktop & RHEL 6.5 Codex
+│   └── razavi-cmos-brain/                # Skill chuyên biệt tra cứu & quản trị kho tri thức
 ├── tools/
 │   ├── generate_diagrams.py              # Trình sinh & kiểm định không va chạm nhãn cho 72 sơ đồ vector SVG
-│   ├── build_index.py                    # Trình biên dịch 10 miền, hợp nhất cạnh tự động & gán tọa độ 2D 22 cột
-│   └── manage_kb.py                      # CLI 1 lệnh: thêm thẻ mới, nối cạnh nâng cấp, rebuild & xuất gói nén offline
+│   ├── build_index.py                    # Trình biên dịch 10 miền (.build.lock), nodes-bundle & kb/runtime manifests
+│   └── manage_kb.py                      # CLI 1 lệnh: new-card, add-edge, rebuild & publish trực tiếp lên GitHub OTA
 ├── validators/
-│   └── validate_brain.py                 # Kiểm định 100% 10 miền (162 thẻ), 72 SVG, 21 checklist, 2280 từ, 52 repo & SHA-256
+│   └── validate_brain.py                 # Kiểm định 100% 162 thẻ, 1.475 PT, 72 SVG, 21 checklist, Python 2.6 AST & SHA-256
 ├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 3 bước mở rộng thẻ/kỹ năng mới & đồng bộ sang ổ F:
 └── .github/workflows/deploy.yml          # Kiểm định tự động & triển khai GitHub Pages
 ```

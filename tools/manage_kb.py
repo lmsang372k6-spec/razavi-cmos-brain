@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""1-Command Authoring, Rebuilding & Sync Helper for Razavi CMOS Knowledge Brain (2026.11.18.4).
+"""1-Command Authoring, Rebuilding & OTA Publishing Helper for Razavi CMOS Knowledge Brain (2026.11.18.6).
 
 Pure Python 3 standard library. Zero external pip packages, zero bytecode clutter.
 
@@ -12,6 +12,7 @@ Usage:
   python -B tools/manage_kb.py add-term "<en>" "<vi>" --chapter <N> [--context "..."]
   python -B tools/manage_kb.py add-repo <owner/repo> --commit <40hex> --license <spdx> --category <cat> --summary "<vi>" --nodes <id1,id2>
   python -B tools/manage_kb.py rebuild [--export-bundle PATH]
+  python -B tools/manage_kb.py publish [-m "message"] [--no-push]
 """
 import argparse
 import gzip
@@ -325,7 +326,7 @@ def export_offline_bundle(dest_gz_path):
         }
     bundle_obj = {
         "schema": "razavi-nodes-bundle.v1",
-        "release": router.get("release", "2026.11.18.4"),
+        "release": router.get("release", "2026.11.18.6"),
         "node_count": len(nodes_payload),
         "nodes": nodes_payload,
     }
@@ -346,6 +347,8 @@ def cmd_rebuild(args):
     )
     if r1 != 0:
         raise SystemExit(r1)
+    if getattr(args, "export_bundle", None):
+        export_offline_bundle(args.export_bundle)
     r2 = subprocess.call(
         [sys.executable, "-B", os.path.join(ROOT, "validators", "validate_brain.py")],
         cwd=ROOT,
@@ -353,14 +356,39 @@ def cmd_rebuild(args):
     )
     if r2 != 0:
         raise SystemExit(r2)
-    if args.export_bundle:
-        export_offline_bundle(args.export_bundle)
-    print("Rebuild + full 10-domain/coordinate/PMIC/AMS/GitHub-skills/math/SVG/checklist/graph validation PASSED!")
+    analogctl_fp = os.path.join(ROOT, "runtime", "tools", "analogctl.py")
+    if os.path.isfile(analogctl_fp):
+        r3 = subprocess.call([sys.executable, "-B", analogctl_fp, "verify"], cwd=ROOT, env=env)
+        if r3 != 0:
+            raise SystemExit(r3)
+    print("Rebuild + full 10-domain/coordinate/equation/runtime/SVG/checklist/graph validation PASSED!")
+    return 0
+
+
+def cmd_publish(args):
+    cmd_rebuild(args)
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+    check_refs_fp = os.path.join(ROOT, "runtime", "tools", "check_references.py")
+    if os.path.isfile(check_refs_fp):
+        rc = subprocess.call([sys.executable, "-B", check_refs_fp], cwd=ROOT, env=env)
+        if rc != 0:
+            raise SystemExit(rc)
+
+    subprocess.check_call(["git", "add", "-A"], cwd=ROOT)
+    st = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT).decode("utf-8", "replace").strip()
+    if not st:
+        print("Working tree already clean and up to date; nothing to commit.")
+        return 0
+    msg = args.message or "kb/runtime(2026.11.18.6): rebuild & publish verified OTA snapshot"
+    subprocess.check_call(["git", "commit", "-m", msg], cwd=ROOT)
+    if not args.no_push:
+        subprocess.check_call(["git", "push", "origin", "main"], cwd=ROOT)
+        print("Published verified SSOT snapshot to origin/main (RHEL 6.5 auto-syncs within 60s TTL).")
     return 0
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Manage Razavi CMOS Knowledge Brain (v3 · 10 Domains)")
+    parser = argparse.ArgumentParser(description="Manage Razavi CMOS Knowledge Brain (v4.0 · SSOT + OTA)")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("status", help="Show knowledge graph statistics")
@@ -406,8 +434,12 @@ def main():
     p_repo.add_argument("--techniques", default="")
     p_repo.add_argument("--nodes", required=True, help="Comma-separated linked node IDs")
 
-    p_reb = sub.add_parser("rebuild", help="Rebuild router-index.json + manifest.json and run full validator")
-    p_reb.add_argument("--export-bundle", help="Optional path to export deterministic nodes-bundle.json.gz")
+    p_reb = sub.add_parser("rebuild", help="Rebuild router-index.json + nodes-bundle + manifests and run full validator")
+    p_reb.add_argument("--export-bundle", help="Optional extra path to export deterministic nodes-bundle.json.gz")
+
+    p_pub = sub.add_parser("publish", help="Validate, rebuild, git commit, and push live OTA snapshot to origin/main")
+    p_pub.add_argument("-m", "--message", default="", help="Git commit message")
+    p_pub.add_argument("--no-push", action="store_true", help="Commit locally without running git push")
 
     args = parser.parse_args()
     if args.cmd == "status":
@@ -424,6 +456,8 @@ def main():
         return cmd_add_repo(args)
     if args.cmd == "rebuild":
         return cmd_rebuild(args)
+    if args.cmd == "publish":
+        return cmd_publish(args)
     return 0
 
 

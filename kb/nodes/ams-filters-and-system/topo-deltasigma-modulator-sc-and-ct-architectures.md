@@ -121,7 +121,7 @@ Một hệ thống $\Delta\Sigma$ ADC hoàn chỉnh gồm 4 phân hệ phối h�
 ## 2. Hệ Phương trình Cốt lõi & Tư duy "Nhìn Mạch Đọc Nhanh" (Analysis by Inspection)
 
 ### 2.1. Phương trình Đỉnh `SQNR` Bậc `L`, Tối ưu Điểm Không NTF & Quy tắc Ổn định Lee (`Lee's Rule`)
-Tuyến tính hóa bộ lượng tử $N_q\text{-bit}$ ($2^{N_q}$ mức, toàn thang đỉnh–đỉnh $V_{\text{FS}}$, bước lượng tử $\Delta = \frac{V_{\text{FS}}}{2^{N_q}-1}$ hoặc $\Delta = V_{\text{FS}}$ cho 1-bit) thành nguồn nhiễu trắng cộng tính độc lập mật độ hai phía $S_e(f) = \frac{\Delta^2}{12 f_s}$:
+Tuyến tính hóa bộ lượng tử đều $N_q\text{-bit}$ ($2^{N_q}$ mức mã, quy ước biên độ toàn thang không quá tải đỉnh–đỉnh $V_{\text{FS}} = 2^{N_q}\Delta$, biên độ đỉnh sóng sin $V_{\text{FS}}/2 = 2^{N_q - 1}\Delta$) thành nguồn nhiễu trắng cộng tính độc lập trên $[-\Delta/2, +\Delta/2]$ có mật độ phổ hai phía $S_e(f) = \frac{\Delta^2}{12 f_s}$ *(lưu ý: nếu quy ước $V_{\text{FS,step}} = (2^{N_q} - 1)\Delta$ tính giữa hai mức tái tạo ngoài cùng của DAC đa bit, số hạng $6.02\,N_q$ bên dưới thay bằng $20\log_{10}(2^{N_q} - 1)$)*:
 1. **Hàm truyền nhiễu vi phân thuần túy $\text{NTF}(z) = (1 - z^{-1})^L$:**
    Thay $z = e^{j 2\pi f / f_s}$, biên độ hàm truyền nhiễu bằng $\left|\text{NTF}(e^{j 2\pi f / f_s})\right| = \left|2 \sin\!\left(\frac{\pi f}{f_s}\right)\right|^L$. Khi tỷ số quá lấy mẫu $\text{OSR} = \frac{f_s}{2 f_B} \gg \pi$, trong dải gốc $f \le f_B$ ta xấp xỉ $\sin(\pi f / f_s) \approx \frac{\pi f}{f_s}$. Tích phân công suất nhiễu lượng tử trong dải $[-f_B, +f_B]$:
 
@@ -173,7 +173,7 @@ $$
 $$
 
 2. **Tự Chống Chồng Phổ Nội tại (`Intrinsic Anti-Aliasing`) của `CT-ΔΣ`:**
-   Trong `CT-ΔΣ`, khâu lấy mẫu rời rạc nằm ở **cuối chuỗi bộ lọc liên tục** (ngay trước bộ lượng tử) chứ không nằm ở cổng vào! Một nhiễu giao thoa tại tần số ảnh $f_{\text{alias}} = f_s - f_0$ ($f_0 \le f_B$) khi đi từ cổng vào tới trước bộ lấy mẫu bị suy giảm bởi hàm lọc thông thấp bậc $L$, trong khi sau khi gấp phổ về $f_0$ nó bị chia cho độ lợi vòng: hệ số nén chồng phổ đạt $\left(\frac{\sin(\pi f_{\text{alias}}/f_s)}{\pi f_0 / f_s}\right)^L \approx \left(\frac{f_0}{f_s}\right)^L \approx \frac{1}{(2\,\text{OSR})^L}$ — đạt **$> 70\text{–}90\text{ dB}$ suy hao chống chồng phổ hoàn toàn miễn phí**!
+   Trong `CT-ΔΣ` cấu trúc phản hồi phân tán (`CIFB`, không kéo nhánh truyền thẳng trực tiếp từ cổng vào tắt qua bộ lọc vòng tới trước bộ lấy mẫu), khâu lấy mẫu rời rạc nằm ở **cuối chuỗi bộ lọc liên tục bậc $L$** chứ không nằm ở cổng vào! Một nhiễu giao thoa tại tần số ảnh $f_{\text{alias}} = f_s - f_0$ ($f_0 \le f_B \ll f_s$) đi qua hàm lọc liên tục rồi gấp phổ về $f_0$ bị nén theo tỷ số dạng $\text{sinc}^L$: $\left|\frac{\sin(\pi f_{\text{alias}}/f_s)}{\pi f_{\text{alias}} / f_s}\right|^L = \left|\frac{\sin(\pi f_0 / f_s)}{\pi (f_s - f_0) / f_s}\right|^L \approx \left(\frac{f_0}{f_s - f_0}\right)^L \approx \frac{1}{(2\,\text{OSR} - 1)^L}$ (ví dụ tại $L = 3, \text{OSR} = 16$ đạt $\approx -89.8\text{ dB}$ suy hao chống chồng phổ miễn phí; lưu ý nếu dùng nhánh truyền thẳng $b_1 = 1$ nối tắt trực tiếp tới bộ cộng trước bộ lượng tử trong `CIFF`, đường tắt này lấy mẫu trực tiếp nhiễu ở $f_s - f_0$ nên phải lọc RC thụ động hoặc dẫn tín hiệu vào qua tầng tích phân liên tục đầu tiên!).
 3. **Tử huyệt Jitter Xung nhịp (`Clock Jitter`) & Bù Trễ Vòng Dư (`Excess Loop Delay — ELD`) của `CT-ΔΣ`:**
    - *Độ nhạy Jitter:* Trong `SC-ΔΣ`, dòng nạp tụ tắt hẳn về $0$ cuối pha nên xê dịch sườn xung nhịp $\Delta t_j$ hầu như vô hại. Trái lại trong `CT-ΔΣ` dùng xung dòng DAC không trở về không (`NRZ`), sai lệch sườn xung nhịp $\sigma_{t,j}$ làm thay đổi diện tích điện tích $\Delta Q_j = I_{\text{DAC}} \cdot \Delta D[n] \cdot \Delta t_j$ bơm vào nút đất ảo mỗi chu kỳ! Với DAC `NRZ`, trần $\text{SNR}$ do jitter bị khóa cứng tại:
 
@@ -225,7 +225,7 @@ $$
 | **Băng thông Tín hiệu $f_B$ & Tốc độ $f_s$** | Cảm biến DC $\dots 5\text{ MHz}$ ($\text{GBW}_{\text{OTA}} \ge 5 f_s$) | **Rộng ($1\text{ MHz} \dots > 200\text{ MHz}$, $\text{GBW}_{\text{OTA}} \approx 1.5 f_s$)** | Rộng ở bậc cao ($L = 3\text{–}4$) mà không sợ mất ổn định vòng |
 | **Khả năng Chống Chồng phổ (`AAF`)** | Cần mạch lọc AAF tương tự phía trước | **Tự khử chồng phổ nội tại $> 70\text{ dB}$ miễn phí!** | Phụ thuộc tầng đầu dùng `SC` hay `CT` |
 | **Độ nhạy Jitter Xung nhịp (`Clock Jitter`)** | **Miễn nhiễm cao** (điện tích truyền hết trước sườn) | **Rất nhạy** (cần PLL nhiễu pha thấp + DAC đa bit / FIR) | Giống tính chất tầng 1 |
-| **Ổn định Vòng lặp Bậc Cao ($L \ge 3$)** | Phải tuân thủ quy tắc Lee $\|H_\infty\| < 1.5$ | Cần thêm nhánh $k_0$ bù trễ vòng dư `ELD` | **Ổn định vô điều kiện** (ghép tầng các vòng bậc 1–2!) |
+| **Ổn định Vòng lặp Bậc Cao ($L \ge 3$)** | Phải tuân thủ quy tắc Lee $\|H_\infty\| < 1.5$ | Cần thêm nhánh $k_0$ bù trễ vòng dư `ELD` | **Ổn định từ các vòng con bậc 1–2** *(khi giữ biên độ từng tầng dưới ngưỡng quá tải & khớp lọc số khử nhiễu)* |
 
 - **Lộ trình lai ghép thế hệ mới:**
   - **Incremental $\Delta\Sigma$ ADC (`r09g/iadc`):** Gắn công tắc xóa điện tích trên mọi tụ tích phân sau đúng $N_{\text{cyc}}$ nhịp để thiết lập ánh xạ **1-đối-1 theo từng mẫu** không còn trễ bộ nhớ dài — lý tưởng để quét qua bộ dồn kênh nhiều cảm biến `topo-analog-mux-and-adc-track-hold-drivers`!

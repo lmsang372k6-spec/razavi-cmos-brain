@@ -122,36 +122,36 @@ Nhân tử căn thức rút gọn kỳ diệu thành đúng $\gamma_c$! Nhờ đ
 3. **Bước 3 — Tính chính xác điện trở bù zero $R_P$**:
    $$R_P = \frac{\gamma_c}{\omega_c C_1} = \frac{2\pi N \omega_c}{I_P K_{VCO}} \cdot \frac{\gamma_c^2}{\gamma_c^2 - 1} = \frac{2\pi N \omega_c}{I_P K_{VCO}} \cdot \left(\frac{b + 1}{b}\right)$$
 4. **Bước 4 — Kiểm tra Nhiễu nhiệt của Điện trở $R_P$ lên Phổ Nhiễu Pha tại $\omega_c$**:
-   Điện trở $R_P$ sinh nhiễu nhiệt trắng $S_{v,RP} = 4 k T R_P$, đi qua phân áp tụ $\frac{C_1}{C_1 + C_2} = \frac{b}{b+1}$ ra $V_{cont}$ và bị hàm truyền vòng đóng nén bởi $|1 - H(j\omega)|$. Ngay tại tần số cắt $\omega_c$, nhiễu pha đơn biên do riêng $R_P$ gây ra là:
-   $$\mathcal{L}_{RP}(\omega_c) \approx 10\log_{10}\left[ 4 k T R_P \left(\frac{b}{b+1}\right)^2 \left(\frac{K_{VCO}}{2\omega_c}\right)^2 \cdot \frac{1}{|1 + L(j\omega_c)|^2} \right]$$
+   Điện trở $R_P$ sinh nhiễu nhiệt trắng một phía $S_{v,RP} = 4 k T R_P$, đi qua bộ chia mạng lọc vòng $\frac{1/(s C_2)}{R_P + 1/(s C_1) + 1/(s C_2)} = \frac{b}{b+1}\frac{1}{1 + s/\omega_{p3}}$ ra $V_{cont}$ (tại $\omega_c = \omega_{p3}/\gamma_c$, bình phương biên độ truyền đạt là $\frac{b^2}{(b+1)(b+2)}$) và bị hàm truyền vòng đóng nén bởi $\frac{1}{|1 + L(j\omega)|^2}$ (bằng đúng $1$ tại $\omega_c$ khi $\text{PM} = 60^\circ$!). Mật độ phổ nhiễu pha đơn biên tại $\omega_c$ do riêng $R_P$ gây ra là:
+   $$\mathcal{L}_{RP}(\omega_c) = 10\log_{10}\!\left[ \frac{1}{2} \cdot 4 k T R_P \cdot \frac{b^2}{(b+1)(b+2)} \left(\frac{K_{VCO}}{\omega_c}\right)^2 \cdot \frac{1}{|1 + L(j\omega_c)|^2} \right]$$
    Nếu $\mathcal{L}_{RP}(\omega_c)$ quá cao, chỉ cần **nhân đôi dòng bơm $I_P$** $\implies$ $R_P$ tự động giảm một nửa còn $C_1, C_2$ tăng gấp đôi, hạ nhiễu nhiệt của $R_P$ đi $3\text{ dB}$ mà giữ nguyên bất biến $\omega_c$ và $\text{PM}$!
 
 **Bảng Tra Cứu Nhanh Chuẩn Thiết kế Bậc Ba ($\omega_c = \sqrt{\omega_z \omega_{p3}}$)**:
 
 | Dự trữ pha mục tiêu ($\text{PM}$) | Hệ số tách cực $\gamma_c = \omega_c / \omega_z$ | Tỉ số tụ chính xác $b = C_1 / C_2$ | Hệ số sửa $R_P$: $(b+1)/b$ | Độ nhô đỉnh đóng vòng (Jitter Peaking) | Ứng dụng Khuyến nghị |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **$45^\circ$** | $2.414$ | $4.83$ ($\approx 5$) | $1.207$ | $\sim 2.4\text{ dB}$ (rung nhẹ) | Chỉ dùng khi cực kỳ thiếu diện tích tụ $C_1$. |
-| **$55^\circ$** | $3.172$ | $9.06$ ($\approx 9$) | $1.110$ | $\sim 1.6\text{ dB}$ | Cân bằng gọn diện tích cho Clocking / IoT. |
-| **$60^\circ$ (`T1684`)** | $3.732$ | **$12.93$ ($\approx 13$)** | $1.077$ | $\sim 1.2\text{ dB}$ | **Chuẩn vàng RF Synthesizer** (Wi-Fi / 5G / BLE). |
-| **$65^\circ$** | $4.511$ | $19.35$ ($\approx 20$) | $1.052$ | $\sim 0.9\text{ dB}$ | Hệ thống có $K_{VCO}$ trôi rộng cần đỉnh pha phẳng. |
-| **$70^\circ$** | $5.671$ | $31.16$ ($\approx 31$) | $1.032$ | $\sim 0.6\text{ dB}$ | Truyền dẫn nối tiếp nối tầng hạn chế Jitter Peaking. |
+| **$45^\circ$** | $2.414$ | $4.83$ ($\approx 5$) | $1.207$ | $3.20\text{ dB}$ (rung nhẹ) | Chỉ dùng khi cực kỳ thiếu diện tích tụ $C_1$. |
+| **$55^\circ$** | $3.172$ | $9.06$ ($\approx 9$) | $1.110$ | $2.10\text{ dB}$ | Cân bằng gọn diện tích cho Clocking / IoT. |
+| **$60^\circ$ (`T1684`)** | $3.732$ | **$12.93$ ($\approx 13$)** | $1.077$ | $1.70\text{ dB}$ | **Chuẩn vàng RF Synthesizer** (Wi-Fi / 5G / BLE). |
+| **$65^\circ$** | $4.511$ | $19.35$ ($\approx 20$) | $1.052$ | $1.37\text{ dB}$ | Hệ thống có $K_{VCO}$ trôi rộng cần đỉnh pha phẳng. |
+| **$70^\circ$** | $5.671$ | $31.16$ ($\approx 31$) | $1.032$ | $1.08\text{ dB}$ | Truyền dẫn nối tiếp nối tầng hạn chế Jitter Peaking. |
 
 ### 2.3. Trần Ổn định Rời rạc Gardner & Ví dụ Số Hoàn chỉnh ($4.8\text{ GHz}$ Synthesizer)
 Mô hình Laplace ở trên giả thiết bơm điện tích bơm dòng liên tục, nhưng thực tế PFD chỉ cập nhật mẫu một lần mỗi chu kỳ $T_{\text{REF}} = 2\pi / \omega_{\text{REF}}$, tạo ra trễ lấy mẫu giữ mẫu hiệu dụng $\Delta\phi_{\text{discrete}}(\omega) \approx -\frac{\omega T_{\text{REF}}}{2}$ (hoặc phân tích chính xác trong miền $z$ của Floyd M. Gardner 1980). Tại $\omega_c = \frac{\omega_{\text{REF}}}{10}$, riêng trễ rời rạc đã ăn mòn mất $\frac{0.1 \times 360^\circ}{2} \approx 18^\circ$ (hoặc $\sim 6^\circ \sim 12^\circ$ tùy độ rộng xung)! Do đó quy tắc bất di bất dịch là **chọn $f_c \le \frac{f_{\text{REF}}}{15} \sim \frac{f_{\text{REF}}}{10}$**.
 
 **Ví dụ Thiết kế Hoàn chỉnh từ Đầu tới Cuối**:
-Tổng hợp bộ lọc vòng trên chip cho PLL tạo $f_{\text{out}} = 4.8\text{ GHz}$ từ thạch anh $f_{\text{REF}} = 40\text{ MHz}$ ($N = 120$), VCO có $K_{VCO,\text{Hz}} = 60\text{ MHz/V}$ ($K_{VCO} = 2\pi \times 60 \times 10^6 = 3.770 \times 10^8\,\text{rad/(s}\cdot\text{V)}$). Yêu cầu băng thông cắt $f_c = 1.5\text{ MHz}$ ($\le f_{\text{REF}}/26.7$, $\omega_c = 9.425 \times 10^6\text{ rad/s}$), dự trữ pha $\text{PM} = 60^\circ$, và chọn dòng bơm $I_P = 500\,\mu\text{A}$:
+Tổng hợp bộ lọc vòng trên chip cho PLL tạo $f_{\text{out}} = 4.8\text{ GHz}$ từ thạch anh $f_{\text{REF}} = 40\text{ MHz}$ ($N = 120$), VCO có $K_{VCO,\text{Hz}} = 60\text{ MHz/V}$ ($K_{VCO} = 2\pi \times 60 \times 10^6 = 3.770 \times 10^8\,\text{rad/(s}\cdot\text{V)}$). Yêu cầu băng thông cắt $f_c = 500\text{ kHz}$ ($= f_{\text{REF}}/80$, $\omega_c = 3.1416 \times 10^6\text{ rad/s}$), dự trữ pha $\text{PM} = 60^\circ$, và chọn dòng bơm $I_P = 500\,\mu\text{A}$:
 1. Với $\text{PM} = 60^\circ$: $\gamma_c = \tan 60^\circ + \sec 60^\circ = \sqrt{3} + 2 = \mathbf{3.732}$, tỉ số tụ $b = 3.732^2 - 1 = \mathbf{12.928}$.
 2. Tụ lọc gợn $C_2$:
-   $$C_2 = \frac{500 \times 10^{-6} \times 3.770 \times 10^8}{2\pi \times 120 \times (9.425 \times 10^6)^2 \times 3.732} = \frac{1.885 \times 10^5}{2.499 \times 10^{17}} = \mathbf{7.54\text{ pF}}$$
+   $$C_2 = \frac{500 \times 10^{-6} \times 3.770 \times 10^8}{2\pi \times 120 \times (3.1416 \times 10^6)^2 \times 3.732} = \frac{1.885 \times 10^5}{2.777 \times 10^{16}} = \mathbf{6.79\text{ pF}}$$
 3. Tụ tích phân chính $C_1$:
-   $$C_1 = 12.928 \times 7.54\text{ pF} = \mathbf{97.5\text{ pF}}$$
+   $$C_1 = 12.928 \times 6.787\text{ pF} = \mathbf{87.8\text{ pF}}$$
 4. Điện trở bù zero $R_P$:
-   $$R_P = \frac{3.732}{9.425 \times 10^6 \times 97.5 \times 10^{-12}} = \mathbf{4.06\text{ k}\Omega}$$
+   $$R_P = \frac{3.732}{3.1416 \times 10^6 \times 87.75 \times 10^{-12}} = \mathbf{13.54\text{ k}\Omega}$$
 5. Kiểm tra vị trí các tần số gãy và thời gian khóa tinh:
-   - $f_z = \frac{f_c}{3.732} = \mathbf{401.9\text{ kHz}}$; $f_{p3} = 3.732 \, f_c = \mathbf{5.598\text{ MHz}}$ (cách xa $f_{\text{REF}} = 40\text{ MHz}$ hơn $7\times$, nén mạnh hài $40\text{ MHz}$ thêm $17\text{ dB}$!).
-   - Thời gian xác lập bám tần số tới sai số $10^{-6}$ ($\sim 14$ hằng số thời gian $\tau \approx \frac{2}{\omega_c}$): $t_{\text{settle}} \approx 14 \times \frac{2}{9.425 \times 10^6} \approx \mathbf{3.0\,\mu\text{s}}$!
-   - Nhiễu nhiệt riêng của $R_P = 4.06\text{ k}\Omega$ tại $f_c = 1.5\text{ MHz}$: $\sqrt{4 k T R_P} = 8.2\text{ nV}/\sqrt{\text{Hz}} \implies \mathcal{L}_{RP}(1.5\text{ MHz}) \approx \mathbf{-131.5\text{ dBc/Hz}}$ (thấp hơn nhiễu tự do của VCO tại $1.5\text{ MHz}$ khoảng $10\text{ dB}$, hoàn toàn trong sạch!).
+   - $f_z = \frac{f_c}{3.732} = \mathbf{134.0\text{ kHz}}$; $f_{p3} = 3.732 \, f_c = \mathbf{1.866\text{ MHz}}$ (cách xa $f_{\text{REF}} = 40\text{ MHz}$ hơn $21\times$, nén mạnh hài $40\text{ MHz}$ thêm $26.6\text{ dB}$!).
+   - Thời gian xác lập bám tần số tới sai số $10^{-6}$ ($\sim 14$ hằng số thời gian $\tau \approx \frac{2}{\omega_c}$): $t_{\text{settle}} \approx 14 \times \frac{2}{3.1416 \times 10^6} \approx \mathbf{8.9\,\mu\text{s}}$!
+   - Nhiễu nhiệt riêng của $R_P = 13.54\text{ k}\Omega$ tại $f_c = 500\text{ kHz}$: $\sqrt{4 k T R_P} = 15.0\text{ nV}/\sqrt{\text{Hz}} \implies \mathcal{L}_{RP}(500\text{ kHz}) \approx \mathbf{-118.9\text{ dBc/Hz}}$ (nếu muốn hạ thêm $6\text{ dB}$ xuống $-124.9\text{ dBc/Hz}$, chỉ cần tăng $I_P = 2.0\text{ mA}$ để giảm $R_P = 3.38\text{ k}\Omega$!).
 
 ---
 
@@ -161,7 +161,7 @@ Tổng hợp bộ lọc vòng trên chip cho PLL tạo $f_{\text{out}} = 4.8\tex
 - **[INV-LF-02] Bất biến Cấm Phá Hủy Zero do Gắn Nhầm Bản Đáy Ký sinh hoặc Nút Trích Áp (Razavi Bài tập 16.10)**: Trên sơ đồ và trên layout của nhánh nối tiếp $R_P - C_1$:
   1. Dây điều khiển $V_{cont}$ đi vào VCO **bắt buộc trích từ đầu trên của tổ hợp $(R_P + C_1)$** (nơi đấu chung với bơm điện tích và $C_2$).
   2. Về mặt vật lý mặt cắt (`concept-integrated-resistors-and-capacitors-cmos`), tụ $C_1$ có diện tích cực lớn ($\sim 100\text{ pF}$) nên mang điện dung ký sinh bản đáy xuống đất rất lớn ($C_{p,\text{bot}} \approx 5\% \sim 15\%\,C_1 = 5 \sim 15\text{ pF}$, lớn hơn cả $C_2$!). **BẮT BUỘC đặt $C_1$ ở dưới nối đất (bản đáy nối GND, bản đỉnh nối vào $R_P$) và đặt $R_P$ ở phía trên nối vào $V_{cont}$**! Nếu đặt ngược $C_1$ ở trên còn $R_P$ ở dưới nối đất, tụ ký sinh bản đáy $C_{p,\text{bot}} = 10\text{ pF}$ sẽ cộng thẳng vào $C_2 = 7.5\text{ pF}$, nhân đôi $C_2$ ngoài ý muốn và ăn cụt $15^\circ$ dự trữ pha!
-- **[TRAP-LF-01] Bẫy Chồng Chấp Jitter Peaking trong Hệ thống Nối tầng Nhiều PLL (`Jitter Peaking Accumulation`)**: Trong bất kỳ CP-PLL Loại II nào, vì zero $\omega_z$ nằm trực tiếp trên tử số của hàm truyền đóng vòng $H(s) = N \frac{1 + s/\omega_z}{1 + s/\omega_z + \dots}$, biên độ $|H(j\omega)| / N$ luôn nhô cao hơn $0\text{ dB}$ trước khi lăn xuống ($\sim 1.2\text{ dB}$ ở $\text{PM} = 60^\circ$). Trong mạng viễn thông quang (SONET / OTN) hoặc cây xung nhịp PCIe nơi $10 \sim 20$ bộ khôi phục xung nhịp nối đuôi nhau, độ nhô $1.2\text{ dB}$ mỗi chặng sẽ nhân lên thành **+$24\text{ dB}$ khuếch đại nhiễu** làm sập mắt tín hiệu! Giải pháp cho ứng dụng nối tầng: phải đẩy tỉ số $b = C_1 / C_2 \ge 50 \sim 100$ ($\text{PM} > 78^\circ$, quá tắt dần $\zeta > 2$) hoặc tách đường điều khiển VCO làm hai cổng (Proportional-Integral Split-Path PLL để chuyển zero ra khỏi tử số của $H(s)$!).
+- **[TRAP-LF-01] Bẫy Chồng Chấp Jitter Peaking trong Hệ thống Nối tầng Nhiều PLL (`Jitter Peaking Accumulation`)**: Trong bất kỳ CP-PLL Loại II nào, vì zero $\omega_z$ nằm trực tiếp trên tử số của hàm truyền đóng vòng $H(s) = N \frac{1 + s/\omega_z}{1 + s/\omega_z + \dots}$, biên độ $|H(j\omega)| / N$ luôn nhô cao hơn $0\text{ dB}$ trước khi lăn xuống ($\sim 1.70\text{ dB}$ ở $\text{PM} = 60^\circ$). Trong mạng viễn thông quang (SONET / OTN) hoặc cây xung nhịp PCIe nơi $10 \sim 20$ bộ khôi phục xung nhịp nối đuôi nhau, độ nhô $1.7\text{ dB}$ mỗi chặng sẽ nhân lên thành **+$34\text{ dB}$ khuếch đại nhiễu** làm sập mắt tín hiệu! Giải pháp cho ứng dụng nối tầng: phải đẩy tỉ số $b = C_1 / C_2 \ge 50 \sim 100$ ($\text{PM} > 78^\circ$, quá tắt dần $\zeta > 2$) hoặc tách đường điều khiển VCO làm hai cổng (Proportional-Integral Split-Path PLL để chuyển zero ra khỏi tử số của $H(s)$!).
 - **[TRAP-LF-02] Bẫy Quên Cộng Điện dung Ngõ vào của VCO và Bộ Đệm Vào $C_2$**: Khi $C_2$ thiết kế nhỏ (ví dụ $2 \sim 5\text{ pF}$), điện dung bản thân của varactor VCO + dây dẫn che chắn + cổng Op-Amp bootstrap của bơm điện tích (thường $0.8 \sim 2.0\text{ pF}$) mắc song song trực tiếp với $C_2$! Phải trừ toàn bộ lượng điện dung ký sinh trên nút $V_{cont}$ ra khỏi giá trị $C_{2,\text{drawn}}$ vẽ trên layout: $C_{2,\text{drawn}} = C_{2,\text{target}} - C_{\text{par,Vcont}}$.
 
 ---

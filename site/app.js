@@ -345,7 +345,7 @@
       const repoCnt = state.catalog?.repos?.length ?? st.github_repo_count ?? 52;
       el.statRepos.textContent = repoCnt;
     }
-    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.4";
+    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.6";
   }
 
   function normalizeCoordsPayload(raw) {

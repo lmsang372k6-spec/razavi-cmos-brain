@@ -10,27 +10,40 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.2.1, 8.3.1, 8.5",
-      "pages": "284-292, 303-312",
-      "equations": ["8.14", "8.36"]
+      "section": "8.2.1, 8.3, 8.5",
+      "pages": "286-291, 298-299, 303-312",
+      "equations": [
+        "8.14",
+        "8.36"
+      ]
     },
     {
       "chapter": 9,
       "section": "9.10-9.11",
       "pages": "396-402",
-      "equations": ["9.81", "9.85"]
+      "equations": [
+        "9.81",
+        "9.85"
+      ]
     },
     {
       "chapter": 10,
-      "section": "10.5, 10.7, 10.9",
+      "section": "10.5, 10.7, 10.8",
       "pages": "426-439, 444-455",
-      "equations": ["10.30", "10.49", "10.50", "10.51"]
+      "equations": [
+        "10.30",
+        "10.49",
+        "10.50",
+        "10.51"
+      ]
     },
     {
       "chapter": 12,
       "section": "12.6, 12.8",
       "pages": "525-528, 534-535",
-      "equations": ["12.60"]
+      "equations": [
+        "12.60"
+      ]
     }
   ],
   "github_refs": [
@@ -260,7 +273,7 @@ tran_loadstep tran stop=3.5u maxstep=500p errpreset=conservative annotate=status
 ## 6. Tài liệu Đối chiếu Chuẩn Công nghiệp, Nguồn GitHub & Thuật ngữ CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi, Các Công trình Nền tảng JSSC & Nguồn Mở
-- **Razavi (2nd Ed.):** Chương 8 (§8.2.1 & §8.5 Hồi tiếp Điện áp–Điện áp và trở kháng ra đóng vòng), Chương 9 (§9.10–9.11 Tốc độ biến thiên Slew Rate và phân tích PSRR hai đường truyền), Chương 10 (§10.5, §10.7 Phương trình 10.49–10.51 về **Bù Cascode / Ahuja**, §10.9 Bù đa tầng Nested Miller), Chương 12 (§12.6, §12.8 Ổn áp tuyến tính cấp nguồn sạch).
+- **Razavi (2nd Ed.):** Chương 8 (§8.2.1 & §8.5 Hồi tiếp Điện áp–Điện áp và trở kháng ra đóng vòng), Chương 9 (§9.10–9.11 Tốc độ biến thiên Slew Rate và phân tích PSRR hai đường truyền), Chương 10 (§10.5, §10.7 Phương trình 10.49–10.51 về **Bù Cascode / Ahuja** & Bù đa tầng Nested Miller, §10.8 Tiêu chuẩn ổn định Nyquist), Chương 12 (§12.6, §12.8 Ổn áp tuyến tính cấp nguồn sạch).
 - **Công trình Nền tảng IEEE JSSC:** K. N. Leung & P. K. T. Mok (*JSSC* 2003 — *A Capacitor-Free CMOS Low-Dropout Regulator With Damping-Factor-Control Frequency Compensation*), P. Hazucha et al. (*JSSC* 2005 — *Area-Efficient Linear Regulator With Ultra-Fast Load Regulation / FVF LDO*), R. J. Milliken, J. Silva-Martínez & E. Sánchez-Sinencio (*TCAS-I* 2007).
 - **Kho GitHub Kiểm định:**
   - [`vyges/sg13cmos5l_vyges_ip__ldo_capless`](https://github.com/vyges/sg13cmos5l_vyges_ip__ldo_capless/tree/4f3b40e3a1f74b4e8d44f0854e2bc587a228ca4e) (`Apache-2.0`): IP Capless LDO thực tế kèm mạch tăng tốc động `tb_ldo_boost.spice` và kiểm chứng đa góc PVT.

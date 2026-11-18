@@ -1,0 +1,14 @@
+# Thao tác Cadence theo dự án
+
+Kiểm tra `project.json`, `cds.lib`, library/cell/view, PDK attachment và thư mục hiện hành trước thao tác. Mở folder hay Virtuoso không tự xác nhận DUT đang active; cần đọc session/cellView bằng giao diện đã được kiểm tra hoặc hỏi chọn DUT nếu còn mơ hồ.
+
+Trước khi chỉnh kích thước linh kiện, thêm nhánh phân cực hay đổi cấu trúc mạch trên bất kỳ tiến trình nào (`180nm`, `90nm`, `65nm`, `45nm`), chạy [kb_lookup.py](../tools/kb_lookup.py) và [kb_fetch.py](../tools/kb_fetch.py) (xem [../kb/README.md](../kb/README.md)) để đối chiếu **bất biến cấu trúc độc lập tiến trình** (`checklists`) và lộ trình nâng cấp theo sách Razavi.
+
+Với IC617, ưu tiên flow SKILL/OCEAN native đã kiểm chứng trong [ic617_oa_cdf.il](../tools/ic617_oa_cdf.il); khi cần bridge Python, đánh giá `unihd-cag/skillbridge` trước. Đọc [ic617-adapters.md](ic617-adapters.md). `Arcadia-1/virtuoso-bridge-lite` là reference API tùy chọn (chỉ cài làm tài liệu tham khảo, không đồng nghĩa daemon đã hoạt động; xem [compatibility.md](../environment/rhel6-ic617/compatibility.md)). Với IC617/Spectre15.1, thử truy vấn chỉ đọc trước, rồi thao tác trên cell nháp/bản sao đã backup khi thực sự cần. Không thay `.cdsinit`, kích hoạt listen port, mở firewall hoặc nâng Python hệ thống như bước ngầm.
+
+Đối chiếu SKILL API với manual cài máy; CDF và model thật quyết định pin order, parameter name và netlisting:
+- Khi đổi `l`, `w`, `fw`, `fingers`, `m` (MOSFET) hoặc `segW`, `segL` (điện trở phân đoạn) qua SKILL, bắt buộc khởi tạo `PasCdfFormInit(cdf)` với `cdfgData`/`cdfgForm` và thực thi `param~>callback` để cập nhật `simM`, `simW`, `ad`, `as`, `pd`, `ps` / `r`, `effW`, `effL` (xem mẫu chuẩn trong [ic617_oa_cdf.il](../tools/ic617_oa_cdf.il)). Chỉ gọi `dbReplaceProp` đơn thuần sẽ làm lệch thông số netlist Spectre so với ADE!
+- Sau mọi thao tác schematic, chạy `schCheck(cv)`, kiểm tra số nhãn dây (`wire` label) và xuất netlist qua OCEAN `createNetlist(?recreateAll t ?display nil)` để xác nhận kết nối từng chân `instTerms`.
+- Khi đo độ ổn định vòng hồi tiếp (Op-Amp, CMFB, LDO, Bandgap), ưu tiên phân tích `stb` của Spectre với `iprobe` / `diffstbprobe` giữ nguyên điểm làm việc DC và tải hai chiều (theo thẻ `tech-bode-blackman-middlebrook-stb`), trích `phaseMargin` / `gainMargin` qua OCEAN (`selectResult("stb1-margin.stb")`) hoặc đọc trực tiếp file PSF ASCII bằng [psf_ascii_reader.py](../tools/psf_ascii_reader.py) tương thích Python 2.6.6.
+
+Runner phải dùng cwd dự án, netlist/model path xác định, run ID và log riêng. Kiểm tra exit status, fatal/error, convergence và analysis/data tồn tại; “process completed” chưa chứng minh dữ liệu đủ để chấm spec. Các đường `.../apps/cadence/data/sessions/virtuoso-*` của launcher Desktop là session tạm, không phải vị trí dự án mặc định. Library thiết kế cần nằm trong `design/` thuộc dự án và `cds.lib` trỏ đúng.
