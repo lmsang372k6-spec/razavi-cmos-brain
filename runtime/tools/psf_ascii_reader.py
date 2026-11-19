@@ -393,6 +393,8 @@ def parse_psf_file(
     strings = {}
     values = {}
     field_units = {}
+    unit_conflicts = {}
+    sample_units_seen = {}
     backfilled_leading_signals = {}
     has_value_section = False
     saw_value_end = False
@@ -514,6 +516,25 @@ def parse_psf_file(
             has_value_section = True
             sweep_name = sweeps[0]["name"] if sweeps else None
             swept_events = []
+            base_field_units = dict(field_units)
+
+            def _record_sample_unit(sig_name, explicit_unit, inline_type=None):
+                if explicit_unit:
+                    u_eff = str(explicit_unit).strip()
+                    field_units[sig_name] = u_eff
+                else:
+                    t_u = ""
+                    if inline_type and inline_type in types:
+                        t_u = str(types[inline_type].get("props", {}).get("units") or "").strip()
+                    u_eff = t_u or str(base_field_units.get(sig_name, "")).strip()
+                if sig_name in sample_units_seen:
+                    prev_u = sample_units_seen[sig_name]
+                    if prev_u != u_eff:
+                        bucket = unit_conflicts.setdefault(sig_name, [prev_u])
+                        if u_eff not in bucket:
+                            bucket.append(u_eff)
+                else:
+                    sample_units_seen[sig_name] = u_eff
 
             def _record_scalar(sig_name, val):
                 if sweep_name is not None:
@@ -564,8 +585,7 @@ def parse_psf_file(
                         atom, idx = _parse_value_atom(
                             tokens, idx, m_name, reject_nonfinite=reject_nonfinite
                         )
-                        if atom[2].get("units"):
-                            field_units[m_name] = atom[2]["units"]
+                        _record_sample_unit(m_name, atom[2].get("units"), inline_type=m_type)
                         if atom[0] in ("num", "complex"):
                             _record_scalar(m_name, atom[1])
                         elif atom[0] == "tuple":
@@ -627,8 +647,7 @@ def parse_psf_file(
                     atom, idx = _parse_value_atom(
                         tokens, idx, raw_key, reject_nonfinite=reject_nonfinite
                     )
-                    if atom[2].get("units"):
-                        field_units[raw_key] = atom[2]["units"]
+                    _record_sample_unit(raw_key, atom[2].get("units"), inline_type=effective_type)
                     if atom[0] == "complex":
                         _record_scalar(raw_key, atom[1])
                     elif atom[0] == "tuple":
@@ -664,8 +683,7 @@ def parse_psf_file(
                 atom, idx = _parse_value_atom(
                     tokens, idx, raw_key, reject_nonfinite=reject_nonfinite, as_int=want_int
                 )
-                if atom[2].get("units"):
-                    field_units[raw_key] = atom[2]["units"]
+                _record_sample_unit(raw_key, atom[2].get("units"), inline_type=effective_type)
                 if atom[0] in ("num", "complex"):
                     _record_scalar(raw_key, atom[1])
                 elif atom[0] == "str":
@@ -761,6 +779,7 @@ def parse_psf_file(
         "instances": instances,
         "strings": strings,
         "field_units": field_units,
+        "unit_conflicts": unit_conflicts,
         "backfilled_leading_signals": backfilled_leading_signals,
         "sweep_name": sweeps[0]["name"] if sweeps else None,
         "sweep_values": values.get(sweeps[0]["name"]) if sweeps and sweeps[0]["name"] in values else None,
@@ -916,6 +935,23 @@ def run_self_test():
         if "M1" not in p_str["instances"] or abs(p_str["instances"]["M1"]["fields"]["gm"] - 1.0e-3) > 1e-12:
             raise AssertionError("STRUCT instance M1 after string collision failed: %r" % p_str["instances"])
 
+        # Mid-sweep inline unit conflict detection (A03)
+        u_conf_p = os.path.join(tmp_d, "unit_conflict.dc")
+        f_uc = open(u_conf_p, "wb")
+        try:
+            f_uc.write((
+                'HEADER\n"PSFversion" "1.00"\n'
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+                'SWEEP\n"vin" "v_t"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+                '"vin" 0.0\n"VDD" 1.0\n"VDD:p" -0.001\n'
+                '"vin" 0.5\n"VDD" 1.0\n"VDD:p" -0.1 PROP( "units" "mA" )\nEND\n'
+            ).encode("utf-8"))
+        finally:
+            f_uc.close()
+        p_uc = parse_psf_file(u_conf_p, reject_nonfinite=True, reject_truncated=True)
+        if p_uc.get("unit_conflicts", {}).get("VDD:p") != ["A", "mA"]:
+            raise AssertionError("Expected mid-sweep unit_conflicts ['A', 'mA'], got %r" % p_uc.get("unit_conflicts"))
+
         return {
             "ok": True,
             "self_test": "PASS",
@@ -923,6 +959,7 @@ def run_self_test():
             "leading_gap_tracking_verified": True,
             "swept_struct_noise_verified": True,
             "string_type_tag_collision_verified": True,
+            "mid_trace_unit_conflict_verified": True,
             "int_num_types_defined": (int in _INT_TYPES and float in _NUM_TYPES),
         }
     finally:

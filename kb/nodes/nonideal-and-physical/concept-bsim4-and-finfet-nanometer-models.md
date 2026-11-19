@@ -116,9 +116,11 @@ Trong BSIM, năng lượng vùng cấm của silic và độ linh động hạt 
 
 $$E_g(T) = 1.16 - \frac{7.02 \times 10^{-4}\,T^2}{T + 1108}\;\;[\text{eV}], \qquad \mu(T) = \mu_0 \left(\frac{300\text{ K}}{T}\right)^{\!k_\mu} \quad (k_\mu \approx 1.5\text{–}2.0), \qquad V_{TH}(T) = V_{TH}(T_0) - \kappa_{VT}(T - T_0)$$
 
-với $\kappa_{VT} \approx 0.8\text{–}2.0\text{ mV/K}$. Lấy đạo hàm dòng bão hòa xấp xỉ $I_D(T) \approx \frac{1}{2}\mu(T) C_{ox}\frac{W}{L}\big[V_{GS} - V_{TH}(T)\big]^2$ theo $T$ với $V_{GS}$ cố định và cho $\frac{\partial I_D}{\partial T} = 0$:
+với $\kappa_{VT} \approx 0.8\text{–}2.0\text{ mV/K}$. Lấy đạo hàm dòng bão hòa kênh dài $I_D(T) \approx \frac{1}{2}\mu(T) C_{ox}\frac{W}{L}\big[V_{GS} - V_{TH}(T)\big]^2$ theo $T$ với $V_{GS}$ cố định và cho $\frac{\partial I_D}{\partial T} = 0$:
 
-$$\frac{1}{I_D}\frac{\partial I_D}{\partial T} = -\frac{k_\mu}{T} + \frac{2\kappa_{VT}}{V_{GS} - V_{TH}(T)} = 0 \implies V_{OV,\text{ZTC}} = V_{GS,\text{ZTC}} - V_{TH}(T_0) \approx \frac{2 \kappa_{VT} T_0}{k_\mu} \approx 180\text{–}350\text{ mV}$$
+$$\frac{1}{I_D}\frac{\partial I_D}{\partial T} = -\frac{k_\mu}{T} + \frac{2\kappa_{VT}}{V_{GS} - V_{TH}(T)} = 0 \implies V_{OV,\text{ZTC}} = V_{GS,\text{ZTC}} - V_{TH}(T_0) \approx \frac{2 \kappa_{VT} T_0}{k_\mu}$$
+
+Ở $T_0 = 300\text{ K}$, thế trực tiếp dải $\kappa_{VT} \in [0.8,\,2.0]\text{ mV/K}$ và $k_\mu \in [1.5,\,2.0]$ vào công thức luật bình phương trên cho dải biên $V_{OV,\text{ZTC}} \approx 240\text{–}800\text{ mV}$; trong công nghệ nanomet bão hòa vận tốc ($I_D \propto V_{OV}^\alpha$ với $\alpha \approx 1.2\text{–}1.5$) và $\kappa_{VT}$ điển hình $\approx 0.6\text{–}1.2\text{ mV/K}$, biểu thức tổng quát $V_{OV,\text{ZTC}} \approx \frac{\alpha\,\kappa_{VT}\,T_0}{k_\mu}$ hạ điểm ZTC đo thực tế về quanh $\approx 180\text{–}350\text{ mV}$.
 
 - **Hệ quả thiết kế cực kỳ quan trọng (`Temperature Inversion` ở nguồn thấp):**
   - Ở vùng vượt ngưỡng lớn ($V_{OV} > V_{OV,\text{ZTC}}$, thường gặp ở công nghệ cũ $3.3\text{ V}/5\text{ V}$): sự suy giảm độ linh động $\mu(T)$ thắng thế $\implies$ nhiệt độ tăng làm dòng $I_D$ **giảm** ($\partial I_D/\partial T < 0$).

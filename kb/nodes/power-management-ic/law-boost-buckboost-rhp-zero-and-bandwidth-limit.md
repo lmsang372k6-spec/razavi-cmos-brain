@@ -133,15 +133,19 @@ $$
 G_{vd,\text{Boost}}(s) = \frac{\hat{v}_{out}(s)}{\hat{d}(s)} = \frac{V_{out}}{1 - D} \cdot \frac{\left(1 - \dfrac{s}{\omega_{z,\text{RHP}}}\right)\left(1 + \dfrac{s}{\omega_{z,\text{ESR}}}\right)}{1 + \dfrac{s}{Q_{\text{eff}}\,\omega_{0,\text{eff}}} + \dfrac{s^2}{\omega_{0,\text{eff}}^2}}
 $$
 
-Thực hiện phép biến đổi hoàn toàn tương tự cho **Buck-Boost CCM** (cả cấu trúc đảo áp lẫn vùng Boost/Buck-Boost 4 công tắc, nơi $V_{out} = \frac{D}{1-D}V_{in}$ và $I_L = \frac{I_{load}}{1-D} = \frac{V_{out}}{(1-D)R_{load}}$), ta lập được bảng đối chiếu giải tích toàn diện dùng điện cảm hiệu dụng $L_e \equiv \dfrac{L}{(1 - D)^2}$:
+Thực hiện phép biến đổi hoàn toàn tương tự cho **Buck-Boost đảo áp CCM lý tưởng** (và bộ 4 công tắc khi khóa chung một biến điều khiển $D_{\text{Buck}} = D_{\text{Boost}} = D$, nơi $V_{out} = \frac{D}{1-D}V_{in}$ và $I_L = \frac{I_{load}}{1-D} = \frac{V_{out}}{(1-D)R_{load}}$), ta lập được bảng đối chiếu giải tích dùng điện cảm hiệu dụng $L_e \equiv \dfrac{L}{(1 - D)^2}$:
 
-| Đại lượng Động học Tín hiệu Nhỏ (CCM) | Mạch Tăng áp (**Boost**) | Mạch Hạ–Tăng áp (**Buck-Boost**) | Hệ quả Vật lý khi $V_{in}$ giảm ($D$ tăng!) |
+| Đại lượng Động học Tín hiệu Nhỏ (CCM) | Mạch Tăng áp (**Boost**) | Mạch Hạ–Tăng áp Đảo áp (**Inverting Buck-Boost**) | Hệ quả Vật lý khi $V_{in}$ giảm ($D$ tăng!) |
 |---|---|---|---|
 | **Độ lợi DC điều khiển** $G_{d0}$ | $\dfrac{V_{out}}{1 - D} = \dfrac{V_{in}}{(1 - D)^2}$ | $\dfrac{V_{out}}{D(1 - D)} = \dfrac{V_{in}}{(1 - D)^2}$ | Tăng vọt tỉ lệ nghịch với $(1-D)^2$! |
 | **Điện cảm hiệu dụng** $L_e(D)$ | $\dfrac{L}{(1 - D)^2}$ | $\dfrac{L}{(1 - D)^2}$ | Phóng đại gấp $\left(\frac{V_{out}}{V_{in}}\right)^2$ lần so với $L$ vật lý! |
 | **Cực đôi cộng hưởng** $\omega_{0,\text{eff}}(D)$ | $\dfrac{1}{\sqrt{L_e C}} = \dfrac{1 - D}{\sqrt{L C}}$ | $\dfrac{1}{\sqrt{L_e C}} = \dfrac{1 - D}{\sqrt{L C}}$ | **Dịch chuyển tụt xuống tần số thấp** theo $(1-D)$! |
 | **Hệ số phẩm chất** $Q_{\text{eff}}(D)$ *(khi $R_{eq}\to 0$)* | $R_{load}\sqrt{\dfrac{C}{L_e}} = (1 - D) R_{load}\sqrt{\dfrac{C}{L}}$ | $(1 - D) R_{load}\sqrt{\dfrac{C}{L}}$ | Phụ thuộc đồng thời vào cả $D$ lẫn tải $R_{load}$ |
 | **Tần số góc RHP Zero** $\omega_{z,\text{RHP}}$ | $\dfrac{R_{load}(1 - D)^2}{L} = \dfrac{R_{load}}{L_e}$ | $\dfrac{R_{load}(1 - D)^2}{D L} = \dfrac{R_{load}}{D L_e}$ | **Sụt thê thảm** khi $D$ lớn và dòng tải $I_{load}$ nặng! |
+
+- **Lưu ý bắt buộc cho Buck-Boost 4 công tắc không đảo áp chế độ phối hợp (*Blended Mode*, $M = \dfrac{D_{\text{Buck}}}{1 - D_{\text{Boost}}}$, $I_L = \dfrac{I_{load}}{1 - D_{\text{Boost}}}$):** Khi hai cầu công tắc điều khiển độc lập với nhiễu loạn tín hiệu nhỏ $\hat{d}_{\text{Buck}} = \alpha_1 \hat{u}$ và $\hat{d}_{\text{Boost}} = \alpha_2 \hat{u}$, KHÔNG được thay $D_{\text{Buck}}$ hay $D_{\text{Boost}}$ vào công thức một biến $M = D/(1-D)$ của mạch đảo áp! Mô hình trung bình hai biến cho tần số góc RHP zero chính xác:
+  $$\omega_{z,\text{RHP}} = \frac{R_{load}(1 - D_{\text{Boost}})^2}{L} \left(1 + \frac{\alpha_1}{\alpha_2}\frac{1 - D_{\text{Boost}}}{D_{\text{Buck}}}\right)$$
+  Tùy theo luật điều chế 3 vùng: (i) **chỉ điều chế nhánh Buck** ($\alpha_2 = 0$): **không có RHP zero hữu hạn**; (ii) **chỉ điều chế nhánh Boost** ($\alpha_1 = 0$): $\omega_{z,\text{RHP}} = \dfrac{R_{load}(1 - D_{\text{Boost}})^2}{L}$ (ví dụ $R_{load}=12\,\Omega, L=4{,}7\,\mu\text{H}, D_{\text{Boost}}=0{,}2 \implies f_{z,\text{RHP}} = 260{,}07\text{ kHz}$); (iii) **hai cầu điều chế cùng biên độ** ($\alpha_1 = \alpha_2$, tại $D_{\text{Buck}}=0{,}8, D_{\text{Boost}}=0{,}2 \implies M = 1$): thừa số trong ngoặc bằng $2 \implies f_{z,\text{RHP}} = 520{,}13\text{ kHz}$.
 
 ### 2.2. Ký hiệu Đại số & Tác động Kép Độc hại Trên Đồ thị Bode / Nyquist
 Xét thừa số tử số $\left(1 - \frac{j\omega}{\omega_{z,\text{RHP}}}\right)$:
@@ -150,7 +154,7 @@ Xét thừa số tử số $\left(1 - \frac{j\omega}{\omega_{z,\text{RHP}}}\righ
 - **Định luật Trần Băng thông Cắt (*Bandwidth Ceiling Law*):** Tại tần số cắt $f_c$, lượng dự trữ pha (`T063`) bị riêng RHP zero ăn cắp là $\Delta\phi_{\text{RHP}} = \arctan\!\left(\frac{f_c}{f_{z,\text{RHP}}}\right)$. Nếu liều lĩnh đặt $f_c = f_{z,\text{RHP}}$, bạn mất ngay $45^\circ$ pha đồng thời độ dốc $|T(j\omega)|$ bị là phẳng thêm $+20\text{ dB/dec}$ không cho vòng hồi tiếp cắt xuống dưới $0\text{ dB}$! Để bảo toàn $\text{PM} \ge 50^\circ\text{–}60^\circ$ trên mọi góc PVT, tần số cắt tối đa bị khóa cứng dưới trần:
 
 $$
-f_c \le \left(\frac{1}{5} \dots \frac{1}{3}\right) f_{z,\text{RHP},\min}, \qquad f_{z,\text{RHP},\min} = \begin{cases} \dfrac{R_{load,\min}(1 - D_{\max})^2}{2\pi L_{\max}} & \text{(Boost)} \\[8pt] \dfrac{R_{load,\min}(1 - D_{\max})^2}{2\pi D_{\max} L_{\max}} & \text{(Buck-Boost)} \end{cases}
+f_c \le \left(\frac{1}{5} \dots \frac{1}{3}\right) f_{z,\text{RHP},\min}, \qquad f_{z,\text{RHP},\min} = \begin{cases} \dfrac{R_{load,\min}(1 - D_{\max})^2}{2\pi L_{\max}} & \text{(Boost CCM)} \\[8pt] \dfrac{R_{load,\min}(1 - D_{\max})^2}{2\pi D_{\max} L_{\max}} & \text{(Inverting Buck-Boost CCM)} \end{cases}
 $$
 
 *(Ví dụ định lượng thực tế: Mạch Boost từ pin Li-ion cạn $V_{in,\min} = 2{,}7\text{ V}$ lên $V_{out} = 5{,}0\text{ V}$ $\implies 1 - D_{\max} = 0{,}54$, cấp dòng $I_{load,\max} = 1{,}0\text{ A} \implies R_{load,\min} = 5{,}0\,\Omega$, dùng cuộn cảm $L = 2{,}2\,\mu\text{H} \pm 20\% \implies L_{\max} = 2{,}64\,\mu\text{H}$: tần số RHP zero góc xấu nhất rơi xuống chỉ còn $f_{z,\text{RHP},\min} = \frac{5{,}0 \times 0{,}54^2}{2\pi \times 2{,}64\,\mu\text{H}} = 87{,}9\text{ kHz}$ — cho dù bạn chạy xung nhịp $f_{sw} = 2{,}5\text{ MHz}$, băng thông vòng kín $f_c$ **tuyệt đối không được phép vượt quá $18\text{–}28\text{ kHz}$**!)*

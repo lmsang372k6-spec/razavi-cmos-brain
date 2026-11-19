@@ -266,10 +266,10 @@
       "sha256": "7a2893db707a6221f6a1c6c40000b95e6d891f9ddda0c72fb1af74aefa652a1e"
     },
     {
-      "bytes": 125226,
+      "bytes": 125388,
       "path": "tools/kb_lookup.py",
       "repo_path": "runtime/tools/kb_lookup.py",
-      "sha256": "7022c4edfa0a0b7a111e8bd8cd5b310785dcb491ed3eacc43dec23da8a21bc65"
+      "sha256": "9e211ec002a52cc95d826559dcca59305122d2e639bb77025fc213402a583315"
     },
     {
       "bytes": 65657,
@@ -284,22 +284,22 @@
       "sha256": "74bf3cc01e534b9d4b02badf60df2371222eead54a0ee7f1316c6282b0e46b40"
     },
     {
-      "bytes": 41606,
+      "bytes": 43590,
       "path": "tools/psf_ascii_reader.py",
       "repo_path": "runtime/tools/psf_ascii_reader.py",
-      "sha256": "de637f36bb21c37aa56cf41812753b68117172aa642d532ce467fab96b3a2a16"
+      "sha256": "3981ef454363ff9af04a039bd1a83670e6dc2a6764b0e896bf8a83d726a19235"
     },
     {
-      "bytes": 330312,
+      "bytes": 356843,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "aed3b85bb3f682876550c0326a7c61ec55658ef09dce730ca6a73fca633c12c0"
+      "sha256": "a3cf33db92fd6357b2812cf01c967119154a340e54a153a602707136b5afe430"
     },
     {
-      "bytes": 93814,
+      "bytes": 95014,
       "path": "tools/sizing_opt.py",
       "repo_path": "runtime/tools/sizing_opt.py",
-      "sha256": "f8244e5598248d34ff8f9d58c7d6d5831bd4d4f26bd8d0eede007493221dd909"
+      "sha256": "a5df7f6aa3d201a7e0e25e9e2ebcceabb53a15176fccfc05a3b551ef6a8788d8"
     }
   ],
   "release": "2026.11.19.1",

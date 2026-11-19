@@ -775,12 +775,20 @@ def _resolve_unit_token(unit_token, context_desc):
 
 def _convert_constraint_value(raw_val, unit_str, metric_name, cid, native_unit=None):
     raw_u = str(unit_str or "").strip().replace(" ", "")
+    inf_scale, inf_fam = _infer_metric_native_unit(metric_name)
     if native_unit is not None and str(native_unit).strip() != "":
         m_scale, m_fam = _resolve_unit_token(
             native_unit, "native_unit on %s (metric=%s)" % (cid, metric_name)
         )
+        if inf_fam is not None:
+            if m_fam != inf_fam or abs(float(m_scale) - float(inf_scale)) > 1e-12 * max(abs(float(inf_scale)), 1e-30):
+                raise SizingOptError(
+                    "Explicit native_unit '%s' conflicts with known metric unit/dimension "
+                    "(dimension=%s, scale=%g) on metric '%s' (%s)"
+                    % (native_unit, inf_fam, inf_scale, metric_name, cid)
+                )
     else:
-        m_scale, m_fam = _infer_metric_native_unit(metric_name)
+        m_scale, m_fam = inf_scale, inf_fam
 
     if not raw_u:
         return float(raw_val), 1.0
@@ -2103,6 +2111,19 @@ def run_self_test():
         chk_cx_fail = check_constraints({"custom_x": 10.0, "s1_gm_id": 15.0, "settling_ms": 0.4, "m1_gm": 3e-3}, custom_cons)
         if chk_cx_fail["all_pass"] or chk_cx_fail["details"][0]["status"] != "FAIL":
             raise AssertionError("custom_x=10 MHz vs >=1 GHz should FAIL, got %r" % chk_cx_fail)
+
+        # Reject native_unit overriding known metric unit or dimension (A06)
+        for bad_nu in (
+            {"id": "nu_scale", "metric": "idd_na", "native_unit": "uA", "op": ">=", "target": 100.0, "unit": "uA"},
+            {"id": "nu_dim", "metric": "s1_gm_id", "native_unit": "GHz", "op": "<=", "target": 40.0, "unit": "GHz"},
+        ):
+            nu_caught = False
+            try:
+                normalize_constraints({"enforce_mos_sat_margin": False, "hard_constraints": [bad_nu]})
+            except SizingOptError:
+                nu_caught = True
+            if not nu_caught:
+                raise AssertionError("Expected SizingOptError when native_unit conflicts with known metric: %r" % bad_nu)
 
         return {
             "ok": True,

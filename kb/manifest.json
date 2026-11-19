@@ -506,13 +506,13 @@
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 251577,
-      "sha256": "c796773d2d731a6c1a6fd42f8d5557556cebc5cd49422ef6dda52c7e58a93838"
+      "bytes": 251698,
+      "sha256": "0ab1b97ac7d7513286d6773df1e974e8dd197364e7011de3493e3244d8e55f2c"
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1313442,
-      "sha256": "d765f848e724983b9912b6b2db176d66b07c46eeb095de4878b044a8e124eda1"
+      "bytes": 1314018,
+      "sha256": "397bf334043387a25bc374df67beeac18c358f7598bb9274f8e5ff6a39787e94"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -631,8 +631,8 @@
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/law-stage-and-mirror-noise-rules.md",
-      "bytes": 23490,
-      "sha256": "0d98b626b498a55bead0145c873e8bbd9b754bb7ee863162f26c26b1c369a763"
+      "bytes": 23635,
+      "sha256": "ce93b7c05ba85da97e64c67e3cf6e8ab915e2b6576761294ddd61ddcddd09756"
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/tech-bode-blackman-middlebrook-stb.md",
@@ -846,8 +846,8 @@
     },
     {
       "path": "kb/nodes/nonideal-and-physical/concept-bsim4-and-finfet-nanometer-models.md",
-      "bytes": 28158,
-      "sha256": "c080d2bfddaf29b9b847b1ab8b804d980c386ad9b97d935b7e97f29f273682b7"
+      "bytes": 28731,
+      "sha256": "9bde85796cd4be0e4e1af9069be60b492f80abba955b549c2dfe56da976b219e"
     },
     {
       "path": "kb/nodes/nonideal-and-physical/concept-cmos-fabrication-wells-and-process-steps.md",
@@ -1016,8 +1016,8 @@
     },
     {
       "path": "kb/nodes/power-management-ic/law-boost-buckboost-rhp-zero-and-bandwidth-limit.md",
-      "bytes": 33107,
-      "sha256": "113fbdd018c4adee1b7497e548903ed6e5ad2820532491887a753c7d89f22a5f"
+      "bytes": 34595,
+      "sha256": "fba99705d95c55529642e56ed1d4e88cb346eac65c22b9376520fccea5538c1d"
     },
     {
       "path": "kb/nodes/power-management-ic/law-dcdc-volt-second-ccm-dcm-and-state-space.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1764041,
-      "sha256": "562ceadf4af00010480d4669f7ff647f59cbaf982216f6b65d49bad2c312d0d7"
+      "bytes": 1764198,
+      "sha256": "cd644779f47995d46595f8dee922f41989820ea7d83a959c901a00e9c4ca5d44"
     }
   ]
 }

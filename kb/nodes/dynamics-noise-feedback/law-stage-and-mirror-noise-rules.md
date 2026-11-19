@@ -20,7 +20,7 @@
   "roles": {
     "primary_input_transconductor": "Transistor đầu vào (M1 trong CS / cặp M1-M2 trong vi sai) phải tối đa hóa gm1 (Vov nhỏ, gm/ID cao) để đè nhiễu mọi phần tử đứng sau",
     "parallel_active_load_or_mirror": "Nguồn dòng tải và gương dòng bơm dòng nhiễu trực tiếp vào nút tín hiệu, bắt buộc tối thiểu hóa gm_load (Vov lớn, L dài, gm/ID thấp)",
-    "cascode_shield_device": "Transistor cascode M2 bị suy biến bởi trở kháng cực lớn rO1 ở cực nguồn nên tự nuốt dòng nhiễu của chính nó ở tần số thấp, chỉ lộ nhiễu khi CX ngắn mạch ở tần số cao",
+    "cascode_shield_device": "Transistor cascode M2 bị suy biến bởi trở kháng rất cao rO1 ở cực nguồn nên suy giảm mạnh dòng nhiễu của chính nó (tỉ phần ~1/[1+(gm2+gmb2)rO1]) ở tần số thấp (chỉ triệt tiêu ở giới hạn gm2*rO1 >> 1), và lộ rõ hơn khi CX ngắn mạch ở tần số cao",
     "tail_bias_current_source": "Nguồn dòng đuôi của cặp vi sai cân xứng chỉ bơm nhiễu chế độ chung chia đều hai nhánh nên triệt tiêu ở ngõ ra vi sai tần số thấp"
   },
   "symptoms_addressed": [
@@ -47,7 +47,7 @@ Trong một sơ đồ mạch khuếch đại hay Op-Amp có hàng chục MOSFET,
 Từ nguyên lý đó, mọi transistor trong mạch tương tự phân hóa thành 4 nhóm hành vi nhiễu hoàn toàn đối lập:
 1. **Transistor Hỗ dẫn Đầu vào ($M_1$ ở CS, $M_1\text{–}M_2$ ở Cặp Vi sai):** Tín hiệu cần khuếch đại cũng đi qua chính $g_{m1}$, nên khi quy nhiễu về ngõ vào, nhiễu của chính nó tỉ lệ với $\frac{1}{g_{m1}}$, đồng thời $g_{m1}^2$ đứng ở mẫu số làm "lá chắn" chia nhỏ nhiễu của tất cả tải và tầng sau!
 2. **Nguồn Dòng Tải & Nhánh Gương Dòng Song song ($M_{\text{load}}$, $M_{\text{mirror}}$):** Không mang tín hiệu đầu vào ở cực cổng (hoặc chỉ dùng làm tải dòng), nhưng cực máng nối thẳng vào đường dòng tín hiệu! Dòng nhiễu $4kT\gamma g_{m,\text{load}}$ đổ 100% vào đường tín hiệu, rồi khi quy về ngõ vào bị nhân với tỉ số $\frac{g_{m,\text{load}}}{g_{m1}^2}$ (cho nhiễu nhiệt) và $\left(\frac{g_{m,\text{load}}}{g_{m1}}\right)^2$ (cho nhiễu $1/f$)!
-3. **Transistor Cascode ($M_2$ chồng trên $M_1$):** Cực nguồn của $M_2$ nhìn xuống thấy trở kháng cực cao $r_{O1}$ của $M_1$. Theo KCL một nhánh nối tiếp không phân nhánh ở tần số thấp, dòng cực máng của $M_1$ bị khóa cứng, nên nguồn dòng nhiễu nội tại $I_{n2}$ nối giữa máng và nguồn của $M_2$ chỉ chạy vòng tròn bên trong chính $M_2$ (làm nhấp nhô nhẹ điện thế nút nội $X$) chứ **không thể thoát ra tải**!
+3. **Transistor Cascode ($M_2$ chồng trên $M_1$):** Cực nguồn của $M_2$ nhìn xuống thấy trở kháng rất cao $r_{O1}$ của $M_1$. Theo KCL tại nút nội $X$ ở tần số thấp ($\omega \ll \frac{1}{r_{O1} C_X}$, bỏ qua $g_{ds2}$), phần lớn dòng nhiễu $I_{n2}$ chạy tuần hoàn bên trong chính $M_2$ và **chỉ thoát ra tải với tỉ phần suy giảm mạnh** $\approx \frac{1}{1 + (g_{m2} + g_{mb2}) r_{O1}}$ (chỉ triệt tiêu về $0$ ở giới hạn lý tưởng $(g_{m2} + g_{mb2}) r_{O1} \gg 1$, xem Mục 2.3)!
 4. **Nguồn Dòng Đuôi Cặp Vi sai ($M_{\text{tail}}$):** Tại điểm cân bằng tĩnh đối xứng ($\Delta V_{in} = 0$), dòng nhiễu $I_{n,\text{tail}}$ chia đôi hoàn toàn bằng nhau ($\frac{1}{2} I_{n,\text{tail}}$) lên cả hai nhánh trái–phải, trở thành nhiễu chế độ chung thuần túy và tự triệt tiêu trong ngõ ra vi sai (cũng như tự triệt tiêu qua gương dòng $1:1$ ở tần số thấp!).
 
 ---

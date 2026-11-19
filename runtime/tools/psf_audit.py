@@ -292,6 +292,8 @@ def _resolve_trace_unit_scale(unit_str, expected_dim=None):
     PSF traces (`mA`, `mV`, `MHz`, `ns`, ...) are always scaled cleanly to SI or rejected.
     """
     raw_u = str(unit_str or "").strip().replace(" ", "")
+    if raw_u.startswith("__UNIT_CONFLICT__:"):
+        return None, "trace_unit_conflict:%s" % raw_u[len("__UNIT_CONFLICT__:"):]
     if not raw_u:
         return 1.0, None
     if raw_u in UNIT_SCALE_CASE_SENSITIVE:
@@ -318,6 +320,9 @@ def _get_parsed_signal_unit(parsed, sig_name):
     """Extract declared PSF `units` property for a trace, sweep axis, or type."""
     if not isinstance(parsed, dict) or not sig_name:
         return ""
+    u_confs = parsed.get("unit_conflicts") or {}
+    if sig_name in u_confs and u_confs[sig_name]:
+        return "__UNIT_CONFLICT__:" + "/".join([str(u or "<empty>") for u in u_confs[sig_name]])
     f_units = parsed.get("field_units") or {}
     if sig_name in f_units and f_units[sig_name]:
         return str(f_units[sig_name])
@@ -1665,6 +1670,7 @@ def _extract_provenance_tags(parsed):
         "circuit": "circuit", "design": "circuit", "cell": "circuit", "subckt": "circuit",
         "testbench": "testbench", "tb": "testbench",
         "loop": "loop", "loop_name": "loop", "stb_loop": "loop",
+        "oppoint": "oppoint", "operating_point": "oppoint", "bias_point": "oppoint", "dcop": "oppoint", "pss_fund": "oppoint",
         "netlist": "netlist",
     }
     for hk_raw, hv_raw in header.items():
@@ -1686,47 +1692,80 @@ def _pz_loop_stem(path):
         return ""
     bn = os.path.basename(path).lower()
     st = re.sub(r'(?:\.pz\.psf|\.pz|\.psf|\.info)$', '', bn)
-    st = re.sub(r'(?:^|[_.-])(?:open[\s_-]?loop|closed[\s_-]?loop|openloop|closedloop)(?:$|[_.-])', '_', st)
+    st = re.sub(r'(?:^|[_.-])(?:open[\s_-]?loop|closed[\s_-]?loop|openloop|closedloop|periodic|floquet|ppz|pstb)(?:$|[_.-])', '_', st)
     st = st.strip('_.- ')
     return st
+
+
+_PZ_PERIODIC_RE = re.compile(
+    r'(?:^|[^a-z0-9])(?:periodic|floquet|pstb|ppz|pss_pz|pac_pz|hb_pz)(?:$|[^a-z0-9])',
+    re.IGNORECASE,
+)
 
 
 def _extract_pz_metrics(parsed, path=""):
     """Extract open-loop or closed-loop pole-zero metrics from a parsed `.pz` PSF ASCII file.
 
-    Fail-closed invariants (Finding #03):
+    Fail-closed invariants (Finding #03 & A04):
+    - Scans ALL mode-indicating headers AND filename; conflicting indicators yield `pz_mode = 'conflict'`.
     - Never defaults untyped `.pz` files to `closed_loop` (`pz_mode = 'unknown'`).
+    - Cross-checks declared `numPoles` / `num_poles` against actual parsed pole count (`pz_incomplete`).
     - Strictly enforces open LHP asymptotic stability (`Re(p) < -eps`), flagging origin (`0+0j`) and jw-axis poles.
     """
     if not isinstance(parsed, dict):
         return {
-            "pz_mode": "unknown", "pz_parsed_ok": False,
+            "pz_mode": "unknown", "pz_domain": "lti", "pz_parsed_ok": False,
             "poles_count": 0, "zeros_count": 0, "rhp_poles": 0,
             "jw_axis_poles": 0, "non_lhp_poles": 0,
         }
 
-    pz_mode = None
+    hdr_modes = set()
+    pz_domain = "lti"
     header = parsed.get("header") or {}
+    decl_counts = set()
+    mode_keys = set(["pz_mode", "pz_type", "loop", "loop_mode", "mode", "analysis", "analysis type", "analysis_type", "title", "description"])
+    dom_keys = set(["pz_domain", "domain", "analysis", "analysis type", "analysis_type", "mode", "title", "description"])
+    cnt_keys = set([
+        "num_poles", "numpoles", "num poles", "number_of_poles", "number of poles",
+        "pole_count", "polecount", "npoles", "n_poles", "total_poles", "poles",
+    ])
     if isinstance(header, dict):
-        for hk in ("pz_mode", "pz_type", "loop", "loop_mode", "mode", "analysis", "analysis type", "analysis_type", "title", "description"):
-            for orig_k, hv in header.items():
-                if str(orig_k).strip().lower() == hk:
-                    s_hv = str(hv)
-                    if _PZ_OPEN_LOOP_RE.search(s_hv):
-                        pz_mode = "open_loop"
-                        break
-                    if _PZ_CLOSED_LOOP_RE.search(s_hv):
-                        pz_mode = "closed_loop"
-                        break
-            if pz_mode is not None:
-                break
-    if pz_mode is None and path:
+        for orig_k, hv in header.items():
+            hk_l = str(orig_k).strip().lower()
+            s_hv = str(hv)
+            if hk_l in mode_keys:
+                if _PZ_OPEN_LOOP_RE.search(s_hv):
+                    hdr_modes.add("open_loop")
+                if _PZ_CLOSED_LOOP_RE.search(s_hv):
+                    hdr_modes.add("closed_loop")
+            if hk_l in dom_keys and _PZ_PERIODIC_RE.search(s_hv):
+                pz_domain = "periodic"
+            if hk_l in cnt_keys and not isinstance(hv, bool):
+                try:
+                    fv = float(hv)
+                    if _is_finite_num(fv) and fv >= 0 and abs(fv - round(fv)) <= 1e-9:
+                        decl_counts.add(int(round(fv)))
+                except (TypeError, ValueError):
+                    pass
+
+    fn_modes = set()
+    if path:
         bn_low = os.path.basename(path).lower()
         if _PZ_OPEN_LOOP_RE.search(bn_low):
-            pz_mode = "open_loop"
-        elif _PZ_CLOSED_LOOP_RE.search(bn_low):
-            pz_mode = "closed_loop"
-    if pz_mode is None:
+            fn_modes.add("open_loop")
+        if _PZ_CLOSED_LOOP_RE.search(bn_low):
+            fn_modes.add("closed_loop")
+        if _PZ_PERIODIC_RE.search(bn_low):
+            pz_domain = "periodic"
+
+    all_modes = hdr_modes | fn_modes
+    pz_mode_conflict = False
+    if len(all_modes) > 1:
+        pz_mode = "conflict"
+        pz_mode_conflict = True
+    elif len(all_modes) == 1:
+        pz_mode = list(all_modes)[0]
+    else:
         pz_mode = "unknown"
 
     prov_tags = _extract_provenance_tags(parsed)
@@ -1831,6 +1870,26 @@ def _extract_pz_metrics(parsed, path=""):
                     elif _is_finite_num(elem):
                         poles.append(complex(float(elem), 0.0))
 
+    if isinstance(values, dict):
+        for k, arr in values.items():
+            kl = k.lower()
+            if kl in cnt_keys and arr:
+                for elem in arr:
+                    if not isinstance(elem, bool) and _is_finite_num(elem):
+                        fv = float(elem)
+                        if fv >= 0 and abs(fv - round(fv)) <= 1e-9:
+                            decl_counts.add(int(round(fv)))
+
+    pz_incomplete = False
+    decl_poles = None
+    if len(decl_counts) > 1:
+        pz_incomplete = True
+    elif len(decl_counts) == 1:
+        decl_poles = list(decl_counts)[0]
+        if len(poles) != decl_poles:
+            pz_incomplete = True
+
+    has_u_conf = bool(parsed.get("unit_conflicts"))
     rhp_poles = 0
     jw_axis_poles = 0
     for p in poles:
@@ -1840,9 +1899,10 @@ def _extract_pz_metrics(parsed, path=""):
         elif abs(p.real) <= eps_p:
             jw_axis_poles += 1
     non_lhp_poles = rhp_poles + jw_axis_poles
-    pz_ok = (len(poles) >= 1)
+    pz_ok = (len(poles) >= 1) and (not pz_incomplete) and (not pz_mode_conflict) and (not has_u_conf)
     out_pz = {
         "pz_mode": pz_mode,
+        "pz_domain": pz_domain,
         "pz_parsed_ok": pz_ok,
         "poles_count": len(poles),
         "zeros_count": zeros_count,
@@ -1852,6 +1912,14 @@ def _extract_pz_metrics(parsed, path=""):
         "provenance_tags": prov_tags,
         "pz_stem": pz_stem,
     }
+    if decl_poles is not None:
+        out_pz["declared_poles"] = decl_poles
+    if pz_incomplete:
+        out_pz["pz_incomplete"] = True
+    if pz_mode_conflict:
+        out_pz["pz_mode_conflict"] = True
+    if has_u_conf:
+        out_pz["pz_unit_conflict"] = True
     if poles:
         out_pz["max_pole_real"] = _round_clean(max([p.real for p in poles]))
     if pz_mode == "closed_loop":
@@ -2700,6 +2768,16 @@ def _extract_noise_metrics(parsed, return_curve=False):
         out_e = {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
         return (out_e, None) if return_curve else out_e
 
+    ns_u_conf = (parsed.get("unit_conflicts") or {}).get(n_key)
+    if ns_u_conf:
+        out_u = {
+            "noise_signal": n_key,
+            "integrated_rms_noise_v": None,
+            "integrated_rms_noise_a": None,
+            "noise_unit_errors": ["%s: trace_unit_conflict:%s" % (n_key, "/".join([str(u or "<empty>") for u in ns_u_conf]))],
+        }
+        return (out_u, None) if return_curve else out_u
+
     raw = [abs(float(x.real) if isinstance(x, complex) else float(x)) for x in vals[n_key]]
     unit = str(parsed.get("field_units", {}).get(n_key, ""))
     if not unit:
@@ -2818,42 +2896,83 @@ _PARASITIC_RC_TYPE_RE = re.compile(
 )
 
 
-def _count_unique_mc_iterations(sw_vals):
-    """Count unique finite/non-empty Monte Carlo iteration identifiers."""
+def _extract_unique_mc_iteration_ids(sw_vals):
+    """Return list of unique valid MC iteration IDs (positive integers >= 1 or non-numeric strings; rejects <=0 & fractions)."""
     uniq = set()
+    ordered = []
     for v in (sw_vals or []):
         if isinstance(v, (bool, complex)) or v is None:
             continue
+        tok = None
         if isinstance(v, _NUM_TYPES):
             fv = float(v)
-            if _is_finite_num(fv):
-                uniq.add(("n", round(fv, 12)))
+            if _is_finite_num(fv) and fv >= 1.0 and abs(fv - round(fv)) <= 1e-9:
+                tok = "n:%d" % int(round(fv))
         else:
             sv = str(v).strip()
             if not sv:
                 continue
+            is_num = False
             try:
                 fv = float(sv)
-                if _is_finite_num(fv):
-                    uniq.add(("n", round(fv, 12)))
-                    continue
+                is_num = True
+                if _is_finite_num(fv) and fv >= 1.0 and abs(fv - round(fv)) <= 1e-9:
+                    tok = "n:%d" % int(round(fv))
             except Exception:
-                pass
-            uniq.add(("s", sv.lower()))
-    return len(uniq)
+                is_num = False
+            if not is_num:
+                tok = "s:%s" % sv.lower()
+        if tok is not None and tok not in uniq:
+            uniq.add(tok)
+            ordered.append(tok)
+    return ordered
 
 
-def _detect_mc_from_parsed(parsed):
-    """Detect genuine Monte Carlo evidence from parsed PSF SWEEP iteration data (never scalar mc_runs)."""
+def _count_unique_mc_iterations(sw_vals):
+    """Count unique valid Monte Carlo iteration identifiers."""
+    return len(_extract_unique_mc_iteration_ids(sw_vals))
+
+
+def _compute_mc_payload_signature(parsed):
+    """Deterministic SHA-256 signature of PSF numeric/sweep content (for cross-point MC deduplication)."""
+    hdr = parsed.get("header") or {}
+    volatile_hdr = set(["title", "date", "time", "file", "filename", "psf_file", "run_id", "path"])
+    hdr_items = []
+    if isinstance(hdr, dict):
+        for k in sorted(hdr.keys()):
+            kl = str(k).strip().lower()
+            if kl in volatile_hdr:
+                continue
+            hdr_items.append((kl, str(hdr[k]).strip().lower()))
+    vals = parsed.get("values") or {}
+    val_items = []
+    if isinstance(vals, dict):
+        for k in sorted(vals.keys()):
+            seq = vals[k] or []
+            val_items.append((str(k), [repr(x) for x in seq[:256]]))
+    payload = {
+        "hdr": hdr_items,
+        "sw_name": str(parsed.get("sweep_name") or "").strip().lower(),
+        "sw_vals": [repr(x) for x in (parsed.get("sweep_values") or [])[:512]],
+        "vals": val_items,
+    }
+    raw = json.dumps(payload, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _detect_mc_details_from_parsed(parsed):
+    """Return `(is_mc, mc_runs, iter_fingerprints)` from genuine PSF SWEEP iteration data (never scalar mc_runs)."""
     is_mc = False
     mc_runs = 0
+    iter_ids = []
     sw_primary = str(parsed.get("sweep_name") or "").strip().lower()
     if sw_primary in _MC_SWEEP_NAMES:
         sw_vals = parsed.get("sweep_values") or []
-        uniq_n = _count_unique_mc_iterations(sw_vals)
-        if uniq_n >= 1:
+        cand_ids = _extract_unique_mc_iteration_ids(sw_vals)
+        if len(cand_ids) >= 1:
             is_mc = True
-            mc_runs = uniq_n
+            mc_runs = len(cand_ids)
+            iter_ids = cand_ids
     else:
         for sw in parsed.get("sweeps") or []:
             if isinstance(sw, dict):
@@ -2862,12 +2981,23 @@ def _detect_mc_from_parsed(parsed):
                     sv = sw.get("values")
                     if sv is None and (not sw_primary):
                         sv = parsed.get("sweep_values")
-                    uniq_n = _count_unique_mc_iterations(sv or [])
-                    if uniq_n >= 1:
+                    cand_ids = _extract_unique_mc_iteration_ids(sv or [])
+                    if len(cand_ids) >= 1:
                         is_mc = True
-                        if uniq_n > mc_runs:
-                            mc_runs = uniq_n
+                        if len(cand_ids) > mc_runs:
+                            mc_runs = len(cand_ids)
+                            iter_ids = cand_ids
                         break
+    if not iter_ids:
+        return is_mc, mc_runs, []
+    sig = _compute_mc_payload_signature(parsed)
+    fps = ["iter:%s:%s" % (sig, iid) for iid in iter_ids]
+    return is_mc, mc_runs, fps
+
+
+def _detect_mc_from_parsed(parsed):
+    """Detect genuine Monte Carlo evidence from parsed PSF SWEEP iteration data (never scalar mc_runs)."""
+    is_mc, mc_runs, _ = _detect_mc_details_from_parsed(parsed)
     return is_mc, mc_runs
 
 
@@ -3264,6 +3394,7 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
     """Read cryptographically bound run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files."""
     mc_ev = False
     mc_runs = 0
+    mc_fingerprints = set()
     pex_ev = False
     manifest_bound = False
     rejected_reason = None
@@ -3369,17 +3500,12 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
                         )
                     except Exception:
                         continue
-                    is_p_mc, p_mc_runs = _detect_mc_from_parsed(mc_parsed)
-                    sw_vals = mc_parsed.get("sweep_values") or []
-                    sw_name = str(mc_parsed.get("sweep_name") or "").strip().lower()
-                    if sw_name in _MC_SWEEP_NAMES and len(sw_vals) > 0:
-                        uniq_sw = _count_unique_mc_iterations(sw_vals)
-                        if uniq_sw > 0:
-                            sweep_mc_total += uniq_sw
-                            verified_mc_files_map[norm_mc] = uniq_sw
-                    elif is_p_mc and p_mc_runs > 0:
+                    is_p_mc, p_mc_runs, p_fps = _detect_mc_details_from_parsed(mc_parsed)
+                    if is_p_mc and p_mc_runs > 0:
                         sweep_mc_total += p_mc_runs
                         verified_mc_files_map[norm_mc] = p_mc_runs
+                        for fp_tok in p_fps:
+                            mc_fingerprints.add(fp_tok)
                     else:
                         bn_l = os.path.basename(mc_path).lower()
                         is_mc_fn = (_classify_psf_filename(bn_l) == "mc") or ("mc" in bn_l) or ("iter" in bn_l)
@@ -3406,8 +3532,9 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
                             seen_single_shas.add(file_sha)
                             distinct_single_mc += 1
                             verified_mc_files_map[norm_mc] = 1
+                            mc_fingerprints.add("sha:%s" % file_sha)
 
-                tot_verified_mc = sweep_mc_total + distinct_single_mc
+                tot_verified_mc = len(mc_fingerprints) if mc_fingerprints else (sweep_mc_total + distinct_single_mc)
                 if tot_verified_mc > 0:
                     mc_ev = True
                     if tot_verified_mc > mc_runs:
@@ -3467,6 +3594,7 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
             "corner": manifest_corner,
             "temperature_c": manifest_temp_c,
             "open_loop_rhp_poles": open_loop_rhp_poles,
+            "mc_run_fingerprints": sorted(list(mc_fingerprints)),
         }
     return mc_ev, mc_runs, pex_ev
 
@@ -3664,18 +3792,18 @@ def _aggregate_noise_group(runs_map):
     return out
 
 
-_GENERIC_PZ_STEMS = set(["", "pz", "closed_loop", "open_loop", "closedloop", "openloop", "cl", "ol", "pz_cl", "pz_ol"])
+_GENERIC_PZ_STEMS = set(["", "pz", "closed_loop", "open_loop", "closedloop", "openloop", "cl", "ol", "pz_cl", "pz_ol", "periodic", "floquet", "ppz", "pstb"])
 _GENERIC_STB_STEMS = set(["", "stb", "pstb", "margin", "loop"])
 
 
 def _check_pz_stb_provenance(pz_runs, stb_loops, stb_loop_stems, cl_valid):
-    """Validate circuit/testbench/loop/stem consistency across `.pz` and `.stb` runs."""
+    """Validate circuit/testbench/oppoint/loop/stem consistency across `.pz` and `.stb` runs."""
     conflicts = []
-    # Cross-`.pz` global header agreement (circuit, testbench, netlist)
+    # Cross-`.pz` global header agreement (circuit, testbench, oppoint, netlist)
     pz_global_tags = {}
     for pr in pz_runs:
         ptags = pr.get("provenance_tags") or {}
-        for cat in ("circuit", "testbench", "netlist"):
+        for cat in ("circuit", "testbench", "oppoint", "netlist"):
             val = ptags.get(cat)
             if not val:
                 continue
@@ -3704,7 +3832,7 @@ def _check_pz_stb_provenance(pz_runs, stb_loops, stb_loop_stems, cl_valid):
 
         if len(stb_tags_list) == 1:
             stags = stb_tags_list[0][2]
-            for cat in ("circuit", "testbench", "loop", "netlist"):
+            for cat in ("circuit", "testbench", "oppoint", "loop", "netlist"):
                 if ptags.get(cat) and stags.get(cat) and ptags[cat] != stags[cat]:
                     conflicts.append("pz_stb_%s_mismatch:%s!=%s" % (cat, ptags[cat], stags[cat]))
         elif len(stb_tags_list) > 1:
@@ -3717,7 +3845,7 @@ def _check_pz_stb_provenance(pz_runs, stb_loops, stb_loop_stems, cl_valid):
             if not matched_targets:
                 matched_targets = [(skey, stags) for skey, _, stags in stb_tags_list]
             for _, stags in matched_targets:
-                for cat in ("circuit", "testbench", "netlist"):
+                for cat in ("circuit", "testbench", "oppoint", "netlist"):
                     if ptags.get(cat) and stags.get(cat) and ptags[cat] != stags[cat]:
                         conflicts.append("pz_stb_%s_mismatch:%s!=%s" % (cat, ptags[cat], stags[cat]))
                 if (len(matched_targets) == 1) and ptags.get("loop") and stags.get("loop") and ptags["loop"] != stags["loop"]:
@@ -3750,6 +3878,154 @@ def _check_pz_stb_provenance(pz_runs, stb_loops, stb_loop_stems, cl_valid):
         if c not in dedup_conf:
             dedup_conf.append(c)
     return dedup_conf, cl_all_loops_covered
+
+
+def _evaluate_stability_domain_proof(
+    domain_name,
+    cl_valid,
+    ol_valid,
+    unknown_list,
+    extra_conflicts,
+    domain_stb_loops,
+    domain_stb_stems,
+    bound_ol_rhp=None,
+    has_other_domain_pz=False,
+    has_ac_fallback=False,
+):
+    """Evaluate closed-loop stability proof strictly within a single analysis domain (`lti` vs `periodic`)."""
+    out = {}
+    conflicts, cl_all_loops_covered = _check_pz_stb_provenance(
+        cl_valid + ol_valid + unknown_list, domain_stb_loops, domain_stb_stems, cl_valid
+    )
+    for ec in (extra_conflicts or []):
+        if ec not in conflicts:
+            conflicts.append(ec)
+
+    closed_loop_unstable = False
+    nyquist_unstable = False
+    nyquist_proved = False
+
+    if cl_valid:
+        tot_cl_poles = sum([r["closed_loop_poles"] for r in cl_valid])
+        tot_cl_rhp = sum([r["closed_loop_rhp_poles"] for r in cl_valid])
+        tot_cl_jw = sum([r.get("closed_loop_jw_axis_poles", 0) for r in cl_valid])
+        tot_cl_non_lhp = tot_cl_rhp + tot_cl_jw
+        out["closed_loop_poles"] = tot_cl_poles
+        out["closed_loop_rhp_poles"] = tot_cl_rhp
+        out["closed_loop_jw_axis_poles"] = tot_cl_jw
+        out["closed_loop_non_lhp_poles"] = tot_cl_non_lhp
+        if tot_cl_non_lhp > 0:
+            closed_loop_unstable = True
+
+    eff_bound_ol = bound_ol_rhp if domain_name == "lti" else None
+    open_loop_p = None
+    open_loop_p_conflict = False
+    if ol_valid:
+        tot_ol_rhp = sum([r["open_loop_rhp_poles"] for r in ol_valid])
+        tot_ol_jw = sum([r.get("open_loop_jw_axis_poles", 0) for r in ol_valid])
+        open_loop_p = tot_ol_rhp
+        out["open_loop_rhp_poles"] = open_loop_p
+        if tot_ol_jw > 0:
+            out["open_loop_jw_axis_poles"] = tot_ol_jw
+            conflicts.append("open_loop_jw_axis_pole_on_nyquist_contour")
+            open_loop_p_conflict = True
+        if eff_bound_ol is not None and eff_bound_ol != tot_ol_rhp:
+            open_loop_p_conflict = True
+            conflicts.append("open_loop_p_manifest_mismatch")
+    elif eff_bound_ol is not None:
+        open_loop_p = eff_bound_ol
+        out["open_loop_rhp_poles"] = open_loop_p
+
+    if domain_stb_loops and cl_valid and (not closed_loop_unstable):
+        for lr in domain_stb_loops.values():
+            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
+                if int(lr["nyquist_cw_encirclements"]) > 0:
+                    conflicts.append("nyquist_positive_encirclements_contradicts_lhp_closed_loop_pz")
+                    break
+
+    if domain_stb_loops and open_loop_p is not None and (not open_loop_p_conflict):
+        if len(domain_stb_loops) == 1:
+            lr = domain_stb_loops[list(domain_stb_loops.keys())[0]]
+            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
+                z_val = int(lr["nyquist_cw_encirclements"]) + int(open_loop_p)
+                out["nyquist_closed_loop_rhp_poles"] = z_val
+                if z_val > 0:
+                    nyquist_unstable = True
+                elif z_val == 0:
+                    nyquist_proved = True
+        else:
+            all_loops_proved = True
+            ol_by_stem = dict([(r["stem"], r) for r in ol_valid if r.get("stem")])
+            max_z = 0
+            any_z_checked = False
+            for skey, lr in domain_stb_loops.items():
+                if lr.get("nyquist_contour_closed") is not True or lr.get("nyquist_cw_encirclements") is None:
+                    all_loops_proved = False
+                    continue
+                loop_p = None
+                lstem = domain_stb_stems.get(skey, "")
+                if lstem in ol_by_stem:
+                    loop_p = ol_by_stem[lstem]["open_loop_rhp_poles"]
+                elif eff_bound_ol is not None:
+                    loop_p = eff_bound_ol
+                if loop_p is None:
+                    all_loops_proved = False
+                    continue
+                z_l = int(lr["nyquist_cw_encirclements"]) + int(loop_p)
+                any_z_checked = True
+                if z_l > max_z:
+                    max_z = z_l
+                if z_l > 0:
+                    nyquist_unstable = True
+                    all_loops_proved = False
+                elif z_l < 0:
+                    all_loops_proved = False
+            if any_z_checked:
+                out["nyquist_closed_loop_rhp_poles"] = max_z
+            if all_loops_proved and any_z_checked:
+                nyquist_proved = True
+
+    if closed_loop_unstable:
+        out["closed_loop_unstable"] = True
+    if nyquist_unstable:
+        out["nyquist_unstable"] = True
+    if conflicts:
+        out["stability_proof_conflicts"] = conflicts
+
+    if closed_loop_unstable or nyquist_unstable:
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "closed_loop_pz" if closed_loop_unstable else "open_loop_pz_plus_nyquist"
+        out["bode_measurement_only"] = False
+    elif conflicts:
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "stability_proof_conflict"
+        out["bode_measurement_only"] = False
+    elif cl_valid and out.get("closed_loop_non_lhp_poles") == 0 and cl_all_loops_covered:
+        out["stability_proof_verified"] = True
+        out["stability_proof_method"] = "closed_loop_pz"
+        out["bode_measurement_only"] = False
+    elif nyquist_proved:
+        out["stability_proof_verified"] = True
+        out["stability_proof_method"] = "open_loop_pz_plus_nyquist"
+        out["bode_measurement_only"] = False
+    elif unknown_list:
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "unknown_pz_mode"
+        out["bode_measurement_only"] = True
+    elif has_other_domain_pz and domain_name == "periodic":
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "pstb_lti_pz_not_valid"
+        out["bode_measurement_only"] = True
+    elif has_other_domain_pz and domain_name == "lti":
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "stb_periodic_pz_not_valid"
+        out["bode_measurement_only"] = True
+    elif domain_stb_loops or has_ac_fallback:
+        out["stability_proof_verified"] = False
+        out["stability_proof_method"] = "none_bode_only"
+        out["bode_measurement_only"] = True
+
+    return out
 
 
 def _extract_point_metrics(
@@ -3785,6 +4061,7 @@ def _extract_point_metrics(
     analyses_present = []
     mc_flag = [False]
     mc_runs_box = [0]
+    mc_fps = set()
     pex_flag = [False]
     rc_count_box = [0]
     hdr_corners = []
@@ -3798,11 +4075,13 @@ def _extract_point_metrics(
     def _inspect_parsed_evidence(parsed_obj, fpath=""):
         if not isinstance(parsed_obj, dict):
             return
-        is_mc, mc_n = _detect_mc_from_parsed(parsed_obj)
+        is_mc, mc_n, p_fps = _detect_mc_details_from_parsed(parsed_obj)
         if is_mc:
             mc_flag[0] = True
             if mc_n > mc_runs_box[0]:
                 mc_runs_box[0] = mc_n
+            for fp_tok in p_fps:
+                mc_fps.add(fp_tok)
         is_pex, rc_cnt = _detect_pex_from_parsed(parsed_obj)
         if is_pex:
             pex_flag[0] = True
@@ -3835,7 +4114,7 @@ def _extract_point_metrics(
         for uerr in dc_res.get("dc_unit_errors") or []:
             all_trace_u_errs.append("dc: %s" % uerr)
 
-    # Process ALL `.ac` / `.pac` files in this point with strict per-analysis partitioning
+    # Process ALL `.ac` / `.pac` files in this point with strict per-analysis partitioning (A05: NO PAC->AC fallback)
     ac_files = psf_files_by_kind.get("ac", [])
     ac_keys = _build_unique_file_keys(ac_files, base_dir=base_dir)
     ac_runs = {}
@@ -3861,19 +4140,16 @@ def _extract_point_metrics(
             else:
                 pure_ac_runs[akey] = ac_res
     if ac_runs:
-        _add_analysis("ac")
-        if has_pac:
+        if pure_ac_runs:
+            _add_analysis("ac")
+            metrics_by_analysis["ac"] = _aggregate_ac_group(pure_ac_runs)
+        if has_pac and pac_runs:
             _add_analysis("pac")
+            metrics_by_analysis["pac"] = _aggregate_ac_group(pac_runs)
         ac_agg = _aggregate_ac_group(ac_runs)
         metrics.update(ac_agg)
         for uerr in ac_agg.get("ac_unit_errors") or []:
             all_trace_u_errs.append("ac: %s" % uerr)
-        if pure_ac_runs:
-            metrics_by_analysis["ac"] = _aggregate_ac_group(pure_ac_runs)
-        elif pac_runs:
-            metrics_by_analysis["ac"] = _aggregate_ac_group(pac_runs)
-        if pac_runs:
-            metrics_by_analysis["pac"] = _aggregate_ac_group(pac_runs)
 
     # Process ALL `.stb` / `.pstb` + `.margin.*` loops cleanly (NEVER cross-pair `.stb` with `.pstb`)
     stb_files = psf_files_by_kind.get("stb", [])
@@ -3954,26 +4230,29 @@ def _extract_point_metrics(
                     stb_loops_pure[skey] = s_res
 
     if stb_loops:
-        _add_analysis("stb")
-        if has_pstb:
+        if stb_loops_pure:
+            _add_analysis("stb")
+            metrics_by_analysis["stb"] = _aggregate_stb_group(stb_loops_pure)
+        if pstb_loops:
             _add_analysis("pstb")
+            metrics_by_analysis["pstb"] = _aggregate_stb_group(pstb_loops)
         stb_agg = _aggregate_stb_group(stb_loops)
         metrics.update(stb_agg)
         for uerr in stb_agg.get("stb_unit_errors") or []:
             all_trace_u_errs.append("stb: %s" % uerr)
-        if stb_loops_pure:
-            metrics_by_analysis["stb"] = _aggregate_stb_group(stb_loops_pure)
-        elif pstb_loops:
-            metrics_by_analysis["stb"] = _aggregate_stb_group(pstb_loops)
-        if pstb_loops:
-            metrics_by_analysis["pstb"] = _aggregate_stb_group(pstb_loops)
 
-    # Process `.pz` / `.pz.psf` / `pz.info` files (closed-loop, open-loop, and unknown/untyped)
+    # Process `.pz` / `.pz.psf` / `pz.info` files strictly partitioned by domain (`lti` vs `periodic`) & conflict flags (A04 & A05)
     pz_files = psf_files_by_kind.get("pz", [])
     pz_keys = _build_unique_file_keys(pz_files, base_dir=base_dir)
-    cl_pz_runs = []
-    ol_pz_runs = []
-    unknown_pz_runs = []
+    all_pz_runs = []
+    cl_lti = []
+    ol_lti = []
+    unk_lti = []
+    extra_lti_conflicts = []
+    cl_per = []
+    ol_per = []
+    unk_per = []
+    extra_per_conflicts = []
     any_pz_parsed_ok = False
     for pz_p in pz_files:
         pz_parsed = parse_psf_file(pz_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
@@ -3984,18 +4263,44 @@ def _extract_point_metrics(
             any_pz_parsed_ok = True
         pz_res["file_key"] = pz_keys[pz_p]
         pz_res["stem"] = pz_res.get("pz_stem") or _pz_loop_stem(pz_p)
+        all_pz_runs.append(pz_res)
+        dom_pz = pz_res.get("pz_domain", "lti")
         mode_pz = pz_res.get("pz_mode")
-        if mode_pz == "open_loop":
-            ol_pz_runs.append(pz_res)
-        elif mode_pz == "closed_loop":
-            cl_pz_runs.append(pz_res)
+        if dom_pz == "periodic":
+            if pz_res.get("pz_mode_conflict"):
+                extra_per_conflicts.append("pz_mode_conflict:%s" % pz_res["file_key"])
+            if pz_res.get("pz_incomplete"):
+                extra_per_conflicts.append("pz_incomplete:%s" % pz_res["file_key"])
+            if pz_res.get("pz_unit_conflict"):
+                extra_per_conflicts.append("pz_unit_conflict:%s" % pz_res["file_key"])
+                all_trace_u_errs.append("pz: %s: trace_unit_conflict" % pz_res["file_key"])
+            if mode_pz == "open_loop":
+                ol_per.append(pz_res)
+            elif mode_pz == "closed_loop":
+                cl_per.append(pz_res)
+            else:
+                unk_per.append(pz_res)
         else:
-            unknown_pz_runs.append(pz_res)
+            if pz_res.get("pz_mode_conflict"):
+                extra_lti_conflicts.append("pz_mode_conflict:%s" % pz_res["file_key"])
+            if pz_res.get("pz_incomplete"):
+                extra_lti_conflicts.append("pz_incomplete:%s" % pz_res["file_key"])
+            if pz_res.get("pz_unit_conflict"):
+                extra_lti_conflicts.append("pz_unit_conflict:%s" % pz_res["file_key"])
+                all_trace_u_errs.append("pz: %s: trace_unit_conflict" % pz_res["file_key"])
+            if mode_pz == "open_loop":
+                ol_lti.append(pz_res)
+            elif mode_pz == "closed_loop":
+                cl_lti.append(pz_res)
+            else:
+                unk_lti.append(pz_res)
     if pz_files:
         metrics["pz_parsed_ok"] = any_pz_parsed_ok
-        metrics["pz_modes_present"] = sorted(list(set([r.get("pz_mode", "unknown") for r in (cl_pz_runs + ol_pz_runs + unknown_pz_runs)])))
-        if unknown_pz_runs:
-            metrics["pz_unknown_mode_count"] = len(unknown_pz_runs)
+        metrics["pz_modes_present"] = sorted(list(set([r.get("pz_mode", "unknown") for r in all_pz_runs])))
+        metrics["pz_domains_present"] = sorted(list(set([r.get("pz_domain", "lti") for r in all_pz_runs])))
+        unk_tot = unk_lti + unk_per
+        if unk_tot:
+            metrics["pz_unknown_mode_count"] = len(unk_tot)
 
     # Process `.pss` files if present so `pss` analysis coverage can be verified distinctly
     for pss_p in psf_files_by_kind.get("pss", []):
@@ -4098,32 +4403,27 @@ def _extract_point_metrics(
             else:
                 pure_noise_curves.append(curve_info)
     if noise_runs:
-        _add_analysis("noise")
-        if has_pnoise:
+        if pure_noise_runs:
+            _add_analysis("noise")
+            metrics_by_analysis["noise"] = _aggregate_noise_group(pure_noise_runs)
+        if has_pnoise and pnoise_runs:
             _add_analysis("pnoise")
+            metrics_by_analysis["pnoise"] = _aggregate_noise_group(pnoise_runs)
         ns_agg = _aggregate_noise_group(noise_runs)
         metrics.update(ns_agg)
         for uerr in ns_agg.get("noise_unit_errors") or []:
             all_trace_u_errs.append("noise: %s" % uerr)
-        if pure_noise_runs:
-            metrics_by_analysis["noise"] = _aggregate_noise_group(pure_noise_runs)
-        elif pnoise_runs:
-            metrics_by_analysis["noise"] = _aggregate_noise_group(pnoise_runs)
-        if pnoise_runs:
-            metrics_by_analysis["pnoise"] = _aggregate_noise_group(pnoise_runs)
         if aux_out is not None and (pure_noise_curves or pnoise_curves):
             aux_out["noise_curves"] = pure_noise_curves + pnoise_curves
             nc_by_an = {}
             if pure_noise_curves:
                 nc_by_an["noise"] = pure_noise_curves
-            elif pnoise_curves:
-                nc_by_an["noise"] = pnoise_curves
             if pnoise_curves:
                 nc_by_an["pnoise"] = pnoise_curves
             aux_out["noise_curves_by_analysis"] = nc_by_an
 
     # Process dedicated Monte Carlo PSF analysis files (`mc*.psf`, `mcdata*`, `montecarlo*`)
-    # Strict anti-spoofing (Finding #01): never trust filename alone without genuine iteration sweep evidence
+    # Strict anti-spoofing (Finding #01 & A01): never trust filename alone without genuine iteration sweep evidence
     for mc_p in psf_files_by_kind.get("mc", []):
         mc_parsed = parse_psf_file(mc_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         _inspect_parsed_evidence(mc_parsed, mc_p)
@@ -4137,6 +4437,8 @@ def _extract_point_metrics(
     )
     if meta_mc:
         mc_flag[0] = True
+        for fp_tok in (meta_details.get("mc_run_fingerprints") or []):
+            mc_fps.add(fp_tok)
         if meta_mc_runs > mc_runs_box[0]:
             mc_runs_box[0] = meta_mc_runs
     if meta_pex:
@@ -4144,132 +4446,108 @@ def _extract_point_metrics(
     if meta_details.get("manifest_rejected_reason"):
         metrics["manifest_rejected_reason"] = meta_details["manifest_rejected_reason"]
 
-    # Stability proof verification (Finding #01 & Finding #03):
-    # Requires typed closed-loop .pz (non-LHP=0) OR (typed open-loop .pz / bound manifest P + closed Nyquist Z=N+P==0)
-    cl_valid = [r for r in cl_pz_runs if r.get("pz_parsed_ok")]
-    ol_valid = [r for r in ol_pz_runs if r.get("pz_parsed_ok")]
-    all_pz_parsed = cl_valid + ol_valid + [r for r in unknown_pz_runs if r.get("pz_parsed_ok")]
-    stability_proof_conflicts, cl_all_loops_covered = _check_pz_stb_provenance(
-        all_pz_parsed, stb_loops, stb_loop_stems, cl_valid
-    )
-
-    closed_loop_unstable = False
-    nyquist_unstable = False
-    nyquist_proved = False
-
-    if cl_valid:
-        tot_cl_poles = sum([r["closed_loop_poles"] for r in cl_valid])
-        tot_cl_rhp = sum([r["closed_loop_rhp_poles"] for r in cl_valid])
-        tot_cl_jw = sum([r.get("closed_loop_jw_axis_poles", 0) for r in cl_valid])
-        tot_cl_non_lhp = tot_cl_rhp + tot_cl_jw
-        metrics["closed_loop_poles"] = tot_cl_poles
-        metrics["closed_loop_rhp_poles"] = tot_cl_rhp
-        metrics["closed_loop_jw_axis_poles"] = tot_cl_jw
-        metrics["closed_loop_non_lhp_poles"] = tot_cl_non_lhp
-        if tot_cl_non_lhp > 0:
-            closed_loop_unstable = True
-
+    # Domain-partitioned stability proof verification (Finding #01/#03 + A04/A05):
+    # LTI `.stb` uses LTI `.pz` ONLY; periodic `.pstb` uses periodic/Floquet `.pz` ONLY.
     bound_ol_rhp = meta_details.get("open_loop_rhp_poles")
-    open_loop_p = None
-    open_loop_p_conflict = False
-    if ol_valid:
-        tot_ol_rhp = sum([r["open_loop_rhp_poles"] for r in ol_valid])
-        tot_ol_jw = sum([r.get("open_loop_jw_axis_poles", 0) for r in ol_valid])
-        open_loop_p = tot_ol_rhp
-        metrics["open_loop_rhp_poles"] = open_loop_p
-        if tot_ol_jw > 0:
-            metrics["open_loop_jw_axis_poles"] = tot_ol_jw
-            stability_proof_conflicts.append("open_loop_jw_axis_pole_on_nyquist_contour")
-            open_loop_p_conflict = True
-        if bound_ol_rhp is not None and bound_ol_rhp != tot_ol_rhp:
-            open_loop_p_conflict = True
-            stability_proof_conflicts.append("open_loop_p_manifest_mismatch")
-    elif bound_ol_rhp is not None:
-        open_loop_p = bound_ol_rhp
-        metrics["open_loop_rhp_poles"] = open_loop_p
+    has_lti_pz = bool(cl_lti or ol_lti or unk_lti or extra_lti_conflicts)
+    has_per_pz = bool(cl_per or ol_per or unk_per or extra_per_conflicts)
+    lti_stems = dict([(k, stb_loop_stems[k]) for k in stb_loops_pure.keys()])
+    per_stems = dict([(k, stb_loop_stems[k]) for k in pstb_loops.keys()])
 
-    # Physical law contradiction check: Z = N + P >= N for any closed Nyquist contour.
-    if stb_loops and cl_valid and (not closed_loop_unstable):
-        for lr in stb_loops.values():
-            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
-                if int(lr["nyquist_cw_encirclements"]) > 0:
-                    stability_proof_conflicts.append("nyquist_positive_encirclements_contradicts_lhp_closed_loop_pz")
-                    break
+    lti_proof = None
+    if stb_loops_pure or ((not pstb_loops) and (pure_ac_runs or ac_runs or pz_files)):
+        lti_proof = _evaluate_stability_domain_proof(
+            "lti",
+            [r for r in cl_lti if r.get("pz_parsed_ok")],
+            [r for r in ol_lti if r.get("pz_parsed_ok")],
+            unk_lti,
+            extra_lti_conflicts,
+            stb_loops_pure,
+            lti_stems,
+            bound_ol_rhp=bound_ol_rhp,
+            has_other_domain_pz=has_per_pz,
+            has_ac_fallback=bool(pure_ac_runs or ((not pstb_loops) and (ac_runs or pz_files))),
+        )
+        if "stb" in metrics_by_analysis:
+            metrics_by_analysis["stb"].update(lti_proof)
 
-    if stb_loops and open_loop_p is not None and (not open_loop_p_conflict):
-        if len(stb_loops) == 1:
-            lr = stb_loops[list(stb_loops.keys())[0]]
-            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
-                z_val = int(lr["nyquist_cw_encirclements"]) + int(open_loop_p)
-                metrics["nyquist_closed_loop_rhp_poles"] = z_val
-                if z_val > 0:
-                    nyquist_unstable = True
-                elif z_val == 0:
-                    nyquist_proved = True
+    per_proof = None
+    if pstb_loops:
+        per_proof = _evaluate_stability_domain_proof(
+            "periodic",
+            [r for r in cl_per if r.get("pz_parsed_ok")],
+            [r for r in ol_per if r.get("pz_parsed_ok")],
+            unk_per,
+            extra_per_conflicts,
+            pstb_loops,
+            per_stems,
+            bound_ol_rhp=None,
+            has_other_domain_pz=has_lti_pz,
+            has_ac_fallback=False,
+        )
+        if "pstb" in metrics_by_analysis:
+            metrics_by_analysis["pstb"].update(per_proof)
+
+    if lti_proof is not None and per_proof is None:
+        metrics.update(lti_proof)
+    elif per_proof is not None and lti_proof is None:
+        metrics.update(per_proof)
+    elif lti_proof is not None and per_proof is not None:
+        for sum_k in (
+            "closed_loop_poles",
+            "closed_loop_rhp_poles",
+            "closed_loop_jw_axis_poles",
+            "closed_loop_non_lhp_poles",
+            "open_loop_rhp_poles",
+            "open_loop_jw_axis_poles",
+        ):
+            va = lti_proof.get(sum_k)
+            vb = per_proof.get(sum_k)
+            if va is not None and vb is not None:
+                metrics[sum_k] = va + vb
+            elif va is not None:
+                metrics[sum_k] = va
+            elif vb is not None:
+                metrics[sum_k] = vb
+        n_a = lti_proof.get("nyquist_closed_loop_rhp_poles")
+        n_b = per_proof.get("nyquist_closed_loop_rhp_poles")
+        if n_a is not None and n_b is not None:
+            metrics["nyquist_closed_loop_rhp_poles"] = max(n_a, n_b)
+        elif n_a is not None:
+            metrics["nyquist_closed_loop_rhp_poles"] = n_a
+        elif n_b is not None:
+            metrics["nyquist_closed_loop_rhp_poles"] = n_b
+
+        merged_conf = []
+        for cf in (lti_proof.get("stability_proof_conflicts") or []) + (per_proof.get("stability_proof_conflicts") or []):
+            if cf not in merged_conf:
+                merged_conf.append(cf)
+        if merged_conf:
+            metrics["stability_proof_conflicts"] = merged_conf
+        cl_u = bool(lti_proof.get("closed_loop_unstable") or per_proof.get("closed_loop_unstable"))
+        ny_u = bool(lti_proof.get("nyquist_unstable") or per_proof.get("nyquist_unstable"))
+        if cl_u:
+            metrics["closed_loop_unstable"] = True
+        if ny_u:
+            metrics["nyquist_unstable"] = True
+
+        both_ok = bool(lti_proof.get("stability_proof_verified") and per_proof.get("stability_proof_verified"))
+        metrics["stability_proof_verified"] = both_ok
+        if cl_u or ny_u:
+            metrics["stability_proof_method"] = "closed_loop_pz" if cl_u else "open_loop_pz_plus_nyquist"
+            metrics["bode_measurement_only"] = False
+        elif merged_conf:
+            metrics["stability_proof_method"] = "stability_proof_conflict"
+            metrics["bode_measurement_only"] = False
+        elif both_ok:
+            metrics["stability_proof_method"] = lti_proof.get("stability_proof_method")
+            metrics["bode_measurement_only"] = False
         else:
-            # Multi-loop: verify each loop individually
-            all_loops_proved = True
-            ol_by_stem = dict([(r["stem"], r) for r in ol_valid if r.get("stem")])
-            max_z = 0
-            any_z_checked = False
-            for skey, lr in stb_loops.items():
-                if lr.get("nyquist_contour_closed") is not True or lr.get("nyquist_cw_encirclements") is None:
-                    all_loops_proved = False
-                    continue
-                loop_p = None
-                lstem = stb_loop_stems.get(skey, "")
-                if lstem in ol_by_stem:
-                    loop_p = ol_by_stem[lstem]["open_loop_rhp_poles"]
-                elif bound_ol_rhp is not None:
-                    loop_p = bound_ol_rhp
-                if loop_p is None:
-                    all_loops_proved = False
-                    continue
-                z_l = int(lr["nyquist_cw_encirclements"]) + int(loop_p)
-                any_z_checked = True
-                if z_l > max_z:
-                    max_z = z_l
-                if z_l > 0:
-                    nyquist_unstable = True
-                    all_loops_proved = False
-                elif z_l < 0:
-                    all_loops_proved = False
-            if any_z_checked:
-                metrics["nyquist_closed_loop_rhp_poles"] = max_z
-            if all_loops_proved and any_z_checked:
-                nyquist_proved = True
-
-    if closed_loop_unstable:
-        metrics["closed_loop_unstable"] = True
-    if nyquist_unstable:
-        metrics["nyquist_unstable"] = True
-    if stability_proof_conflicts:
-        metrics["stability_proof_conflicts"] = stability_proof_conflicts
-
-    if closed_loop_unstable or nyquist_unstable:
-        metrics["stability_proof_verified"] = False
-        metrics["stability_proof_method"] = "closed_loop_pz" if closed_loop_unstable else "open_loop_pz_plus_nyquist"
-        metrics["bode_measurement_only"] = False
-    elif stability_proof_conflicts:
-        metrics["stability_proof_verified"] = False
-        metrics["stability_proof_method"] = "stability_proof_conflict"
-        metrics["bode_measurement_only"] = False
-    elif cl_valid and metrics.get("closed_loop_non_lhp_poles") == 0 and cl_all_loops_covered:
-        metrics["stability_proof_verified"] = True
-        metrics["stability_proof_method"] = "closed_loop_pz"
-        metrics["bode_measurement_only"] = False
-    elif nyquist_proved:
-        metrics["stability_proof_verified"] = True
-        metrics["stability_proof_method"] = "open_loop_pz_plus_nyquist"
-        metrics["bode_measurement_only"] = False
-    elif unknown_pz_runs:
-        metrics["stability_proof_verified"] = False
-        metrics["stability_proof_method"] = "unknown_pz_mode"
-        metrics["bode_measurement_only"] = True
-    elif stb_loops or ac_runs or pz_files:
-        metrics["stability_proof_verified"] = False
-        metrics["stability_proof_method"] = "none_bode_only"
-        metrics["bode_measurement_only"] = True
+            fail_src = per_proof if not per_proof.get("stability_proof_verified") else lti_proof
+            metrics["stability_proof_method"] = fail_src.get("stability_proof_method")
+            metrics["bode_measurement_only"] = bool(
+                lti_proof.get("bode_measurement_only") or per_proof.get("bode_measurement_only")
+            )
 
     # PVT metadata resolution & conflict detection (Finding #3)
     resolved_corner = None
@@ -4318,8 +4596,11 @@ def _extract_point_metrics(
     if mc_flag[0]:
         _add_analysis("mc")
         metrics["mc_evidence"] = True
-        if mc_runs_box[0] > 0:
-            metrics["mc_runs_verified"] = mc_runs_box[0]
+        eff_mc_runs = len(mc_fps) if mc_fps else mc_runs_box[0]
+        if eff_mc_runs > 0:
+            metrics["mc_runs_verified"] = eff_mc_runs
+        if mc_fps:
+            metrics["mc_run_fingerprints"] = sorted(list(mc_fps))
     else:
         metrics["mc_evidence"] = False
 
@@ -4770,18 +5051,24 @@ def _match_temp_covered(t_req, points_metrics):
 
 
 def _count_mc_points(points_metrics):
-    """Count verified Monte Carlo runs/points from genuine MC artifact evidence only (never bare filenames)."""
-    cnt = 0
+    """Count globally deduplicated Monte Carlo runs across points (never double-counting copied runs)."""
+    global_fps = set()
+    unfingerprinted_cnt = 0
     for pt_label, pm in points_metrics.items():
         if not isinstance(pm, dict):
             continue
+        fps = pm.get("mc_run_fingerprints")
+        if isinstance(fps, list) and fps:
+            for tok in fps:
+                global_fps.add(tok)
+            continue
         mc_runs = pm.get("mc_runs_verified", 0)
         if isinstance(mc_runs, _INT_TYPES) and not isinstance(mc_runs, bool) and mc_runs > 0:
-            cnt += int(mc_runs)
+            unfingerprinted_cnt += int(mc_runs)
             continue
         if pm.get("mc_evidence") is True or "mc" in pm.get("analyses_present", []):
-            cnt += 1
-    return cnt
+            unfingerprinted_cnt += 1
+    return len(global_fps) + unfingerprinted_cnt
 
 
 def _has_pex_point(points_metrics):
@@ -4794,12 +5081,15 @@ def _has_pex_point(points_metrics):
     return False
 
 
-def _format_pvt_combo(corner, supply_v, temp_c):
+def _format_pvt_combo(corner, supply_v, temp_c, rail_pairs=None):
     parts = []
     if corner is not None:
         parts.append(str(corner))
     if supply_v is not None:
         parts.append("%gV" % float(supply_v))
+    if rail_pairs:
+        for rn, rv in rail_pairs:
+            parts.append("%s=%gV" % (str(rn).upper(), float(rv)))
     if temp_c is not None:
         parts.append("%gC" % float(temp_c))
     return " @ ".join(parts)
@@ -5298,55 +5588,54 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
             missing_global_supplies_by_rail[r_name] = miss_rv
     missing_global_temps = [t for t in global_temps if not _match_temp_covered(t, clean_points_metrics)]
 
-    # Full Cartesian PVT product coverage whenever >= 2 of (corners, supplies, temps) are specified
+    # Full simultaneous Cartesian PVT product coverage whenever >= 2 axes (corner, supply, each rail, temp) exist (A02)
     missing_pvt_combinations = []
-    has_rail_grid = bool(global_supplies_by_rail)
-    active_pvt_axes = (1 if global_conds else 0) + (1 if (global_supplies or has_rail_grid) else 0) + (1 if global_temps else 0)
+    rail_axes = [(rn, global_supplies_by_rail[rn]) for rn in sorted(global_supplies_by_rail.keys()) if global_supplies_by_rail[rn]]
+    active_pvt_axes = (
+        (1 if global_conds else 0)
+        + (1 if global_supplies else 0)
+        + len(rail_axes)
+        + (1 if global_temps else 0)
+    )
     if active_pvt_axes >= 2:
         c_list = global_conds if global_conds else [None]
         v_list = global_supplies if global_supplies else [None]
         t_list = global_temps if global_temps else [None]
-        rail_axes = [(rn, global_supplies_by_rail[rn]) for rn in sorted(global_supplies_by_rail.keys())]
-        # Expand flat supply axis AND each rail supply axis against (corner x temp)
+        rail_combos = [()]
+        for rn, r_vals in rail_axes:
+            next_combos = []
+            for rc in rail_combos:
+                for rv in r_vals:
+                    next_combos.append(rc + ((rn, rv),))
+            rail_combos = next_combos
         for c_req in c_list:
             for v_req in v_list:
-                for t_req in t_list:
-                    combo_covered = False
-                    for pt_label in available_keys:
-                        if pt_label in conflict_points:
-                            continue
-                        pm = points_metrics[pt_label]
-                        if c_req is not None and not _point_matches_condition(c_req, pt_label, pm, conflict_points=conflict_points):
-                            continue
-                        if v_req is not None and not _match_supply_covered(v_req, {pt_label: pm}):
-                            continue
-                        if t_req is not None and not _match_temp_covered(t_req, {pt_label: pm}):
-                            continue
-                        combo_covered = True
-                        break
-                    if not combo_covered:
-                        missing_pvt_combinations.append(_format_pvt_combo(c_req, v_req, t_req))
-        for r_name, r_vals in rail_axes:
-            for rv in r_vals:
-                for c_req in c_list:
+                for r_combo in rail_combos:
                     for t_req in t_list:
-                        rc_ok = False
+                        combo_covered = False
                         for pt_label in available_keys:
                             if pt_label in conflict_points:
                                 continue
                             pm = points_metrics[pt_label]
                             if c_req is not None and not _point_matches_condition(c_req, pt_label, pm, conflict_points=conflict_points):
                                 continue
-                            if not _match_supply_covered(rv, {pt_label: pm}, rail_name=r_name):
+                            if v_req is not None and not _match_supply_covered(v_req, {pt_label: pm}):
+                                continue
+                            rails_ok = True
+                            for rn_req, rv_req in r_combo:
+                                if not _match_supply_covered(rv_req, {pt_label: pm}, rail_name=rn_req):
+                                    rails_ok = False
+                                    break
+                            if not rails_ok:
                                 continue
                             if t_req is not None and not _match_temp_covered(t_req, {pt_label: pm}):
                                 continue
-                            rc_ok = True
+                            combo_covered = True
                             break
-                        if not rc_ok:
-                            lbl_c = _format_pvt_combo(c_req, rv, t_req) + (" [%s]" % r_name.upper())
-                            if lbl_c not in missing_pvt_combinations:
-                                missing_pvt_combinations.append(lbl_c)
+                        if not combo_covered:
+                            missing_pvt_combinations.append(
+                                _format_pvt_combo(c_req, v_req, t_req, rail_pairs=r_combo)
+                            )
 
     missing_coverage_flags = []
     if mc_req_runs > 0 and _count_mc_points(points_metrics) < mc_req_runs:
@@ -5528,10 +5817,11 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                     }
                     continue
 
+            st_src = src_dict if (req_an in ("stb", "pstb") and "stability_proof_verified" in src_dict) else m_dict
             if m_key in _STABILITY_METRICS:
-                if m_dict.get("closed_loop_unstable"):
+                if st_src.get("closed_loop_unstable"):
                     any_failed = True
-                    cl_r = "closed_loop_rhp_pole" if m_dict.get("closed_loop_rhp_poles", 0) > 0 else "closed_loop_jw_axis_pole"
+                    cl_r = "closed_loop_rhp_pole" if st_src.get("closed_loop_rhp_poles", 0) > 0 else "closed_loop_jw_axis_pole"
                     fail_reason = fail_reason or cl_r
                     per_cond[cond_name] = {
                         "measured_si": _round_clean(m_val) if m_val is not None else None,
@@ -5539,7 +5829,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                         "reason": cl_r,
                     }
                     continue
-                if m_dict.get("nyquist_unstable"):
+                if st_src.get("nyquist_unstable"):
                     any_failed = True
                     fail_reason = fail_reason or "nyquist_unstable_encirclements"
                     per_cond[cond_name] = {
@@ -5568,12 +5858,17 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                 per_cond[cond_name] = {"measured_si": _round_clean(m_val), "status": "NOT_VERIFIED", "reason": "invalid_operator_or_range"}
                 continue
 
-            if m_key in _STABILITY_METRICS and ok_cmp and (not m_dict.get("stability_proof_verified")):
+            if m_key in _STABILITY_METRICS and ok_cmp and (not st_src.get("stability_proof_verified")):
                 any_missing = True
-                if m_dict.get("stability_proof_conflicts"):
+                st_meth = st_src.get("stability_proof_method")
+                if st_src.get("stability_proof_conflicts"):
                     nv_r = "stability_proof_conflict"
-                elif m_dict.get("stability_proof_method") == "unknown_pz_mode":
+                elif st_meth == "unknown_pz_mode":
                     nv_r = "unknown_pz_mode"
+                elif st_meth == "pstb_lti_pz_not_valid":
+                    nv_r = "pstb_lti_pz_not_valid"
+                elif st_meth == "stb_periodic_pz_not_valid":
+                    nv_r = "stb_periodic_pz_not_valid"
                 else:
                     nv_r = "bode_only_open_loop_rhp_unproven"
                 req_reason = req_reason or nv_r
@@ -7053,6 +7348,208 @@ def run_self_test():
         assert res_f05b["metrics"]["idd_a"] is None, res_f05b["metrics"]
         assert res_f05b["spec_evaluation"]["results"][0]["reason"] == "trace_unit_error", res_f05b["spec_evaluation"]
 
+        # 32. Codex Findings A01..A05 Adversarial Regression Suite
+        # 32a (A01): Copied MC sweep across point1/point2 MUST deduplicate globally (count=1); [-1, 0, 0.5] MUST NOT count
+        a01_mc_dup_root = os.path.join(tmp_root, "a01_cross_point_dup_mc")
+        a01_mc_txt = (
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n'
+            'TYPE\n"i_sw" INT LONG\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"iteration" "i_sw"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+            '"iteration" 7\n"VDD" 1.0\n"VDD:p" -1.0e-4\nEND\n'
+        )
+        _write_utf8(os.path.join(a01_mc_dup_root, "point1", "mcOp.dc"), a01_mc_txt)
+        _write_utf8(os.path.join(a01_mc_dup_root, "point2", "mcOp.dc"), a01_mc_txt)
+        spec_mc2_path = os.path.join(tmp_root, "spec_a01_mc2.json")
+        _write_utf8(spec_mc2_path, json.dumps({
+            "coverage": {"monte_carlo": 2},
+            "requirements": [{"id": "I1", "quantity": "idd_a", "operator": "<=", "target": 1.0, "unit": "mA"}],
+        }))
+        res_a01_dup = run_metrics(a01_mc_dup_root, spec_path=spec_mc2_path)
+        assert res_a01_dup["verdict"] == "NOT_VERIFIED", res_a01_dup
+        assert res_a01_dup["metrics"]["mc_runs_verified"] == 1, res_a01_dup["metrics"]
+        assert "monte_carlo" in res_a01_dup["spec_evaluation"].get("missing_coverage", []), res_a01_dup["spec_evaluation"]
+        assert main(["metrics", a01_mc_dup_root, "--spec", spec_mc2_path, "--fail-on-spec"], quiet=True) == 1
+
+        a01_mc_bad_dir = os.path.join(tmp_root, "a01_bad_iter_mc")
+        _write_utf8(os.path.join(a01_mc_bad_dir, "mcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n'
+            'TYPE\n"f_sw" FLOAT DOUBLE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"iteration" "f_sw"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+            '"iteration" -1\n"VDD" 1.0\n"VDD:p" -1.0e-4\n'
+            '"iteration" 0\n"VDD" 1.0\n"VDD:p" -1.1e-4\n'
+            '"iteration" 0.5\n"VDD" 1.0\n"VDD:p" -1.2e-4\nEND\n'
+        ))
+        res_a01_bad = run_metrics(a01_mc_bad_dir, spec_path=spec_mc2_path)
+        assert res_a01_bad["verdict"] == "NOT_VERIFIED", res_a01_bad
+        assert res_a01_bad["metrics"]["mc_evidence"] is False, res_a01_bad["metrics"]
+        assert res_a01_bad["metrics"].get("mc_runs_verified", 0) == 0, res_a01_bad["metrics"]
+
+        # 32b (A02): Simultaneous Cartesian multi-rail enforcement (missing off-diagonal cross-rail pairs)
+        a02_diag_root = os.path.join(tmp_root, "a02_multirail_diag")
+        for idx_pt, (v1, v2) in enumerate(((0.9, 1.1), (1.0, 1.2))):
+            _write_utf8(os.path.join(a02_diag_root, "TT_%d_27C" % (idx_pt + 1), "dcOp.dc"), (
+                'HEADER\n"PSFversion" "1.00"\n"corner" "TT"\n"temperature" 27\n'
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\nVALUE\n'
+                '"VDD" "v_t" %g\n"VDD:p" "i_t" -1.0e-4\n'
+                '"VDDA" "v_t" %g\n"VDDA:p" "i_t" -1.0e-4\nEND\n'
+            ) % (v1, v2))
+        spec_a02_path = os.path.join(tmp_root, "spec_a02_crossrail.json")
+        _write_utf8(spec_a02_path, json.dumps({
+            "coverage": {
+                "corners": ["TT"],
+                "supplies_by_rail": {"VDD": [0.9, 1.0], "VDDA": [1.1, 1.2]},
+                "temperatures_C": [27],
+            },
+            "requirements": [{"id": "P1", "quantity": "dc_power_w", "operator": "<=", "target": 1.0, "unit": "mW"}],
+        }))
+        res_a02_diag = run_metrics(a02_diag_root, spec_path=spec_a02_path)
+        assert res_a02_diag["verdict"] == "NOT_VERIFIED", res_a02_diag
+        assert len(res_a02_diag["spec_evaluation"].get("missing_pvt_combinations", [])) == 2, res_a02_diag["spec_evaluation"]
+        assert main(["metrics", a02_diag_root, "--spec", spec_a02_path, "--fail-on-spec"], quiet=True) == 1
+
+        spec_a02_railonly = os.path.join(tmp_root, "spec_a02_railonly.json")
+        _write_utf8(spec_a02_railonly, json.dumps({
+            "coverage": {"supplies_by_rail": {"VDD": [0.9, 1.0], "VDDA": [1.1, 1.2]}},
+            "requirements": [{"id": "P1", "quantity": "dc_power_w", "operator": "<=", "target": 1.0, "unit": "mW"}],
+        }))
+        res_a02_rail = run_metrics(a02_diag_root, spec_path=spec_a02_railonly)
+        assert res_a02_rail["verdict"] == "NOT_VERIFIED", res_a02_rail
+        assert len(res_a02_rail["spec_evaluation"].get("missing_pvt_combinations", [])) == 2, res_a02_rail["spec_evaluation"]
+
+        for idx_pt, (v1, v2) in enumerate(((0.9, 1.2), (1.0, 1.1))):
+            _write_utf8(os.path.join(a02_diag_root, "TT_off_%d_27C" % (idx_pt + 1), "dcOp.dc"), (
+                'HEADER\n"PSFversion" "1.00"\n"corner" "TT"\n"temperature" 27\n'
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\nVALUE\n'
+                '"VDD" "v_t" %g\n"VDD:p" "i_t" -1.0e-4\n'
+                '"VDDA" "v_t" %g\n"VDDA:p" "i_t" -1.0e-4\nEND\n'
+            ) % (v1, v2))
+        assert run_metrics(a02_diag_root, spec_path=spec_a02_path)["verdict"] == "PASS"
+
+        # 32c (A03): Mid-sweep inline VALUE PROP unit override ("A" -> "mA") MUST fail closed (`trace_unit_error`)
+        a03_dir = os.path.join(tmp_root, "a03_mid_sweep_unit_change")
+        _write_utf8(os.path.join(a03_dir, "dc.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"sw_t" FLOAT DOUBLE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"vin" "sw_t"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+            '"vin" 0.0\n"VDD" 1.0\n"VDD:p" -0.001\n'
+            '"vin" 0.5\n"VDD" 1.0\n"VDD:p" -0.1 PROP( "units" "mA" )\nEND\n'
+        ))
+        spec_a03_path = os.path.join(tmp_root, "spec_a03_idd.json")
+        _write_utf8(spec_a03_path, json.dumps({
+            "requirements": [{"id": "IDD_MAX", "quantity": "idd_a", "operator": "<=", "target": 0.5, "unit": "mA"}]
+        }))
+        res_a03 = run_metrics(a03_dir, spec_path=spec_a03_path)
+        assert res_a03["verdict"] == "NOT_VERIFIED", res_a03
+        assert res_a03["metrics"]["idd_a"] is None, res_a03["metrics"]
+        assert res_a03["spec_evaluation"]["results"][0]["reason"] == "trace_unit_error", res_a03["spec_evaluation"]
+        assert main(["metrics", a03_dir, "--spec", spec_a03_path, "--no-relax-units", "--fail-on-spec"], quiet=True) == 1
+
+        # 32d (A04): `.pz` incomplete pole count (`num_poles=2` vs 1 pole), conflicting modes (`closed_loop` vs `open_loop`), & `oppoint` mismatch
+        a04_stb_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_i in range(61):
+            w_val = 10.0 ** (float(k_i) * 5.0 / 60.0)
+            s_c = complex(0.0, w_val)
+            l_val = 10.0 / (1.0 + s_c / 100.0)
+            a04_stb_lines.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        a04_stb_lines.append("END\n")
+        a04_stb_txt = "".join(a04_stb_lines)
+
+        a04_inc_dir = os.path.join(tmp_root, "a04_pz_incomplete")
+        _write_utf8(os.path.join(a04_inc_dir, "stb.stb"), a04_stb_txt)
+        _write_utf8(os.path.join(a04_inc_dir, "closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\n"num_poles" 2\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-100.0 0.0)\nEND\n'
+        ))
+        res_a04_inc = run_metrics(a04_inc_dir, spec_path=spec_stb_pm_path)
+        assert res_a04_inc["verdict"] == "NOT_VERIFIED", res_a04_inc
+        assert res_a04_inc["metrics"]["stability_proof_verified"] is False, res_a04_inc["metrics"]
+        assert res_a04_inc["metrics"]["stability_proof_method"] == "stability_proof_conflict", res_a04_inc["metrics"]
+
+        a04_conf_dir = os.path.join(tmp_root, "a04_pz_mode_conflict")
+        _write_utf8(os.path.join(a04_conf_dir, "stb.stb"), a04_stb_txt)
+        _write_utf8(os.path.join(a04_conf_dir, "pz.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\n"loop_mode" "open_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-100.0 0.0)\nEND\n'
+        ))
+        res_a04_conf = run_metrics(a04_conf_dir, spec_path=spec_stb_pm_path)
+        assert res_a04_conf["verdict"] == "NOT_VERIFIED", res_a04_conf
+        assert res_a04_conf["metrics"]["stability_proof_verified"] is False, res_a04_conf["metrics"]
+        assert res_a04_conf["metrics"]["stability_proof_method"] == "stability_proof_conflict", res_a04_conf["metrics"]
+
+        a04_opp_dir = os.path.join(tmp_root, "a04_oppoint_mismatch")
+        _write_utf8(os.path.join(a04_opp_dir, "stb.stb"), a04_stb_txt.replace('"PSFversion" "1.00"', '"PSFversion" "1.00"\n"oppoint" "dc_active"'))
+        _write_utf8(os.path.join(a04_opp_dir, "closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\n"oppoint" "dc_sleep"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-100.0 0.0)\nEND\n'
+        ))
+        res_a04_opp = run_metrics(a04_opp_dir, spec_path=spec_stb_pm_path)
+        assert res_a04_opp["verdict"] == "NOT_VERIFIED", res_a04_opp
+        assert res_a04_opp["metrics"]["stability_proof_method"] == "stability_proof_conflict", res_a04_opp["metrics"]
+
+        # 32e (A05): Zero cross-domain leakage between PAC->AC, PNoise->Noise, and LTI `.pz` <-> PSTB
+        a05_pac_dir = os.path.join(tmp_root, "a05_pac_only")
+        _write_utf8(os.path.join(a05_pac_dir, "pac.pac"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"Vout" "c_t"\nVALUE\n'
+            '"freq" 1.0\n"Vout" (10.0 0.0)\n"freq" 1.0e6\n"Vout" (1.0 0.0)\nEND\n'
+        ))
+        spec_a05_ac = os.path.join(tmp_root, "spec_a05_ac.json")
+        _write_utf8(spec_a05_ac, json.dumps({
+            "requirements": [{"id": "G_AC", "quantity": "dc_gain_db", "operator": ">=", "target": 10.0, "unit": "dB", "analysis": "ac"}]
+        }))
+        res_a05_pac = run_metrics(a05_pac_dir, spec_path=spec_a05_ac)
+        assert res_a05_pac["verdict"] == "NOT_VERIFIED", res_a05_pac
+        assert res_a05_pac["spec_evaluation"]["results"][0]["reason"] == "missing_analysis", res_a05_pac["spec_evaluation"]
+        assert "ac" not in res_a05_pac["metrics"]["analyses_present"], res_a05_pac["metrics"]
+        assert "pac" in res_a05_pac["metrics"]["analyses_present"], res_a05_pac["metrics"]
+
+        a05_pnoise_dir = os.path.join(tmp_root, "a05_pnoise_only")
+        _write_utf8(os.path.join(a05_pnoise_dir, "pn.pnoise"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n"n_t" FLOAT DOUBLE PROP( "units" "V/sqrt(Hz)" )\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"out" "n_t"\nVALUE\n"freq" 10.0\n"out" 2.0e-9\n"freq" 100.0\n"out" 2.0e-9\nEND\n'
+        ))
+        spec_a05_ns = os.path.join(tmp_root, "spec_a05_noise.json")
+        _write_utf8(spec_a05_ns, json.dumps({
+            "requirements": [{"id": "NS", "quantity": "integrated_rms_noise_v", "operator": "<=", "target": 50.0, "unit": "nV", "freq_min_hz": 10.0, "freq_max_hz": 100.0, "analysis": "noise"}]
+        }))
+        res_a05_pn = run_metrics(a05_pnoise_dir, spec_path=spec_a05_ns)
+        assert res_a05_pn["verdict"] == "NOT_VERIFIED", res_a05_pn
+        assert res_a05_pn["spec_evaluation"]["results"][0]["reason"] == "missing_analysis", res_a05_pn["spec_evaluation"]
+        assert "noise" not in res_a05_pn["metrics"]["analyses_present"], res_a05_pn["metrics"]
+
+        a05_pstb_lti_dir = os.path.join(tmp_root, "a05_pstb_lti_pz")
+        _write_utf8(os.path.join(a05_pstb_lti_dir, "main.pstb"), a04_stb_txt)
+        _write_utf8(os.path.join(a05_pstb_lti_dir, "closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-10.0 0.0)\nEND\n'
+        ))
+        spec_a05_pstb = os.path.join(tmp_root, "spec_a05_pstb.json")
+        _write_utf8(spec_a05_pstb, json.dumps({
+            "requirements": [{"id": "PM_P", "quantity": "phase_margin_deg", "operator": ">=", "target": 45.0, "unit": "deg", "analysis": "pstb"}]
+        }))
+        spec_a05_stb = os.path.join(tmp_root, "spec_a05_stb.json")
+        _write_utf8(spec_a05_stb, json.dumps({
+            "requirements": [{"id": "PM_S", "quantity": "phase_margin_deg", "operator": ">=", "target": 45.0, "unit": "deg", "analysis": "stb"}]
+        }))
+        res_a05_pstb = run_metrics(a05_pstb_lti_dir, spec_path=spec_a05_pstb)
+        assert res_a05_pstb["verdict"] == "NOT_VERIFIED", res_a05_pstb
+        assert res_a05_pstb["spec_evaluation"]["results"][0]["reason"] == "pstb_lti_pz_not_valid", res_a05_pstb["spec_evaluation"]
+        assert main(["metrics", a05_pstb_lti_dir, "--spec", spec_a05_pstb, "--fail-on-spec"], quiet=True) == 1
+        res_a05_stb = run_metrics(a05_pstb_lti_dir, spec_path=spec_a05_stb)
+        assert res_a05_stb["verdict"] == "NOT_VERIFIED", res_a05_stb
+        assert res_a05_stb["spec_evaluation"]["results"][0]["reason"] == "missing_analysis", res_a05_stb["spec_evaluation"]
+        assert main(["metrics", a05_pstb_lti_dir, "--spec", spec_a05_stb, "--fail-on-spec"], quiet=True) == 1
+
+        a05_pstb_per_dir = os.path.join(tmp_root, "a05_pstb_periodic_pz")
+        _write_utf8(os.path.join(a05_pstb_per_dir, "main.pstb"), a04_stb_txt)
+        _write_utf8(os.path.join(a05_pstb_per_dir, "periodic_closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_domain" "periodic"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-10.0 0.0)\nEND\n'
+        ))
+        res_a05_ok = run_metrics(a05_pstb_per_dir, spec_path=spec_a05_pstb)
+        assert res_a05_ok["verdict"] == "PASS", res_a05_ok
+        assert res_a05_ok["metrics"]["metrics_by_analysis"]["pstb"]["stability_proof_verified"] is True, res_a05_ok["metrics"]
+        assert main(["metrics", a05_pstb_per_dir, "--spec", spec_a05_pstb, "--fail-on-spec"], quiet=True) == 0
+
         return {
             "command": "self-test",
             "ok": True,
@@ -7095,6 +7592,7 @@ def run_self_test():
                 "stb_bode_only_rhp_pole_zero_and_pz_nyquist_proof",
                 "pvt_header_metadata_enforcement_and_conflict_detection",
                 "codex_f01_to_f05_invariants_mc_multirail_pz_pstb_units",
+                "codex_a01_to_a05_invariants_mc_multirail_units_pz_domain",
             ],
         }
     finally:

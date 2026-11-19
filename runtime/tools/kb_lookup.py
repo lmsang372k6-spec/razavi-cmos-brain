@@ -2085,17 +2085,17 @@ _FLAVOR_TO_TECHSWEEP = {
 
 
 _SUPPORTED_PDK_45_RE = re.compile(
-    r"\b(gpdk045|gpdk045_\w*|gpdk\s*45|45\s*nm|g45|g45[np]\d\w*)\b",
+    r"\b(gpdk045|gpdk045_\w*|gpdk[\s_-]*45|45[\s_-]*nm|g45|g45[np]\d\w*)\b",
     re.IGNORECASE,
 )
 _SUPPORTED_PDK_90_RE = re.compile(
-    r"\b(gpdk090|gpdk090_\w*|gpdk\s*90|90\s*nm|g90)\b",
+    r"\b(gpdk090|gpdk090_\w*|gpdk[\s_-]*90|90[\s_-]*nm|g90)\b",
     re.IGNORECASE,
 )
 _UNSUPPORTED_PDK_RE = re.compile(
-    r"\b(gpdk\s*\d+\w*|tsmc\s*\d*\w*|skywater(?:\s*\d+\w*)?|sky\s*\d+\w*|gf\s*\d+\w*|"
-    r"umc\s*\d*\w*|smic\s*\d*\w*|ihp\s*\d*\w*|asap\s*\d+\w*|freepdk\s*\d*\w*|"
-    r"samsung\s*\d*\w*|tower\s*\d*\w*|\d+\s*nm|0\.\d+\s*u(?:m)?)\b",
+    r"\b(gpdk[\s_-]*\d+\w*|tsmc[\s_-]*\d*\w*|skywater(?:[\s_-]*\d+\w*)?|sky[\s_-]*\d+\w*|gf[\s_-]*\d+\w*|"
+    r"umc[\s_-]*\d*\w*|smic[\s_-]*\d*\w*|ihp[\s_-]*\d*\w*|asap[\s_-]*\d+\w*|freepdk[\s_-]*\d*\w*|"
+    r"samsung[\s_-]*\d*\w*|tower[\s_-]*\d*\w*|\d+[\s_-]*nm|0\.\d+[\s_-]*u(?:m)?)\b",
     re.IGNORECASE,
 )
 
@@ -2767,9 +2767,10 @@ def run_self_test():
         if rc_on != 0 or len(sync_calls) != 1 or not captured_payloads or captured_payloads[0].get("ok") is not True:
             raise AssertionError("Valid online search did not invoke post-lookup maybe_auto_sync cleanly: rc=%r sync=%r" % (rc_on, sync_calls))
 
-        # 13. Finding #08 + BGR+capless LDO: Unsupported PDKs fail closed in Stage 3 & BGR+capless LDO hits both cards
+        # 13. Finding #08 + A07 + BGR+capless LDO: Unsupported PDKs fail closed in Stage 3 & BGR+capless LDO hits both cards
         for u_query, u_tok, top_card in (
             ("capless LDO GPDK777", "GPDK777", "topo-capless-ldo-fvf-ahuja-dfc-and-sre"),
+            ("capless LDO 7-nm", "7-nm", "topo-capless-ldo-fvf-ahuja-dfc-and-sre"),
             ("gain boosted cascode 65nm", "65nm", "topo-gain-boosted-cascode"),
             ("bandgap tsmc28", "tsmc28", "topo-bandgap-reference-core"),
         ):
