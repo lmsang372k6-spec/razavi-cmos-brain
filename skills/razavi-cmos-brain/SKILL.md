@@ -1,9 +1,9 @@
 ---
 name: razavi-cmos-brain
-description: Process-agnostic Full-Chip Analog CMOS, PMIC, Mixed-Signal AMS & Closed-Loop Cadence/Spectre EDA Knowledge Brain (release 2026.11.18.7 · v4.0 SSOT + OTA): 162 6-block engineering cards across 10 domains (112 Razavi Ch.01-19 cards + 12 PMIC Buck/Boost/Buck-Boost/Capless-LDO/Protection cards + 12 AMS Filter/INA-CFIA/DAC/Delta-Sigma/Pipeline-ADC/System cards + 26 Closed-Loop Virtuoso IC617/SpectreRF/gm-ID/Pareto-Optimization skill cards), 72 vector SVG schematics, 482 directed upgrade/verification edges, 21 structural checklists, exact book coordinates (311 sections, 1,504 equations, 1,163 figures, 423 index terms), 52 vetted GitHub repositories, and 2,280 standardized Vietnamese-English terms (T001-T2280). Use when authoring/updating the KB (`manage_kb.py`) or looking up CMOS analog, PMIC, and mixed-signal IC theory, equations, topologies, and verification checklists.
+description: Process-agnostic Full-Chip Analog CMOS, PMIC, Mixed-Signal AMS & Closed-Loop Cadence/Spectre EDA Knowledge Brain (release 2026.11.19.1 · v4.0 SSOT + OTA): 162 6-block engineering cards across 10 domains (112 Razavi Ch.01-19 cards + 12 PMIC Buck/Boost/Buck-Boost/Capless-LDO/Protection cards + 12 AMS Filter/INA-CFIA/DAC/Delta-Sigma/Pipeline-ADC/System cards + 26 Closed-Loop Virtuoso IC617/SpectreRF/gm-ID/Pareto-Optimization skill cards), 72 vector SVG schematics, 482 directed upgrade/verification edges, 21 structural checklists, exact book coordinates (311 sections, 1,504 equations, 1,163 figures, 423 index terms), 52 vetted GitHub repositories, and 2,280 standardized Vietnamese-English terms (T001-T2280). Use when authoring/updating the KB (`manage_kb.py`) or looking up CMOS analog, PMIC, and mixed-signal IC theory, equations, topologies, and verification checklists.
 ---
 
-# Razavi CMOS Knowledge Brain (`2026.11.18.7` · v4.0 Unified SSOT & 60s-TTL OTA Edition)
+# Razavi CMOS Knowledge Brain (`2026.11.19.1` · v4.0 Unified SSOT & 60s-TTL OTA Edition)
 
 Canonical GitHub SSOT: `https://github.com/lmsang372k6-spec/razavi-cmos-brain`  
 Unified Operational Skill (KB + `gm/ID` LUT + Fail-Closed PSF/Cadence Engine): [`skills/analog-design/SKILL.md`](../analog-design/SKILL.md)

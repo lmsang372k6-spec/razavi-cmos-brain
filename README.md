@@ -1,4 +1,4 @@
-# Razavi CMOS Knowledge Brain & SKILL-ANALOG Runtime (`2026.11.18.7` · v4.0 Unified SSOT + 60s-TTL OTA)
+# Razavi CMOS Knowledge Brain & SKILL-ANALOG Runtime (`2026.11.19.1` · v4.0 Unified SSOT + 60s-TTL OTA)
 
 - **Kho lưu trữ GitHub SSOT chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
 - **Bản đồ Tọa độ Tri thức Tương tác & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
@@ -48,7 +48,7 @@ Khi xuất bản qua `.github/workflows/deploy.yml`, thư mục `_site/` phục 
 ```text
 razavi-cmos-brain/
 ├── kb/
-│   ├── manifest.json                     # Phiên bản 2026.11.18.7, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
+│   ├── manifest.json                     # Phiên bản 2026.11.19.1, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
 │   ├── router-index.json                 # Chỉ mục định tuyến tức thì (162 Nodes + 22-col coord_2d + design_cycle + Symptoms)
 │   ├── nodes-bundle.json.gz              # Gói nén tất định 162 thẻ phục vụ tra cứu offline < 15 ms
 │   ├── coordinates/

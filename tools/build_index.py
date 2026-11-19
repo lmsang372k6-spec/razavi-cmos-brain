@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.7).
+"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.19.1).
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
 Builds across all 10 knowledge & EDA domains under `.build.lock` concurrency guard:
@@ -30,7 +30,7 @@ from collections import defaultdict
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
 RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
-RELEASE_VERSION = "2026.11.18.7"
+RELEASE_VERSION = "2026.11.19.1"
 
 DOMAIN_METADATA = [
     {

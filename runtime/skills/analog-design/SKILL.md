@@ -1,9 +1,9 @@
 ---
 name: analog-design
-description: Design, size, optimize, simulate, measure, debug, upgrade, or review analog, PMIC, and mixed-signal integrated circuits in Cadence Virtuoso IC617 / Spectre 15.1 or offline/analytical workflows across any CMOS process (180nm, 90nm, 65nm, 45nm, FinFET) using the Unified v4.0 Single-Source-of-Truth (release 2026.11.18.7): 162 6-block Razavi + PMIC + AMS + GitHub EDA cards, 311 sections, 1,504 exact Razavi equations, 1,163 figures, 72 offline SVG schematics, 21 structural checklists, strict fail-closed PSF/STB/PVT sign-off audit, gm/ID LUT inverse sizing, Pareto sensitivity optimization, and 60s-TTL OTA sync. Use for thiết kế vi mạch tương tự & nguồn PMIC, giải thích/tra cứu mục sách & phương trình Razavi, OTA/op-amp, current mirror, bandgap, External-Cap & Capless LDO, Buck/Boost/4-Switch Buck-Boost/Charge-Pump DC-DC, POR/UVLO/Soft-Start/OCP/TSD, oscillators, PLL, INA/CFIA, Active-RC & Gm-C filters, DAC, SAR/Delta-Sigma/Pipelined ADC, LVDS/CML/CTLE/CDR, gm/ID LUT, PSS/PAC/PNoise/PSTB, Verilog-A, Pareto sizing, and layout/ESD/PEX signoff.
+description: Design, size, optimize, simulate, measure, debug, upgrade, or review analog, PMIC, and mixed-signal integrated circuits in Cadence Virtuoso IC617 / Spectre 15.1 or offline/analytical workflows across any CMOS process (180nm, 90nm, 65nm, 45nm, FinFET) using the Unified v4.0 Single-Source-of-Truth (release 2026.11.19.1): 162 6-block Razavi + PMIC + AMS + GitHub EDA cards, 311 sections, 1,504 exact Razavi equations, 1,163 figures, 72 offline SVG schematics, 21 structural checklists, strict fail-closed PSF/STB/PVT sign-off audit, gm/ID LUT inverse sizing, Pareto sensitivity optimization, and 60s-TTL OTA sync. Use for thiết kế vi mạch tương tự & nguồn PMIC, giải thích/tra cứu mục sách & phương trình Razavi, OTA/op-amp, current mirror, bandgap, External-Cap & Capless LDO, Buck/Boost/4-Switch Buck-Boost/Charge-Pump DC-DC, POR/UVLO/Soft-Start/OCP/TSD, oscillators, PLL, INA/CFIA, Active-RC & Gm-C filters, DAC, SAR/Delta-Sigma/Pipelined ADC, LVDS/CML/CTLE/CDR, gm/ID LUT, PSS/PAC/PNoise/PSTB, Verilog-A, Pareto sizing, and layout/ESD/PEX signoff.
 ---
 
-# Unified Analog, PMIC & Mixed-Signal IC Design (`2026.11.18.7` · v4.0 SSOT + OTA Edition)
+# Unified Analog, PMIC & Mixed-Signal IC Design (`2026.11.19.1` · v4.0 SSOT + OTA Edition)
 
 Canonical GitHub SSOT: `https://github.com/lmsang372k6-spec/razavi-cmos-brain`
 
@@ -29,7 +29,7 @@ When the user asks conceptual, analytical, or Razavi textbook questions (or sets
 ## Mandatory 7-Stage Optimal Design Cycle (`design-flow.md`)
 
 1. **Stage 1 (`1_spec_and_kb`) — Spec Lock, Theory Routing & Structural Invariants (`kb_lookup.py` + `kb_fetch.py`):**
-   - Query the **162-card Knowledge Brain** (`2026.11.18.7`, 10 domains, 72 SVGs, 21 checklists, 482 edges, 311 Razavi sections, 1,504 equations, 1,163 figures, 52 GitHub repos, 2,280 CLB terms `T001–T2280`):
+   - Query the **162-card Knowledge Brain** (`2026.11.19.1`, 10 domains, 72 SVGs, 21 checklists, 482 edges, 311 Razavi sections, 1,504 equations, 1,163 figures, 52 GitHub repos, 2,280 CLB terms `T001–T2280`):
      - Circuit blueprint: `python -B <TOOLS>/kb_lookup.py recipe "<circuit>"` (`[--offline]`)
      - Exact Razavi coordinates (`9.2`, `§16.3.2`, `Eq. 10.49`, `Fig. 16.43`, `page 327`): `python -B <TOOLS>/kb_lookup.py coord "<query>"`
      - Fast search (`< 20 ms`): `python -B <TOOLS>/kb_lookup.py <search|domain|skills|diagnose|upgrades|checklist|stage|term> "<query>"`

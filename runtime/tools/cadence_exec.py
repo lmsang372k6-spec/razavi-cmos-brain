@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Safe Cadence IC617 / Spectre 15.1 Subprocess Wrapper for Codex on RHEL 6.5.
 
-Managed by SKILL-ANALOG (release 2026.11.18.7).
+Managed by SKILL-ANALOG (release 2026.11.19.1).
 100% Python 2.6.6+ and Python 3 standard-library compatible (`optparse`, zero external deps).
 
 Supported tools:
@@ -38,7 +38,7 @@ import time
 
 sys.dont_write_bytecode = True
 
-RELEASE_VERSION = "2026.11.18.7"
+RELEASE_VERSION = "2026.11.19.1"
 _TOOLS_DIR = os.path.dirname(os.path.realpath(__file__))
 _LIBRARY_ROOT = os.path.dirname(_TOOLS_DIR)
 if _TOOLS_DIR not in sys.path:

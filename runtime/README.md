@@ -1,4 +1,4 @@
-# SKILL-ANALOG (`2026.11.18.7`)
+# SKILL-ANALOG (`2026.11.19.1`)
 
 Thư viện tra cứu, **Bộ não Tri thức 162 Thẻ (CMOS Razavi Ch.01–Ch.19 + Quản lý Nguồn PMIC + Tín hiệu Hỗn hợp AMS + Kỹ năng Thực chiến GitHub)** định tuyến tọa độ trực tiếp lên GitHub (https://github.com/lmsang372k6-spec/razavi-cmos-brain | https://lmsang372k6-spec.github.io/razavi-cmos-brain) và **Chu trình Thiết kế Tối ưu Khép kín 7 Bước** cho Codex CLI trên Cadence Virtuoso IC617 / Spectre 15.1. Bản đang dùng trong RHEL đặt tại `/home/disk/eda/references/SKILL-ANALOG`; dữ liệu dự án đặt riêng tại `/home/disk/eda/projects/cadence/<tên>/`.
 

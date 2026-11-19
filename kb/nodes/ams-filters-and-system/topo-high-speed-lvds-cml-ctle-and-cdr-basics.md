@@ -157,13 +157,13 @@ $$
 1. **Độ lợi tần số thấp (`DC Gain`):** $|A_{\text{DC}}| = \dfrac{g_m R_D}{1 + g_m R_S / 2}$ (bị nén xuống có chủ đích để giữ nguyên biên độ bit dài gồm toàn số `1` hoặc toàn số `0` liên tiếp!).
 2. **Tần số điểm không nâng biên (`Peaking Zero`):** $\omega_z = \dfrac{1}{R_S C_S}$ — đặt trùng với tần số gãy suy hao $-3\text{ dB}$ của kênh truyền PCB!
 3. **Tần số cực thứ nhất và cực tải:** $\omega_{p1} = \left(1 + \frac{g_m R_S}{2}\right)\omega_z$ và $\omega_{p2} = \frac{1}{R_D C_L}$ — đặt vây quanh tần số Nyquist $\omega_N = \pi R_b$ để cắt nhiễu ngoài dải!
-4. **Biên độ nâng đỉnh cực đại (`Peaking Boost Ratio`):** Giả sử $\omega_{p2} \ge \omega_{p1}$, độ lợi đỉnh quanh tần số Nyquist đạt $|A_{\text{peak}}| \approx g_m R_D$, cho tỷ số nâng bù kênh truyền:
+4. **Biên độ nâng đỉnh cực đại (`Peaking Boost Ratio`):** Chỉ khi hai cực tách xa đủ rộng ($\omega_{p2} \gg \omega_{p1}$, thực tế cần $\omega_{p2} \ge (3\text{–}5)\,\omega_{p1}$ để hình thành vùng bình nguyên cao tần $|A_{\text{peak}}| \approx g_m R_D$), tỷ số nâng đỉnh tiệm cận mới tiến gần:
 
 $$
-\text{Boost}_{\max}\text{ [dB]} \approx 20\log_{10}\!\left(\frac{|A_{\text{peak}}|}{|A_{\text{DC}}|}\right) = 20\log_{10}\!\left(1 + \frac{g_m R_S}{2}\right)
+\text{Boost}_{\max,\text{asymp}}\text{ [dB]} = 20\log_{10}\!\left(1 + \frac{g_m R_S}{2}\right) \qquad \left(\text{chỉ đạt gần giới hạn này khi } \omega_{p2} \gg \omega_{p1}!\right)
 $$
 
-   *(Thông thường mỗi tầng `CTLE` cung cấp $6\text{–}12\text{ dB}$ nâng đỉnh bằng mảng biến dung $C_S$ và điện trở $R_S$ điều chỉnh số; nếu kênh truyền suy hao $> 20\text{ dB}$, ghép 2 tầng `CTLE` hoặc kết hợp với bộ cân bằng phản hồi quyết định phi tuyến `DFE` không khuếch đại nhiễu nhiệt!).*
+   *(Cảnh báo cực gần nhau: nếu $\omega_{p2} = \omega_{p1}$ với $1 + g_m R_S / 2 = 4$ — giá trị tiệm cận $12.04\text{ dB}$ — đánh giá trực tiếp hàm truyền ở trên chỉ cho nâng đỉnh cực đại **$6.30\text{ dB}$**, hụt gần $6\text{ dB}$ so với tiệm cận! Khi thiết kế $\omega_{p2}$ gần $\omega_{p1}$, bắt buộc tính đỉnh chính xác từ $|A_{\text{CTLE}}(j\omega)|/|A_{\text{DC}}|$. Thông thường mỗi tầng `CTLE` cung cấp $6\text{–}12\text{ dB}$ nâng đỉnh bằng mảng biến dung $C_S$ và điện trở $R_S$ điều chỉnh số; nếu kênh truyền suy hao $> 20\text{ dB}$, ghép 2 tầng `CTLE` hoặc kết hợp với bộ cân bằng phản hồi quyết định phi tuyến `DFE` không khuếch đại nhiễu nhiệt!).*
 
 ### 2.3. Vòng Khôi phục Xung nhịp `CDR`: Tại sao PFD Thường Thất Bại, `Hogge` vs `Alexander PD` & Bộ Ba Jitter
 1. **Tại sao không dùng được PFD Ba Trạng thái của PLL Tổng hợp Tần số?**

@@ -14,7 +14,7 @@ Inspired by LEDRO (physics-pruned subspace & sensitivity guidance) and AnalogCod
     snaps final geometry to PDK manufacturing grid (5nm), and verifies Worst-Case PVT
     Corners (TT, SS, FF, FS, SF) under a strict hard evaluation budget ceiling.
 
-Release: 2026.11.18.7
+Release: 2026.11.19.1
 """
 from __future__ import print_function
 
@@ -31,7 +31,7 @@ import time
 
 sys.dont_write_bytecode = True
 
-RELEASE = "2026.11.18.7"
+RELEASE = "2026.11.19.1"
 LIBRARY_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 TIMER = getattr(time, "perf_counter", time.time)
 
@@ -466,8 +466,183 @@ def build_evaluator(problem):
 
 
 # ---------------------------------------------------------------------------
-# Constraint & Merit Function Evaluation
+# Constraint & Merit Function Evaluation (with Strict Unit & Dimension Checks)
 # ---------------------------------------------------------------------------
+
+# (si_scale, dimension_family)
+_UNIT_INFO_CASE_SENSITIVE = {
+    "MHz": (1.0e6, "freq"),
+    "mHz": (1.0e-3, "freq"),
+    "mW": (1.0e-3, "power"),
+    "MW": (1.0e6, "power"),
+    "mV": (1.0e-3, "voltage"),
+    "MV": (1.0e6, "voltage"),
+    "mA": (1.0e-3, "current"),
+    "MA": (1.0e6, "current"),
+    "ms": (1.0e-3, "time"),
+    "mS": (1.0e-3, "conductance"),
+    "S": (1.0, "conductance"),
+    "mOhm": (1.0e-3, "resistance"),
+    "MOhm": (1.0e6, "resistance"),
+    "mV/rtHz": (1.0e-3, "noise_density"),
+    "MV/s": (1.0e6, "slew_rate"),
+    "mV/s": (1.0e-3, "slew_rate"),
+}
+
+_UNIT_INFO_LOWER = {
+    "": (1.0, None),
+    "db": (1.0, "db"),
+    "dbc": (1.0, "db"),
+    "dbc/hz": (1.0, "phase_noise"),
+    "deg": (1.0, "angle"),
+    "rad": (180.0 / math.pi, "angle"),
+    "hz": (1.0, "freq"),
+    "khz": (1.0e3, "freq"),
+    "mhz": (1.0e6, "freq"),
+    "ghz": (1.0e9, "freq"),
+    "v": (1.0, "voltage"),
+    "vrms": (1.0, "voltage"),
+    "vpp": (1.0, "voltage"),
+    "mv": (1.0e-3, "voltage"),
+    "mvrms": (1.0e-3, "voltage"),
+    "uv": (1.0e-6, "voltage"),
+    "uvrms": (1.0e-6, "voltage"),
+    "nv": (1.0e-9, "voltage"),
+    "a": (1.0, "current"),
+    "ma": (1.0e-3, "current"),
+    "ua": (1.0e-6, "current"),
+    "na": (1.0e-9, "current"),
+    "pa": (1.0e-12, "current"),
+    "w": (1.0, "power"),
+    "mw": (1.0e-3, "power"),
+    "uw": (1.0e-6, "power"),
+    "nw": (1.0e-9, "power"),
+    "pw": (1.0e-12, "power"),
+    "s": (1.0, "time"),
+    "sec": (1.0, "time"),
+    "ms": (1.0e-3, "time"),
+    "us": (1.0e-6, "time"),
+    "ns": (1.0e-9, "time"),
+    "ps": (1.0e-12, "time"),
+    "fs": (1.0e-15, "time"),
+    "v/s": (1.0, "slew_rate"),
+    "v/ms": (1.0e3, "slew_rate"),
+    "v/us": (1.0e6, "slew_rate"),
+    "v/ns": (1.0e9, "slew_rate"),
+    "v/rthz": (1.0, "noise_density"),
+    "v/sqrt(hz)": (1.0, "noise_density"),
+    "uv/rthz": (1.0e-6, "noise_density"),
+    "uv/sqrt(hz)": (1.0e-6, "noise_density"),
+    "nv/rthz": (1.0e-9, "noise_density"),
+    "nv/sqrt(hz)": (1.0e-9, "noise_density"),
+    "ohm": (1.0, "resistance"),
+    "kohm": (1.0e3, "resistance"),
+    "mohm": (1.0e6, "resistance"),
+    "f": (1.0, "capacitance"),
+    "pf": (1.0e-12, "capacitance"),
+    "ff": (1.0e-15, "capacitance"),
+    "nf": (1.0e-9, "capacitance"),
+    "uf": (1.0e-6, "capacitance"),
+    "us/v": (1.0e-6, "conductance"),
+    "1/v": (1.0, "gm_id"),
+    "v^-1": (1.0, "gm_id"),
+    "%": (1.0, "percent"),
+    "pct": (1.0, "percent"),
+}
+
+
+def _infer_metric_native_unit(metric_name):
+    """Return `(native_si_scale, dimension_family)` inferred from canonical metric suffix."""
+    m = str(metric_name or "").strip().lower()
+    if m.endswith("_nv_rt_hz") or m.endswith("_nv_rthz"):
+        return 1.0e-9, "noise_density"
+    if m.endswith("_uv_rt_hz") or m.endswith("_uv_rthz"):
+        return 1.0e-6, "noise_density"
+    if m.endswith("_v_rt_hz") or m.endswith("_v_rthz"):
+        return 1.0, "noise_density"
+    if m.endswith("_v_us") or m.endswith("_v_per_us"):
+        return 1.0e6, "slew_rate"
+    if m.endswith("_v_ns") or m.endswith("_v_per_ns"):
+        return 1.0e9, "slew_rate"
+    if m.endswith("_v_per_s") or m.endswith("_v_s"):
+        return 1.0, "slew_rate"
+    if m.endswith("_dbc_hz") or m.endswith("_dbc_per_hz"):
+        return 1.0, "phase_noise"
+    if m.endswith("_db") or m.endswith("_dbc") or m in ("dc_gain", "psrr", "cmrr", "gain_margin", "snr", "sndr", "sfdr"):
+        return 1.0, "db"
+    if m.endswith("_deg") or m in ("phase_margin",):
+        return 1.0, "angle"
+    if m.endswith("_ghz"):
+        return 1.0e9, "freq"
+    if m.endswith("_mhz"):
+        return 1.0e6, "freq"
+    if m.endswith("_khz"):
+        return 1.0e3, "freq"
+    if m.endswith("_hz") or m in ("ugf", "gbw", "bw_3db"):
+        return 1.0, "freq"
+    if m.endswith("_mw"):
+        return 1.0e-3, "power"
+    if m.endswith("_uw"):
+        return 1.0e-6, "power"
+    if m.endswith("_nw"):
+        return 1.0e-9, "power"
+    if m.endswith("_w") or m in ("power", "dc_power", "p_dc", "pdc"):
+        return 1.0, "power"
+    if m.endswith("_ps"):
+        return 1.0e-12, "time"
+    if m.endswith("_ns"):
+        return 1.0e-9, "time"
+    if m.endswith("_us"):
+        return 1.0e-6, "time"
+    if m.endswith("_ms"):
+        return 1.0e-3, "time"
+    if m.endswith("_s") or m in ("settling_time", "t_settle", "rise_time", "fall_time"):
+        return 1.0, "time"
+    if m.endswith("_uv") or m.endswith("_uvrms"):
+        return 1.0e-6, "voltage"
+    if m.endswith("_mv") or m.endswith("_mvrms"):
+        return 1.0e-3, "voltage"
+    if m.endswith("_v") or m.endswith("_vrms") or m.endswith("_vpp") or m in ("v_os", "offset", "min_sat_margin"):
+        return 1.0, "voltage"
+    if m.endswith("_ua"):
+        return 1.0e-6, "current"
+    if m.endswith("_ma"):
+        return 1.0e-3, "current"
+    if m.endswith("_a") or m in ("i_dd", "i_bias", "i_q"):
+        return 1.0, "current"
+    if m.endswith("_ohm"):
+        return 1.0, "resistance"
+    if m.endswith("_pf"):
+        return 1.0e-12, "capacitance"
+    if m.endswith("_ff"):
+        return 1.0e-15, "capacitance"
+    if m.endswith("_f"):
+        return 1.0, "capacitance"
+    if m.endswith("_pct") or m.endswith("_percent"):
+        return 1.0, "percent"
+    return 1.0, None
+
+
+def _convert_constraint_value(raw_val, unit_str, metric_name, cid):
+    raw_u = str(unit_str or "").strip().replace(" ", "")
+    if not raw_u:
+        return float(raw_val), 1.0
+    if raw_u in _UNIT_INFO_CASE_SENSITIVE:
+        u_scale, u_fam = _UNIT_INFO_CASE_SENSITIVE[raw_u]
+    else:
+        u_low = raw_u.lower()
+        if u_low not in _UNIT_INFO_LOWER:
+            raise SizingOptError("Unknown constraint unit '%s' on %s (metric=%s)" % (raw_u, cid, metric_name))
+        u_scale, u_fam = _UNIT_INFO_LOWER[u_low]
+    m_scale, m_fam = _infer_metric_native_unit(metric_name)
+    if u_fam is not None and m_fam is not None and u_fam != m_fam:
+        raise SizingOptError(
+            "Incompatible unit '%s' (%s) for metric '%s' (%s) on constraint %s"
+            % (raw_u, u_fam, metric_name, m_fam, cid)
+        )
+    factor = u_scale / m_scale
+    return float(raw_val) * factor, factor
+
 
 def normalize_constraints(problem):
     raw_list = list(problem.get("hard_constraints", []))
@@ -478,9 +653,14 @@ def normalize_constraints(problem):
         metric = item.get("metric", item.get("quantity", item.get("id")))
         cid = item.get("id", metric or ("c_%d" % idx))
         op = str(item.get("op", item.get("operator", ">="))).strip()
-        target = float(item["target"])
+        unit_str = str(item.get("unit", "") or "").strip()
+        target_raw = float(item["target"])
+        target, unit_factor = _convert_constraint_value(target_raw, unit_str, metric, cid)
         default_scale = max(abs(target) * 0.15, 1e-30) if target != 0.0 else 1e-9
-        scale = float(item.get("scale", default_scale))
+        if "scale" in item and item["scale"] is not None:
+            scale = float(item["scale"]) * unit_factor
+        else:
+            scale = default_scale
         if metric == "min_sat_margin_v":
             has_sat = True
         constraints.append({
@@ -488,8 +668,9 @@ def normalize_constraints(problem):
             "metric": metric,
             "op": op,
             "target": target,
+            "target_raw": target_raw,
             "scale": max(scale, 1e-30),
-            "unit": item.get("unit", ""),
+            "unit": unit_str,
         })
 
     if problem.get("enforce_mos_sat_margin", True) and not has_sat:
@@ -498,6 +679,7 @@ def normalize_constraints(problem):
             "metric": "min_sat_margin_v",
             "op": ">=",
             "target": sat_min,
+            "target_raw": sat_min,
             "scale": max(sat_min, 0.02),
             "unit": "V",
         })
@@ -1491,6 +1673,32 @@ def run_self_test():
         proc_s1.communicate()
         if proc_s1.returncode != 0:
             raise AssertionError("CLI --sensitivity-only must return exit code 0 when ok=True")
+
+        # 9. Unit scaling & dimension mismatch regression (0.002 W vs 0.4 mW MUST FAIL!)
+        unit_prob = {
+            "enforce_mos_sat_margin": False,
+            "hard_constraints": [
+                {"id": "p_max", "metric": "power_w", "op": "<=", "target": 0.4, "unit": "mW"},
+            ],
+        }
+        unit_cons = normalize_constraints(unit_prob)
+        if abs(unit_cons[0]["target"] - 0.0004) > 1e-12:
+            raise AssertionError("Expected 0.4 mW -> 0.0004 W, got %r" % unit_cons[0]["target"])
+        chk_p_over = check_constraints({"power_w": 0.002}, unit_cons)
+        if chk_p_over["all_pass"] or chk_p_over["details"][0]["status"] != "FAIL":
+            raise AssertionError("0.002 W MUST FAIL against 0.4 mW constraint!")
+        caught_bad_dim = False
+        try:
+            normalize_constraints({
+                "enforce_mos_sat_margin": False,
+                "hard_constraints": [
+                    {"id": "bad_u", "metric": "dc_gain_db", "op": ">=", "target": 60.0, "unit": "mV"},
+                ],
+            })
+        except SizingOptError:
+            caught_bad_dim = True
+        if not caught_bad_dim:
+            raise AssertionError("Failed to reject dimensionally incompatible unit mV on dc_gain_db!")
 
         return {
             "ok": True,

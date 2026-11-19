@@ -202,7 +202,7 @@ module pwm_switch_avg_ccm_dcm(a, p, c, d_in);
     analog begin : avg_pwm_core
         real vap, ic, abs_vap, abs_ic, d_raw, d_lo, d_cmd;
         real g_dcm, mu_dcm, diff_mu, w_dcm, mu_raw, mu_ceil, mu_eff;
-        real delta, delta_reg, shape_eff, r_sw_avg, r_eff;
+        real delta, delta_reg, di_l_ccm, r_rip_raw, r_rip, shape_ccm, shape_eff, r_sw_avg, r_eff;
 
         vap     = V(br_ap);
         ic      = -I(br_cp);
@@ -223,10 +223,14 @@ module pwm_switch_avg_ccm_dcm(a, p, c, d_in);
         mu_ceil = 1.0 - 1.0e-6;
         mu_eff  = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_ceil * eps_ceil));
 
-        // Ton hao dan RMS chinh xac cua song tam giac DCM: P_cond,DCM = (4/(3*delta)) * r_sw_avg * I_avg^2
+        // Ton hao dan RMS chinh xac ca CCM (1 + Delta_I_L^2 / (12 * I_avg^2)) va DCM (4 / (3 * delta)), khop tron 4/3 tai bien!
         delta     = d_cmd / mu_eff;
         delta_reg = sqrt(delta * delta + delta_min * delta_min);
-        shape_eff = (1.0 - w_dcm) * 1.0 + w_dcm * (4.0 / (3.0 * delta_reg));
+        di_l_ccm  = (d_cmd * (1.0 - d_cmd) * abs_vap) / (l_ind * f_sw);
+        r_rip_raw = di_l_ccm / abs_ic;
+        r_rip     = 0.5 * (r_rip_raw + 2.0 - sqrt((r_rip_raw - 2.0) * (r_rip_raw - 2.0) + 1.0e-6));
+        shape_ccm = 1.0 + (r_rip * r_rip) / 12.0;
+        shape_eff = (1.0 - w_dcm) * shape_ccm + w_dcm * (4.0 / (3.0 * delta_reg));
         r_sw_avg  = mu_eff * r_on_a + (1.0 - mu_eff) * r_on_p;
         r_eff     = shape_eff * r_sw_avg;
 

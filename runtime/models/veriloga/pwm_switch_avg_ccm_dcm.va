@@ -4,7 +4,7 @@
 // ============================================================================
 // Vorperian 3-Terminal Averaged PWM Switch Model (Automatic Smooth CCM / DCM)
 // File: models/veriloga/pwm_switch_avg_ccm_dcm.va
-// Managed by SKILL-ANALOG (release 2026.11.18.7)
+// Managed by SKILL-ANALOG (release 2026.11.19.1)
 // Target Simulator: Cadence Spectre 15.1 (MMSIM151) -- 100% Hidden-State-Free
 //
 // Physics & Capabilities:
@@ -71,7 +71,8 @@ module pwm_switch_avg_ccm_dcm (
         real vap, ic, abs_vap, abs_ic;
         real d_raw, d_lo, d_cmd;
         real g_dcm, mu_dcm, diff_mu, w_dcm, mu_raw, mu_ceil, mu_eff;
-        real delta, delta_reg, shape_ccm, shape_dcm, shape_eff, r_sw_avg, r_eff;
+        real delta, delta_reg, di_l_ccm, r_rip_raw, r_rip, shape_ccm, shape_dcm, shape_eff;
+        real r_sw_avg, r_eff;
 
         // Port variables: ic = -I(br_cp) is average current leaving terminal 'c' into L
         vap     = V(br_ap);
@@ -97,13 +98,18 @@ module pwm_switch_avg_ccm_dcm (
         mu_ceil = 1.0 - 1.0e-6;
         mu_eff  = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_ceil * eps_ceil));
 
-        // Exact DCM triangular inductor current RMS conduction loss blended with CCM:
+        // Exact CCM + DCM triangular inductor current RMS conduction loss (continuous 4/3 at boundary):
+        //   In CCM: di_l_ccm = d_cmd * (1 - d_cmd) * |vap| / (l_ind * f_sw), r_rip = min(di_l_ccm / |ic|, 2)
+        //           I_rms^2 / I_avg^2 = 1 + r_rip^2 / 12  (= 4/3 at exact CCM/DCM boundary r_rip = 2)
         //   In DCM: delta = d_cmd / mu_eff <= 1, I_pk = 2 * I_avg / delta,
-        //   I_rms1^2 = (4 * d1 / (3 * delta^2)) * I_avg^2, I_rms2^2 = (4 * d2 / (3 * delta^2)) * I_avg^2
-        //   => P_cond,DCM = (4 / (3 * delta)) * (mu_eff * r_on_a + (1 - mu_eff) * r_on_p) * I_avg^2
+        //           I_rms1^2 = (4 * d1 / (3 * delta^2)) * I_avg^2, I_rms2^2 = (4 * d2 / (3 * delta^2)) * I_avg^2
+        //           => P_cond,DCM = (4 / (3 * delta)) * (mu_eff * r_on_a + (1 - mu_eff) * r_on_p) * I_avg^2
         delta     = d_cmd / mu_eff;
         delta_reg = sqrt(delta * delta + delta_min * delta_min);
-        shape_ccm = 1.0;
+        di_l_ccm  = (d_cmd * (1.0 - d_cmd) * abs_vap) / (l_ind * f_sw);
+        r_rip_raw = di_l_ccm / abs_ic;
+        r_rip     = 0.5 * (r_rip_raw + 2.0 - sqrt((r_rip_raw - 2.0) * (r_rip_raw - 2.0) + 1.0e-6));
+        shape_ccm = 1.0 + (r_rip * r_rip) / 12.0;
         shape_dcm = 4.0 / (3.0 * delta_reg);
         shape_eff = (1.0 - w_dcm) * shape_ccm + w_dcm * shape_dcm;
         r_sw_avg  = mu_eff * r_on_a + (1.0 - mu_eff) * r_on_p;

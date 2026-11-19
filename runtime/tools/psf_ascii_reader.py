@@ -712,6 +712,11 @@ def parse_psf_file(
                         if _wanted_match(ev_key, wanted):
                             values.setdefault(ev_key, []).append(ev_val)
 
+    if reject_truncated and not has_value_section:
+        raise ValueError(
+            "Truncated PSF ASCII file (missing VALUE section): " + path
+        )
+
     return {
         "header": header,
         "types": types,

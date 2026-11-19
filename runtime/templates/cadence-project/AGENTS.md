@@ -2,7 +2,7 @@
 
 For analog, PMIC (LDO, Buck, Boost, Buck-Boost, Charge-Pump, POR/UVLO/OCP), mixed-signal (Active-RC/Gm-C filters, DACs, SAR/Delta-Sigma/Pipeline ADCs, INA/CFIA, oscillators), Cadence IC617 schematic/symbol entry, Spectre 15.1 simulation, Pareto sizing optimization, or layout/ESD/PEX work, use the installed `analog-design` skill. Its canonical read-only library is `/home/disk/eda/references/SKILL-ANALOG`; never write runtime sockets, LUTs, or `.pyc` files inside that library.
 
-Consult the **Razavi CMOS + PMIC + AMS + Closed-Loop EDA Knowledge Brain** (`2026.11.18.7`, `https://lmsang372k6-spec.github.io/razavi-cmos-brain` | repo `https://github.com/lmsang372k6-spec/razavi-cmos-brain`) via `/home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py` (`coord`, `skills`, `search`, `diagnose`, `upgrades`, `checklist`, `term`) and `/home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py <node_id>` (automatic offline fallback uses `kb/nodes-bundle.json.gz`).
+Consult the **Razavi CMOS + PMIC + AMS + Closed-Loop EDA Knowledge Brain** (`2026.11.19.1`, `https://lmsang372k6-spec.github.io/razavi-cmos-brain` | repo `https://github.com/lmsang372k6-spec/razavi-cmos-brain`) via `/home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py` (`coord`, `skills`, `search`, `diagnose`, `upgrades`, `checklist`, `term`) and `/home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py <node_id>` (automatic offline fallback uses `kb/nodes-bundle.json.gz`).
 
 Follow the **7-Stage Closed-Loop Optimal Design Cycle** recorded in `project.json` (`design_cycle_stage`):
 1. `1_spec_and_kb`: Read `project.json`, `spec.json`, `STATE.md`, and `cds.lib`; query `kb_lookup.py` for topology trade-offs and invariant checklists (`CHK-*`).

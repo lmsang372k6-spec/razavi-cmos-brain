@@ -13,7 +13,7 @@ Spline (PCHIP) inverse ratio solver for Murmann gm/ID methodology:
               full realized operating point re-queried at JD_realized = ID / W_total
   - tradeoff: Pareto table across (gm/ID, L) -> (gm*ro, fT, JD, Vdsat) + role recommendations
 
-Release: 2026.11.18.7
+Release: 2026.11.19.1
 """
 from __future__ import print_function
 
@@ -36,7 +36,7 @@ if TOOLS_DIR not in sys.path:
 
 import gpdk_techsweep  # noqa: E402
 
-RELEASE = "2026.11.18.7"
+RELEASE = "2026.11.19.1"
 TIMER = getattr(time, "perf_counter", time.time)
 
 DEV_ALIASES = {
@@ -263,6 +263,8 @@ class GmidLut(object):
                 violations.append("|VGS|=%.4gV > vdd_max=%.4gV" % (vgs_mag, vdd_lim))
             if vds_mag > vdd_lim + 1e-9:
                 violations.append("|VDS|=%.4gV > vdd_max=%.4gV" % (vds_mag, vdd_lim))
+        else:
+            violations.append("Missing SOA metadata (soa_limits / vdd_max_v) in LUT provenance")
 
         soa_ok = (len(violations) == 0)
         if (not soa_ok) and (not allow_soa_violation):
@@ -660,7 +662,18 @@ class GmidLut(object):
         jd_val = q["jd_a_per_m"]
         w_ideal = id_req / jd_val
 
-        nf_raw = int(math.ceil(w_ideal / max(float(w_finger_max), 1e-9)))
+        g = max(float(grid), 1e-12)
+        wf_min_f = float(w_finger_min)
+        wf_max_f = float(w_finger_max)
+        wf_min_grid = math.ceil((wf_min_f - 1e-15) / g) * g
+        wf_max_grid = math.floor((wf_max_f + 1e-15) / g) * g
+        if wf_max_grid < wf_min_grid - 1e-15:
+            raise LutError(
+                "No manufacturing grid (%.3gnm) point exists inside [w_finger_min=%.3gnm, w_finger_max=%.3gnm]."
+                % (g * 1e9, wf_min_f * 1e9, wf_max_f * 1e9)
+            )
+
+        nf_raw = int(math.ceil(w_ideal / max(wf_max_grid, 1e-12)))
         if even_nf:
             nf = max(2, nf_raw)
             if nf % 2 != 0:
@@ -670,42 +683,56 @@ class GmidLut(object):
 
         warnings = []
         wf_raw = w_ideal / float(nf)
-        wf_snapped = _snap_grid(wf_raw, grid)
-        if wf_snapped < w_finger_min:
+        wf_snapped = _snap_grid(wf_raw, g)
+        if wf_snapped > wf_max_grid + 1e-15:
+            nf += 2 if even_nf else 1
+            wf_raw = w_ideal / float(nf)
+            wf_snapped = _snap_grid(wf_raw, g)
+            if wf_snapped > wf_max_grid + 1e-15:
+                wf_snapped = wf_max_grid
+                warnings.append(
+                    "Finger width %.3gnm exceeded grid-aligned w_finger_max %.3gnm (nf=%d); clamped to %.3gnm."
+                    % (wf_raw * 1e9, wf_max_grid * 1e9, nf, wf_snapped * 1e9)
+                )
+        if wf_snapped < wf_min_grid - 1e-15:
+            wf_snapped = wf_min_grid
             warnings.append(
-                "Ideal finger width %.3gnm < w_finger_min %.3gnm (nf=%d); clamped to %.3gnm."
-                % (wf_raw * 1e9, w_finger_min * 1e9, nf, w_finger_min * 1e9)
+                "Ideal finger width %.3gnm < w_finger_min %.3gnm (nf=%d); clamped on grid to %.3gnm."
+                % (wf_raw * 1e9, wf_min_f * 1e9, nf, wf_snapped * 1e9)
             )
-            wf_snapped = _snap_grid(w_finger_min, grid)
 
         w_total = nf * wf_snapped
-        if w_total != w_ideal:
-            jd_realized = id_req / max(w_total, 1e-18)
+        lut_clamped = False
+        if abs(w_total - w_ideal) > 1e-18:
+            jd_requested = id_req / max(w_total, 1e-18)
             q_real = self.query(
                 dev=dev,
                 l_m=l_snapped,
-                jd=jd_realized,
+                jd=jd_requested,
                 vds=vds,
                 vsb=vsb,
                 method=method,
                 allow_extrapolate=True,
                 allow_soa_violation=allow_soa_violation,
             )
-            if abs(q_real["jd_a_per_m"] - jd_realized) / max(jd_realized, 1e-30) > 1e-2:
+            if abs(q_real["jd_a_per_m"] - jd_requested) / max(jd_requested, 1e-30) > 1e-2:
+                lut_clamped = True
                 warnings.append(
-                    "Realized JD=%.3e A/m exceeds LUT JD domain; operating point clamped at LUT boundary (JD_lut=%.3e A/m)."
-                    % (jd_realized, q_real["jd_a_per_m"])
+                    "Requested JD=%.3e A/m exceeds LUT JD domain; operating point clamped at LUT boundary (JD_lut=%.3e A/m)."
+                    % (jd_requested, q_real["jd_a_per_m"])
                 )
         else:
-            jd_realized = jd_val
+            jd_requested = jd_val
             q_real = q
             if (not q_real["soa_ok"]) and (not allow_soa_violation):
                 raise LutBoundsError(
                     "SOA violation for %s: %s" % (q_real["device"], "; ".join(q_real["soa_violations"]))
                 )
 
-        gmid_real_unrounded = q_real["gm_s_per_m"] / max(q_real["jd_a_per_m"], 1e-30)
-        gm_realized = id_req * gmid_real_unrounded
+        # Compute ALL realized small-signal & bias quantities from the SINGLE actual LUT operating point (vgs, w_total)
+        jd_actual = q_real["jd_a_per_m"]
+        id_realized = w_total * jd_actual
+        gm_realized = w_total * q_real["gm_s_per_m"]
         gds_s = gm_realized / max(q_real["gm_gds"], 1e-18)
         ro_ohm = 1.0 / max(gds_s, 1e-18)
 
@@ -722,9 +749,11 @@ class GmidLut(object):
         for sv in q_real["soa_violations"]:
             warnings.append("SOA violation: %s" % sv)
 
+        is_gpdk090 = str(q_real.get("model_name", "")).startswith("gpdk090_")
         elapsed_ms = (TIMER() - t0) * 1000.0
         return {
-            "ok": True,
+            "ok": (not lut_clamped),
+            "lut_clamped": lut_clamped,
             "command": "size",
             "device": q_real["device"],
             "model_name": q_real["model_name"],
@@ -734,13 +763,16 @@ class GmidLut(object):
             "gm_realized_s": gm_realized,
             "gm_id": q_real["gm_id"],
             "gm_id_target": round(gmid_val, 6),
-            "id_a": id_req,
+            "id_requested_a": id_req,
+            "id_realized_a": id_realized,
+            "id_a": id_realized,
             "l_m": l_snapped,
             "w_ideal_m": w_ideal,
             "nf": nf,
             "w_finger_m": wf_snapped,
             "w_total_m": w_total,
-            "jd_a_per_m": jd_realized,
+            "jd_a_per_m": jd_actual,
+            "jd_requested_a_per_m": jd_requested,
             "jd_ideal_a_per_m": jd_val,
             "vgs": q_real["vgs"],
             "signed_vgs": q_real["signed_vgs"],
@@ -766,11 +798,11 @@ class GmidLut(object):
                 "w_finger": "%.4gu" % (wf_snapped * 1e6),
                 "l": "%.4gn" % (l_snapped * 1e9),
                 "nf": nf,
-                "m": 1,
-                "simM": nf if str(q_real.get("model_name", "")).startswith("gpdk090_") else 1,
+                "m": nf if is_gpdk090 else 1,
+                "simM": nf if is_gpdk090 else 1,
                 "netlist_hint": (
-                    "w=%.4gu l=%.4gn simM=%d" % (wf_snapped * 1e6, l_snapped * 1e9, nf)
-                    if str(q_real.get("model_name", "")).startswith("gpdk090_")
+                    "w=%.4gu l=%.4gn m=%d simM=%d" % (wf_snapped * 1e6, l_snapped * 1e9, nf, nf)
+                    if is_gpdk090
                     else "w=%.4gu l=%.4gn nf=%d m=1" % (w_total * 1e6, l_snapped * 1e9, nf)
                 ),
             },
@@ -793,11 +825,17 @@ class GmidLut(object):
         dev_key, dev_entry = self.resolve_device(dev)
         lengths = sorted(l_list) if l_list else list(dev_entry["L"][:4])
 
+        step_val = float(gm_id_step)
+        if step_val <= 0.0:
+            raise LutError("gm_id_step must be strictly positive (got %s)." % str(gm_id_step))
+        if float(gm_id_max) < float(gm_id_min):
+            raise LutError("gm_id_max (%.4g) must be >= gm_id_min (%.4g)." % (float(gm_id_max), float(gm_id_min)))
+
         gmid_points = []
         cur = float(gm_id_min)
         while cur <= float(gm_id_max) + 1e-9:
             gmid_points.append(round(cur, 4))
-            cur += float(gm_id_step)
+            cur += step_val
 
         rows = []
         for l_m in lengths:
@@ -843,31 +881,37 @@ class GmidLut(object):
                     break
             r["pareto_gain_speed"] = not dominated
 
-        safe_rows = [r for r in rows if r["soa_ok"]] or rows
+        safe_rows = [r for r in rows if r["soa_ok"]]
+        all_soa_failed = (len(safe_rows) == 0)
 
-        # Role-guided recommendations
-        diff_cands = [r for r in safe_rows if 15.0 <= r["gm_id"] <= 20.5] or safe_rows
-        best_diff = max(diff_cands, key=lambda r: r["gm_id"] * math.log(max(r["gm_gds"], 2.0)) * math.sqrt(r["ft_ghz"]))
+        if all_soa_failed:
+            role_recs = {
+                "input_diff_pair_low_noise_offset": {
+                    "target_regime": "moderate-to-weak inversion (gm/ID 16..20 V^-1)",
+                    "recommended_point": None,
+                    "reason": "all_points_violate_soa",
+                },
+                "current_mirror_high_rout_matching": {
+                    "target_regime": "strong inversion + longer L (gm/ID 7..10 V^-1)",
+                    "recommended_point": None,
+                    "reason": "all_points_violate_soa",
+                },
+                "high_speed_gain_or_cascode": {
+                    "target_regime": "peak gm/ID * fT product (gm/ID 11..15 V^-1)",
+                    "recommended_point": None,
+                    "reason": "all_points_violate_soa",
+                },
+            }
+        else:
+            diff_cands = [r for r in safe_rows if 15.0 <= r["gm_id"] <= 20.5] or safe_rows
+            best_diff = max(diff_cands, key=lambda r: r["gm_id"] * math.log(max(r["gm_gds"], 2.0)) * math.sqrt(r["ft_ghz"]))
 
-        mirror_cands = [r for r in safe_rows if r["gm_id"] <= 11.0] or safe_rows
-        best_mirror = max(mirror_cands, key=lambda r: r["gm_gds"] / max(r["gm_id"], 1.0))
+            mirror_cands = [r for r in safe_rows if r["gm_id"] <= 11.0] or safe_rows
+            best_mirror = max(mirror_cands, key=lambda r: r["gm_gds"] / max(r["gm_id"], 1.0))
 
-        speed_cands = [r for r in safe_rows if 10.0 <= r["gm_id"] <= 16.0] or safe_rows
-        best_speed = max(speed_cands, key=lambda r: r["fom_gm_id_ft_ghz"])
-
-        elapsed_ms = (TIMER() - t0) * 1000.0
-        return {
-            "ok": True,
-            "command": "tradeoff",
-            "device": dev_key,
-            "model_name": dev_entry.get("model_name"),
-            "pdk": self.provenance.get("pdk"),
-            "corner": self.provenance.get("corner"),
-            "vds_v": abs(float(vds)),
-            "vsb_v": abs(float(vsb)),
-            "count": len(rows),
-            "rows": rows,
-            "role_recommendations": {
+            speed_cands = [r for r in safe_rows if 10.0 <= r["gm_id"] <= 16.0] or safe_rows
+            best_speed = max(speed_cands, key=lambda r: r["fom_gm_id_ft_ghz"])
+            role_recs = {
                 "input_diff_pair_low_noise_offset": {
                     "target_regime": "moderate-to-weak inversion (gm/ID 16..20 V^-1)",
                     "recommended_point": best_diff,
@@ -880,7 +924,23 @@ class GmidLut(object):
                     "target_regime": "peak gm/ID * fT product (gm/ID 11..15 V^-1)",
                     "recommended_point": best_speed,
                 },
-            },
+            }
+
+        elapsed_ms = (TIMER() - t0) * 1000.0
+        return {
+            "ok": (not all_soa_failed),
+            "soa_ok": (not all_soa_failed),
+            "command": "tradeoff",
+            "device": dev_key,
+            "model_name": dev_entry.get("model_name"),
+            "pdk": self.provenance.get("pdk"),
+            "corner": self.provenance.get("corner"),
+            "vds_v": abs(float(vds)),
+            "vsb_v": abs(float(vsb)),
+            "count": len(rows),
+            "soa_safe_count": len(safe_rows),
+            "rows": rows,
+            "role_recommendations": role_recs,
             "elapsed_ms": round(elapsed_ms, 4),
         }
 
@@ -991,8 +1051,10 @@ def run_self_test():
         q_exp_real = lut.query(
             dev="nmos", l_m=180e-9, jd=exp_jd_real, vds=0.6, vsb=0.0, allow_extrapolate=True
         )
-        if abs(s_clamp["jd_a_per_m"] - exp_jd_real) > 1e-12:
-            raise AssertionError("s_clamp jd_a_per_m != id_req / w_total")
+        if abs(s_clamp["jd_requested_a_per_m"] - exp_jd_real) > 1e-12:
+            raise AssertionError("s_clamp jd_requested_a_per_m != id_req / w_total")
+        if abs(s_clamp["jd_a_per_m"] - q_exp_real["jd_a_per_m"]) > 1e-12:
+            raise AssertionError("s_clamp jd_a_per_m != q_real['jd_a_per_m']")
         if abs(s_clamp["jd_ideal_a_per_m"] - (0.5e-6 / s_clamp["w_ideal_m"])) > 1e-9:
             raise AssertionError("s_clamp jd_ideal_a_per_m mismatch")
         if s_clamp["gm_id_target"] != 11.0 or s_clamp["gm_id"] != q_exp_real["gm_id"]:
@@ -1043,6 +1105,48 @@ def run_self_test():
                 "Interpolation exceeded 5ms target: query=%.3fms size=%.3fms tradeoff=%.3fms"
                 % (q_n["elapsed_ms"], s_n["elapsed_ms"], tr["elapsed_ms"])
             )
+
+        # 7. Verify GPDK090 netlist hint includes m=nf, grid bounds [242nm, 803nm] never violated,
+        #    LUT boundary clamp returns ok=False & consistent realized ID/gm, gm_id_step<=0 rejected,
+        #    missing SOA metadata fails closed, and all-SOA-fail tradeoff recommends None!
+        if s_n["spectre_params"]["m"] != s_n["nf"] or ("m=%d" % s_n["nf"]) not in s_n["spectre_params"]["netlist_hint"]:
+            raise AssertionError("GPDK090 spectre_params must set m=nf and include m=<nf> in netlist_hint!")
+        s_gmin = lut.size(dev="nmos", id_a=0.1e-6, gm_id=12.0, l_m=180e-9, vds=0.6, w_finger_min=242e-9, w_finger_max=803e-9, grid=5e-9)
+        if s_gmin["w_finger_m"] < 242e-9 - 1e-15 or s_gmin["w_finger_m"] > 803e-9 + 1e-15:
+            raise AssertionError("Grid-snapped w_finger violated [242nm, 803nm]: %.4gnm" % (s_gmin["w_finger_m"] * 1e9))
+        s_gmax = lut.size(dev="nmos", id_a=150e-6, gm_id=15.0, l_m=180e-9, vds=0.6, w_finger_min=242e-9, w_finger_max=803e-9, grid=5e-9)
+        if s_gmax["w_finger_m"] < 242e-9 - 1e-15 or s_gmax["w_finger_m"] > 803e-9 + 1e-15:
+            raise AssertionError("Grid-snapped w_finger violated [242nm, 803nm]: %.4gnm" % (s_gmax["w_finger_m"] * 1e9))
+        s_tiny = lut.size(dev="nmos", id_a=1e-12, gm_id=15.0, l_m=180e-9, vds=0.6)
+        if s_tiny["ok"] is not False or not s_tiny["lut_clamped"]:
+            raise AssertionError("Clamped 1pA size() must return ok=False and lut_clamped=True!")
+        q_chk_tiny = lut.query(dev="nmos", l_m=180e-9, vgs=s_tiny["vgs"], vds=0.6)
+        if abs(s_tiny["id_realized_a"] - s_tiny["w_total_m"] * q_chk_tiny["jd_a_per_m"]) / max(s_tiny["id_realized_a"], 1e-30) > 1e-3:
+            raise AssertionError("Realized ID in clamped size() inconsistent with returned (vgs, w_total)!")
+        bad_step = False
+        try:
+            lut.tradeoff(dev="nmos", gm_id_min=8.0, gm_id_max=16.0, gm_id_step=0.0, vds=0.6)
+        except LutError:
+            bad_step = True
+        if not bad_step:
+            raise AssertionError("tradeoff() must reject gm_id_step <= 0!")
+        tr_soa_fail = lut.tradeoff(dev="nmos", gm_id_min=10.0, gm_id_max=18.0, gm_id_step=4.0, vds=1.0, vsb=0.5)
+        if tr_soa_fail["ok"] or tr_soa_fail["soa_ok"] or tr_soa_fail["role_recommendations"]["high_speed_gain_or_cascode"]["recommended_point"] is not None:
+            raise AssertionError("tradeoff() must not recommend any point when all points violate SOA!")
+        no_soa_data = json.loads(json.dumps(lut.data))
+        no_soa_data["provenance"].pop("soa_limits", None)
+        no_soa_data["provenance"].pop("vdd_max_v", None)
+        lut_no_soa = type(lut)(no_soa_data)
+        q_no_soa = lut_no_soa.query(dev="nmos", l_m=180e-9, gm_id=15.0, vds=0.6, allow_soa_violation=True)
+        if q_no_soa["soa_ok"]:
+            raise AssertionError("Missing SOA metadata must not report soa_ok=True!")
+        caught_missing_soa = False
+        try:
+            lut_no_soa.query(dev="nmos", l_m=180e-9, gm_id=15.0, vds=0.6, allow_soa_violation=False)
+        except LutBoundsError:
+            caught_missing_soa = True
+        if not caught_missing_soa:
+            raise AssertionError("Strict SOA mode must raise LutBoundsError when SOA metadata is missing!")
 
         return {
             "ok": True,
@@ -1209,6 +1313,10 @@ def main(argv=None):
             raise LutError("Unknown command '%s'. Choose from: query, size, tradeoff, info" % cmd)
 
         print(json.dumps(res, indent=2, sort_keys=True))
+        if not res.get("ok", True):
+            return 1
+        if (cmd in ("query", "size", "tradeoff")) and (res.get("soa_ok") is False) and (not opts.allow_soa_violation):
+            return 1
         return 0
     except Exception as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain & v4.0 Runtime (release 2026.11.18.7).
+"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain & v4.0 Runtime (release 2026.11.19.1).
 
 Validates all 10 domains (162 cards: 112 Razavi Ch.01-19 cards + 12 PMIC cards + 12 AMS/System cards
 + 26 Closed-Loop Cadence/GitHub Skill cards), 72 vector SVGs, 21 structural checklists, 2,280 CLB
@@ -27,7 +27,7 @@ from collections import defaultdict
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
 RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
-EXPECTED_RELEASE = "2026.11.18.7"
+EXPECTED_RELEASE = "2026.11.19.1"
 
 EXPECTED_DOMAINS = {
     "foundations",

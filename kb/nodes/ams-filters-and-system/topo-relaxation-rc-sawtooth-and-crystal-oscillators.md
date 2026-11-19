@@ -128,11 +128,12 @@ Khi hệ thống đòi hỏi độ chính xác tần số cấp phần triệu (
 Trong bộ dao động tích thoát RC, giả sử cả dòng nạp $I_{\text{ZTC}}$ lẫn biên độ cửa sổ ngưỡng $\Delta V_H = V_H - V_L$ đều được sinh ra từ **cùng một điện áp chuẩn $V_{\text{REF}}$** (không nhất thiết phải là Bandgap phức tạp — thậm chí có thể là một điện áp tự phân cực bất kỳ miễn là băng thông đáp ứng nguồn đủ nhanh!):
 $$
 I_{\text{ZTC}} = \frac{V_{\text{REF}}}{R_{\text{ZTC}}}, \qquad \Delta V_H = k \cdot V_{\text{REF}}
-\implies T_0 = \frac{C \cdot \Delta V_H}{I_{\text{ZTC}}} = k \cdot R_{\text{ZTC}} \cdot C \quad \text{(cho 1 chu kỳ nạp, hoặc } 2 k R_{\text{ZTC}} C \text{ cho Ping-Pong)}
+\implies T_{\text{phase}} = \frac{C \cdot \Delta V_H}{I_{\text{ZTC}}} = k \cdot R_{\text{ZTC}} \cdot C \quad \text{(thời gian nạp 1 pha)}
 $$
-Suy ra tần số dao động lý tưởng khi bỏ qua độ trễ:
+Suy ra tần số dao động lý tưởng khi bỏ qua độ trễ ($t_d = 0$, phân biệt rõ kiến trúc 1 tụ răng cưa vs Ping-Pong 2 pha có chu kỳ đầu ra $T_{0,\text{PP}} = 2 T_{\text{phase}}$):
 $$
-f_{\text{osc},0} = \frac{I_{\text{ZTC}}}{C \cdot \Delta V_H} = \frac{1}{k \cdot R_{\text{ZTC}} \cdot C}
+f_{\text{osc},0,\text{1-cap}} = \frac{1}{T_{\text{phase}}} = \frac{1}{k \cdot R_{\text{ZTC}} \cdot C}, \qquad
+f_{\text{osc},0,\text{PP}} = \frac{1}{2\,T_{\text{phase}}} = \frac{1}{2\,k \cdot R_{\text{ZTC}} \cdot C}
 $$
 **Hai hệ quả vật lý vàng**:
 1. **Triệt tiêu $100\%$ giá trị $V_{\text{REF}}$ ở tần số thấp**: Dù $V_{\text{REF}}$ có lệch $\pm 10\%$ giữa các lô chip hay trôi theo nhiệt độ, dòng nạp $I_{\text{ZTC}}$ và đích đến $\Delta V_H$ cùng co giãn tỷ lệ thuận như nhau nên thời gian chạm đích $T_0$ đứng yên bất biến!
@@ -144,11 +145,11 @@ Chỉ với phép nối tiếp thụ động này cộng một mảng tụ tinh 
 
 ### 2.2. Bài toán Tử huyệt: Sai số Trôi Tần số Do Trễ Truyền Bộ So sánh $t_d$ & Các Kiến trúc Khử $t_d$
 Trên thực tế, ngay thời điểm $V_C(t)$ chạm ngưỡng $V_H$, bộ so sánh và chốt logic không lật tức thì mà cần một khoảng **thời gian trễ lan truyền $t_d(V_{DD}, T)$** (cỡ $5\text{--}50\text{ ns}$ đối với bộ so sánh công suất thấp vài $\mu\text{A}$!). Trong suốt khoảng trễ $t_d$ này, nguồn dòng $I_{\text{ZTC}}$ vẫn tiếp tục nạp làm $V_C$ **vọt lố lên thêm $\Delta V_{\text{ov}} = \frac{I_{\text{ZTC}}}{C} t_d$**!
-- Trong mạch Ping-Pong hai pha (mỗi nửa chu kỳ đều chịu một lần trễ $t_d + t_{\text{latch}}$):
+- Trong mạch Ping-Pong hai pha (chu kỳ lý tưởng $T_{0,\text{PP}} = 2 k R_{\text{ZTC}} C = 1/f_{\text{osc},0,\text{PP}}$, mỗi nửa chu kỳ chịu một lần trễ $t_d + t_{\text{latch}}$):
 $$
-T_{\text{actual}} = 2\left(k R_{\text{ZTC}} C + t_d\right) \implies f_{\text{actual}} = \frac{f_{\text{osc},0}}{1 + 2 f_{\text{osc},0}\, t_d} \approx f_{\text{osc},0}\left(1 - 2 f_{\text{osc},0}\, t_d\right)
+T_{\text{actual}} = 2\left(k R_{\text{ZTC}} C + t_d\right) = T_{0,\text{PP}} + 2 t_d \implies f_{\text{actual}} = \frac{f_{\text{osc},0,\text{PP}}}{1 + 2 f_{\text{osc},0,\text{PP}}\, t_d} \approx f_{\text{osc},0,\text{PP}}\left(1 - 2 f_{\text{osc},0,\text{PP}}\, t_d\right)
 $$
-**Ví dụ cảnh tỉnh**: Thiết kế bộ dao động $f_{\text{osc},0} = 4\text{ MHz}$ ($T_0/2 = 125\text{ ns}$) dùng bộ so sánh công suất nhỏ có $t_d = 18\text{ ns}$ ở $27\,^\circ\text{C}$ ($f_{\text{actual}} = 3.50\text{ MHz}$) nhưng tăng lên $t_d = 31\text{ ns}$ ở $125\,^\circ\text{C}, V_{DD,\min}$ ($f_{\text{actual}} = 3.21\text{ MHz}$): riêng sự trôi của $t_d$ làm tần số sụt mất **$-8.33\%$**, phá nát hoàn toàn công sức bù nhiệt Zero-TCR của điện trở!
+**Ví dụ cảnh tỉnh**: Thiết kế bộ dao động Ping-Pong $f_{\text{osc},0,\text{PP}} = 4\text{ MHz}$ ($T_{\text{phase}} = T_{0,\text{PP}}/2 = 125\text{ ns}$) dùng bộ so sánh công suất nhỏ có $t_d = 18\text{ ns}$ ở $27\,^\circ\text{C}$ ($f_{\text{actual}} = 3.50\text{ MHz}$) nhưng tăng lên $t_d = 31\text{ ns}$ ở $125\,^\circ\text{C}, V_{DD,\min}$ ($f_{\text{actual}} = 3.21\text{ MHz}$): riêng sự trôi của $t_d$ làm tần số sụt mất **$-8.33\%$**, phá nát hoàn toàn công sức bù nhiệt Zero-TCR của điện trở!
 - **Ba Kỹ thuật Khử Trễ $t_d$ Thực chiến**:
   1. **Tích phân Trung bình Khóa Tụ Chuyển mạch (`Switched-Capacitor Averaging Loop` — Tokunaga / Paidimarri)**: Bỏ hẳn bộ so sánh ngưỡng tức thời; dùng chính xung nhịp đầu ra $f_{\text{osc}}$ đóng ngắt tụ $C_{\text{sw}}$ tạo điện trở tương đương $R_{\text{eq}} = \frac{1}{C_{\text{sw}} f_{\text{osc}}}$, so sánh áp rơi trên $R_{\text{eq}}$ với áp rơi trên $R_{\text{ZTC}}$ qua một bộ tích phân OTA chậm có băm Chopper để điều khiển VCO vòng! Khi khóa xác lập, $f_{\text{osc}} = \frac{1}{R_{\text{ZTC}} C_{\text{sw}}}$ miễn nhiễm $100\%$ với trễ bộ so sánh lẫn offset!
   2. **Hạ Ngưỡng Động Bù Trước (`Feedforward Threshold Lowering`, $\Delta V_{\text{comp}} = -I_{\text{ZTC}} R_{\text{rep}}$)**: Chèn một điện trở nhỏ $R_{\text{lead}}$ nối tiếp với tụ định thời $C$! Điện áp đưa vào bộ so sánh lúc đang nạp là $V_{\text{sense}}(t) = V_C(t) + I_{\text{ZTC}} R_{\text{lead}}$, giúp bộ so sánh **nhìn thấy ngưỡng sớm hơn một khoảng thời gian đúng bằng $\tau_{\text{lead}} = R_{\text{lead}} C$**! Nếu chọn $R_{\text{lead}} C \approx t_d$ (với $R_{\text{lead}}$ làm bằng transistor triode phân cực theo cùng hằng số trễ của bộ so sánh!), điểm cắt thực tế trên tụ $V_C$ hạ cánh trúng phóc $V_H$ tại cuối khoảng $t_d$, khử bậc nhất sai số $t_d$!

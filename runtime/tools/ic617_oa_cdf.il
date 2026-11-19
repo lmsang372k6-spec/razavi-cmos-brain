@@ -1,5 +1,5 @@
 ;;; ic617_oa_cdf.il — Reusable Cadence Virtuoso IC617 OA / CDF / Schematic / OCEAN Helpers
-;;; Managed by SKILL-ANALOG (release 2026.11.18.7).
+;;; Managed by SKILL-ANALOG (release 2026.11.19.1).
 ;;;
 ;;; SAFETY CONTRACT:
 ;;; - Loading this file ONLY defines `sa*` helper procedures; it never mutates

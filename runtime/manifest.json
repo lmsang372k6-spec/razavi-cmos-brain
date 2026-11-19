@@ -5,19 +5,19 @@
       "bytes": 5265,
       "path": "INSTALLATION.md",
       "repo_path": "runtime/INSTALLATION.md",
-      "sha256": "d308c1fd9699a048f72103732cfe7ddd77bedd59c30e8937299824f0296da0b9"
+      "sha256": "749860ca18e3000a76929c4200af930993650395591baf70ea525a4786bd225a"
     },
     {
       "bytes": 5157,
       "path": "README.md",
       "repo_path": "runtime/README.md",
-      "sha256": "22d61e9269da0ad00df2e281a9155a3613e6fd38abc71c4ae4d5310343f6478d"
+      "sha256": "4b8f17e6bc72fbe4c996ace7492d4c416e6935263f1e835f4ea72fdb95ad2480"
     },
     {
       "bytes": 32833,
       "path": "bootstrap_rhel6_ota.py",
       "repo_path": "runtime/bootstrap_rhel6_ota.py",
-      "sha256": "db44ba802626edac46eab8aff279210d597f3ff2de430bb272ac6e1520f9a15c"
+      "sha256": "bdda411a33e8c7d9f3093b2066a1839d729963c16851f82dce2984a34a5ea68e"
     },
     {
       "bytes": 3247,
@@ -38,10 +38,10 @@
       "sha256": "7702b77c0978880ed279a86dbaa93d2d19066d3016d014c90fd3ec4477be55fc"
     },
     {
-      "bytes": 3062,
+      "bytes": 3263,
       "path": "integration/codex-user-AGENTS.md",
       "repo_path": "runtime/integration/codex-user-AGENTS.md",
-      "sha256": "865f8a0fa84166f0420a546e93649e2521680e010e69be3fa477d97b632b6bcd"
+      "sha256": "a939af9f20c125051e096c97b4a56c7105f08c1428fc23ab87497fd3fd8a9f1f"
     },
     {
       "bytes": 14682,
@@ -65,25 +65,25 @@
       "bytes": 6406,
       "path": "kb/README.md",
       "repo_path": "runtime/kb/README.md",
-      "sha256": "c355d65308d09d0555b5bfc0c1f09f82ebbfa81dc04b551f5f479ec116f6b0ef"
+      "sha256": "e09254c95becf48b60a860dcd4cdc1a48f09a5d370b1d315c274e9c41095e1cd"
     },
     {
       "bytes": 1504,
       "path": "kb/config.json",
       "repo_path": "runtime/kb/config.json",
-      "sha256": "f42f8a6ec7fe93663408ab14b2dd08a8398172c357776dd1f6a42898808d4e1c"
+      "sha256": "fa32c963209da285f801be7dba55ada0ed8fe45f0ea4cd46cb23cafc6141d3b7"
     },
     {
-      "bytes": 6790,
+      "bytes": 7314,
       "path": "models/veriloga/pwm_switch_avg_ccm_dcm.va",
       "repo_path": "runtime/models/veriloga/pwm_switch_avg_ccm_dcm.va",
-      "sha256": "da2a338c1ed0c31614446775a7dc8a1b615ce34e9f7586dd327acdda1d9d1ce9"
+      "sha256": "22b5c455d3113697dabd205880e6a620b383e4c79128911d8719344bbc8534f7"
     },
     {
       "bytes": 7225,
       "path": "references/INDEX.md",
       "repo_path": "runtime/references/INDEX.md",
-      "sha256": "f4e0d8176e71785ba9ceaf9b1e4f314202ddfd3904af4c6ad1fb24ac2ee00f52"
+      "sha256": "93057ed12740dff65ea615c3541c1a0e6209b7c3529bb20e041a8c890ec69bd9"
     },
     {
       "bytes": 7804,
@@ -143,7 +143,7 @@
       "bytes": 10778,
       "path": "references/ic617-adapters.md",
       "repo_path": "runtime/references/ic617-adapters.md",
-      "sha256": "8ea7026dc584f5d45f4621decf4d829e0d24c631f92619dafad9f7397ed59d6b"
+      "sha256": "6b0c10ddbf7fcd956d4375ce7712668ae47c88609a750010f20ade051df50974"
     },
     {
       "bytes": 6148,
@@ -173,7 +173,7 @@
       "bytes": 8994,
       "path": "skills/analog-design/SKILL.md",
       "repo_path": "runtime/skills/analog-design/SKILL.md",
-      "sha256": "4529c4c14b39e0705281dbb55a925970c49cf16ef968c17e978dd2c62860c23f"
+      "sha256": "1a0958eb5fbbc6981074691439deba4b6d38ffaafc2cb55d39b7f7ab0dc1e16c"
     },
     {
       "bytes": 42,
@@ -185,7 +185,7 @@
       "bytes": 3318,
       "path": "templates/cadence-project/AGENTS.md",
       "repo_path": "runtime/templates/cadence-project/AGENTS.md",
-      "sha256": "f64f9d3ae11187fe94f4635fedb646512f640acb469e0fb2ff246b616c1e63cf"
+      "sha256": "cb3102edb0811ed8b2bbe279d8bf6f2295abbdd965e9375dd1aa769f905b6b7f"
     },
     {
       "bytes": 1379,
@@ -215,7 +215,7 @@
       "bytes": 45200,
       "path": "tools/cadence_exec.py",
       "repo_path": "runtime/tools/cadence_exec.py",
-      "sha256": "7014205239d4bfeb830e51e97b40c2c4fbde0eddf0fdd871bcdc0cdd6572528e"
+      "sha256": "4a44ff58493caa06915b7e8701f76d6236eaf44ed791b6c04946dd8512f9dcb2"
     },
     {
       "bytes": 598,
@@ -230,34 +230,34 @@
       "sha256": "4461729f1a42becd3301b52f5bae2885ee7bb41c8f60772a9eeccdbe33454676"
     },
     {
-      "bytes": 51197,
+      "bytes": 57658,
       "path": "tools/gmid_lut.py",
       "repo_path": "runtime/tools/gmid_lut.py",
-      "sha256": "168170414efb6fb88c8f058859e7d63ee5edd37ee991e18f726c73d52df17450"
+      "sha256": "082dcd62014b3879bb4009e0d176e2b3409f214a5b2e7a55ee4f96783d76a8a1"
     },
     {
       "bytes": 75315,
       "path": "tools/gpdk_techsweep.py",
       "repo_path": "runtime/tools/gpdk_techsweep.py",
-      "sha256": "b05fcb33f1c0d65d3710d3165a7c38c5dd34c588bd04f6697c267edcae4ce847"
+      "sha256": "da2258515bcc19afd92ebfd25ecc41d1a8c4e4a404651caedae8a5541bc93007"
     },
     {
       "bytes": 48998,
       "path": "tools/ic617_client.py",
       "repo_path": "runtime/tools/ic617_client.py",
-      "sha256": "08602ab326ea87854d91d3864a9b9aad9ee5c90ceac75d767ff7475dccf1136e"
+      "sha256": "235dfb75e40d73e23eee1efb8c340656cbc9e1fef92a944a25115ecb3ccb1390"
     },
     {
       "bytes": 13378,
       "path": "tools/ic617_live_bridge.il",
       "repo_path": "runtime/tools/ic617_live_bridge.il",
-      "sha256": "5790c57ea0286e84dad9f3caab3db3cf8b8f0a74784d8c7305b910623a4e3dc1"
+      "sha256": "7aef80a7bcd0df05947f7d5066b91c7b9906d8a7d3d26002e21c5b031d6cacc6"
     },
     {
       "bytes": 37909,
       "path": "tools/ic617_oa_cdf.il",
       "repo_path": "runtime/tools/ic617_oa_cdf.il",
-      "sha256": "2ab2c882301b247fbf33a892b167f15ce153b33601a9c285cb56e5b82f2f6619"
+      "sha256": "35a4470f45452cfa245e2bb82a275940c8ac741cdec86897cf29e6619f2ca0ef"
     },
     {
       "bytes": 24435,
@@ -269,13 +269,13 @@
       "bytes": 83936,
       "path": "tools/kb_lookup.py",
       "repo_path": "runtime/tools/kb_lookup.py",
-      "sha256": "905975a14bdc4c88b821a02a8aa702ec0b20b7fb06b96529497ef36df01e05f0"
+      "sha256": "dfcb0501d8f80a036e03976fe7f70844a4587e08b8fd5c5ff2d77c24177cbafa"
     },
     {
       "bytes": 55972,
       "path": "tools/ota_sync.py",
       "repo_path": "runtime/tools/ota_sync.py",
-      "sha256": "89c11edb45dde4cc273283861f9cbf4f206fda788d686ea6fc6cdd585a11cd13"
+      "sha256": "03838901ea353ef576f977de89b2d223f7d3df1bdc7fe26493f5c09b689094ee"
     },
     {
       "bytes": 2802,
@@ -284,24 +284,24 @@
       "sha256": "74bf3cc01e534b9d4b02badf60df2371222eead54a0ee7f1316c6282b0e46b40"
     },
     {
-      "bytes": 38271,
+      "bytes": 38431,
       "path": "tools/psf_ascii_reader.py",
       "repo_path": "runtime/tools/psf_ascii_reader.py",
-      "sha256": "ee05c185b4c1fb404e14d94d6fcbe63c9560028b5eb0ee0acb4bc5af85e2b2f1"
+      "sha256": "154e631ede3c01d26457c480089cd7d7dc29dd15db1f51589b5e3430604a0bf5"
     },
     {
-      "bytes": 104066,
+      "bytes": 163525,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "b6db388a2f7af12c1e991f898920bbbdf413f402b8e223936626c58c90a53bd7"
+      "sha256": "059fa0e229c0e7f70b0ac1da7f1a81d79eb71937947ed9e291844f8c89396305"
     },
     {
-      "bytes": 66627,
+      "bytes": 74353,
       "path": "tools/sizing_opt.py",
       "repo_path": "runtime/tools/sizing_opt.py",
-      "sha256": "74df8297465b9eb39e6c10b2941cc5d5d1a498290da9fca3284c0145c8988af4"
+      "sha256": "ff5b71f90f72b73446396871cc60c65e69ba0f5067a691e9fa1b28d9a081e1e7"
     }
   ],
-  "release": "2026.11.18.7",
+  "release": "2026.11.19.1",
   "schema": "skill-analog-runtime.v4"
 }

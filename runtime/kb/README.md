@@ -1,6 +1,6 @@
 # Bộ Định tuyến Tri thức CMOS Razavi, PMIC, AMS & Chu trình Tối ưu Cadence/GitHub (`library/kb/`)
 
-Thư mục này kết nối trực tiếp Codex trên máy ảo RHEL 6.5 với **Bộ não Tri thức CMOS Razavi + PMIC + AMS + Kỹ năng Khép kín Cadence/GitHub (`2026.11.18.7`)** trên GitHub, đồng thời tích hợp sẵn bộ chỉ mục tọa độ sách chính xác, danh mục 52 kho kỹ năng EDA đã kiểm định và gói dự phòng ngoại tuyến 100%:
+Thư mục này kết nối trực tiếp Codex trên máy ảo RHEL 6.5 với **Bộ não Tri thức CMOS Razavi + PMIC + AMS + Kỹ năng Khép kín Cadence/GitHub (`2026.11.19.1`)** trên GitHub, đồng thời tích hợp sẵn bộ chỉ mục tọa độ sách chính xác, danh mục 52 kho kỹ năng EDA đã kiểm định và gói dự phòng ngoại tuyến 100%:
 
 - **Kho GitHub chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
 - **Bản đồ Tri thức Tọa độ 2D (22 cột, 10 tầng) & Static API:** https://lmsang372k6-spec.github.io/razavi-cmos-brain

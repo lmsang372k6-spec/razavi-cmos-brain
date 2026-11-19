@@ -18,7 +18,7 @@ Fixes upstream pygmid & Spectre PSF characterization pitfalls:
      across both inline and hierarchical subcircuit STRUCT/GROUP .noise PSF files, and omits
      unsupported 'nf' parameters on GPDK090 BSIM3v3 subcircuit wrappers.
 
-Release: 2026.11.18.7
+Release: 2026.11.19.1
 """
 from __future__ import print_function
 
@@ -43,7 +43,7 @@ if _TOOLS_DIR not in sys.path:
 
 from psf_ascii_reader import parse_psf_file  # noqa: E402
 
-RELEASE = "2026.11.18.7"
+RELEASE = "2026.11.19.1"
 LIBRARY_ROOT = os.path.dirname(_TOOLS_DIR)
 TIMER = getattr(time, "perf_counter", time.time)
 

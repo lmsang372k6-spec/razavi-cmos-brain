@@ -1,4 +1,4 @@
-# Hướng Dẫn Biên Soạn Siêu Tốc & Đồng Bộ Đa Tác Tử OTA (`2026.11.18.7` · v4.0 SSOT)
+# Hướng Dẫn Biên Soạn Siêu Tốc & Đồng Bộ Đa Tác Tử OTA (`2026.11.19.1` · v4.0 SSOT)
 
 Kho `razavi-cmos-brain` (v4.0) là **Nguồn Chân lý Duy nhất (Single-Source-of-Truth — SSOT)** cho cả tri thức (`kb/`) lẫn bộ công cụ thực thi (`runtime/`) trên cả 3 môi trường mà **không bao giờ cần đóng gói lại hay remount đĩa `.iso` thủ công**:
 1. **Windows — `Codex Desktop` & `Antigravity Desktop`:** Đọc/ghi trực tiếp `0 ms` qua NTFS Directory Junctions (`C:\Users\Admin\.codex\skills\analog-design` và `C:\Users\Admin\.gemini\config\skills\analog-design` $\to$ `skills\analog-design`).
@@ -38,7 +38,7 @@ Kho `razavi-cmos-brain` (v4.0) là **Nguồn Chân lý Duy nhất (Single-Source
 
 ## 3. Khởi Tạo / Nâng Cấp 1 Dòng Lệnh Duy Nhất Trên Máy Ảo RHEL 6.5 (Không Đụng Tới `.iso`)
 
-Chạy đúng **1 dòng lệnh** dưới đây bên trong terminal máy ảo RHEL 6.5 để nâng cấp toàn bộ `/home/disk/eda/references/SKILL-ANALOG` lên bản `v4.0` (`2026.11.18.7`), tải đủ `72` sơ đồ SVG offline + `162` thẻ nén, đồng thời **tự động biên dịch lại cả hai bảng tra `GPDK090` và `GPDK045`** từ dữ liệu quét Spectre sẵn có:
+Chạy đúng **1 dòng lệnh** dưới đây bên trong terminal máy ảo RHEL 6.5 để nâng cấp toàn bộ `/home/disk/eda/references/SKILL-ANALOG` lên bản `v4.0` (`2026.11.19.1`), tải đủ `72` sơ đồ SVG offline + `162` thẻ nén, đồng thời **tự động biên dịch lại cả hai bảng tra `GPDK090` và `GPDK045`** từ dữ liệu quét Spectre sẵn có:
 
 ```bash
 curl -fsSL --cacert /home/disk/eda/apps/codex/support/mozilla-cacert.pem https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main/runtime/bootstrap_rhel6_ota.py | python -B -

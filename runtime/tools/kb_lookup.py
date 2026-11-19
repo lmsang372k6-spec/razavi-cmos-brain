@@ -1897,7 +1897,7 @@ def cmd_recipe(circuit_query):
 HELP_TEXT = """Usage: python tools/kb_lookup.py COMMAND [ARGUMENTS] [--limit N] [--offline]
 
 Commands:
-  status               Show KB release (2026.11.18.7), 10-domain counts, GitHub URLs & OTA sync status
+  status               Show KB release (2026.11.19.1), 10-domain counts, GitHub URLs & OTA sync status
   domain [name]        List all 10 domains with counts, or list all cards in a domain
   recipe <circuit>     1-command 7-stage design blueprint (cards + checklists + CLI tools)
   search <query>       Accent-insensitive Vietnamese + English search across all 162 cards (Razavi + PMIC + AMS + EDA)

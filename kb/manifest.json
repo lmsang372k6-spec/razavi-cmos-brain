@@ -1,6 +1,6 @@
 {
   "schema": "razavi-cmos-brain.manifest.v1",
-  "release": "2026.11.18.7",
+  "release": "2026.11.19.1",
   "domain_count": 10,
   "node_count": 162,
   "razavi_core_node_count": 112,
@@ -127,7 +127,7 @@
     {
       "path": "kb/coordinates/book-coordinates.json",
       "bytes": 2473008,
-      "sha256": "29677ce0ebfa836df58b062da681233d59db92cda76cfd63eeed09008ee11a92"
+      "sha256": "7d33d1172d84af0d244a5bb2eef3937bd8b6141f8f5dd5d26bdcee36a4021267"
     },
     {
       "path": "kb/diagrams/analog-design-octagon.svg",
@@ -511,13 +511,13 @@
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1307430,
-      "sha256": "e234d7819a98c75b4618fb5836875b57a3aebe66150a3648714c611c0881ff01"
+      "bytes": 1308586,
+      "sha256": "2a492950b282d85befbd5ba192dca4cc58739a9b5ece5d09152c18b72cdce265"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
-      "bytes": 29855,
-      "sha256": "60ac33bbb27c662b0f52d2240f0c8f7d9856465497087af0bc11790a6026aa34"
+      "bytes": 30742,
+      "sha256": "1db8f34e2ddcf2d55f672f6d1a40206c81cd2f01e203624d623e8f8d42998689"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-active-rc-sallen-key-and-tow-thomas-biquads.md",
@@ -526,8 +526,8 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-analog-mux-and-adc-track-hold-drivers.md",
-      "bytes": 32035,
-      "sha256": "cb9c3253458a527866cf80dc74929e1e33d1b300f1dc15cacbc4b68e5a1029b8"
+      "bytes": 32379,
+      "sha256": "59fa536421f18aaaf2b4cdd958b56fdb05f6bd4fa6072266693392a2f8113cf0"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-central-bias-hub-powerup-and-sleep-gating.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-high-speed-lvds-cml-ctle-and-cdr-basics.md",
-      "bytes": 32551,
-      "sha256": "996eff92c37834a0e763f0bbbac8b3a43408bf3fa1e2909434bd1dcdb5625d48"
+      "bytes": 33139,
+      "sha256": "56217bf408022bd94a2228e395ba3c4c492d3ebc5f3e3622278ca2077e6f9e37"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-instrumentation-amp-3opamp-and-chopper-cfia.md",
@@ -561,8 +561,8 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-relaxation-rc-sawtooth-and-crystal-oscillators.md",
-      "bytes": 33719,
-      "sha256": "7d6db77ebece56f34f6fb4f8d1a49f74525c8dee30a3c7539fe41573d9ba0ea4"
+      "bytes": 34141,
+      "sha256": "5e5cbd1de619c0a547897d6184a1bae4fb9ca891b97dd82f861500ad332497a6"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-resistor-string-r2r-and-current-steering-dacs.md",
@@ -881,8 +881,8 @@
     },
     {
       "path": "kb/nodes/nonideal-and-physical/tech-chopper-stabilization-vs-autozeroing.md",
-      "bytes": 29392,
-      "sha256": "ccd74ac561e23bd777aa4d2724c35e393af868f56810bf8f748581e6a07316fd"
+      "bytes": 30085,
+      "sha256": "0d4d9ede09b110736c1b670aa54fa0cb45f1ca346eafafa99fc41f8735920177"
     },
     {
       "path": "kb/nodes/nonideal-and-physical/tech-common-centroid-sti-wpe-layout.md",
@@ -1016,8 +1016,8 @@
     },
     {
       "path": "kb/nodes/power-management-ic/law-boost-buckboost-rhp-zero-and-bandwidth-limit.md",
-      "bytes": 31894,
-      "sha256": "dfc5c44d36ed5002377db30453ca9128a33a75a8fb820412680dbc93e6772076"
+      "bytes": 32337,
+      "sha256": "8599fc22b01ec0c7d290f4f0d192cef073a0ff346d787c26d169c413423e2f0e"
     },
     {
       "path": "kb/nodes/power-management-ic/law-dcdc-volt-second-ccm-dcm-and-state-space.md",
@@ -1026,8 +1026,8 @@
     },
     {
       "path": "kb/nodes/power-management-ic/skill-dcdc-spectre-pss-pstb-and-averaged-veriloga-tb.md",
-      "bytes": 29060,
-      "sha256": "b7e8897377c00c752175aa591fc2bf6139cf3339f7a282bc7225a3c48c50631a"
+      "bytes": 29387,
+      "sha256": "c4a3074011543037e3042964053e7a74d4a96f8beab2a8c69829008d05bc2431"
     },
     {
       "path": "kb/nodes/power-management-ic/tech-dcdc-cmc-subharmonic-slope-comp-and-cot.md",
@@ -1211,8 +1211,8 @@
     },
     {
       "path": "kb/nodes/sampled-and-clocked/topo-switched-capacitor-unity-and-multiplying-amps.md",
-      "bytes": 34759,
-      "sha256": "2a0c17d9c4a3295b1c50aba7f4372cf04e641486adae290aa5464e8b93a52a89"
+      "bytes": 34941,
+      "sha256": "469cfbbcfb7425d37ef61b0a8db3b61d62c77211a09cc182045081e61668ed91"
     },
     {
       "path": "kb/nodes/sampled-and-clocked/topo-type1-simple-pll.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1761869,
-      "sha256": "3e023df37e0eb17b917372cee8a70371791dbb263b7f792a63bad220cf1ff350"
+      "bytes": 1761910,
+      "sha256": "f0a92ca34e829cfa5e95a9c65a4de6a89c941f235d0cdb450752f7d4960afe86"
     }
   ]
 }
