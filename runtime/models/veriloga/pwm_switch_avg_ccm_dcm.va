@@ -12,6 +12,10 @@
 //     p: passive, c: common inductor pole, plus control input d_in) with
 //     C-infinity smooth hyperbolic/tanh transition between Continuous
 //     Conduction Mode (CCM) and Discontinuous Conduction Mode (DCM).
+//   - Scope: 1st-quadrant asynchronous CCM/DCM operation (ic >= 0, unidirectional
+//     freewheeling diode / zero-current-detect rectifier). Two-quadrant synchronous
+//     forced-CCM operation with negative average inductor current (ic < 0) is out
+//     of scope for this model.
 //   - Zero cross/timer/initial_step event operators and zero conditional
 //     state variables -> 100% compatible with .dc, .ac, .stb, .noise, .tran,
 //     and SpectreRF pss/pac/pstb in < 0.3 s per PVT corner!
@@ -56,8 +60,8 @@ module pwm_switch_avg_ccm_dcm (
     parameter real d_max      = 0.95     from [0.50:0.999];   // Maximum duty cycle clamp
     parameter real r_on_a     = 0.050    from [0.0:1.0e6];    // Active switch R_DS,on [Ohm]
     parameter real r_on_p     = 0.050    from [0.0:1.0e6];    // Passive/Sync switch R_DS,on [Ohm]
-    parameter real eps_d      = 4.0e-3   from (1.0e-6:0.1);   // Smooth duty clamp width
-    parameter real eps_mode   = 4.0e-3   from (1.0e-6:0.1);   // Smooth CCM<->DCM transition width
+    parameter real eps_d      = 2.0e-4   from (1.0e-6:0.1);   // Smooth duty clamp width (Boost D=0.95 err < 0.5%)
+    parameter real eps_mode   = 4.0e-3   from (1.0e-6:0.1);   // Smooth CCM<->DCM transition width (scaled by d_cmd)
     parameter real eps_ceil   = 1.0e-5   from (1.0e-9:1.0e-2);// Smooth upper-clamp width below 1 - 1e-6
     parameter real delta_min  = 1.0e-3   from (1.0e-6:0.2);   // Smooth DCM duty-fraction floor (<0.5% err for delta>=0.05)
     parameter real v_eps      = 1.0e-4   from (1.0e-9:1.0e-1);// Smooth |V_ap| regularization [V]
@@ -69,34 +73,42 @@ module pwm_switch_avg_ccm_dcm (
 
     analog begin : avg_pwm_core
         real vap, ic, abs_vap, abs_ic;
-        real d_raw, d_lo, d_cmd;
-        real g_dcm, mu_dcm, diff_mu, w_dcm, mu_raw, mu_ceil, mu_eff;
+        real d_raw, d_mid, d_half, d_z, d_cmd;
+        real g_dcm, mu_dcm, eps_m_eff, diff_mu, w_dcm, mu_raw, mu_ceil, eps_c_eff, mu_eff;
         real delta, delta_reg, di_l_ccm, r_rip_raw, r_rip, shape_ccm, shape_dcm, shape_eff;
         real r_sw_avg, r_eff;
 
         // Port variables: ic = -I(br_cp) is average current leaving terminal 'c' into L
+        // Valid for 1st-quadrant asynchronous CCM/DCM (ic >= 0).
         vap     = V(br_ap);
         ic      = -I(br_cp);
         abs_vap = sqrt(vap * vap + v_eps * v_eps);
         abs_ic  = sqrt(ic * ic + i_eps * i_eps);
 
-        // C-infinity smooth clamping of commanded duty ratio d_cmd in [d_min, d_max]
-        d_raw = (V(d_in) - v_offset) / v_ramp;
-        d_lo  = 0.5 * (d_raw + d_min + sqrt((d_raw - d_min) * (d_raw - d_min) + eps_d * eps_d));
-        d_cmd = 0.5 * (d_lo  + d_max - sqrt((d_lo  - d_max) * (d_lo  - d_max) + eps_d * eps_d));
+        // C-infinity symmetric hyperbolic box clamp strictly guaranteeing d_min < d_cmd < d_max
+        // for all V(d_in) (including d_min = 0 and V(d_in) < 0) via strict triangle inequality.
+        d_raw  = (V(d_in) - v_offset) / v_ramp;
+        d_mid  = 0.5 * (d_min + d_max);
+        d_half = 0.5 * (d_max - d_min);
+        d_z    = d_raw - d_mid;
+        d_cmd  = d_mid + 0.5 * (sqrt((d_z + d_half) * (d_z + d_half) + eps_d * eps_d)
+                              - sqrt((d_z - d_half) * (d_z - d_half) + eps_d * eps_d));
 
         // Exact Vorperian DCM conversion ratio:
         //   mu_dcm > d_cmd  <=>  |ic| < d_cmd * (1 - d_cmd) * |vap| / (2 * l_ind * f_sw)
         g_dcm  = (d_cmd * d_cmd * abs_vap) / (2.0 * l_ind * f_sw);
         mu_dcm = g_dcm / (abs_ic + g_dcm + 1.0e-15);
 
-        // Smooth C-infinity selection mu_raw = smooth_max(d_cmd, mu_dcm), then
-        // smooth_min(mu_raw, 1.0 - 1.0e-6) so (1.0 - mu_eff) > 1e-6 > 0 at no-load
-        diff_mu = mu_dcm - d_cmd;
-        w_dcm   = 0.5 * (1.0 + tanh(diff_mu / eps_mode));
-        mu_raw  = 0.5 * (d_cmd + mu_dcm + sqrt(diff_mu * diff_mu + eps_mode * eps_mode));
-        mu_ceil = 1.0 - 1.0e-6;
-        mu_eff  = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_ceil * eps_ceil));
+        // Smooth C-infinity selection mu_raw = smooth_max(d_cmd, mu_dcm) with eps_mode scaled
+        // proportionally to d_cmd so standby leakage vanishes as d_cmd -> 0, followed by
+        // smooth upper ceiling below (1 - 1e-6) so (1 - mu_eff) > 0 at no-load while mu_eff > 0.
+        eps_m_eff = eps_mode * d_cmd + 1.0e-9;
+        diff_mu   = mu_dcm - d_cmd;
+        w_dcm     = 0.5 * (1.0 + tanh(diff_mu / eps_m_eff));
+        mu_raw    = 0.5 * (d_cmd + mu_dcm + sqrt(diff_mu * diff_mu + eps_m_eff * eps_m_eff));
+        mu_ceil   = 1.0 - 1.0e-6;
+        eps_c_eff = eps_ceil * mu_raw;
+        mu_eff    = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_c_eff * eps_c_eff));
 
         // Exact CCM + DCM triangular inductor current RMS conduction loss (continuous 4/3 at boundary):
         //   In CCM: di_l_ccm = d_cmd * (1 - d_cmd) * |vap| / (l_ind * f_sw), r_rip = min(di_l_ccm / |ic|, 2)
@@ -104,7 +116,7 @@ module pwm_switch_avg_ccm_dcm (
         //   In DCM: delta = d_cmd / mu_eff <= 1, I_pk = 2 * I_avg / delta,
         //           I_rms1^2 = (4 * d1 / (3 * delta^2)) * I_avg^2, I_rms2^2 = (4 * d2 / (3 * delta^2)) * I_avg^2
         //           => P_cond,DCM = (4 / (3 * delta)) * (mu_eff * r_on_a + (1 - mu_eff) * r_on_p) * I_avg^2
-        delta     = d_cmd / mu_eff;
+        delta     = d_cmd / (mu_eff + 1.0e-15);
         delta_reg = sqrt(delta * delta + delta_min * delta_min);
         di_l_ccm  = (d_cmd * (1.0 - d_cmd) * abs_vap) / (l_ind * f_sw);
         r_rip_raw = di_l_ccm / abs_ic;

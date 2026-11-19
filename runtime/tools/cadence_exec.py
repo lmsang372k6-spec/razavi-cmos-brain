@@ -177,12 +177,20 @@ def _clean_run_dir_for_overwrite(run_dir, project_root, keep_paths=None):
             os.unlink(full_entry)
 
 
+def _format_cds_lib_path(path):
+    """Format a `cds.lib` path token: unquoted unless whitespace is present."""
+    s = str(path)
+    if any(ch.isspace() for ch in s):
+        return '"%s"' % s.replace('"', '\\"')
+    return s
+
+
 def _ensure_run_dir_cds_lib(project_root, run_dir):
-    """Write a 1-line `INCLUDE "<project_root>/cds.lib"` into `<run_dir>/cds.lib` if needed."""
+    """Write a 1-line `INCLUDE <project_root>/cds.lib` into `<run_dir>/cds.lib` if needed."""
     proj_cds = os.path.join(project_root, "cds.lib")
     run_cds = os.path.join(run_dir, "cds.lib")
     if os.path.isfile(proj_cds) and not os.path.exists(run_cds):
-        inc_line = 'INCLUDE "%s"\n' % proj_cds
+        inc_line = "INCLUDE %s\n" % _format_cds_lib_path(proj_cds)
         fh = open(run_cds, "wb")
         try:
             fh.write(inc_line.encode("utf-8"))
@@ -190,6 +198,65 @@ def _ensure_run_dir_cds_lib(project_root, run_dir):
             fh.close()
         return run_cds
     return run_cds if os.path.isfile(run_cds) else None
+
+
+_FATAL_LOG_PATTERNS = (
+    re.compile(r"\*Error\*"),
+    re.compile(r"\*FATAL\*"),
+    re.compile(r"(?:^|\s)(?:FATAL|ERROR)\s*\([A-Za-z0-9_]+-"),
+    re.compile(r"^\s*FATAL\s*[:(]"),
+    re.compile(r"^\s*ERROR\s*:\s+\S"),
+    re.compile(r"spectre\s+completes\s+with\s+[1-9]\d*\s+errors?", re.IGNORECASE),
+    re.compile(r"spectre\s+terminated\s+prematurely", re.IGNORECASE),
+    re.compile(r"internal\s+error\s+found\s+in\s+spectre", re.IGNORECASE),
+)
+
+
+def _scan_subprocess_fatal_errors(log_file, stdout_txt, stderr_txt):
+    """Scan tool log file, stdout, and stderr for fatal Cadence/Spectre error markers."""
+    chunks = []
+    if log_file and os.path.isfile(log_file):
+        try:
+            fh = open(log_file, "rb")
+            try:
+                chunks.append(fh.read().decode("utf-8", "replace"))
+            finally:
+                fh.close()
+        except Exception:
+            pass
+    if stdout_txt:
+        chunks.append(stdout_txt)
+    if stderr_txt:
+        chunks.append(stderr_txt)
+
+    hits = []
+    seen_lines = set()
+    for blob in chunks:
+        for raw_ln in blob.splitlines():
+            ln = raw_ln.strip()
+            if not ln or ln in seen_lines:
+                continue
+            for pat in _FATAL_LOG_PATTERNS:
+                if pat.search(raw_ln):
+                    seen_lines.add(ln)
+                    hits.append(ln[:300])
+                    break
+            if len(hits) >= 10:
+                return hits
+    return hits
+
+
+def _build_live_bridge_load_expr(run_dir, abs_script):
+    """Wrap `(load <script>)` with `changeWorkingDir(run_dir)` inside `unwindProtect` restoring CWD."""
+    q_run = ic617_client._skill_quote(run_dir)
+    q_scr = ic617_client._skill_quote(abs_script)
+    return (
+        "let((saPrevCwd) "
+        "saPrevCwd = getWorkingDir() "
+        'unless(changeWorkingDir(%s) error("Cannot changeWorkingDir to %%s\\n" %s)) '
+        "unwindProtect((load %s) when(stringp(saPrevCwd) errset(changeWorkingDir(saPrevCwd) nil))))"
+        % (q_run, q_run, q_scr)
+    )
 
 
 def _is_pid_alive_local(pid):
@@ -598,7 +665,7 @@ def execute_cadence_job(
         abs_script = os.path.abspath(script)
         if not os.path.isfile(abs_script):
             raise ValueError("SKILL script not found: " + abs_script)
-        skill_expr = "(load %s)" % ic617_client._skill_quote(abs_script)
+        skill_expr = _build_live_bridge_load_expr(run_dir, abs_script)
         if dry_run:
             return {
                 "ok": True,
@@ -758,9 +825,12 @@ def execute_cadence_job(
     finally:
         lf.close()
 
-    return {
-        "ok": (proc.returncode == 0),
-        "op_ok": (proc.returncode == 0),
+    log_errors = _scan_subprocess_fatal_errors(spec["log_file"], stdout_txt, stderr_txt)
+    sub_ok = (proc.returncode == 0) and (len(log_errors) == 0)
+
+    ret = {
+        "ok": sub_ok,
+        "op_ok": sub_ok,
         "exit_code": proc.returncode,
         "elapsed_s": elapsed,
         "tool": tool,
@@ -772,11 +842,15 @@ def execute_cadence_job(
         "run_cds_lib": run_cds_lib,
         "psf_dir": spec["psf_dir"],
         "log_file": spec["log_file"],
+        "log_errors": log_errors,
         "wrapper_log": wrapper_log,
         "locks_detected": active_locks,
         "stdout_tail": stdout_txt[-4000:],
         "stderr_tail": stderr_txt[-4000:],
     }
+    if not sub_ok and log_errors:
+        ret["error"] = "Fatal/error marker detected in %s log: %s" % (tool, log_errors[0])
+    return ret
 
 
 # ---------------------------------------------------------------------------
@@ -995,6 +1069,21 @@ def run_self_test():
         t_ipc.daemon = True
         t_ipc.start()
 
+        br_dry = execute_cadence_job(
+            "virtuoso-batch",
+            project_dir=proj_dir,
+            run_id="bridge_cwd_check",
+            script=il_script,
+            cell_spec="analog_lib/ota_core/schematic",
+            prefer_bridge=True,
+            socket_dir=sock_dir,
+            dry_run=True,
+        )
+        dry_expr = br_dry.get("skill_expr", "")
+        if "changeWorkingDir" not in dry_expr or "unwindProtect" not in dry_expr or "bridge_cwd_check" not in dry_expr:
+            raise AssertionError("Expected live-bridge skill_expr to wrap load in changeWorkingDir + unwindProtect, got %r" % dry_expr)
+        checks.append("live_bridge_cwd_unwind_protect_ok")
+
         br_res = execute_cadence_job(
             "virtuoso-batch",
             project_dir=proj_dir,
@@ -1010,6 +1099,59 @@ def run_self_test():
         helper_proc.stdin.close()
         helper_proc.wait()
         helper_proc = None
+
+        # 6. Subprocess fatal log error scanner (`*Error*`, `ERROR (SFE-`, `FATAL`) fails closed even on rc=0
+        def _mock_popen_silent_fail(cmd, cwd=None, env=None, stdout=None, stderr=None):
+            lf_path = os.path.join(cwd, "spectre.log")
+            _write_text_utf8(lf_path, "Simulating...\nERROR (SFE-874): Unexpected keyword in netlist.\nspectre completes with 1 error, 0 warnings.\n")
+            return _DummyProc()
+
+        subprocess.Popen = _mock_popen_silent_fail
+        try:
+            sf_res = execute_cadence_job(
+                "spectre",
+                project_dir=proj_dir,
+                run_id="silent_sfe_fail",
+                netlist=deck_path,
+                overwrite_run=True,
+                dry_run=False,
+            )
+        finally:
+            subprocess.Popen = orig_popen
+        if sf_res.get("exit_code") != 0 or sf_res.get("ok") is not False or sf_res.get("op_ok") is not False or not sf_res.get("log_errors"):
+            raise AssertionError("Expected rc=0 Spectre log with ERROR (SFE-874) to fail closed, got %r" % sf_res)
+
+        ocn_script = os.path.join(proj_dir, "bad.ocn")
+        _write_text_utf8(ocn_script, 'println("ocn")\n')
+
+        def _mock_popen_skill_err(cmd, cwd=None, env=None, stdout=None, stderr=None):
+            lf_path = os.path.join(cwd, "ocean.log")
+            _write_text_utf8(lf_path, "*Error* eval: unbound variable - badVar\n")
+            return _DummyProc()
+
+        subprocess.Popen = _mock_popen_skill_err
+        try:
+            ocn_res = execute_cadence_job(
+                "ocean",
+                project_dir=proj_dir,
+                run_id="silent_ocn_fail",
+                script=ocn_script,
+                prefer_bridge=False,
+                overwrite_run=True,
+                dry_run=False,
+            )
+        finally:
+            subprocess.Popen = orig_popen
+        if ocn_res.get("ok") is not False or not ocn_res.get("log_errors"):
+            raise AssertionError("Expected rc=0 OCEAN log with *Error* to fail closed, got %r" % ocn_res)
+        checks.append("subprocess_fatal_log_scanner_fail_closed_ok")
+
+        # 7. `cds.lib` INCLUDE path quoting: unquoted without spaces, quoted only when spaces exist
+        if _format_cds_lib_path("/home/disk/eda/proj/cds.lib") != "/home/disk/eda/proj/cds.lib":
+            raise AssertionError("Expected unquoted cds.lib path when no spaces exist")
+        if _format_cds_lib_path("/home/disk/eda/my proj/cds.lib") != '"/home/disk/eda/my proj/cds.lib"':
+            raise AssertionError("Expected quoted cds.lib path when spaces exist")
+        checks.append("cds_lib_conditional_quoting_ok")
 
         return {
             "ok": True,

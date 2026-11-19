@@ -176,7 +176,7 @@ def verify_junctions(repo_root=None, user_home=None):
         resolved = os.path.realpath(lpath) if exists else None
         skill_md = os.path.join(lpath, "SKILL.md")
         readable = os.path.isfile(skill_md)
-        matched = bool(exists and norm_real(lpath) == target_norm and readable)
+        matched = bool(exists and reparse and norm_real(lpath) == target_norm and readable)
         if not matched:
             errors.append("%s junction invalid or missing at %s" % (spec["agent"], lpath))
         results.append({
@@ -230,6 +230,8 @@ def run_self_test():
         except ValueError:
             refused = True
         assert refused, "Expected ValueError on non-junction collision"
+        ver_bad = verify_junctions(repo_root=fake_repo, user_home=bad_home)
+        assert ver_bad["ok"] is False, ver_bad
 
         # Clean up test junctions before rmtree so Windows Python < 3.8 never traverses junctions
         for a in inst1["agents"]:

@@ -111,7 +111,7 @@ $$T_{loop} = \left(\frac{g_{m3}}{g_{m4}}\right) \cdot \left(\frac{G_{m2}}{g_{m1}
 
 Với $g_{m3} = g_{m4}$, điều kiện rút gọn thành $G_{m2} < g_{m1}$. Bỏ qua $r_O$ để nhìn bản chất:
 - Tại điểm suy biến $I_{out} \to 0^+$ (khi mới mồi nhẹ dòng): $g_{m1}, g_{m2}$ còn rất nhỏ nên $g_{m2} R_S \ll 1 \Rightarrow G_{m2} \approx g_{m2} = \sqrt{K}\, g_{m1} > g_{m1}$ (vì $K > 1$). Độ lợi vòng $T_{loop} = \sqrt{K} > 1$: hồi tiếp dương khuếch đại vọt dòng đi lên, tự đẩy mạch rời khỏi vùng dòng nhỏ!
-- Tại điểm cân bằng thiết kế (ví dụ $K=4$, bỏ qua hiệu ứng thân): $g_{m2} = \sqrt{K}\, g_{m1}/ \sqrt{K}$? Cẩn thận! Vì $I_{D1} = I_{D2}$ và $(W/L)_2 = K (W/L)_1$, ta luôn có $g_{m2} = \sqrt{K}\, g_{m1}$ và $I_{out} R_S = \frac{2}{g_{m1}}\left(1 - \frac{1}{\sqrt{K}}\right)$, suy ra $g_{m2} R_S = 2(\sqrt{K} - 1)$. Khi đó:
+- Tại điểm cân bằng thiết kế (ví dụ $K=4$, bỏ qua hiệu ứng thân): vì $I_{D1} = I_{D2}$ và $(W/L)_2 = K (W/L)_1$, ta luôn có $g_{m2} = \sqrt{K}\, g_{m1}$ và $R_S = \frac{2}{g_{m1}}\left(1 - \frac{1}{\sqrt{K}}\right)$, suy ra $g_{m2} R_S = 2(\sqrt{K} - 1)$. Khi đó:
 
 $$G_{m2} = \frac{g_{m2}}{1 + g_{m2} R_S} = \frac{\sqrt{K}\, g_{m1}}{2\sqrt{K} - 1} \implies T_{loop} = \frac{\sqrt{K}}{2\sqrt{K} - 1}$$
 

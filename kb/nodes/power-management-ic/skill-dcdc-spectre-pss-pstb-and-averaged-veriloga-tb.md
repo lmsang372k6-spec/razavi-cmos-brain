@@ -172,72 +172,143 @@ Trong Làn 2 trên mạch transistor thực tế:
 
 ### 5.1. Làn 1 — Mô hình Verilog-A 3 Cực Trơn $C^\infty$ Không Trạng Thái Ẩn (`pwm_switch_avg_ccm_dcm.va`)
 ```verilog
-// Spectre 15.1 Compatible, 100% Hidden-State-Free Averaged CCM/DCM 3-Terminal PWM Switch
 `include "constants.vams"
 `include "disciplines.vams"
 
-module pwm_switch_avg_ccm_dcm(a, p, c, d_in);
-    inout electrical a, p, c;
-    input electrical d_in;
+// ============================================================================
+// Vorperian 3-Terminal Averaged PWM Switch Model (Automatic Smooth CCM / DCM)
+// File: models/veriloga/pwm_switch_avg_ccm_dcm.va
+// Managed by SKILL-ANALOG (release 2026.11.19.1)
+// Target Simulator: Cadence Spectre 15.1 (MMSIM151) -- 100% Hidden-State-Free
+//
+// Physics & Capabilities:
+//   - Implements Vorperian's invariant 3-terminal PWM switch (a: active,
+//     p: passive, c: common inductor pole, plus control input d_in) with
+//     C-infinity smooth hyperbolic/tanh transition between Continuous
+//     Conduction Mode (CCM) and Discontinuous Conduction Mode (DCM).
+//   - Scope: 1st-quadrant asynchronous CCM/DCM operation (ic >= 0, unidirectional
+//     freewheeling diode / zero-current-detect rectifier). Two-quadrant synchronous
+//     forced-CCM operation with negative average inductor current (ic < 0) is out
+//     of scope for this model.
+//   - Zero cross/timer/initial_step event operators and zero conditional
+//     state variables -> 100% compatible with .dc, .ac, .stb, .noise, .tran,
+//     and SpectreRF pss/pac/pstb in < 0.3 s per PVT corner!
+//   - Smooth upper ceiling on mu_eff below (1 - 1e-6) guarantees (1 - mu_eff)
+//     remains strictly positive even at exact zero load.
+//   - Exact triangular inductor current RMS conduction loss in DCM:
+//       delta = (d1 + d2) = d_cmd / mu_eff <= 1,
+//       d1 = d_cmd = delta * mu_eff,  d2 = delta * (1 - mu_eff).
+//       I_avg = 0.5 * delta * I_pk  =>  I_pk = 2 * I_avg / delta.
+//       I_rms1^2 = d1 * (I_pk^2 / 3) = (4 * d1 / (3 * delta^2)) * I_avg^2
+//                = (4 / (3 * delta)) * mu_eff * I_avg^2
+//       I_rms2^2 = d2 * (I_pk^2 / 3) = (4 * d2 / (3 * delta^2)) * I_avg^2
+//                = (4 / (3 * delta)) * (1 - mu_eff) * I_avg^2
+//       => P_cond,DCM = (4 / (3 * delta)) * (mu_eff * r_on_a + (1 - mu_eff) * r_on_p) * I_avg^2.
+//       At delta = 0.5 and r_on_a = r_on_p = R, r_eff = (8/3) * R = 2.6667 * R.
+//
+// Canonical Converter Pin Orientations (Inductor L always connects to 'c'):
+//   1. Buck Converter:
+//        a -> v_in,  p -> gnd,   c -> v_sw   (L from v_sw to v_out)
+//        => CCM: V(v_out) = D * V(v_in), LC double-pole w0 = 1/sqrt(L*C)
+//   2. Boost Converter:
+//        a -> gnd,   p -> v_out, c -> v_sw   (L from v_in to v_sw)
+//        => CCM: V(v_out) = V(v_in)/(1-D), automatic load-dependent RHP Zero
+//           w_z,RHP = R_load * (1 - D)^2 / L !
+//   3. Inverting Buck-Boost Converter:
+//        a -> v_in,  p -> v_out, c -> v_sw   (L from v_sw to gnd; v_out < 0)
+//        => CCM: V(v_out) = -V(v_in)*D/(1-D), RHP Zero R_load*(1-D)^2/(D*L)
+// ============================================================================
 
-    parameter real l_ind     = 1.0e-6  from (1.0e-12:inf);
-    parameter real f_sw      = 2.0e6   from (1.0:inf);
-    parameter real v_ramp    = 1.0     from (1.0e-6:inf);
-    parameter real v_offset  = 0.0;
-    parameter real d_min     = 0.01    from [0.0:0.49];
-    parameter real d_max     = 0.95    from [0.50:0.999];
-    parameter real r_on_a    = 0.050   from [0.0:1.0e6];
-    parameter real r_on_p    = 0.050   from [0.0:1.0e6];
-    parameter real eps_d     = 4.0e-3  from (1.0e-6:0.1);
-    parameter real eps_mode  = 4.0e-3  from (1.0e-6:0.1);
-    parameter real eps_ceil  = 1.0e-5  from (1.0e-9:1.0e-2);
-    parameter real delta_min = 1.0e-3  from (1.0e-6:0.2);
-    parameter real v_eps     = 1.0e-4  from (1.0e-9:1.0e-1);
-    parameter real i_eps     = 1.0e-7  from (1.0e-12:1.0e-2);
-    parameter real gmin_par  = 1.0e-12 from [0.0:1.0e-6];
+module pwm_switch_avg_ccm_dcm (
+    inout electrical a,
+    inout electrical p,
+    inout electrical c,
+    input electrical d_in
+);
+
+    parameter real l_ind      = 1.0e-6   from (1.0e-12:inf);  // Power inductor L [H]
+    parameter real f_sw       = 2.0e6    from (1.0:inf);      // Switching frequency f_sw [Hz]
+    parameter real v_ramp     = 1.0      from (1.0e-6:inf);   // PWM modulator ramp height V_M [V]
+    parameter real v_offset   = 0.0;                          // Ramp valley offset voltage [V]
+    parameter real d_min      = 0.01     from [0.0:0.49];     // Minimum duty cycle clamp
+    parameter real d_max      = 0.95     from [0.50:0.999];   // Maximum duty cycle clamp
+    parameter real r_on_a     = 0.050    from [0.0:1.0e6];    // Active switch R_DS,on [Ohm]
+    parameter real r_on_p     = 0.050    from [0.0:1.0e6];    // Passive/Sync switch R_DS,on [Ohm]
+    parameter real eps_d      = 2.0e-4   from (1.0e-6:0.1);   // Smooth duty clamp width (Boost D=0.95 err < 0.5%)
+    parameter real eps_mode   = 4.0e-3   from (1.0e-6:0.1);   // Smooth CCM<->DCM transition width (scaled by d_cmd)
+    parameter real eps_ceil   = 1.0e-5   from (1.0e-9:1.0e-2);// Smooth upper-clamp width below 1 - 1e-6
+    parameter real delta_min  = 1.0e-3   from (1.0e-6:0.2);   // Smooth DCM duty-fraction floor (<0.5% err for delta>=0.05)
+    parameter real v_eps      = 1.0e-4   from (1.0e-9:1.0e-1);// Smooth |V_ap| regularization [V]
+    parameter real i_eps      = 1.0e-7   from (1.0e-12:1.0e-2);// Smooth |I_c| regularization [A]
+    parameter real gmin_par   = 1.0e-12  from [0.0:1.0e-6];   // Bleed conductance for DC conditioning [S]
 
     branch (a, p) br_ap;
     branch (c, p) br_cp;
 
     analog begin : avg_pwm_core
-        real vap, ic, abs_vap, abs_ic, d_raw, d_lo, d_cmd;
-        real g_dcm, mu_dcm, diff_mu, w_dcm, mu_raw, mu_ceil, mu_eff;
-        real delta, delta_reg, di_l_ccm, r_rip_raw, r_rip, shape_ccm, shape_eff, r_sw_avg, r_eff;
+        real vap, ic, abs_vap, abs_ic;
+        real d_raw, d_mid, d_half, d_z, d_cmd;
+        real g_dcm, mu_dcm, eps_m_eff, diff_mu, w_dcm, mu_raw, mu_ceil, eps_c_eff, mu_eff;
+        real delta, delta_reg, di_l_ccm, r_rip_raw, r_rip, shape_ccm, shape_dcm, shape_eff;
+        real r_sw_avg, r_eff;
 
+        // Port variables: ic = -I(br_cp) is average current leaving terminal 'c' into L
+        // Valid for 1st-quadrant asynchronous CCM/DCM (ic >= 0).
         vap     = V(br_ap);
         ic      = -I(br_cp);
         abs_vap = sqrt(vap * vap + v_eps * v_eps);
         abs_ic  = sqrt(ic * ic + i_eps * i_eps);
 
-        // Kep tron C^inf chu ky nhiem vu d_cmd trong [d_min, d_max]
-        d_raw = (V(d_in) - v_offset) / v_ramp;
-        d_lo  = 0.5 * (d_raw + d_min + sqrt((d_raw - d_min) * (d_raw - d_min) + eps_d * eps_d));
-        d_cmd = 0.5 * (d_lo  + d_max - sqrt((d_lo  - d_max) * (d_lo  - d_max) + eps_d * eps_d));
+        // C-infinity symmetric hyperbolic box clamp strictly guaranteeing d_min < d_cmd < d_max
+        // for all V(d_in) (including d_min = 0 and V(d_in) < 0) via strict triangle inequality.
+        d_raw  = (V(d_in) - v_offset) / v_ramp;
+        d_mid  = 0.5 * (d_min + d_max);
+        d_half = 0.5 * (d_max - d_min);
+        d_z    = d_raw - d_mid;
+        d_cmd  = d_mid + 0.5 * (sqrt((d_z + d_half) * (d_z + d_half) + eps_d * eps_d)
+                              - sqrt((d_z - d_half) * (d_z - d_half) + eps_d * eps_d));
 
-        // Ty so chuyen doi Vorperian DCM ghep tron C^inf voi CCM + tran mu_eff < 1 - 1e-6 tai tai bang 0
-        g_dcm   = (d_cmd * d_cmd * abs_vap) / (2.0 * l_ind * f_sw);
-        mu_dcm  = g_dcm / (abs_ic + g_dcm + 1.0e-15);
-        diff_mu = mu_dcm - d_cmd;
-        w_dcm   = 0.5 * (1.0 + tanh(diff_mu / eps_mode));
-        mu_raw  = 0.5 * (d_cmd + mu_dcm + sqrt(diff_mu * diff_mu + eps_mode * eps_mode));
-        mu_ceil = 1.0 - 1.0e-6;
-        mu_eff  = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_ceil * eps_ceil));
+        // Exact Vorperian DCM conversion ratio:
+        //   mu_dcm > d_cmd  <=>  |ic| < d_cmd * (1 - d_cmd) * |vap| / (2 * l_ind * f_sw)
+        g_dcm  = (d_cmd * d_cmd * abs_vap) / (2.0 * l_ind * f_sw);
+        mu_dcm = g_dcm / (abs_ic + g_dcm + 1.0e-15);
 
-        // Ton hao dan RMS chinh xac ca CCM (1 + Delta_I_L^2 / (12 * I_avg^2)) va DCM (4 / (3 * delta)), khop tron 4/3 tai bien!
-        delta     = d_cmd / mu_eff;
+        // Smooth C-infinity selection mu_raw = smooth_max(d_cmd, mu_dcm) with eps_mode scaled
+        // proportionally to d_cmd so standby leakage vanishes as d_cmd -> 0, followed by
+        // smooth upper ceiling below (1 - 1e-6) so (1 - mu_eff) > 0 at no-load while mu_eff > 0.
+        eps_m_eff = eps_mode * d_cmd + 1.0e-9;
+        diff_mu   = mu_dcm - d_cmd;
+        w_dcm     = 0.5 * (1.0 + tanh(diff_mu / eps_m_eff));
+        mu_raw    = 0.5 * (d_cmd + mu_dcm + sqrt(diff_mu * diff_mu + eps_m_eff * eps_m_eff));
+        mu_ceil   = 1.0 - 1.0e-6;
+        eps_c_eff = eps_ceil * mu_raw;
+        mu_eff    = 0.5 * (mu_raw + mu_ceil - sqrt((mu_raw - mu_ceil) * (mu_raw - mu_ceil) + eps_c_eff * eps_c_eff));
+
+        // Exact CCM + DCM triangular inductor current RMS conduction loss (continuous 4/3 at boundary):
+        //   In CCM: di_l_ccm = d_cmd * (1 - d_cmd) * |vap| / (l_ind * f_sw), r_rip = min(di_l_ccm / |ic|, 2)
+        //           I_rms^2 / I_avg^2 = 1 + r_rip^2 / 12  (= 4/3 at exact CCM/DCM boundary r_rip = 2)
+        //   In DCM: delta = d_cmd / mu_eff <= 1, I_pk = 2 * I_avg / delta,
+        //           I_rms1^2 = (4 * d1 / (3 * delta^2)) * I_avg^2, I_rms2^2 = (4 * d2 / (3 * delta^2)) * I_avg^2
+        //           => P_cond,DCM = (4 / (3 * delta)) * (mu_eff * r_on_a + (1 - mu_eff) * r_on_p) * I_avg^2
+        delta     = d_cmd / (mu_eff + 1.0e-15);
         delta_reg = sqrt(delta * delta + delta_min * delta_min);
         di_l_ccm  = (d_cmd * (1.0 - d_cmd) * abs_vap) / (l_ind * f_sw);
         r_rip_raw = di_l_ccm / abs_ic;
         r_rip     = 0.5 * (r_rip_raw + 2.0 - sqrt((r_rip_raw - 2.0) * (r_rip_raw - 2.0) + 1.0e-6));
         shape_ccm = 1.0 + (r_rip * r_rip) / 12.0;
-        shape_eff = (1.0 - w_dcm) * shape_ccm + w_dcm * (4.0 / (3.0 * delta_reg));
+        shape_dcm = 4.0 / (3.0 * delta_reg);
+        shape_eff = (1.0 - w_dcm) * shape_ccm + w_dcm * shape_dcm;
         r_sw_avg  = mu_eff * r_on_a + (1.0 - mu_eff) * r_on_p;
         r_eff     = shape_eff * r_sw_avg;
 
+        // Invariant 3-terminal averaged branch equations (KCL & power conservative)
         I(br_ap) <+ mu_eff * ic + gmin_par * vap;
         V(br_cp) <+ mu_eff * vap - r_eff * ic;
+
+        // Prevent floating matrix row if d_in is driven through capacitive/high-Z network
         I(d_in)  <+ gmin_par * V(d_in);
     end
+
 endmodule
 ```
 

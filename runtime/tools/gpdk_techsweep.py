@@ -20,7 +20,7 @@ Fixes upstream pygmid & Spectre PSF characterization pitfalls:
 
 Release: 2026.11.19.1
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import gzip
 import hashlib
@@ -197,7 +197,7 @@ FLAVOR_ALIASES = {
 }
 
 
-class TechSweepError(Exception):
+class TechSweepError(ValueError):
     pass
 
 
@@ -499,10 +499,21 @@ def resolve_sweep_spec(
             % (chosen_corner, preset["id"], ", ".join(preset["corners"]))
         )
 
-    vdd_cap = fcfg["vdd_max"]
+    vdd_cap = float(fcfg["vdd_max"])
+    vsb_cap = float(fcfg["vsb_max"])
     eff_vgs_max = float(vgs_max) if vgs_max is not None else vdd_cap
     eff_vds_max = float(vds_max) if vds_max is not None else vdd_cap
-    eff_vsb_max = float(vsb_max) if vsb_max is not None else fcfg["vsb_max"]
+    eff_vsb_max = float(vsb_max) if vsb_max is not None else vsb_cap
+
+    for nm_chk, val_chk in (("vgs_max", eff_vgs_max), ("vds_max", eff_vds_max), ("vsb_max", eff_vsb_max)):
+        if math.isnan(val_chk) or math.isinf(val_chk):
+            raise TechSweepError("Non-finite %s value: %r" % (nm_chk, val_chk))
+    if eff_vgs_max <= 0.0:
+        raise TechSweepError("vgs_max must be strictly positive (got %g)." % eff_vgs_max)
+    if eff_vds_max <= 0.0:
+        raise TechSweepError("vds_max must be strictly positive (got %g)." % eff_vds_max)
+    if eff_vsb_max < 0.0:
+        raise TechSweepError("vsb_max must be non-negative (got %g)." % eff_vsb_max)
 
     if not allow_overvoltage:
         if eff_vgs_max > vdd_cap + 1e-9:
@@ -515,27 +526,59 @@ def resolve_sweep_spec(
                 "SOA violation: requested VDS_max=%.3fV exceeds %s %s safe cap %.2fV."
                 % (eff_vds_max, preset["id"], fcfg["modeln"], vdd_cap)
             )
-        if eff_vsb_max > vdd_cap + 1e-9:
+        if eff_vsb_max > vsb_cap + 1e-9:
             raise TechSweepError(
-                "SOA violation: requested VSB_max=%.3fV exceeds safe reverse body-bias cap %.2fV."
-                % (eff_vsb_max, vdd_cap)
+                "SOA violation: requested VSB_max=%.3fV exceeds %s %s safe reverse body-bias cap %.2fV."
+                % (eff_vsb_max, preset["id"], fcfg["modeln"], vsb_cap)
             )
 
     step_g = float(vgs_step) if vgs_step is not None else fcfg["vgs_step"]
     vgs_grid = _linspace_step(0.0, eff_vgs_max, step_g)
 
-    if vds_list:
-        vds_grid = [v for v in vds_list if 0.0 < v <= eff_vds_max + 1e-9]
+    if vds_list is not None:
+        vds_clean = []
+        vds_upper = min(eff_vds_max, vdd_cap) if (not allow_overvoltage) else eff_vds_max
+        for v_raw in vds_list:
+            v = float(v_raw)
+            if math.isnan(v) or math.isinf(v):
+                raise TechSweepError("Non-finite VDS value in vds_list: %r" % (v_raw,))
+            if v <= 0.0:
+                raise TechSweepError("VDS values must be strictly > 0.0V (got %.4gV)." % v)
+            if (not allow_overvoltage) and v > vds_upper + 1e-9:
+                raise TechSweepError(
+                    "SOA violation: requested VDS=%.4gV in vds_list exceeds safe cap %.2fV." % (v, vds_upper)
+                )
+            vds_clean.append(v)
+        vds_grid = sorted(list(set([round(v, 9) for v in vds_clean])))
+        if not vds_grid:
+            raise TechSweepError("Empty VDS grid after validation.")
     else:
         vds_grid = [v for v in fcfg["vds_grid"] if v <= eff_vds_max + 1e-9]
         if not vds_grid or abs(vds_grid[-1] - eff_vds_max) > 1e-6:
             vds_grid.append(eff_vds_max)
-    vds_grid = sorted(list(set([round(v, 9) for v in vds_grid])))
+        vds_grid = sorted(list(set([round(v, 9) for v in vds_grid])))
 
     if vsb_list is not None:
-        vsb_grid = sorted(list(set([round(v, 9) for v in vsb_list])))
+        vsb_clean = []
+        vsb_upper = min(eff_vsb_max, vsb_cap) if (not allow_overvoltage) else eff_vsb_max
+        for v_raw in vsb_list:
+            v = float(v_raw)
+            if math.isnan(v) or math.isinf(v):
+                raise TechSweepError("Non-finite VSB value in vsb_list: %r" % (v_raw,))
+            if v < -1e-12:
+                raise TechSweepError("VSB values must be >= 0.0V (got %.4gV)." % v)
+            if (not allow_overvoltage) and v > vsb_upper + 1e-9:
+                raise TechSweepError(
+                    "SOA violation: requested VSB=%.4gV in vsb_list exceeds safe cap %.2fV." % (v, vsb_upper)
+                )
+            vsb_clean.append(max(0.0, v))
+        vsb_grid = sorted(list(set([round(v, 9) for v in vsb_clean])))
+        if not vsb_grid:
+            raise TechSweepError("Empty VSB grid after validation.")
     else:
         vsb_grid = [v for v in fcfg["vsb_grid"] if v <= eff_vsb_max + 1e-9]
+        if not vsb_grid:
+            raise TechSweepError("Empty VSB grid after validation.")
 
     l_grid = sorted(list(set(l_list if l_list else fcfg["l_grid"])))
     if min(l_grid) <= 0.0:
@@ -1100,11 +1143,10 @@ def run_spectre_sweep(spec, work_dir, out_path):
             sh_cmd = (
                 'if [ -f "$HOME/cadence/env.sh" ]; then . "$HOME/cadence/env.sh"; fi; '
                 'export CDS_Netlisting_Mode=Analog; '
-                'spectre +escchars =log "%s" -format psfascii -raw "%s" "%s"'
-                % (log_path, raw_dir, bundle["deck_file"])
+                'spectre +escchars =log "$1" -format psfascii -raw "$2" "$3"'
             )
             proc = subprocess.Popen(
-                ["/bin/sh", "-c", sh_cmd],
+                ["/bin/sh", "-c", sh_cmd, "_", log_path, raw_dir, bundle["deck_file"]],
                 cwd=work_dir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -1183,21 +1225,31 @@ def generate_demo_lut(out_path, pdk="gpdk090", corner=None, temp_c=27.0, flavor=
     chosen_corner = corner if corner else preset["default_corner"]
     c_low = chosen_corner.lower()
 
-    # Corner shifts
-    vth_shift = 0.0
-    mu_scale = 1.0
+    # Corner shifts (separate NMOS and PMOS so fs/sf skew opposite polarities)
+    vth_shift_n = 0.0
+    vth_shift_p = 0.0
+    mu_scale_n = 1.0
+    mu_scale_p = 1.0
     if c_low.startswith("ss"):
-        vth_shift = 0.045
-        mu_scale = 0.80
+        vth_shift_n = 0.045
+        vth_shift_p = 0.045
+        mu_scale_n = 0.80
+        mu_scale_p = 0.80
     elif c_low.startswith("ff"):
-        vth_shift = -0.045
-        mu_scale = 1.22
+        vth_shift_n = -0.045
+        vth_shift_p = -0.045
+        mu_scale_n = 1.22
+        mu_scale_p = 1.22
     elif c_low.startswith("fs"):
-        vth_shift = -0.025
-        mu_scale = 1.08
+        vth_shift_n = -0.025
+        vth_shift_p = 0.025
+        mu_scale_n = 1.08
+        mu_scale_p = 0.92
     elif c_low.startswith("sf"):
-        vth_shift = 0.025
-        mu_scale = 0.92
+        vth_shift_n = 0.025
+        vth_shift_p = -0.025
+        mu_scale_n = 0.92
+        mu_scale_p = 1.08
 
     k_boltz = 1.3806488e-23
     q_elec = 1.60217657e-19
@@ -1218,10 +1270,10 @@ def generate_demo_lut(out_path, pdk="gpdk090", corner=None, temp_c=27.0, flavor=
         cj_p = 5.8e-10
         modeln = fcfg["modeln"]
         modelp = fcfg["modelp"]
-        vth0_n = 0.34 + vth_shift
-        vth0_p = 0.36 - (vth_shift if c_low in ("fs", "sf") else -vth_shift)
-        mu0_n = 0.034 * mu_scale
-        mu0_p = 0.0125 * mu_scale
+        vth0_n = 0.34 + vth_shift_n
+        vth0_p = 0.36 + vth_shift_p
+        mu0_n = 0.034 * mu_scale_n
+        mu0_p = 0.0125 * mu_scale_p
         va0_n = 2.2
         va0_p = 2.0
     else:
@@ -1238,10 +1290,10 @@ def generate_demo_lut(out_path, pdk="gpdk090", corner=None, temp_c=27.0, flavor=
         cj_p = 5.0e-10
         modeln = fcfg["modeln"]
         modelp = fcfg["modelp"]
-        vth0_n = 0.31 + vth_shift
-        vth0_p = 0.33 + vth_shift
-        mu0_n = 0.028 * mu_scale
-        mu0_p = 0.011 * mu_scale
+        vth0_n = 0.31 + vth_shift_n
+        vth0_p = 0.33 + vth_shift_p
+        mu0_n = 0.028 * mu_scale_n
+        mu0_p = 0.011 * mu_scale_p
         va0_n = 1.55
         va0_p = 1.45
 
@@ -1716,11 +1768,49 @@ def run_self_test():
         if not blocked_strict_soa:
             raise AssertionError("Expected LutBoundsError when allow_soa_violation=False on |VGB|=1.5V!")
 
+        # 8. Verify vsb_list / vds_list SOA bounds (#18) and empty grid rejection as ValueError
+        for desc_b, kw_b in (
+            ("vsb_over_cap", {"pdk": "gpdk045", "flavor": "core", "vsb_list": [0.0, 0.8]}),
+            ("vsb_negative", {"pdk": "gpdk045", "flavor": "core", "vsb_list": [-0.1, 0.2]}),
+            ("vsb_empty", {"pdk": "gpdk045", "flavor": "core", "vsb_list": []}),
+            ("vds_over_cap", {"pdk": "gpdk045", "flavor": "core", "vds_list": [0.5, 1.4]}),
+            ("vds_zero", {"pdk": "gpdk045", "flavor": "core", "vds_list": [0.0, 0.5]}),
+            ("vds_empty", {"pdk": "gpdk045", "flavor": "core", "vds_list": []}),
+            ("vsb_max_over_cap", {"pdk": "gpdk045", "flavor": "core", "vsb_max": 0.9}),
+        ):
+            caught_val = False
+            try:
+                resolve_sweep_spec(**kw_b)
+            except ValueError:
+                caught_val = True
+            if not caught_val:
+                raise AssertionError("Failed to reject %s with ValueError!" % desc_b)
+
+        # 9. Verify GPDK045 fs/sf demo LUT opposite NMOS vs PMOS skew (#44)
+        demo_fs = os.path.join(tmp_dir, "demo_gpdk045_fs.lut.json.gz")
+        demo_sf = os.path.join(tmp_dir, "demo_gpdk045_sf.lut.json.gz")
+        generate_demo_lut(demo_fs, pdk="gpdk045", corner="fs")
+        generate_demo_lut(demo_sf, pdk="gpdk045", corner="sf")
+        lut45_fs = load_lut(demo_fs)
+        lut45_sf = load_lut(demo_sf)
+        qn_tt = lut45.query(dev="nmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        qn_fs = lut45_fs.query(dev="nmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        qn_sf = lut45_sf.query(dev="nmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        qp_tt = lut45.query(dev="pmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        qp_fs = lut45_fs.query(dev="pmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        qp_sf = lut45_sf.query(dev="pmos", l_m=90e-9, vgs=0.7, vds=0.5, vsb=0.0)
+        if not (qn_fs["vth"] < qn_tt["vth"] < qn_sf["vth"] and qn_fs["jd_a_per_m"] > qn_tt["jd_a_per_m"] > qn_sf["jd_a_per_m"]):
+            raise AssertionError("GPDK045 NMOS fs/tt/sf skew ordering invalid!")
+        if not (qp_sf["vth"] < qp_tt["vth"] < qp_fs["vth"] and qp_sf["jd_a_per_m"] > qp_tt["jd_a_per_m"] > qp_fs["jd_a_per_m"]):
+            raise AssertionError("GPDK045 PMOS fs/tt/sf must skew opposite to NMOS!")
+
         return {
             "ok": True,
             "release": RELEASE,
             "self_test": "PASS",
             "overvoltage_guard_verified": blocked_overvolt,
+            "vsb_vds_list_bounds_verified": True,
+            "gpdk045_fs_sf_skew_verified": True,
             "multi_terminal_soa_verified": True,
             "model_tree_hash_verified": True,
             "zero_noise_psf_guard_verified": caught_zero_noise,

@@ -4,7 +4,7 @@ Các liên kết là bản cục bộ tại commit đã khóa trong `sources.loc
 
 | Việc | Tệp mở đầu |
 |---|---|
-| Bộ não Tri thức Razavi (68 thẻ, 13 checklist, 2.200 thuật ngữ) | [Hướng dẫn KB](../kb/README.md), [kb_lookup.py](../tools/kb_lookup.py), [kb_fetch.py](../tools/kb_fetch.py) |
+| Bộ não Tri thức Razavi (162 thẻ, 21 checklist, 2.280 thuật ngữ) | [Hướng dẫn KB](../kb/README.md), [kb_lookup.py](../tools/kb_lookup.py), [kb_fetch.py](../tools/kb_fetch.py) |
 | gm/ID | [Murmann README](../sources/bmurmann--Book-on-gm-ID-design/README.md), [Spectre sweep mẫu](../sources/bmurmann--Book-on-gm-ID-design/starter_files_closed_source_tools/techsweep.scs) |
 | Virtuoso API | [IC617 và chọn transport](ic617-adapters.md); [bridge-lite API tham khảo](../sources/Arcadia-1--virtuoso-bridge-lite/skills/virtuoso/SKILL.reference.md) |
 | Spectre API | [Spectre reference](../sources/Arcadia-1--virtuoso-bridge-lite/skills/spectre/SKILL.reference.md) |

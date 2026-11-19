@@ -37,8 +37,8 @@ When the user asks conceptual, analytical, or Razavi textbook questions (or sets
 2. **Stage 2 (`2_hierarchical_budget`) — Multi-Block DAG & Interface Contracts (`project.json` + `spec.json`):**
    - Declare `architecture.blocks[]` (`"veriloga"` -> `"schematic"`), `subblock_budgets[]` (RSS noise, Pelgrom offset, settling, $I_Q$), and `architecture.interfaces[]` ($V_{CM}$ window, bias polarity, Middlebrook $|Z_{\text{out},k}| \le 0.1|Z_{\text{in},k+1}|$, loop sign, LVCCML current-star distribution with PMOS mirror bypass cap tied to local `VDD`, never `VSS`).
 3. **Stage 3 (`3_gmid_lut_sizing`) — SOA-Verified PDK `gm/ID` LUT Sizing (`gpdk_techsweep.py` + `gmid_lut.py`):**
-   - Sweep/compile `[L, VDS, VSB, VGS]` LUTs (`gpdk090_core_1v_<corner>_27C.lut.json.gz`, `gpdk045_core_1v_svt_<corner>_27C.lut.json.gz`) with recursive model-tree SHA-256 and `soa_limits` (`--strict-soa`).
-   - Run `< 5 ms` `tradeoff`, `query`, and `size` (which recomputes realized OP at finger-snapped `W_total = nf * W_finger` on the `5nm` grid with even `nf >= 2`).
+   - Sweep/compile `[L, VDS, VSB, VGS]` LUTs (`gpdk090_core_1v_<corner>_27C.lut.json.gz`, `gpdk045_core_1v_svt_<corner>_27C.lut.json.gz`) with recursive model-tree SHA-256 and `soa_limits`.
+   - Run `< 5 ms` `tradeoff`, `query`, and `size` (`--strict-soa`, which recomputes realized OP at finger-snapped `W_total = nf * W_finger` on the `5nm` grid with even `nf >= 2`).
 4. **Stage 4 (`4_schematic_and_veriloga`) — Fail-Closed IC617 OA/CDF & Hidden-State-Free Verilog-A:**
    - Live GUI IPC via `ic617_live_bridge.il` + `ic617_client.py` (request-ID matched, `op_ok` checked) or batch `ic617_oa_cdf.il` (verified backup `<cell>_bak_<ts>`, `dbSave` strictly gated on `schCheck` `errs == 0`).
    - Synthesize CCM/DCM switching loops in `< 0.3s` `.dc/.ac/.stb` with `models/veriloga/pwm_switch_avg_ccm_dcm.va` (smooth ceiling `mu_eff < 1 - 1e-6` + exact `(4/(3*delta))` triangular DCM RMS conduction loss).

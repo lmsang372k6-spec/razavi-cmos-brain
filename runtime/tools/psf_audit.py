@@ -9,7 +9,7 @@ Subcommands:
   metrics   <run_dir> [--spec spec.json] [--fail-on-spec]
   self-test (or --self-test)
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import json
 import math
@@ -32,6 +32,12 @@ try:
     TEXT_TYPES = (basestring,)  # noqa: F821
 except NameError:
     TEXT_TYPES = (str,)
+
+try:
+    _INT_TYPES = (int, long)  # noqa: F821
+except NameError:
+    _INT_TYPES = (int,)
+_NUM_TYPES = _INT_TYPES + (float,)
 
 REGION_NAMES = {
     0: "cutoff",
@@ -219,12 +225,16 @@ SUPPLY_RAIL_PREFIXES = (
     "vcc", "avcc", "dvcc", "vsup", "vpwr", "vbat", "vbatt", "vhv",
 )
 
+NEG_SUPPLY_RAIL_PREFIXES = (
+    "vss", "avss", "dvss", "vee", "avee", "dvee", "vneg",
+)
+
 NON_SUPPLY_STIM_STEMS = (
     "vin", "vip", "vinp", "vinn", "vin_ac", "vin_p", "vin_n", "in", "inp", "inn",
     "vout", "vop", "von", "out", "outp", "outn",
     "vcm", "vocm", "vicm", "vbias", "vref", "vstep", "vpulse",
     "vclk", "clk", "ven", "en", "vctrl", "ctrl", "vfb", "fb", "vtest", "vprobe", "iprobe",
-    "gnd", "agnd", "dgnd", "vss", "avss", "dvss", "0",
+    "gnd", "agnd", "dgnd", "0",
 )
 
 
@@ -234,7 +244,7 @@ class _SilentOptionParser(OptionParser):
 
 
 def _round_clean(val, digits=9):
-    if val is None or isinstance(val, bool) or isinstance(val, int):
+    if val is None or isinstance(val, bool) or isinstance(val, _INT_TYPES):
         return val
     if isinstance(val, float):
         if math.isnan(val) or math.isinf(val):
@@ -265,25 +275,28 @@ def _pick_field(fields_lc, canonical):
     for cand in MOS_FIELD_ALIASES.get(canonical, (canonical,)):
         if cand in fields_lc:
             val = fields_lc[cand]
-            if isinstance(val, (int, float)) and not isinstance(val, bool):
+            if isinstance(val, _NUM_TYPES) and not isinstance(val, bool):
                 return val
     if canonical == "gds" and "rout" in fields_lc:
         rv = fields_lc["rout"]
-        if isinstance(rv, (int, float)) and abs(rv) > 1e-18:
+        if isinstance(rv, _NUM_TYPES) and not isinstance(rv, bool) and abs(rv) > 1e-18:
             return 1.0 / float(rv)
     return None
 
 
-def _is_pmos_device(inst_name, type_name, fields_lc, vgs, vth):
+def _is_pmos_device(inst_name, type_name, fields_lc, vgs, vth, vds=None, ids=None):
     joined = "%s %s %s" % (
         inst_name.lower(),
         (type_name or "").lower(),
         str(fields_lc.get("model", "")).lower(),
     )
     if any([tok in joined for tok in ("pmos", "pch", "pfet", "g45p")]):
-        if vth is None or vth < 0.0:
-            return True
-    if vth is not None and vth < -1e-4 and (vgs is None or vgs <= 1e-3):
+        return True
+    if vth is not None and float(vth) < -1e-4:
+        return True
+    if vds is not None and float(vds) < -1e-4:
+        return True
+    if ids is not None and float(ids) < -1e-18:
         return True
     return False
 
@@ -336,6 +349,7 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
         "expected_triode": [],
         "subthreshold": [],
         "breakdown": [],
+        "unknown_region": [],
         "tight_headroom": [],
         "missing_op_fields": [],
     }
@@ -363,14 +377,18 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
         cgd = _pick_field(flc, "cgd")
         cgs = _pick_field(flc, "cgs")
         reg_raw = _pick_field(flc, "region")
-        region = int(round(reg_raw)) if reg_raw is not None else None
+        if reg_raw is not None:
+            reg_rounded = int(round(float(reg_raw)))
+            region = reg_rounded if abs(float(reg_raw) - float(reg_rounded)) <= 1e-6 else float(reg_raw)
+        else:
+            region = None
 
         gm_id = (abs(gm) / abs(ids)) if (gm is not None and ids is not None and abs(ids) > 1e-18) else None
         gm_gds = (abs(gm) / abs(gds)) if (gm is not None and gds is not None and abs(gds) > 1e-18) else None
 
         vov = None
         if vgs is not None and vth is not None:
-            if _is_pmos_device(inst_name, dev_type, flc, vgs, vth):
+            if _is_pmos_device(inst_name, dev_type, flc, vgs, vth, vds=vds, ids=ids):
                 vov = (-float(vgs)) - abs(float(vth))
             else:
                 vov = float(vgs) - float(vth)
@@ -479,8 +497,26 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
                 "sat_margin": _round_clean(sat_margin),
                 "message": "%s is in breakdown (region=4)" % inst_name,
             })
+        elif effective_region is not None:
+            buckets["unknown_region"].append(inst_name)
+            dev_flags.append("UNKNOWN_REGION")
+            status = "FAIL"
+            any_hard_fail = True
+            flags.append({
+                "device": inst_name,
+                "code": "UNKNOWN_REGION",
+                "severity": "error",
+                "region": effective_region,
+                "sat_margin": _round_clean(sat_margin),
+                "message": "%s reported unknown/invalid Spectre region code=%s (valid: 0..4)" % (
+                    inst_name, repr(effective_region)
+                ),
+            })
 
-        if missing_fields and not is_expected_triode and effective_region != 0:
+        needs_op_fields = bool(missing_fields) and (effective_region != 0) and not (
+            is_expected_triode and region == 1
+        )
+        if needs_op_fields:
             buckets["missing_op_fields"].append(inst_name)
             dev_flags.append("MISSING_OP_FIELDS")
             any_missing_op = True
@@ -584,6 +620,7 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
             "expected_triode": buckets["expected_triode"],
             "subthreshold": buckets["subthreshold"],
             "breakdown": buckets["breakdown"],
+            "unknown_region": buckets["unknown_region"],
             "tight_headroom": buckets["tight_headroom"],
             "missing_op_fields": buckets["missing_op_fields"],
             "min_sat_margin_v": _round_clean(min_sat_margin),
@@ -755,6 +792,15 @@ def _is_supply_rail_stem(stem):
     return False
 
 
+def _is_neg_supply_rail_stem(stem):
+    if not stem or stem in NON_SUPPLY_STIM_STEMS:
+        return False
+    for pref in NEG_SUPPLY_RAIL_PREFIXES:
+        if stem == pref or stem.startswith(pref):
+            return True
+    return False
+
+
 def _extract_dc_power_single(parsed):
     """Compute worst-case static DC power across ALL sweep points of a single DC PSF file."""
     vals = parsed.get("values", {})
@@ -806,17 +852,30 @@ def _extract_dc_power_single(parsed):
         if unit_lc and unit_lc not in ("v", "volt", "volts"):
             continue
         stem = _normalize_rail_stem(k)
-        if stem in ("0", "gnd", "agnd", "dgnd", "vss", "avss", "dvss"):
+        if stem in ("0", "gnd", "agnd", "dgnd"):
+            continue
+        if _is_neg_supply_rail_stem(stem):
+            if max([abs(x) for x in f_arr]) <= 1e-3:
+                continue
+            voltage_nodes.setdefault(stem, []).append((k, f_arr))
+            supply_voltage_nodes.setdefault(stem, []).append((k, f_arr))
             continue
         voltage_nodes.setdefault(stem, []).append((k, f_arr))
         if _is_supply_rail_stem(stem):
             supply_voltage_nodes.setdefault(stem, []).append((k, f_arr))
 
     # Filter current probes: exclude explicit non-supply stimuli (`VIN:p`, `VBIAS:p`)
-    supply_named_probes = [cp for cp in current_probes if _is_supply_rail_stem(cp[1])]
+    # Include negative supply rail probes (e.g. `VSS:p`, `VEE:p`) when their rail voltage is non-zero (|V| > 1e-3).
+    supply_named_probes = [
+        cp for cp in current_probes
+        if _is_supply_rail_stem(cp[1])
+        or (_is_neg_supply_rail_stem(cp[1]) and cp[1] in supply_voltage_nodes)
+    ]
     generic_src_probes = [
         cp for cp in current_probes
-        if (cp[1] not in NON_SUPPLY_STIM_STEMS) and (not _is_supply_rail_stem(cp[1]))
+        if (cp[1] not in NON_SUPPLY_STIM_STEMS)
+        and (not _is_supply_rail_stem(cp[1]))
+        and (not _is_neg_supply_rail_stem(cp[1]))
     ]
 
     out = {}
@@ -836,8 +895,9 @@ def _extract_dc_power_single(parsed):
         if mos_ok:
             out["mos_power_estimate_w"] = _round_clean(p_mos)
 
+    # When named supply probes are present, do NOT merge generic 0V ammeters (`V_TAIL:p`, `V_MEAS:p`)!
     if supply_named_probes:
-        candidate_probes = supply_named_probes + generic_src_probes
+        candidate_probes = supply_named_probes
     else:
         candidate_probes = generic_src_probes
 
@@ -846,6 +906,7 @@ def _extract_dc_power_single(parsed):
 
     def _eval_worst_across_sweep(rail_pairs):
         # rail_pairs: list of (rail_stem, v_key, v_arr, c_key, c_arr)
+        # Signed power delivered by each voltage source under Spectre passive sign convention: P = -V * I
         n_pts = 1
         for _, _, v_arr, _, c_arr in rail_pairs:
             if len(v_arr) > n_pts:
@@ -861,16 +922,17 @@ def _extract_dc_power_single(parsed):
             tot_i = 0.0
             rails_i = []
             for r_stem, v_key, v_arr, c_key, c_arr in rail_pairs:
-                vv = abs(v_arr[idx] if idx < len(v_arr) else v_arr[0])
-                cc = abs(c_arr[idx] if idx < len(c_arr) else c_arr[0])
-                pp = vv * cc
+                v_signed = v_arr[idx] if idx < len(v_arr) else v_arr[0]
+                i_signed = c_arr[idx] if idx < len(c_arr) else c_arr[0]
+                pp = -(v_signed * i_signed)
+                cc = abs(i_signed)
                 tot_p += pp
                 tot_i += cc
                 rails_i.append({
                     "rail": r_stem,
                     "voltage_node": v_key,
                     "current_probe": c_key,
-                    "vdd_v": _round_clean(vv),
+                    "vdd_v": _round_clean(v_signed),
                     "idd_a": _round_clean(cc),
                     "power_w": _round_clean(pp),
                 })
@@ -980,7 +1042,7 @@ def _extract_dc_power(parsed_list):
                 mos_est_max = res["mos_power_estimate_w"]
         if res.get("power_method") == "ambiguous_multi_rail":
             ambiguous_res = res
-        elif isinstance(res.get("dc_power_w"), (int, float)):
+        elif isinstance(res.get("dc_power_w"), _NUM_TYPES) and not isinstance(res.get("dc_power_w"), bool):
             valid_results.append(res)
 
     if ambiguous_res is not None:
@@ -994,7 +1056,10 @@ def _extract_dc_power(parsed_list):
             if cand["dc_power_w"] > best["dc_power_w"]:
                 best = cand
         out = dict(best)
-        idd_vals = [r["idd_a"] for r in valid_results if isinstance(r.get("idd_a"), (int, float))]
+        idd_vals = [
+            r["idd_a"] for r in valid_results
+            if isinstance(r.get("idd_a"), _NUM_TYPES) and not isinstance(r.get("idd_a"), bool)
+        ]
         if idd_vals:
             out["idd_a"] = _round_clean(max(idd_vals))
         if mos_est_max is not None:
@@ -1127,27 +1192,30 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
                 vin_arr = [complex(v) for v in vals[vin_key]]
                 in_label = vin_key
 
+    # Ensure ascending frequency order for (freqs, h_vec, vin_arr) BEFORE inspecting vin_arr
+    if any([freqs[i] > freqs[i + 1] for i in range(len(freqs) - 1)]):
+        order = sorted(range(len(freqs)), key=lambda idx: freqs[idx])
+        freqs = [freqs[idx] for idx in order]
+        h_vec = [h_vec[idx] for idx in order]
+        if vin_arr is not None:
+            vin_arr = [vin_arr[idx] for idx in order]
+
     if vin_arr is not None:
-        if abs(vin_arr[0]) > 1e-15:
-            h_vec = [
-                (h_vec[i] / vin_arr[i]) if abs(vin_arr[i]) > 1e-30 else h_vec[i]
-                for i in range(len(freqs))
-            ]
-        elif vin_hint:
-            return {
+        zero_vin_indices = [i for i in range(len(freqs)) if abs(vin_arr[i]) <= 1e-30]
+        if zero_vin_indices or abs(vin_arr[0]) <= 1e-15:
+            res_zv = {
                 "ac_output": out_label,
                 "ac_input": in_label,
                 "dc_gain_db": None,
                 "bw_3db_hz": None,
                 "ugf_hz": None,
                 "pm_ac_deg": None,
+                "ac_error": "zero_ac_input_stimulus",
             }
-
-    # Ensure ascending frequency order for DC gain, 3 dB BW, and UGF extraction
-    if any([freqs[i] > freqs[i + 1] for i in range(len(freqs) - 1)]):
-        order = sorted(range(len(freqs)), key=lambda idx: freqs[idx])
-        freqs = [freqs[idx] for idx in order]
-        h_vec = [h_vec[idx] for idx in order]
+            if rejected_bf:
+                res_zv["rejected_backfilled_signals"] = rejected_bf
+            return res_zv
+        h_vec = [h_vec[i] / vin_arr[i] for i in range(len(freqs))]
 
     mags = [abs(c) for c in h_vec]
     if mags[0] <= 0.0:
@@ -1261,14 +1329,55 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
         ):
             rhp_pole_suspected = True
 
+        # Bode gain-phase slope consistency check across active frequency range:
+        # An RHP open-loop pole adds -20 dB/dec magnitude rolloff with +90 deg phase lead (+180 deg anomaly
+        # relative to minimum-phase Bode relation phi ~ 4.5 deg * slope_dB_per_dec). Over any sustained
+        # monotonic rolloff window (>= 0.45 dec) with steep slope (<= -32 dB/dec) not on a decelerating
+        # resonant skirt, excess phase lead >= +100 deg signals P > 0 RHP open-loop pole(s).
+        if (not rhp_pole_suspected) and (not dc_pos_fb) and mag_db[0] > 0.0 and len(freqs) >= 3:
+            n_f = len(freqs)
+            for wi in range(n_f - 1):
+                if freqs[wi] <= 0.0:
+                    continue
+                for wj in range(wi + 1, n_f):
+                    if freqs[wj] <= freqs[wi]:
+                        continue
+                    dec_w = math.log10(freqs[wj] / freqs[wi])
+                    if dec_w < 0.45:
+                        continue
+                    if dec_w > 1.5 and wj > wi + 1:
+                        break
+                    mono_down = True
+                    for wk in range(wi, wj):
+                        if mag_db[wk + 1] > mag_db[wk] + 0.5:
+                            mono_down = False
+                            break
+                    if not mono_down:
+                        continue
+                    s_win = (mag_db[wj] - mag_db[wi]) / dec_w
+                    if s_win > -32.0:
+                        continue
+                    dec_loc = math.log10(freqs[wj] / freqs[wj - 1]) if freqs[wj - 1] > 0.0 else 0.0
+                    s_loc = ((mag_db[wj] - mag_db[wj - 1]) / dec_loc) if dec_loc > 1e-9 else s_win
+                    s_cons = max(s_win, s_loc)
+                    if s_cons > -32.0 or s_loc > s_win + 20.0:
+                        continue
+                    phi_rel_j = unwrapped[wj] - unwrapped[0]
+                    exp_min_phase = 4.5 * s_cons
+                    if (phi_rel_j - exp_min_phase) >= 100.0:
+                        rhp_pole_suspected = True
+                        break
+                if rhp_pole_suspected:
+                    break
+
         falling_crossings = [c for c in ugf_crossings if c["direction"] == "falling"]
         primary_ugf = None
         worst_pm = None
         if falling_crossings:
             primary_ugf = falling_crossings[0]["freq_hz"]
-            worst_pm = min([c["phase_margin_deg"] for c in falling_crossings])
         elif ugf_crossings:
             primary_ugf = ugf_crossings[0]["freq_hz"]
+        if ugf_crossings:
             worst_pm = min([c["phase_margin_deg"] for c in ugf_crossings])
 
         if dc_pos_fb and (worst_pm is None or worst_pm > 0.0):
@@ -1311,7 +1420,7 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
 
         if rhp_pole_suspected:
             # Bode phase/gain margin is INVALID when open-loop RHP poles are present (Nyquist P != 0).
-            # Fail closed so closed-loop instability (e.g. L(s)=3/(s-1)^2) can NEVER pass as stable!
+            # Fail closed so closed-loop instability (e.g. L(s)=3/(s-1)^2 or 10/[(1-s/20)(1+s/10)^2]) can NEVER pass!
             out.update({
                 "stb_probe_signal": lg_key,
                 "loop_dc_gain_db": _round_clean(loop_dc_gain_db),
@@ -1324,6 +1433,11 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
                 "stb_bode_valid": False,
                 "raw_bode_phase_margin_deg": _round_clean(worst_pm),
                 "ugf_crossing_count": len(ugf_crossings),
+                "stb_notes": (
+                    "Bode gain-phase anomaly indicates suspected RHP open-loop pole(s) (P > 0); "
+                    "Bode-only phase/gain margins cannot certify closed-loop stability when P > 0 "
+                    "and full Nyquist encirclement analysis (N = Z - P) is required."
+                ),
             })
         else:
             out.update({
@@ -1396,21 +1510,29 @@ def _analyze_step_segment(times, vals, seg_start, seg_end, settling_tol_ratio=0.
     if win_dur <= 1e-18:
         return {}
 
-    # Build tail plateau window covering BOTH >= 15% of post-onset duration AND >= max(3, N//10) samples
+    # Build steady-state tail plateau window strictly by time span (last 15% of post-trigger duration,
+    # requiring >= 2 samples, with no sample-count cap that breaks on adaptive Spectre timesteps).
     t_base = t_trig if (t_trig is not None and t_win[0] <= t_trig < t_win[-1]) else t_win[0]
     post_dur = t_win[-1] - t_base
     t_tail_cut = t_base + 0.85 * post_dur
     time_tail_indices = [idx for idx in range(len(t_win)) if t_win[idx] >= t_tail_cut]
-    min_tail_n = max(3, len(v_win) // 10) if len(v_win) >= 3 else len(v_win)
-    tail_n = max(min_tail_n, len(time_tail_indices))
-    if len(v_win) >= 6:
-        tail_n = min(tail_n, max(3, len(v_win) // 2))
+    if len(time_tail_indices) >= 2:
+        t_tail = [t_win[idx] for idx in time_tail_indices]
+        v_tail = [v_win[idx] for idx in time_tail_indices]
     else:
-        tail_n = min(tail_n, len(v_win))
+        t_tail = t_win[-2:]
+        v_tail = v_win[-2:]
 
-    t_tail = t_win[-tail_n:]
-    v_tail = v_win[-tail_n:]
-    v_final = sum(v_tail) / float(len(v_tail))
+    tail_dt = t_tail[-1] - t_tail[0]
+    if tail_dt > 1e-18 and len(t_tail) >= 2:
+        area_v = 0.0
+        for tk in range(len(t_tail) - 1):
+            dt_k = t_tail[tk + 1] - t_tail[tk]
+            if dt_k > 0.0:
+                area_v += 0.5 * (v_tail[tk] + v_tail[tk + 1]) * dt_k
+        v_final = area_v / tail_dt
+    else:
+        v_final = sum(v_tail) / float(len(v_tail))
 
     v_ref = float(target_v) if target_v is not None else v_final
     step_amp = v_final - v_init
@@ -1440,20 +1562,23 @@ def _analyze_step_segment(times, vals, seg_start, seg_end, settling_tol_ratio=0.
     if rising:
         v_ext = max(v_win)
         overshoot_pct = max(0.0, (v_ext - v_ref) / abs_eff_step * 100.0)
+        reached_90 = (v_ext >= lvl_90 - 1e-12 * max(1.0, abs_eff_step))
     else:
         v_ext = min(v_win)
         overshoot_pct = max(0.0, (v_ref - v_ext) / abs_eff_step * 100.0)
+        reached_90 = (v_ext <= lvl_90 + 1e-12 * max(1.0, abs_eff_step))
 
     tol = settling_tol_ratio * abs_eff_step
     tail_span = max(v_tail) - min(v_tail)
-    tail_dt = t_tail[-1] - t_tail[0]
-    avg_win_slope = abs_step / max(1e-18, win_dur)
+    avg_win_slope = abs_step / max(1e-18, post_dur if post_dur > 1e-18 else win_dur)
     tail_slope = (abs(v_tail[-1] - v_tail[0]) / tail_dt) if tail_dt > 1e-18 else float("inf")
 
-    # Anti-ramp plateau guard: tail must span >= 5% of window duration AND be much flatter than the transition ramp
+    # Anti-ramp plateau guard: tail must span >= 5% of post-trigger duration AND be much flatter than the transition ramp
+    ref_dur = post_dur if post_dur > 1e-18 else win_dur
     tail_has_plateau = (
-        len(v_win) >= 6
-        and tail_dt >= 0.05 * win_dur
+        len(v_win) >= 4
+        and len(v_tail) >= 2
+        and tail_dt >= 0.05 * ref_dur
         and (avg_win_slope <= 1e-18 or tail_slope <= 0.25 * avg_win_slope)
     )
     tail_settled = (
@@ -1488,6 +1613,7 @@ def _analyze_step_segment(times, vals, seg_start, seg_end, settling_tol_ratio=0.
     out_seg = {
         "rising": rising,
         "slew_rate": sr_10_90,
+        "reached_90": reached_90,
         "overshoot_pct": overshoot_pct,
         "settling_time_s": settling_time_s,
         "step_amplitude_v": abs_eff_step,
@@ -1498,6 +1624,43 @@ def _analyze_step_segment(times, vals, seg_start, seg_end, settling_tol_ratio=0.
         out_seg["target_v"] = v_ref
         out_seg["static_error_v"] = v_final - v_ref
     return out_seg
+
+
+def _detect_trigger_edges(times, trig_vals):
+    """Detect all hysteresis-filtered input trigger edges `(t_cross, idx_cross, is_rising)`."""
+    if not trig_vals or len(trig_vals) < 3:
+        return []
+    tr_min = min(trig_vals)
+    tr_max = max(trig_vals)
+    tr_swing = tr_max - tr_min
+    if tr_swing <= 1e-9:
+        return []
+    tr_mid = 0.5 * (tr_min + tr_max)
+    tr_lo = tr_min + 0.25 * tr_swing
+    tr_hi = tr_min + 0.75 * tr_swing
+    edges = []
+    armed = 1 if trig_vals[0] >= tr_mid else -1
+    pending = None
+    last_i = len(trig_vals) - 2
+    for i in range(len(trig_vals) - 1):
+        v0, v1 = trig_vals[i], trig_vals[i + 1]
+        if armed == -1:
+            if (v0 <= tr_mid < v1) or (v0 < tr_mid <= v1):
+                frac = (tr_mid - v0) / (v1 - v0) if abs(v1 - v0) > 1e-30 else 0.0
+                pending = (times[i] + frac * (times[i + 1] - times[i]), i, True)
+            if pending is not None and (v1 >= tr_hi or i == last_i):
+                edges.append(pending)
+                pending = None
+                armed = 1
+        else:
+            if (v0 >= tr_mid > v1) or (v0 > tr_mid >= v1):
+                frac = (tr_mid - v0) / (v1 - v0) if abs(v1 - v0) > 1e-30 else 0.0
+                pending = (times[i] + frac * (times[i + 1] - times[i]), i, False)
+            if pending is not None and (v1 <= tr_lo or i == last_i):
+                edges.append(pending)
+                pending = None
+                armed = -1
+    return edges
 
 
 def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, target_v=None):
@@ -1574,10 +1737,61 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
     tran_final_v = None
     static_error_v = None
     step_detected = (swing > 1e-6)
+    clipped_pos = False
+    clipped_neg = False
 
     if step_detected:
+        trig_edges = _detect_trigger_edges(times, trig_vals) if trig_vals is not None else []
         returns_near_init = (abs(vout[-1] - vout[0]) < 0.35 * swing)
-        if returns_near_init:
+        if len(trig_edges) >= 2:
+            # Multi-pulse / multi-edge train: segment strictly by detected input trigger edges
+            # so each pulse window is evaluated independently without cross-cycle contamination.
+            segs = []
+            for e_i, (t_e, idx_e, _) in enumerate(trig_edges):
+                w_start = 0 if e_i == 0 else idx_e
+                w_end = trig_edges[e_i + 1][1] if (e_i + 1 < len(trig_edges)) else (len(vout) - 1)
+                if w_end - w_start < 3:
+                    continue
+                seg_tv = None
+                if target_v is not None:
+                    seg_tv = target_v if (e_i % 2 == 0) else vout[0]
+                seg = _analyze_step_segment(
+                    times, vout, w_start, w_end,
+                    settling_tol_ratio=settling_tol_ratio,
+                    t_trig=t_e,
+                    target_v=seg_tv,
+                )
+                if seg:
+                    segs.append(seg)
+            sr_pos_vals = []
+            sr_neg_vals = []
+            for seg in segs:
+                if seg.get("rising"):
+                    if seg.get("slew_rate") is not None:
+                        sr_pos_vals.append(seg["slew_rate"])
+                    elif target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_pos = True
+                else:
+                    if seg.get("slew_rate") is not None:
+                        sr_neg_vals.append(seg["slew_rate"])
+                    elif target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_neg = True
+            if sr_pos_vals and (not clipped_pos):
+                sr_pos = min(sr_pos_vals)
+            if sr_neg_vals and (not clipped_neg):
+                sr_neg = min(sr_neg_vals)
+            overshoot_candidates = [s["overshoot_pct"] for s in segs if s.get("overshoot_pct") is not None]
+            if overshoot_candidates:
+                overshoot_pct = max(overshoot_candidates)
+            if segs and segs[0].get("v_final") is not None:
+                tran_final_v = segs[0]["v_final"]
+            if segs and segs[0].get("static_error_v") is not None:
+                static_error_v = segs[0]["static_error_v"]
+            if segs and all([s.get("settling_time_s") is not None for s in segs]):
+                settling_time_s = max([s["settling_time_s"] for s in segs])
+            else:
+                settling_time_s = None
+        elif returns_near_init:
             idx_ext = vout.index(v_max) if abs(v_max - vout[0]) >= abs(vout[0] - v_min) else vout.index(v_min)
             mid_lvl = 0.5 * (vout[idx_ext] + vout[-1])
             going_down = (vout[idx_ext] > vout[-1])
@@ -1589,24 +1803,8 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
                     split_idx = max(idx_ext + 1, k - max(1, (k - idx_ext) // 5))
                     break
 
-            # Preserve input stimulus edge timestamps (`t_trig1`, `t_trig2`) so propagation delay is NEVER lost!
-            t_trig1 = None
+            t_trig1 = trig_edges[0][0] if len(trig_edges) >= 1 else None
             t_trig2 = None
-            if trig_vals is not None:
-                tr_min = min(trig_vals)
-                tr_max = max(trig_vals)
-                tr_swing = tr_max - tr_min
-                if tr_swing > 1e-9:
-                    tr_goes_up = (abs(tr_max - trig_vals[0]) >= abs(trig_vals[0] - tr_min))
-                    tr_mid = trig_vals[0] + 0.5 * ((tr_max - trig_vals[0]) if tr_goes_up else (tr_min - trig_vals[0]))
-                    t_trig1, idx_tr1 = _interp_level_crossing_with_idx(
-                        times, trig_vals, 0, len(times) - 1, tr_mid, rising=tr_goes_up
-                    )
-                    if idx_tr1 is not None:
-                        t_trig2, _ = _interp_level_crossing_with_idx(
-                            times, trig_vals, idx_tr1 + 1, len(times) - 1, tr_mid, rising=(not tr_goes_up)
-                        )
-
             seg1 = _analyze_step_segment(
                 times, vout, 0, split_idx,
                 settling_tol_ratio=settling_tol_ratio,
@@ -1622,10 +1820,16 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
             for seg in (seg1, seg2):
                 if not seg:
                     continue
-                if seg.get("rising") and seg.get("slew_rate") is not None:
-                    sr_pos = seg["slew_rate"]
-                elif (not seg.get("rising")) and seg.get("slew_rate") is not None:
-                    sr_neg = seg["slew_rate"]
+                if seg.get("rising"):
+                    if seg.get("slew_rate") is not None:
+                        sr_pos = seg["slew_rate"]
+                    elif target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_pos = True
+                else:
+                    if seg.get("slew_rate") is not None:
+                        sr_neg = seg["slew_rate"]
+                    elif target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_neg = True
             overshoot_candidates = [s["overshoot_pct"] for s in (seg1, seg2) if s and s.get("overshoot_pct") is not None]
             if overshoot_candidates:
                 overshoot_pct = max(overshoot_candidates)
@@ -1641,13 +1845,7 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
             else:
                 settling_time_s = None
         else:
-            t_trig = None
-            if trig_vals is not None:
-                tr_swing = max(trig_vals) - min(trig_vals)
-                if tr_swing > 1e-9:
-                    tr_rising = (trig_vals[-1] > trig_vals[0])
-                    tr_mid = trig_vals[0] + 0.5 * (trig_vals[-1] - trig_vals[0])
-                    t_trig = _interp_level_crossing(times, trig_vals, 0, len(times) - 1, tr_mid, rising=tr_rising)
+            t_trig = trig_edges[0][0] if trig_edges else None
             seg = _analyze_step_segment(
                 times, vout, 0, len(vout) - 1,
                 settling_tol_ratio=settling_tol_ratio,
@@ -1657,16 +1855,28 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
             if seg:
                 if seg.get("rising"):
                     sr_pos = seg.get("slew_rate")
+                    if sr_pos is None and target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_pos = True
                 else:
                     sr_neg = seg.get("slew_rate")
+                    if sr_neg is None and target_v is not None and (not seg.get("reached_90", True)):
+                        clipped_neg = True
                 overshoot_pct = seg.get("overshoot_pct")
                 settling_time_s = seg.get("settling_time_s")
                 tran_final_v = seg.get("v_final")
                 static_error_v = seg.get("static_error_v")
 
-    if sr_pos is None and max_dvdt_pos is not None and step_detected and vout[-1] >= vout[0]:
+    # Disable max_dvdt fallback when waveform never reaches 90% of target_v (clipped step)
+    if target_v is not None:
+        tgt_delta = float(target_v) - vout[0]
+        if tgt_delta > 1e-9 and v_max < vout[0] + 0.90 * tgt_delta - 1e-12 * max(1.0, abs(tgt_delta)):
+            clipped_pos = True
+        elif tgt_delta < -1e-9 and v_min > vout[0] + 0.90 * tgt_delta + 1e-12 * max(1.0, abs(tgt_delta)):
+            clipped_neg = True
+
+    if sr_pos is None and (not clipped_pos) and max_dvdt_pos is not None and step_detected and vout[-1] >= vout[0]:
         sr_pos = max_dvdt_pos
-    if sr_neg is None and max_dvdt_neg is not None and step_detected and vout[-1] <= vout[0]:
+    if sr_neg is None and (not clipped_neg) and max_dvdt_neg is not None and step_detected and vout[-1] <= vout[0]:
         sr_neg = max_dvdt_neg
 
     res = {
@@ -1688,39 +1898,83 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
     return res
 
 
+_NOISE_SI_PREFIX = {
+    "": 1.0,
+    "f": 1e-15,
+    "p": 1e-12,
+    "n": 1e-9,
+    "u": 1e-6,
+    "m": 1e-3,
+    "k": 1e3,
+    "K": 1e3,
+    "M": 1e6,
+    "G": 1e9,
+}
+
+
 def _classify_noise_unit(unit_raw, sig_name):
-    """Return `(domain, is_psd)` where domain in `('voltage', 'current', 'unknown')`."""
-    u = str(unit_raw or "").strip().lower().replace(" ", "")
-    is_psd = ("^2" in u or "**2" in u or "v2/" in u or "a2/" in u or "i2/" in u or u.endswith("v2") or u.endswith("a2"))
-    if not u:
+    """Return `(domain, is_psd, si_scale)` where domain in `('voltage', 'current', 'unknown')`.
+
+    Parses case-sensitive SI prefixes (`f`, `p`, `n`, `u`, `m`, `k`, `M`, `G`) for both ASD
+    (`V/sqrt(Hz)`, `nV/sqrt(Hz)`, `uV/rtHz`, `pA/sqrt(Hz)`, ...) and PSD (`V^2/Hz`, `nV^2/Hz`,
+    `pA^2/Hz`, ...). Caller scales ASD by `si_scale` and PSD by `si_scale**2`.
+    """
+    u_raw = str(unit_raw or "").strip().replace(" ", "")
+    if not u_raw:
         sl = str(sig_name or "").strip().lower()
         if sl in ("vout_noise", "vnoise") or sl.startswith("v"):
-            return "voltage", False
+            return "voltage", False, 1.0
         if sl in ("inoise_a", "iout_noise") or sl.startswith("i_"):
-            return "current", False
+            return "current", False, 1.0
         if sl in ("onoise", "inoise", "out"):
-            return "voltage", False
-        return "unknown", False
+            return "voltage", False, 1.0
+        return "unknown", False, 1.0
 
-    if (
-        u.startswith("a/") or u.startswith("a^") or u.startswith("a*") or u.startswith("a2")
-        or u.startswith("i^") or u.startswith("i*") or u.startswith("i2")
-        or "amp" in u or u in ("a", "ma", "ua", "na", "pa")
-    ):
-        return "current", is_psd
-    if (
-        u.startswith("v/") or u.startswith("v^") or u.startswith("v*") or u.startswith("v2")
-        or "volt" in u or u in ("v", "mv", "uv", "nv")
-    ):
-        return "voltage", is_psd
-    return "unknown", is_psd
+    # Explicit PSD with optional SI prefix: e.g. `V^2/Hz`, `nV^2/Hz`, `(uV)^2/Hz`, `pA**2/Hz`, `V2/Hz`, `V*V/Hz`
+    m_psd = re.match(
+        r'^\(?([fpnumkKMG]?)([VvAa])\)?(?:\^2|\*\*2|2|\*(?:[fpnumkKMG]?[VvAa]))(?:/(?:[Hh][Zz])?)?$',
+        u_raw,
+    )
+    if m_psd:
+        pref = m_psd.group(1)
+        base = m_psd.group(2).lower()
+        dom = "voltage" if base == "v" else "current"
+        return dom, True, _NOISE_SI_PREFIX.get(pref, 1.0)
+
+    # Explicit ASD with optional SI prefix: e.g. `V/sqrt(Hz)`, `nV/sqrt(Hz)`, `uV/rtHz`, `pA/Hz^0.5`
+    m_asd = re.match(
+        r'^([fpnumkKMG]?)([VvAa])/(?:sqrt\([Hh][Zz]\)|rt[Hh][Zz]|[Hh][Zz]\^0\.5|[Hh][Zz]\*\*0\.5)$',
+        u_raw,
+    )
+    if m_asd:
+        pref = m_asd.group(1)
+        base = m_asd.group(2).lower()
+        dom = "voltage" if base == "v" else "current"
+        return dom, False, _NOISE_SI_PREFIX.get(pref, 1.0)
+
+    # Bare voltage/current unit with optional SI prefix (e.g. `nV`, `uV`, `V`, `pA`, `A`)
+    m_bare = re.match(r'^([fpnumkKMG]?)([VvAa])$', u_raw)
+    if m_bare:
+        pref = m_bare.group(1)
+        base = m_bare.group(2).lower()
+        dom = "voltage" if base == "v" else "current"
+        return dom, False, _NOISE_SI_PREFIX.get(pref, 1.0)
+
+    # Fallback textual forms like `volt^2/Hz`, `amp/sqrt(Hz)`, `i^2/Hz`
+    u_low = u_raw.lower()
+    is_psd = ("^2" in u_low or "**2" in u_low or "v2/" in u_low or "a2/" in u_low or "i2/" in u_low or u_low.endswith("v2") or u_low.endswith("a2"))
+    if "amp" in u_low or u_low.startswith("i^") or u_low.startswith("i*") or u_low.startswith("i2"):
+        return "current", is_psd, 1.0
+    if "volt" in u_low:
+        return "voltage", is_psd, 1.0
+    return "unknown", is_psd, 1.0
 
 
 def _integrate_psd_band(freqs, psd, f_min=None, f_max=None):
     """Trapezoidally integrate sorted `(freqs, psd)` strictly over `[f_min, f_max]`.
 
-    Returns `(rms_float, None)` on success, or `(None, 'noise_band_not_covered')` if the
-    frequency sweep does not span the requested band.
+    Returns `(rms_float, None)` on success, or `(None, reason)` if the band is invalid
+    (`lo >= hi`, non-finite) or not covered by the frequency sweep.
     """
     if len(freqs) < 2 or len(psd) != len(freqs):
         return None, "noise_band_unverified"
@@ -1728,7 +1982,7 @@ def _integrate_psd_band(freqs, psd, f_min=None, f_max=None):
     f_hi = freqs[-1]
     lo = f_lo if f_min is None else float(f_min)
     hi = f_hi if f_max is None else float(f_max)
-    if lo > hi:
+    if math.isnan(lo) or math.isinf(lo) or math.isnan(hi) or math.isinf(hi) or lo >= hi:
         return None, "invalid_noise_band"
     tol_lo = max(1e-12, 1e-6 * abs(lo))
     tol_hi = max(1e-12, 1e-6 * abs(hi))
@@ -1738,7 +1992,7 @@ def _integrate_psd_band(freqs, psd, f_min=None, f_max=None):
     lo_clamped = max(f_lo, lo)
     hi_clamped = min(f_hi, hi)
     if hi_clamped <= lo_clamped:
-        return 0.0, None
+        return None, "invalid_noise_band"
 
     def _interp_psd(f_target):
         if f_target <= freqs[0]:
@@ -1795,7 +2049,7 @@ def _extract_noise_metrics(parsed, return_curve=False):
                     unit = str(parsed["types"][tr["type"]].get("props", {}).get("units", ""))
                 break
 
-    domain, is_psd = _classify_noise_unit(unit, n_key)
+    domain, is_psd, si_scale = _classify_noise_unit(unit, n_key)
     if domain == "unknown":
         res = {
             "noise_signal": n_key,
@@ -1810,7 +2064,8 @@ def _extract_noise_metrics(parsed, return_curve=False):
     # Always sort ascending by frequency so descending sweeps (e.g. 100 Hz -> 10 Hz) integrate accurately!
     pairs = sorted(zip(freqs, raw), key=lambda pr: pr[0])
     f_sorted = [pr[0] for pr in pairs]
-    psd = [pr[1] if is_psd else (pr[1] * pr[1]) for pr in pairs]
+    scale2 = si_scale * si_scale
+    psd = [(pr[1] * scale2) if is_psd else ((pr[1] * si_scale) * (pr[1] * si_scale)) for pr in pairs]
 
     rms_raw, _ = _integrate_psd_band(f_sorted, psd)
     rms_val = _round_clean(rms_raw)
@@ -1928,7 +2183,7 @@ def _extract_point_metrics(
         if has_pac:
             _add_analysis("pac")
         for m_k in ("dc_gain_db", "bw_3db_hz", "ugf_hz", "pm_ac_deg"):
-            vals_k = [r[m_k] for r in ac_runs.values() if isinstance(r.get(m_k), (int, float))]
+            vals_k = [r[m_k] for r in ac_runs.values() if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)]
             any_none = any([r.get(m_k) is None for r in ac_runs.values()])
             if vals_k and not any_none:
                 metrics[m_k] = _round_clean(min(vals_k))
@@ -2003,7 +2258,7 @@ def _extract_point_metrics(
             _add_analysis("pstb")
         any_rhp_pole = any([bool(r.get("rhp_open_loop_pole_suspected")) for r in stb_loops.values()])
         for m_k in ("loop_dc_gain_db", "stb_ugf_hz", "phase_margin_deg", "gain_margin_db"):
-            vals_k = [r[m_k] for r in stb_loops.values() if isinstance(r.get(m_k), (int, float))]
+            vals_k = [r[m_k] for r in stb_loops.values() if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)]
             # Fail closed if ANY loop has RHP-pole suspicion or failed to yield PM/UGF with positive DC gain
             tainted = False
             if any_rhp_pole and m_k in ("phase_margin_deg", "gain_margin_db"):
@@ -2020,9 +2275,13 @@ def _extract_point_metrics(
         metrics["dc_positive_feedback"] = any([bool(r.get("dc_positive_feedback")) for r in stb_loops.values()])
         if any_rhp_pole:
             metrics["rhp_open_loop_pole_suspected"] = True
+            for r_s in stb_loops.values():
+                if r_s.get("stb_notes"):
+                    metrics["stb_notes"] = r_s["stb_notes"]
+                    break
         if len(stb_loops) == 1:
             only_stb = stb_loops[list(stb_loops.keys())[0]]
-            for extra_k in ("stb_probe_signal", "gm_freq_hz", "ugf_crossing_count", "all_ugf_crossings", "all_gm_crossings"):
+            for extra_k in ("stb_probe_signal", "gm_freq_hz", "ugf_crossing_count", "all_ugf_crossings", "all_gm_crossings", "stb_notes"):
                 if extra_k in only_stb:
                     metrics[extra_k] = only_stb[extra_k]
         else:
@@ -2049,10 +2308,10 @@ def _extract_point_metrics(
     if tran_runs:
         _add_analysis("tran")
         for min_k in ("slew_rate_pos", "slew_rate_neg"):
-            vals_k = [r[min_k] for r in tran_runs.values() if isinstance(r.get(min_k), (int, float))]
+            vals_k = [r[min_k] for r in tran_runs.values() if isinstance(r.get(min_k), _NUM_TYPES) and not isinstance(r.get(min_k), bool)]
             metrics[min_k] = _round_clean(min(vals_k)) if vals_k else None
         for max_k in ("overshoot_pct", "ripple_pp"):
-            vals_k = [r[max_k] for r in tran_runs.values() if isinstance(r.get(max_k), (int, float))]
+            vals_k = [r[max_k] for r in tran_runs.values() if isinstance(r.get(max_k), _NUM_TYPES) and not isinstance(r.get(max_k), bool)]
             metrics[max_k] = _round_clean(max(vals_k)) if vals_k else None
 
         step_runs = [r for r in tran_runs.values() if r.get("step_detected")]
@@ -2093,10 +2352,10 @@ def _extract_point_metrics(
         if has_pnoise:
             _add_analysis("pnoise")
         for nk in ("integrated_rms_noise_v", "integrated_rms_noise_a"):
-            vals_k = [r[nk] for r in noise_runs.values() if isinstance(r.get(nk), (int, float))]
+            vals_k = [r[nk] for r in noise_runs.values() if isinstance(r.get(nk), _NUM_TYPES) and not isinstance(r.get(nk), bool)]
             metrics[nk] = _round_clean(max(vals_k)) if vals_k else None
-        fmins = [r["noise_freq_min_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_min_hz"), (int, float))]
-        fmaxs = [r["noise_freq_max_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_max_hz"), (int, float))]
+        fmins = [r["noise_freq_min_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_min_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_min_hz"), bool)]
+        fmaxs = [r["noise_freq_max_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_max_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_max_hz"), bool)]
         if fmins:
             metrics["noise_freq_min_hz"] = _round_clean(min(fmins))
         if fmaxs:
@@ -2183,11 +2442,20 @@ def _resolve_metric_key(quantity_name, metrics_dict):
 def _scale_target_to_si(target_val, unit_str, metric_key=None):
     """Return `(scaled_float, error_reason_or_None)`.
 
+    - Non-finite (`NaN`/`Inf`/`-Inf`), `bool`, or non-numeric targets fail closed (`None, 'invalid_target'`).
     - Unknown units fail closed (`None, 'unknown_unit'`).
     - Incompatible unit/metric dimensions (e.g. `mV` on `dc_gain_db`) fail closed (`None, 'unit_dimension_mismatch'`).
     """
     if target_val is None:
         return None, None
+    if isinstance(target_val, bool):
+        return None, "invalid_target"
+    try:
+        t_num = float(target_val)
+    except (TypeError, ValueError):
+        return None, "invalid_target"
+    if math.isnan(t_num) or math.isinf(t_num):
+        return None, "invalid_target"
     raw_u = str(unit_str or "").strip().replace(" ", "")
     if raw_u in UNIT_SCALE_CASE_SENSITIVE:
         scale = UNIT_SCALE_CASE_SENSITIVE[raw_u]
@@ -2202,10 +2470,19 @@ def _scale_target_to_si(target_val, unit_str, metric_key=None):
         expected_dim = METRIC_DIMENSIONS.get(metric_key)
         if expected_dim is not None and u_dim != expected_dim:
             return None, "unit_dimension_mismatch"
-    return float(target_val) * scale, None
+    scaled = t_num * scale
+    if math.isnan(scaled) or math.isinf(scaled):
+        return None, "invalid_target"
+    return scaled, None
 
 
 def _compare_op(measured, operator, target_si, target_max_si=None):
+    if (
+        math.isnan(measured) or math.isinf(measured)
+        or math.isnan(target_si) or math.isinf(target_si)
+        or (target_max_si is not None and (math.isnan(target_max_si) or math.isinf(target_max_si)))
+    ):
+        return None
     op = str(operator or ">=").strip().lower()
     rel_tol = 1e-12 * max(abs(target_si), 1e-30)
     if op in (">=", "min", "ge", "gte"):
@@ -2319,8 +2596,10 @@ def _parse_numeric_list(val):
     for elem in items:
         if isinstance(elem, bool):
             continue
-        if isinstance(elem, (int, float)):
-            out.append(float(elem))
+        if isinstance(elem, _NUM_TYPES):
+            f = float(elem)
+            if not (math.isnan(f) or math.isinf(f)):
+                out.append(f)
         elif isinstance(elem, TEXT_TYPES):
             m = re.search(r'([+-]?\d+(?:\.\d+)?)', str(elem).strip())
             if m:
@@ -2374,7 +2653,7 @@ def _extract_mc_requirement(spec_obj):
         return 0
     if mc is True:
         return 1
-    if isinstance(mc, (int, float)):
+    if isinstance(mc, _NUM_TYPES) and not isinstance(mc, bool):
         return int(mc) if mc > 0 else 0
     if isinstance(mc, TEXT_TYPES):
         s = str(mc).strip().lower()
@@ -2386,7 +2665,7 @@ def _extract_mc_requirement(spec_obj):
         if mc.get("enabled") is False or mc.get("required") is False:
             return 0
         for rk in ("runs", "samples", "n", "count", "iterations"):
-            if isinstance(mc.get(rk), (int, float)) and mc[rk] > 0:
+            if isinstance(mc.get(rk), _NUM_TYPES) and not isinstance(mc.get(rk), bool) and mc[rk] > 0:
                 return int(mc[rk])
         if mc.get("enabled") or mc.get("required"):
             return 1
@@ -2410,7 +2689,7 @@ def _extract_pex_requirement(spec_obj):
                 elif isinstance(val, dict):
                     if val.get("required") or val.get("enabled"):
                         return True
-                elif isinstance(val, (int, float)) and val > 0:
+                elif isinstance(val, _NUM_TYPES) and val > 0:
                     return True
     return False
 
@@ -2418,23 +2697,35 @@ def _extract_pex_requirement(spec_obj):
 def _match_supply_covered(v_req, points_metrics):
     tol_v = max(0.01, 0.02 * abs(v_req))
     for pt_label, pm in points_metrics.items():
+        has_numeric_vdd = False
         vdd = pm.get("vdd_v")
-        if isinstance(vdd, (int, float)) and abs(float(vdd) - v_req) <= tol_v:
-            return True
+        if isinstance(vdd, _NUM_TYPES) and not isinstance(vdd, bool):
+            has_numeric_vdd = True
+            if abs(float(vdd) - v_req) <= tol_v:
+                return True
         for r in pm.get("supply_rails", []):
             rv = r.get("vdd_v")
-            if isinstance(rv, (int, float)) and abs(float(rv) - v_req) <= tol_v:
-                return True
-        # Match label encodings like `1.62V`, `1p62V`, `VDD1p62`, `1620mV`
+            if isinstance(rv, _NUM_TYPES) and not isinstance(rv, bool):
+                has_numeric_vdd = True
+                if abs(float(rv) - v_req) <= tol_v:
+                    return True
+        # Prefer numeric PSF supply voltages when present; never let a filename token override real vdd_v.
+        if has_numeric_vdd:
+            continue
+        # Label fallback requires explicit voltage unit (`v` or `mv`), e.g. `1.62V`, `1p62V`, `VDD1p8V`, `1620mV`.
         lbl = str(pt_label).lower()
-        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)(?:v)?(?:$|[^a-z0-9])', lbl):
+        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)v(?:$|[^a-z0-9])', lbl):
             cand = float("%s.%s" % (m.group(1), m.group(2)))
             if abs(cand - v_req) <= tol_v:
                 return True
-        for m in re.finditer(r'(?:^|[^a-z0-9])(\d+(?:\.\d+)?)v(?:$|[^a-z0-9])', lbl):
+        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)v(?:$|[^a-z0-9])', lbl):
             if abs(float(m.group(1)) - v_req) <= tol_v:
                 return True
-        for m in re.finditer(r'(?:^|[^a-z0-9])(\d+(?:\.\d+)?)mv(?:$|[^a-z0-9])', lbl):
+        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)mv(?:$|[^a-z0-9])', lbl):
+            cand = float("%s.%s" % (m.group(1), m.group(2))) * 1e-3
+            if abs(cand - v_req) <= tol_v:
+                return True
+        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)mv(?:$|[^a-z0-9])', lbl):
             if abs(float(m.group(1)) * 1e-3 - v_req) <= tol_v:
                 return True
     return False
@@ -2448,17 +2739,19 @@ def _match_temp_covered(t_req, points_metrics):
         tokens = [t for t in re.split(r'[/_\s]+', lbl) if t]
         for tok in tokens:
             if t_int < 0:
-                if re.match(r'^(?:-|m|n|neg|t-|tm|tn)%d(?:c|degc)?$' % abs_i, tok):
+                if re.match(r'^(?:-|m|n|neg|t-|tm|tn)%d(?:c|degc)$' % abs_i, tok):
                     return True
             else:
-                if re.match(r'^(?:t|temp)?%d(?:c|degc)?$' % abs_i, tok):
+                if re.match(r'^(?:t|temp|\+)?%d(?:c|degc)$' % abs_i, tok):
                     return True
-        # Also handle hyphen-separated labels like `TT-125C` or `SS--40C`
+        # Handle hyphen-separated labels like `TT-125C`, `SS--40C`, `SS-m40C` while NEVER matching `SS_-40C` to `+40C`
         if t_int < 0:
-            if re.search(r'(?:^|[^0-9])(?:-|m|n|neg)%dc(?:$|[^a-z0-9])' % abs_i, lbl):
+            if re.search(r'(?:^|[^a-z0-9])(?:-|m|n|neg|t-|tm|tn)%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
                 return True
         else:
-            if re.search(r'(?:^|[^0-9\-])%dc(?:$|[^a-z0-9])' % abs_i, lbl):
+            if re.search(r'(?:^|[/_\s])(?:t|temp|\+)?%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
+                return True
+            if re.search(r'(?<=[a-z])-(?:t|temp|\+)?%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
                 return True
     return False
 
@@ -2470,7 +2763,7 @@ def _count_mc_points(points_metrics):
             cnt += 1
             continue
         lbl = str(pt_label).lower()
-        if re.search(r'(?:^|[/_\-\s])(?:mc\d*|montecarlo|monte_carlo|iter\d+)(?:$|[/_\-\s])', lbl):
+        if re.search(r'(?:^|[/_\-\s])(?:mc\d*|montecarlo|monte_carlo)(?:$|[/_\-\s])', lbl):
             cnt += 1
     return cnt
 
@@ -2526,9 +2819,12 @@ def _is_spec_approval_pending(spec_obj):
 def _parse_freq_value(val, default_unit="hz"):
     if val is None or isinstance(val, bool):
         return None
-    if isinstance(val, (int, float)):
+    if isinstance(val, _NUM_TYPES):
+        f = float(val)
+        if math.isnan(f) or math.isinf(f):
+            return None
         scale = UNIT_SCALE_TO_SI.get(str(default_unit or "hz").lower(), 1.0)
-        return float(val) * scale
+        return f * scale
     if isinstance(val, TEXT_TYPES):
         s = str(val).strip()
         m = re.match(r'^([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*([a-zA-Z]*)$', s)
@@ -2604,13 +2900,13 @@ def _extract_req_settling_meta(item):
     """Extract optional `(target_v, settling_tol_ratio)` from requirement item."""
     tv = None
     for k in ("target_v", "expected_final_v", "settle_target_v", "final_v"):
-        if isinstance(item.get(k), (int, float)) and not isinstance(item.get(k), bool):
+        if isinstance(item.get(k), _NUM_TYPES) and not isinstance(item.get(k), bool):
             tv = float(item[k])
             break
     tol_r = None
     for k in ("settling_tol_ratio", "settling_tol"):
         v = item.get(k)
-        if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
+        if isinstance(v, _NUM_TYPES) and not isinstance(v, bool) and v > 0:
             tol_r = float(v)
             break
         elif isinstance(v, TEXT_TYPES):
@@ -2624,25 +2920,30 @@ def _extract_req_settling_meta(item):
     if tol_r is None:
         for k in ("tol_pct", "tolerance_pct", "settling_tol_pct"):
             v = item.get(k)
-            if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0:
+            if isinstance(v, _NUM_TYPES) and not isinstance(v, bool) and v > 0:
                 tol_r = float(v) / 100.0
                 break
     return tv, tol_r
 
 
+def _tokenize_condition_label(label):
+    """Split condition label on `/`, `_`, whitespace, and non-negative hyphens, preserving `-` attached to digits."""
+    return [t for t in re.split(r'[/_\s]+|-(?!\d)', str(label).strip().lower()) if t]
+
+
 def _match_condition_keys(req_cond, available_keys):
-    """Match a required corner/condition label (e.g. `SS`, `TT_27C`) against discovered point keys."""
+    """Match a required corner/condition label (e.g. `SS`, `TT_27C`, `SS_-40C`) against discovered point keys."""
     rc = str(req_cond).strip()
     rc_low = rc.lower()
     exact = [k for k in available_keys if k == rc or k.lower() == rc_low]
     if exact:
         return sorted(exact)
-    rc_tokens = [t for t in re.split(r'[/_\-\s]+', rc_low) if t]
+    rc_tokens = _tokenize_condition_label(rc_low)
     if not rc_tokens:
         return []
     matched = []
     for k in sorted(available_keys):
-        k_tokens = set([t for t in re.split(r'[/_\-\s]+', k.lower()) if t])
+        k_tokens = set(_tokenize_condition_label(k))
         if all([rt in k_tokens for rt in rc_tokens]):
             matched.append(k)
     return matched
@@ -2703,6 +3004,10 @@ def _normalize_spec_requirements(spec_obj):
                     op = "range"
                     tgt = item["min"]
                     tgt_max = item["max"]
+                elif isinstance(tgt, (list, tuple)) and len(tgt) == 2 and (op is None or str(op).lower() in ("range", "between", "in")):
+                    op = "range"
+                    tgt_max = tgt[1]
+                    tgt = tgt[0]
                 elif op is None:
                     if "min" in item and item["min"] is not None:
                         op, tgt = ">=", item["min"]
@@ -2745,7 +3050,7 @@ def _normalize_spec_requirements(spec_obj):
                 continue
             val = src[key]
             idx += 1
-            if isinstance(val, (int, float)) and not isinstance(val, bool):
+            if isinstance(val, _NUM_TYPES) or isinstance(val, bool):
                 default_op = "<=" if any([t in key.lower() for t in ("power", "idd", "overshoot", "settl", "ripple", "noise")]) else ">="
                 reqs.append({
                     "id": "REQ-%02d" % idx,
@@ -2753,6 +3058,21 @@ def _normalize_spec_requirements(spec_obj):
                     "operator": default_op,
                     "target": val,
                     "target_max": None,
+                    "unit": "",
+                    "conditions": [],
+                    "analysis": None,
+                    "freq_min_hz": None,
+                    "freq_max_hz": None,
+                    "target_v": None,
+                    "settling_tol_ratio": None,
+                })
+            elif isinstance(val, (list, tuple)) and len(val) == 2:
+                reqs.append({
+                    "id": "REQ-%02d" % idx,
+                    "quantity": key,
+                    "operator": "range",
+                    "target": val[0],
+                    "target_max": val[1],
                     "unit": "",
                     "conditions": [],
                     "analysis": None,
@@ -3004,9 +3324,9 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
             # Static target voltage verification for settling_time_s requirements
             if m_key == "settling_time_s":
-                if req_tv is not None and isinstance(m_dict.get("tran_final_v"), (int, float)):
+                if req_tv is not None and isinstance(m_dict.get("tran_final_v"), _NUM_TYPES) and not isinstance(m_dict.get("tran_final_v"), bool):
                     v_init_m = m_dict.get("tran_init_v")
-                    v_init_f = float(v_init_m) if isinstance(v_init_m, (int, float)) else 0.0
+                    v_init_f = float(v_init_m) if (isinstance(v_init_m, _NUM_TYPES) and not isinstance(v_init_m, bool)) else 0.0
                     tol_ratio_eff = req_tol_r if req_tol_r is not None else 0.01
                     tol_v = tol_ratio_eff * max(abs(float(req_tv) - v_init_f), 1e-9)
                     if abs(float(m_dict["tran_final_v"]) - float(req_tv)) > tol_v:
@@ -3018,7 +3338,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                             "static_error_v": _round_clean(float(m_dict["tran_final_v"]) - float(req_tv)),
                         }
                         continue
-                if m_val is None and isinstance(m_dict.get("static_error_v"), (int, float)) and abs(float(m_dict["static_error_v"])) > 0.0:
+                if m_val is None and isinstance(m_dict.get("static_error_v"), _NUM_TYPES) and not isinstance(m_dict.get("static_error_v"), bool) and abs(float(m_dict["static_error_v"])) > 0.0:
                     any_failed = True
                     per_cond[cond_name] = {
                         "measured_si": None,
@@ -3216,7 +3536,7 @@ def run_metrics(run_dir, spec_path=None, vout_hint=None, vin_hint=None, settling
     ])
 
     for m_key in sorted(list(low_is_worse | high_is_worse)):
-        vals = [pm.get(m_key) for pm in points_metrics.values() if isinstance(pm.get(m_key), (int, float))]
+        vals = [pm.get(m_key) for pm in points_metrics.values() if isinstance(pm.get(m_key), _NUM_TYPES) and not isinstance(pm.get(m_key), bool)]
         if vals and len(vals) == len(points_metrics):
             worst_case[m_key] = _round_clean(min(vals) if m_key in low_is_worse else max(vals))
         elif vals:
@@ -3669,6 +3989,237 @@ def run_self_test():
         assert "monte_carlo" in eval_gcov.get("missing_coverage", []), eval_gcov
         assert "post_layout" in eval_gcov.get("missing_coverage", []), eval_gcov
 
+        # 17. #3 STB RHP Open-Loop Pole Bode Gain-Phase Slope Guard (L(s)=10/[(1-s/20)(1+s/10)^2] vs valid Buck loop)
+        rhp3_dir = os.path.join(tmp_root, "rhp3_stb")
+        rhp3_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_w in range(-6, 19):
+            w_val = 10.0 ** (k_w / 6.0)
+            s_c = complex(0.0, w_val)
+            l_val = 10.0 / ((1.0 - s_c / 20.0) * (1.0 + s_c / 10.0) * (1.0 + s_c / 10.0))
+            rhp3_lines.append('"freq" %.6e\n"loopGain" (%.8e %.8e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        rhp3_lines.append("END\n")
+        _write_utf8(os.path.join(rhp3_dir, "stb.stb"), "".join(rhp3_lines))
+        res_rhp3 = run_metrics(rhp3_dir)
+        assert res_rhp3["metrics"].get("rhp_open_loop_pole_suspected") is True, res_rhp3["metrics"]
+        assert res_rhp3["metrics"]["phase_margin_deg"] is None, res_rhp3["metrics"]
+        assert "Nyquist" in str(res_rhp3["metrics"].get("stb_notes", "")), res_rhp3["metrics"]
+
+        buck_dir = os.path.join(tmp_root, "buck_stb")
+        buck_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_w in range(-6, 25):
+            w_val = 10.0 ** (k_w / 6.0)
+            s_c = complex(0.0, w_val)
+            l_val = 100.0 * ((1.0 + s_c / 5.0) ** 2) / ((1.0 + s_c / 0.5) * (1.0 + s_c / 100.0 + (s_c / 10.0) ** 2) * (1.0 + s_c / 500.0))
+            buck_lines.append('"freq" %.6e\n"loopGain" (%.8e %.8e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        buck_lines.append("END\n")
+        _write_utf8(os.path.join(buck_dir, "stb.stb"), "".join(buck_lines))
+        res_buck = run_metrics(buck_dir)
+        assert res_buck["metrics"].get("rhp_open_loop_pole_suspected") is not True, res_buck["metrics"]
+        assert res_buck["metrics"]["phase_margin_deg"] is not None and res_buck["metrics"]["phase_margin_deg"] > 45.0, res_buck["metrics"]
+
+        # 18. #4 STB Rising 0 dB Crossing Worst Phase Margin (falling PM=65 deg, rising PM=8 deg -> worst <= 10 deg!)
+        rise_stb_dir = os.path.join(tmp_root, "rise_stb")
+        _write_utf8(os.path.join(rise_stb_dir, "stb.stb"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n'
+            '"freq" 1.0\n"loopGain" (100.0 0.0)\n'
+            '"freq" 1.0e5\n"loopGain" (-0.8452 -1.8126)\n'
+            '"freq" 2.0e5\n"loopGain" (-0.2113 -0.4532)\n'
+            '"freq" 4.0e5\n"loopGain" (-0.4951 -0.0696)\n'
+            '"freq" 6.0e5\n"loopGain" (-1.9805 -0.2783)\n'
+            '"freq" 1.0e6\n"loopGain" (-0.3214 -0.3830)\n'
+            'END\n'
+        ))
+        res_rise_stb = run_metrics(rise_stb_dir)
+        assert res_rise_stb["metrics"]["phase_margin_deg"] is not None, res_rise_stb["metrics"]
+        assert res_rise_stb["metrics"]["phase_margin_deg"] < 12.0, res_rise_stb["metrics"]
+
+        # 19. #5 Split-Supply DC Power (VDD=+1.8V -1mA + VSS=-1.8V +1mA = 3.6mW) + 0V Ammeters Ignored
+        split_dir = os.path.join(tmp_root, "split_supply")
+        _write_utf8(os.path.join(split_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n'
+            '"VDD" "v_t" 1.8\n"VDD:p" "i_t" -1.0e-3\n'
+            '"VSS" "v_t" -1.8\n"VSS:p" "i_t" 1.0e-3\n'
+            '"V_TAIL:p" "i_t" 5.0e-4\n"V_MEAS:p" "i_t" 2.0e-4\nEND\n'
+        ))
+        res_split = run_metrics(split_dir)
+        assert abs(res_split["metrics"]["dc_power_w"] - 0.0036) < 1e-9, res_split["metrics"]
+        assert res_split["metrics"]["power_method"] == "multi_rail_supply_terminal", res_split["metrics"]
+
+        gnd_vss_dir = os.path.join(tmp_root, "gnd_vss")
+        _write_utf8(os.path.join(gnd_vss_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n'
+            '"VDD" "v_t" 1.8\n"VDD:p" "i_t" -1.0e-3\n'
+            '"VSS" "v_t" 0.0\n"VSS:p" "i_t" 1.0e-3\n'
+            '"V_TAIL:p" "i_t" 5.0e-4\nEND\n'
+        ))
+        res_gvss = run_metrics(gnd_vss_dir)
+        assert abs(res_gvss["metrics"]["dc_power_w"] - 0.0018) < 1e-9, res_gvss["metrics"]
+        assert res_gvss["metrics"]["power_method"] == "supply_terminal", res_gvss["metrics"]
+
+        # 20. #6 Spec PVT/MC Coverage & SS_-40C vs SS_40C Regex Guards
+        assert not _match_supply_covered(1.8, {"TT_1p8": {"analyses_present": ["ac"]}}), "Bare 1p8 without unit must not match!"
+        assert not _match_supply_covered(1.8, {"TT_1p8V": {"vdd_v": 1.0, "analyses_present": ["dc"]}}), "Numeric vdd_v=1.0 must override label 1p8V!"
+        assert _match_supply_covered(1.8, {"TT_1p8V": {"analyses_present": ["ac"]}}), "Explicit 1p8V label should match when no numeric vdd_v"
+        assert _match_temp_covered(-40.0, {"SS_-40C": {}}), "SS_-40C must match -40C"
+        assert not _match_temp_covered(40.0, {"SS_-40C": {}}), "SS_-40C must NEVER match +40C!"
+        assert not _match_temp_covered(40.0, {"SS_40": {}}), "SS_40 without C suffix must not match 40C!"
+        assert _match_condition_keys("SS_-40C", ["SS_40C"]) == [], "SS_-40C condition must NEVER match SS_40C!"
+        assert _match_condition_keys("SS_-40C", ["SS_-40C_1p62V"]) == ["SS_-40C_1p62V"]
+        assert _count_mc_points({"iter1": {}, "iter2": {}}) == 0, "Generic iterN must NOT count as Monte Carlo!"
+        assert _count_mc_points({"mc1": {}, "monte_carlo_2": {}}) == 2
+
+        # 21. #7 MOS op-audit: Cutoff PMOS with vgs > 0, Unknown Region Code, --expect-triode Missing OP Fields
+        pmos_cut_psf = os.path.join(tmp_root, "pmos_cutoff.info")
+        _write_utf8(pmos_cut_psf, (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"bsim4" STRUCT( "gm" FLOAT DOUBLE "vgs" FLOAT DOUBLE "vth" FLOAT DOUBLE "vds" FLOAT DOUBLE "vdsat" FLOAT DOUBLE "ids" FLOAT DOUBLE )\n'
+            'VALUE\n"M3" "bsim4" ( 0.0 0.2 -0.4 -0.5 -0.1 0.0 )\nEND\n'
+        ))
+        rep_pcut = run_op_audit(pmos_cut_psf)
+        assert rep_pcut["status"] == "FAIL" and rep_pcut["audit_pass"] is False, rep_pcut
+        assert rep_pcut["devices"]["M3"]["region"] == 0 and rep_pcut["devices"]["M3"]["vov"] < 0.0, rep_pcut
+
+        unk_reg_psf = os.path.join(tmp_root, "unk_reg.info")
+        _write_utf8(unk_reg_psf, (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"bsim4" STRUCT( "gm" FLOAT DOUBLE "vds" FLOAT DOUBLE "vdsat" FLOAT DOUBLE "ids" FLOAT DOUBLE "region" INT LONG )\n'
+            'VALUE\n"M1" "bsim4" ( 1.0e-3 0.5 0.1 1.0e-4 9 )\nEND\n'
+        ))
+        rep_unkr = run_op_audit(unk_reg_psf)
+        assert rep_unkr["status"] == "FAIL" and rep_unkr["audit_pass"] is False, rep_unkr
+        assert "M1" in rep_unkr["summary"]["unknown_region"], rep_unkr
+
+        tri_miss_psf = os.path.join(tmp_root, "triode_missing.info")
+        _write_utf8(tri_miss_psf, (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"bsim4" STRUCT( "gm" FLOAT DOUBLE "vds" FLOAT DOUBLE "ids" FLOAT DOUBLE )\n'
+            'VALUE\n"M_SW" "bsim4" ( 1.0e-3 0.05 1.0e-4 )\nEND\n'
+        ))
+        rep_tmiss = run_op_audit(tri_miss_psf, expect_triode=["M_SW"])
+        assert rep_tmiss["status"] == "NOT_VERIFIED" and rep_tmiss["audit_pass"] is False, rep_tmiss
+        assert "M_SW" in rep_tmiss["summary"]["missing_op_fields"], rep_tmiss
+
+        # 22. #13 Transient: Adaptive Dense-Tail Settled Step, 3-Pulse Train, and Clipped Step No max_dvdt Fallback
+        ad_psf = os.path.join(tmp_root, "adaptive_settled.tran")
+        ad_times = [0.0, 0.5e-9, 1.0e-9, 2.0e-9, 5.0e-9] + [8.5e-9 + j * 0.0375e-9 for j in range(41)]
+        ad_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"r_t" FLOAT DOUBLE\nSWEEP\n"time" "r_t"\nTRACE\n"Vout" "r_t"\nVALUE\n']
+        for t_k in ad_times:
+            v_k = 1.0 - math.exp(-t_k / 0.5e-9)
+            ad_lines.append('"time" %.6e\n"Vout" %.6e\n' % (t_k, v_k))
+        ad_lines.append("END\n")
+        _write_utf8(ad_psf, "".join(ad_lines))
+        res_ad = run_metrics(ad_psf, settling_tol_ratio=0.01)
+        assert res_ad["metrics"]["settling_time_s"] is not None and res_ad["metrics"]["settling_time_s"] < 4.0e-9, res_ad["metrics"]
+
+        mp_tran_psf = os.path.join(tmp_root, "multi_pulse.tran")
+        mp_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"r_t" FLOAT DOUBLE\nSWEEP\n"time" "r_t"\nTRACE\n"Vin" "r_t"\n"Vout" "r_t"\nVALUE\n']
+        for k in range(311):
+            t_k = k * 1.0e-9
+            cyc = k % 100
+            vin_k = 1.0 if (10 <= cyc < 60) else 0.0
+            if k < 10:
+                vout_k = 0.0
+            elif 10 <= cyc < 60:
+                vout_k = 1.0 - math.exp(-((cyc - 10) * 1.0e-9) / 0.4e-9)
+            else:
+                dt_f = (cyc - 60) * 1.0e-9 if cyc >= 60 else (cyc + 40) * 1.0e-9
+                vout_k = math.exp(-dt_f / 0.4e-9)
+            mp_lines.append('"time" %.6e\n"Vin" %.6e\n"Vout" %.6e\n' % (t_k, vin_k, vout_k))
+        mp_lines.append("END\n")
+        _write_utf8(mp_tran_psf, "".join(mp_lines))
+        res_mp_tr = run_metrics(mp_tran_psf, settling_tol_ratio=0.01)
+        assert res_mp_tr["metrics"]["settling_time_s"] is not None and res_mp_tr["metrics"]["settling_time_s"] < 5.0e-9, res_mp_tr["metrics"]
+
+        clip_psf = os.path.join(tmp_root, "clipped_step.tran")
+        clip_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"r_t" FLOAT DOUBLE\nSWEEP\n"time" "r_t"\nTRACE\n"Vout" "r_t"\nVALUE\n']
+        for k in range(21):
+            t_k = k * 1.0e-9
+            v_k = min(0.5, 0.5 * (1.0 - math.exp(-t_k / 1.0e-9)))
+            clip_lines.append('"time" %.6e\n"Vout" %.6e\n' % (t_k, v_k))
+        clip_lines.append("END\n")
+        _write_utf8(clip_psf, "".join(clip_lines))
+        res_clip = run_metrics(clip_psf, target_v=1.0)
+        assert res_clip["metrics"]["slew_rate_pos"] is None, res_clip["metrics"]
+
+        # 23. #14 AC Descending Sweep & Zero Vin Fail-Closed
+        ac_desc_dir = os.path.join(tmp_root, "ac_desc")
+        _write_utf8(os.path.join(ac_desc_dir, "ac.ac"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"vin" "c_t"\n"vout" "c_t"\nVALUE\n'
+            '"freq" 1.0e7\n"vin" (0.1 0.0)\n"vout" (-0.005 -0.005)\n'
+            '"freq" 1.0e6\n"vin" (0.1 0.0)\n"vout" (0.0 -0.1)\n'
+            '"freq" 1.0\n"vin" (0.1 0.0)\n"vout" (100.0 0.0)\nEND\n'
+        ))
+        res_ac_desc = run_metrics(ac_desc_dir)
+        assert abs(res_ac_desc["metrics"]["dc_gain_db"] - 60.0) < 1e-3, res_ac_desc["metrics"]
+
+        ac_zvin_dir = os.path.join(tmp_root, "ac_zvin")
+        _write_utf8(os.path.join(ac_zvin_dir, "ac.ac"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"vin" "c_t"\n"vout" "c_t"\nVALUE\n'
+            '"freq" 1.0\n"vin" (0.1 0.0)\n"vout" (100.0 0.0)\n'
+            '"freq" 1.0e6\n"vin" (0.0 0.0)\n"vout" (0.0 -0.1)\nEND\n'
+        ))
+        res_ac_zvin = run_metrics(ac_zvin_dir)
+        assert res_ac_zvin["metrics"]["dc_gain_db"] is None, res_ac_zvin["metrics"]
+
+        # 24. #15 Noise ASD/PSD SI Prefix Scaling & Zero-Width Band Rejection
+        ns_nv_dir = os.path.join(tmp_root, "noise_nv")
+        _write_utf8(os.path.join(ns_nv_dir, "noise.noise"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n"vn_t" FLOAT DOUBLE PROP( "units" "nV/sqrt(Hz)" )\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"out" "vn_t"\nVALUE\n'
+            '"freq" 0.0\n"out" 10.0\n"freq" 100.0\n"out" 10.0\nEND\n'
+        ))
+        res_ns_nv = run_metrics(ns_nv_dir)
+        assert abs(res_ns_nv["metrics"]["integrated_rms_noise_v"] - 1.0e-7) < 1e-12, res_ns_nv["metrics"]
+
+        ns_psd_dir = os.path.join(tmp_root, "noise_nv2")
+        _write_utf8(os.path.join(ns_psd_dir, "noise.noise"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n"vn_t" FLOAT DOUBLE PROP( "units" "nV^2/Hz" )\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"out" "vn_t"\nVALUE\n'
+            '"freq" 0.0\n"out" 100.0\n"freq" 100.0\n"out" 100.0\nEND\n'
+        ))
+        res_ns_psd = run_metrics(ns_psd_dir)
+        assert abs(res_ns_psd["metrics"]["integrated_rms_noise_v"] - 1.0e-7) < 1e-12, res_ns_psd["metrics"]
+
+        spec_zw_path = os.path.join(tmp_root, "spec_zw.json")
+        _write_utf8(spec_zw_path, json.dumps({
+            "requirements": [{
+                "id": "N_ZW", "quantity": "integrated_rms_noise_v", "operator": "<=",
+                "target": 10.0, "unit": "uVrms", "band_hz": [50.0, 50.0],
+            }]
+        }))
+        res_zw = run_metrics(ns_nv_dir, spec_path=spec_zw_path)
+        assert res_zw["verdict"] == "NOT_VERIFIED", res_zw
+        assert res_zw["spec_evaluation"]["results"][0]["reason"] == "invalid_noise_band", res_zw
+
+        # 25. #16 Non-Finite / Bool / Non-Numeric Spec Targets & [min, max] Range in constraints
+        for bad_tgt in (float("nan"), float("inf"), float("-inf"), True, False, "not_a_number"):
+            ev_bt = evaluate_spec(
+                {"TT": {"dc_gain_db": 60.0, "analyses_present": ["ac"]}},
+                {"requirements": [{"id": "BT", "quantity": "dc_gain_db", "operator": "<=", "target": bad_tgt, "unit": "dB"}]},
+            )
+            assert ev_bt["verdict"] == "NOT_VERIFIED", (bad_tgt, ev_bt)
+            assert ev_bt["results"][0]["reason"] == "invalid_target", (bad_tgt, ev_bt)
+
+        ev_c_rng_pass = evaluate_spec(
+            {"TT": {"dc_gain_db": 60.0, "analyses_present": ["ac"]}},
+            {"constraints": [{"id": "CR1", "quantity": "dc_gain_db", "target": [50.0, 70.0], "unit": "dB"}]},
+        )
+        assert ev_c_rng_pass["verdict"] == "PASS", ev_c_rng_pass
+        ev_c_rng_fail = evaluate_spec(
+            {"TT": {"dc_gain_db": 75.0, "analyses_present": ["ac"]}},
+            {"constraints": [{"id": "CR2", "quantity": "dc_gain_db", "target": [50.0, 70.0], "unit": "dB"}]},
+        )
+        assert ev_c_rng_fail["verdict"] == "FAIL", ev_c_rng_fail
+
         return {
             "command": "self-test",
             "ok": True,
@@ -3695,6 +4246,15 @@ def run_self_test():
                 "noise_descending_sort_and_band_coverage_check",
                 "ac_differential_input_and_strict_vin_vout",
                 "unit_dimension_mismatch_approval_allowlist_and_global_pvt_coverage",
+                "stb_bode_slope_rhp_pole_and_nyquist_note",
+                "stb_rising_0db_crossing_worst_pm",
+                "dc_split_supply_vss_and_0v_ammeter_isolation",
+                "spec_pvt_supply_temp_ss_neg40c_and_mc_regex",
+                "mos_cutoff_pmos_unknown_region_and_expect_triode_missing_op",
+                "tran_adaptive_tail_multipulse_and_clipped_step_slew",
+                "ac_descending_sweep_and_zero_vin_fail_closed",
+                "noise_si_prefix_asd_psd_and_zero_width_band_rejected",
+                "nonfinite_spec_targets_and_constraints_range_list",
             ],
         }
     finally:

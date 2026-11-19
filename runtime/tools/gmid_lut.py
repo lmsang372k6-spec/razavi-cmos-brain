@@ -15,7 +15,7 @@ Spline (PCHIP) inverse ratio solver for Murmann gm/ID methodology:
 
 Release: 2026.11.19.1
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import bisect
 import gzip
@@ -61,6 +61,42 @@ class LutBoundsError(LutError):
     pass
 
 
+def _require_finite(val, name):
+    if isinstance(val, bool):
+        raise LutError("%s must be a finite number (got bool)" % name)
+    try:
+        f = float(val)
+    except (TypeError, ValueError):
+        raise LutError("%s must be a finite number (got %r)" % (name, val))
+    if math.isnan(f) or math.isinf(f):
+        raise LutError("%s must be finite (got %r)" % (name, val))
+    return f
+
+
+def _format_spectre_dim(val_m):
+    """Format meter dimension as valid Spectre engineering string (no scientific notation + suffix, 5nm precision)."""
+    val = _require_finite(val_m, "dimension")
+    av = abs(val)
+    if av == 0.0:
+        return "0"
+    if av >= 1.0:
+        scaled, suf, ndec = val, "", 9
+    elif av >= 1.0e-3:
+        scaled, suf, ndec = val * 1.0e3, "m", 6
+    elif av >= 1.0e-6:
+        scaled, suf, ndec = val * 1.0e6, "u", 6
+    elif av >= 1.0e-9:
+        scaled, suf, ndec = val * 1.0e9, "n", 3
+    else:
+        scaled, suf, ndec = val * 1.0e12, "p", 3
+    fmt = ("%%.%df" % ndec) % scaled
+    if "." in fmt:
+        fmt = fmt.rstrip("0").rstrip(".")
+    if fmt == "-0":
+        fmt = "0"
+    return fmt + suf
+
+
 def _snap_grid(val, grid):
     if grid is None or grid <= 0.0:
         return val
@@ -69,6 +105,8 @@ def _snap_grid(val, grid):
 
 def _is_within_axis(axis, x_val):
     if not axis:
+        return False
+    if isinstance(x_val, bool) or math.isnan(x_val) or math.isinf(x_val):
         return False
     if len(axis) == 1:
         return abs(x_val - axis[0]) <= max(1e-12, 1e-4 * abs(axis[0]))
@@ -79,6 +117,7 @@ def _is_within_axis(axis, x_val):
 
 
 def _bracket_1d(axis, x_val, axis_name, allow_extrapolate=False):
+    x_val = _require_finite(x_val, axis_name)
     n = len(axis)
     if n == 0:
         raise LutError("Empty LUT axis: %s" % axis_name)
@@ -232,6 +271,9 @@ class GmidLut(object):
 
     def _check_soa(self, dev_key, vgs_mag, vds_mag, vsb_mag, allow_soa_violation=True):
         """Evaluate single- and multi-terminal SOA bounds (VDD/VGS/VDS, VSB, |VGB|, |VDB|)."""
+        vgs_mag = _require_finite(vgs_mag, "vgs")
+        vds_mag = _require_finite(vds_mag, "vds")
+        vsb_mag = _require_finite(vsb_mag, "vsb")
         vgb_mag = vgs_mag + vsb_mag
         vdb_mag = vds_mag + vsb_mag
         violations = []
@@ -425,9 +467,9 @@ class GmidLut(object):
             raise LutError("Unsupported interpolation method '%s' (choose 'pchip' or 'linear')" % method)
 
         dev_key, dev_entry = self.resolve_device(dev)
-        vds_mag = abs(float(vds))
-        vsb_mag = abs(float(vsb))
-        l_val = float(l_m)
+        vds_mag = abs(_require_finite(vds, "vds"))
+        vsb_mag = abs(_require_finite(vsb, "vsb"))
+        l_val = _require_finite(l_m, "l_m")
 
         prep = self._get_prepared_slice(dev_key, dev_entry, l_val, vds_mag, vsb_mag, allow_extrapolate)
         g_ax = prep["g_ax"]
@@ -439,7 +481,7 @@ class GmidLut(object):
 
         requested_gmid = None
         if gm_id is not None:
-            requested_gmid = float(gm_id)
+            requested_gmid = _require_finite(gm_id, "gm_id")
             target_gmid = requested_gmid
             if target_gmid < gmid_min - 1e-6 or target_gmid > gmid_max + 1e-6:
                 if not allow_extrapolate:
@@ -454,7 +496,7 @@ class GmidLut(object):
                 method=method, precomputed_slopes=prep["m_gmid_vgs"]
             )
         elif jd is not None:
-            target_jd = float(jd)
+            target_jd = _require_finite(jd, "jd")
             if target_jd <= 0.0:
                 raise LutError("Current density JD must be positive (A/m).")
             jd_min = min(id_w_vec)
@@ -521,7 +563,7 @@ class GmidLut(object):
                             v_cur = 0.5 * (v_lo + v_hi)
                     vgs_q = v_cur
         elif vgs is not None:
-            vgs_q = abs(float(vgs))
+            vgs_q = abs(_require_finite(vgs, "vgs"))
             if (vgs_q < g_ax[0] - 1e-9 or vgs_q > g_ax[-1] + 1e-9) and not allow_extrapolate:
                 raise LutBoundsError(
                     "Requested |VGS|=%.3fV outside LUT range [%.3f, %.3f]V."
@@ -636,25 +678,34 @@ class GmidLut(object):
         if (gm is None and id_a is None) or (gm is not None and id_a is not None):
             raise LutError("Provide exactly one of --gm (Siemens) or --id (Amps) for sizing.")
 
-        l_snapped = _snap_grid(float(l_m), grid)
-        gmid_val = float(gm_id)
+        l_in = _require_finite(l_m, "l_m")
+        grid_f = _require_finite(grid, "grid")
+        if grid_f <= 0.0:
+            raise LutError("Manufacturing grid must be strictly positive (got %r)." % (grid,))
+        vds_in = _require_finite(vds, "vds")
+        vsb_in = _require_finite(vsb, "vsb")
+        vds_margin_f = _require_finite(vds_margin, "vds_margin")
+        wf_min_f = _require_finite(w_finger_min, "w_finger_min")
+        wf_max_f = _require_finite(w_finger_max, "w_finger_max")
+        l_snapped = _snap_grid(l_in, grid_f)
+        gmid_val = _require_finite(gm_id, "gm_id")
         q = self.query(
             dev=dev,
             l_m=l_snapped,
             gm_id=gmid_val,
-            vds=vds,
-            vsb=vsb,
+            vds=vds_in,
+            vsb=vsb_in,
             method=method,
             allow_soa_violation=True,
         )
 
         if gm is not None:
-            gm_target = float(gm)
+            gm_target = _require_finite(gm, "gm")
             if gm_target <= 0.0:
                 raise LutError("Target gm must be strictly positive (Siemens).")
             id_req = gm_target / gmid_val
         else:
-            id_req = float(id_a)
+            id_req = _require_finite(id_a, "id_a")
             if id_req <= 0.0:
                 raise LutError("Target drain current ID must be strictly positive (Amps).")
             gm_target = id_req * gmid_val
@@ -662,9 +713,7 @@ class GmidLut(object):
         jd_val = q["jd_a_per_m"]
         w_ideal = id_req / jd_val
 
-        g = max(float(grid), 1e-12)
-        wf_min_f = float(w_finger_min)
-        wf_max_f = float(w_finger_max)
+        g = max(grid_f, 1e-12)
         wf_min_grid = math.ceil((wf_min_f - 1e-15) / g) * g
         wf_max_grid = math.floor((wf_max_f + 1e-15) / g) * g
         if wf_max_grid < wf_min_grid - 1e-15:
@@ -740,16 +789,19 @@ class GmidLut(object):
         cgs_f = w_total * q_real["cgs_f_per_m"]
         cgd_f = w_total * q_real["cgd_f_per_m"]
         cdd_f = w_total * q_real["cdd_f_per_m"]
-        vds_min = q_real["vdsat"] + float(vds_margin)
-        if abs(float(vds)) < vds_min:
+        vds_min = q_real["vdsat"] + vds_margin_f
+        if abs(vds_in) < vds_min:
             warnings.append(
                 "Applied |VDS|=%.3fV is below vds_min=%.3fV (vdsat=%.3fV + margin=%.3fV)!"
-                % (abs(float(vds)), vds_min, q_real["vdsat"], float(vds_margin))
+                % (abs(vds_in), vds_min, q_real["vdsat"], vds_margin_f)
             )
         for sv in q_real["soa_violations"]:
             warnings.append("SOA violation: %s" % sv)
 
         is_gpdk090 = str(q_real.get("model_name", "")).startswith("gpdk090_")
+        w_total_str = _format_spectre_dim(w_total)
+        w_finger_str = _format_spectre_dim(wf_snapped)
+        l_str = _format_spectre_dim(l_snapped)
         elapsed_ms = (TIMER() - t0) * 1000.0
         return {
             "ok": (not lut_clamped),
@@ -794,16 +846,16 @@ class GmidLut(object):
             "cdd_f": cdd_f,
             "spectre_params": {
                 "model": q_real["model_name"],
-                "w_total": "%.4gu" % (w_total * 1e6),
-                "w_finger": "%.4gu" % (wf_snapped * 1e6),
-                "l": "%.4gn" % (l_snapped * 1e9),
+                "w_total": w_total_str,
+                "w_finger": w_finger_str,
+                "l": l_str,
                 "nf": nf,
                 "m": nf if is_gpdk090 else 1,
                 "simM": nf if is_gpdk090 else 1,
                 "netlist_hint": (
-                    "w=%.4gu l=%.4gn m=%d simM=%d" % (wf_snapped * 1e6, l_snapped * 1e9, nf, nf)
+                    "w=%s l=%s m=%d simM=%d" % (w_finger_str, l_str, nf, nf)
                     if is_gpdk090
-                    else "w=%.4gu l=%.4gn nf=%d m=1" % (w_total * 1e6, l_snapped * 1e9, nf)
+                    else "w=%s l=%s nf=%d m=1" % (w_total_str, l_str, nf)
                 ),
             },
             "warnings": warnings,
@@ -820,20 +872,28 @@ class GmidLut(object):
         vds=0.6,
         vsb=0.0,
         method="pchip",
+        allow_soa_violation=True,
     ):
         t0 = TIMER()
         dev_key, dev_entry = self.resolve_device(dev)
-        lengths = sorted(l_list) if l_list else list(dev_entry["L"][:4])
+        vds_f = _require_finite(vds, "vds")
+        vsb_f = _require_finite(vsb, "vsb")
+        gmin_f = _require_finite(gm_id_min, "gm_id_min")
+        gmax_f = _require_finite(gm_id_max, "gm_id_max")
+        step_val = _require_finite(gm_id_step, "gm_id_step")
+        if l_list is not None:
+            lengths = sorted([_require_finite(lv, "l_list") for lv in l_list])
+        else:
+            lengths = list(dev_entry["L"][:4])
 
-        step_val = float(gm_id_step)
         if step_val <= 0.0:
             raise LutError("gm_id_step must be strictly positive (got %s)." % str(gm_id_step))
-        if float(gm_id_max) < float(gm_id_min):
-            raise LutError("gm_id_max (%.4g) must be >= gm_id_min (%.4g)." % (float(gm_id_max), float(gm_id_min)))
+        if gmax_f < gmin_f:
+            raise LutError("gm_id_max (%.4g) must be >= gm_id_min (%.4g)." % (gmax_f, gmin_f))
 
         gmid_points = []
-        cur = float(gm_id_min)
-        while cur <= float(gm_id_max) + 1e-9:
+        cur = gmin_f
+        while cur <= gmax_f + 1e-9:
             gmid_points.append(round(cur, 4))
             cur += step_val
 
@@ -843,7 +903,8 @@ class GmidLut(object):
                 try:
                     q = self.query(
                         dev=dev_key, l_m=l_m, gm_id=gmid_val,
-                        vds=vds, vsb=vsb, method=method, allow_extrapolate=False
+                        vds=vds_f, vsb=vsb_f, method=method, allow_extrapolate=False,
+                        allow_soa_violation=True,
                     )
                 except LutBoundsError:
                     continue
@@ -868,10 +929,14 @@ class GmidLut(object):
         if not rows:
             raise LutError("No valid (gm/ID, L) points inside LUT domain for tradeoff table.")
 
-        # Mark 2D Pareto frontier for maximizing (gm_gds, ft_hz)
+        # Mark 2D Pareto frontier for maximizing (gm_gds, ft_hz) strictly over SOA-safe rows only
+        safe_rows = [r for r in rows if r["soa_ok"]]
         for r in rows:
+            if not r["soa_ok"]:
+                r["pareto_gain_speed"] = False
+                continue
             dominated = False
-            for other in rows:
+            for other in safe_rows:
                 if (
                     other["gm_gds"] >= r["gm_gds"]
                     and other["ft_hz"] >= r["ft_hz"]
@@ -881,8 +946,10 @@ class GmidLut(object):
                     break
             r["pareto_gain_speed"] = not dominated
 
-        safe_rows = [r for r in rows if r["soa_ok"]]
         all_soa_failed = (len(safe_rows) == 0)
+        soa_violation_count = len(rows) - len(safe_rows)
+        pareto_safe_count = sum([1 for r in safe_rows if r.get("pareto_gain_speed")])
+        strict_soa_failed = (not allow_soa_violation) and (soa_violation_count > 0 or pareto_safe_count == 0)
 
         if all_soa_failed:
             role_recs = {
@@ -927,18 +994,22 @@ class GmidLut(object):
             }
 
         elapsed_ms = (TIMER() - t0) * 1000.0
+        ok_flag = (not all_soa_failed) and (pareto_safe_count > 0) and (not strict_soa_failed)
+        soa_ok_flag = (not all_soa_failed) and (not strict_soa_failed)
         return {
-            "ok": (not all_soa_failed),
-            "soa_ok": (not all_soa_failed),
+            "ok": ok_flag,
+            "soa_ok": soa_ok_flag,
             "command": "tradeoff",
             "device": dev_key,
             "model_name": dev_entry.get("model_name"),
             "pdk": self.provenance.get("pdk"),
             "corner": self.provenance.get("corner"),
-            "vds_v": abs(float(vds)),
-            "vsb_v": abs(float(vsb)),
+            "vds_v": abs(vds_f),
+            "vsb_v": abs(vsb_f),
             "count": len(rows),
             "soa_safe_count": len(safe_rows),
+            "soa_violation_count": soa_violation_count,
+            "pareto_safe_count": pareto_safe_count,
             "rows": rows,
             "role_recommendations": role_recs,
             "elapsed_ms": round(elapsed_ms, 4),
@@ -990,7 +1061,7 @@ def _parse_csv_floats(text):
     for tok in text.split(","):
         tok = tok.strip()
         if tok:
-            vals.append(float(tok))
+            vals.append(_require_finite(tok, "csv_float"))
     if not vals:
         raise LutError("Expected comma-separated numbers, got: %s" % text)
     return vals
@@ -1148,6 +1219,73 @@ def run_self_test():
         if not caught_missing_soa:
             raise AssertionError("Strict SOA mode must raise LutBoundsError when SOA metadata is missing!")
 
+        # 8. Verify NaN/Inf rejection in query, size, and tradeoff (#17)
+        for bad_val in (float("nan"), float("inf"), float("-inf")):
+            for fn_desc, fn_call in (
+                ("query_gmid", lambda bv=bad_val: lut.query(dev="nmos", l_m=180e-9, gm_id=bv, vds=0.6)),
+                ("query_vds", lambda bv=bad_val: lut.query(dev="nmos", l_m=180e-9, gm_id=15.0, vds=bv)),
+                ("size_gm", lambda bv=bad_val: lut.size(dev="nmos", gm=bv, gm_id=15.0, l_m=180e-9, vds=0.6)),
+                ("size_gmid", lambda bv=bad_val: lut.size(dev="nmos", gm=1e-3, gm_id=bv, l_m=180e-9, vds=0.6)),
+                ("tradeoff_vds", lambda bv=bad_val: lut.tradeoff(dev="nmos", vds=bv)),
+            ):
+                caught_nf = False
+                try:
+                    fn_call()
+                except LutError:
+                    caught_nf = True
+                if not caught_nf:
+                    raise AssertionError("Failed to reject non-finite %r in %s!" % (bad_val, fn_desc))
+
+        # 9. Verify !soa_ok rows excluded from pareto_gain_speed & tradeoff --strict-soa CLI exit 1 (#17)
+        # On GPDK045 (vgb_max=1.1V), vsb=0.50V causes high-VGS (low gm/ID) rows to violate VGB>1.1V while high gm/ID rows pass
+        tr45_mix = lut45.tradeoff(
+            dev="nmos", l_list=[45e-9, 180e-9], gm_id_min=4.0, gm_id_max=22.0, gm_id_step=2.0,
+            vds=0.5, vsb=0.50, allow_soa_violation=True
+        )
+        unsafe_rows = [r for r in tr45_mix["rows"] if not r["soa_ok"]]
+        if not unsafe_rows or tr45_mix["soa_safe_count"] == 0:
+            raise AssertionError("Expected mixed SOA-safe and SOA-violating rows in GPDK045 tradeoff test!")
+        if any([r.get("pareto_gain_speed") for r in unsafe_rows]):
+            raise AssertionError("SOA-violating rows MUST be excluded from pareto_gain_speed!")
+        tr45_strict = lut45.tradeoff(
+            dev="nmos", l_list=[45e-9, 180e-9], gm_id_min=4.0, gm_id_max=22.0, gm_id_step=2.0,
+            vds=0.5, vsb=0.50, allow_soa_violation=False
+        )
+        if tr45_strict["ok"] is not False or tr45_strict["soa_ok"] is not False:
+            raise AssertionError("Strict SOA tradeoff with violating rows must return ok=False and soa_ok=False!")
+        import subprocess
+        proc_tr = subprocess.Popen(
+            [
+                sys.executable, "-B", os.path.realpath(__file__), "tradeoff",
+                "--lut", lut45_path, "--dev", "nmos", "--l-list", "45e-9,180e-9",
+                "--gm-id-range", "4,22", "--gm-id-step", "2", "--vds", "0.5", "--vsb", "0.50", "--strict-soa",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        out_tr, _ = proc_tr.communicate()
+        if proc_tr.returncode != 1:
+            raise AssertionError("CLI tradeoff --strict-soa must exit 1 on SOA violation, got %d" % proc_tr.returncode)
+        proc_nan = subprocess.Popen(
+            [
+                sys.executable, "-B", os.path.realpath(__file__), "query",
+                "--lut", lut_path, "--dev", "nmos", "--l", "180e-9", "--gm-id", "nan", "--vds", "0.6",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        out_nan, _ = proc_nan.communicate()
+        if proc_nan.returncode != 1 or json.loads(out_nan.decode("utf-8")).get("ok") is not False:
+            raise AssertionError("CLI query --gm-id nan must exit 1 with ok=False!")
+
+        # 10. Verify large-W Spectre formatter (no scientific notation + suffix) & 5nm grid precision (#17)
+        if _format_spectre_dim(12.555e-6) != "12.555u":
+            raise AssertionError("5nm grid precision lost: got %r" % _format_spectre_dim(12.555e-6))
+        if _format_spectre_dim(12.56e-3) != "12.56m":
+            raise AssertionError("Large-W formatter failed: got %r" % _format_spectre_dim(12.56e-3))
+        s_huge = lut45.size(dev="nmos", id_a=0.5, gm_id=14.0, l_m=90e-9, vds=0.5, w_finger_max=5.0e-6)
+        w_tot_s = s_huge["spectre_params"]["w_total"]
+        if "e+" in w_tot_s.lower() or "e-" in w_tot_s.lower():
+            raise AssertionError("Invalid Spectre scientific+suffix width emitted: %r" % w_tot_s)
+
         return {
             "ok": True,
             "release": RELEASE,
@@ -1159,6 +1297,9 @@ def run_self_test():
             "gm_id_interp_error": q_n["gm_id_interp_error"],
             "clamped_width_consistency_verified": True,
             "multi_terminal_soa_verified": True,
+            "nan_inf_rejection_verified": True,
+            "soa_pareto_and_strict_cli_verified": True,
+            "spectre_dim_formatter_verified": True,
             "sample_nmos_size": {
                 "id_ua": round(s_n["id_a"] * 1e6, 3),
                 "w_total_um": round(s_n["w_total_m"] * 1e6, 3),
@@ -1308,6 +1449,7 @@ def main(argv=None):
                 vds=opts.vds,
                 vsb=opts.vsb,
                 method=opts.method,
+                allow_soa_violation=eff_allow_soa,
             )
         else:
             raise LutError("Unknown command '%s'. Choose from: query, size, tradeoff, info" % cmd)

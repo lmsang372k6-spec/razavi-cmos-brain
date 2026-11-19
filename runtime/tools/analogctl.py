@@ -105,7 +105,7 @@ def verify_entries(entries, base, seen):
                 raise CheckError("Duplicate manifest file: " + relative)
             seen.add(relative)
             expected = entry.get("sha256", "")
-            if not re.match(r"^[0-9a-f]{64}$", expected):
+            if not isinstance(expected, TEXT_TYPES) or not re.match(r"^[0-9a-f]{64}$", expected):
                 raise CheckError("Invalid SHA256: " + relative)
             if os.path.islink(path):
                 raise CheckError("Manifest file must be a regular file, not a symlink: " + relative)
@@ -175,24 +175,31 @@ def verify(base=None):
         errors.append("Unsupported source lock schema.")
     if not sources:
         errors.append("Source lock contains no sources.")
-    for source in sources:
+    for idx, source in enumerate(sources):
         if not isinstance(source, dict):
             errors.append("Source entry must be a JSON object.")
             continue
-        sid = source.get("id", "")
-        if not sid or sid in seen_ids:
-            errors.append("Missing or duplicate source id: " + sid)
-        seen_ids.add(sid)
-        if not re.match(r"^[0-9a-f]{40}$", source.get("commit", "")):
-            errors.append("Invalid pinned commit for " + sid)
+        raw_sid = source.get("id")
+        if not isinstance(raw_sid, TEXT_TYPES) or not raw_sid.strip():
+            sid_label = "<entry#%d>" % idx
+            errors.append("Missing or non-string source id at index %d" % idx)
+        else:
+            sid_label = raw_sid
+            if raw_sid in seen_ids:
+                errors.append("Missing or duplicate source id: " + raw_sid)
+            seen_ids.add(raw_sid)
+        raw_commit = source.get("commit")
+        if not isinstance(raw_commit, TEXT_TYPES) or not re.match(r"^[0-9a-f]{40}$", raw_commit):
+            errors.append("Invalid pinned commit for " + sid_label)
         files = source.get("files", [])
         if not files:
-            errors.append("Source has no local files: " + sid)
+            errors.append("Source has no local files: " + sid_label)
         amount, issues = verify_entries(files, base, seen_files)
         checked += amount
         errors.extend(issues)
-        if source.get("license", {}).get("status") == "no-repository-license-found":
-            warnings.append("No repository license found; do not redistribute without checking: " + sid)
+        lic = source.get("license")
+        if isinstance(lic, dict) and lic.get("status") == "no-repository-license-found":
+            warnings.append("No repository license found; do not redistribute without checking: " + sid_label)
     amount, issues = verify_entries(lock.get("local_generated_files", []), base, seen_files)
     checked += amount
     errors.extend(issues)
@@ -542,11 +549,29 @@ def run_self_test():
         if not loc_res.get("ok"):
             raise AssertionError("locate failed: %r" % loc_res)
 
+        # 5. verify() aggregates non-string/None id/commit/license cleanly without uncaught TypeError
+        bad_lib = os.path.join(tmp_dir, "bad_lock_lib")
+        mkdir(bad_lib)
+        bad_lock_raw = json.dumps(
+            {
+                "schema": "analog-sources-lock.v1",
+                "sources": [
+                    {"id": None, "commit": None, "license": None, "files": []},
+                    {"id": 123, "commit": 456, "files": [{"path": "sources/x.txt", "sha256": None}]},
+                ],
+                "local_generated_files": [],
+            }
+        ).encode("utf-8")
+        exclusive_write(os.path.join(bad_lib, "sources.lock.json"), bad_lock_raw)
+        ver_bad = verify(bad_lib)
+        if ver_bad.get("ok") is not False or len(ver_bad.get("errors", [])) < 4:
+            raise AssertionError("Expected aggregated verify errors for None/int id/commit, got %r" % ver_bad)
+
         return {
             "command": "self-test",
             "ok": True,
             "release": ota_sync.RELEASE_VERSION,
-            "tests_passed": 4,
+            "tests_passed": 5,
         }
     finally:
         if saved_env is None:
@@ -602,6 +627,9 @@ def main(arguments=None):
             raise CheckError("Invalid command or arguments; use --help.")
         emit(result)
         return 0 if result["ok"] else 1
+    except AssertionError as error:
+        emit({"command": command, "ok": False, "error": str(error)})
+        return 1
     except (CheckError, ota_sync.OtaConflictError, IOError, OSError, ValueError, TypeError, KeyError) as error:
         emit({"command": command, "ok": False, "error": str(error)})
         return 2

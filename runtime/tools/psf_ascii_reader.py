@@ -12,7 +12,7 @@ Supports full PSF ASCII sections:
 
 Rejects NaN/Inf values in numeric signals and writes zero bytecode inside library/tools/.
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import json
 import math
@@ -24,6 +24,16 @@ import sys
 import tempfile
 
 sys.dont_write_bytecode = True
+
+try:
+    _INT_TYPES = (int, long)  # noqa: F821
+except NameError:
+    _INT_TYPES = (int,)
+_NUM_TYPES = _INT_TYPES + (float,)
+try:
+    _TEXT_TYPES = (basestring,)  # noqa: F821
+except NameError:
+    _TEXT_TYPES = (str,)
 
 _SECTION_KEYWORDS = set(["HEADER", "TYPE", "SWEEP", "TRACE", "VALUE", "END"])
 _KIND_KEYWORDS = set([
@@ -514,9 +524,9 @@ def parse_psf_file(
                 instances[inst_key] = inst_obj
                 field_units.update(inst_obj.get("field_units", {}))
                 for flat_key, f_val in inst_obj.get("flat_scalars", []):
-                    if isinstance(f_val, (int, float, complex)) and not isinstance(f_val, bool):
+                    if isinstance(f_val, _NUM_TYPES + (complex,)) and not isinstance(f_val, bool):
                         _record_scalar(flat_key, f_val)
-                    elif isinstance(f_val, str):
+                    elif isinstance(f_val, _TEXT_TYPES):
                         strings[flat_key] = f_val
 
             while idx < n:
@@ -554,7 +564,7 @@ def parse_psf_file(
                             _record_scalar(m_name, atom[1])
                         elif atom[0] == "tuple":
                             for pos_i, item_val in enumerate(atom[1]):
-                                if isinstance(item_val, (int, float, complex)) and not isinstance(item_val, bool):
+                                if isinstance(item_val, _NUM_TYPES + (complex,)) and not isinstance(item_val, bool):
                                     _record_scalar("%s:field_%d" % (m_name, pos_i), item_val)
                         elif atom[0] == "str":
                             strings[m_name] = atom[1]
@@ -563,15 +573,28 @@ def parse_psf_file(
                 # Optional inline type name token `"V"`, `"A"`, `"bsim4"`, etc.
                 type_tag = None
                 if idx + 1 < n and tokens[idx][0] == "STR":
+                    cand_tag = tokens[idx][1]
                     next_tt = tokens[idx + 1][0]
+                    is_struct_tag = (cand_tag in types) and (types[cand_tag].get("struct") is not None)
+                    declared_t = trace_types.get(raw_key)
+                    is_declared_string = False
+                    if declared_t:
+                        dt_low = declared_t.lower()
+                        if dt_low in ("string", "str") or "string" in types.get(declared_t, {}).get("kind", ""):
+                            is_declared_string = True
                     if next_tt in ("NUM", "LPAREN"):
-                        type_tag = tokens[idx][1]
-                        idx += 1
+                        if not (is_struct_tag and next_tt != "LPAREN"):
+                            type_tag = cand_tag
+                            idx += 1
                     elif next_tt == "STR":
-                        cand_tag = tokens[idx][1]
                         is_known_tag = (cand_tag in types) or (cand_tag.lower() in ("string", "str"))
                         has_following_val = (idx + 2 < n and tokens[idx + 2][0] in ("NUM", "LPAREN"))
-                        if is_known_tag and not (raw_key in trace_types and has_following_val):
+                        if (
+                            is_known_tag
+                            and (not is_struct_tag)
+                            and (not is_declared_string)
+                            and not (raw_key in trace_types and has_following_val)
+                        ):
                             type_tag = cand_tag
                             idx += 1
 
@@ -857,12 +880,40 @@ def run_self_test():
         if len(p_ns["values"]["mn.m1:id"]) != 2 or p_ns["field_units"].get("mn.m1:id") != "A^2/Hz":
             raise AssertionError("Swept GROUP STRUCT noise parsing failed!")
 
+        # 4. String value matching a STRUCT type name or TRACE-declared string type must NOT be consumed as type_tag (#19)
+        str_p = os.path.join(tmp_d, "str_collision.info")
+        wf = open(str_p, "wb")
+        try:
+            wf.write(
+                b'HEADER\nTYPE\n"str_t" STRING *\n'
+                b'"bsim4" STRUCT( "gm" FLOAT DOUBLE "vds" FLOAT DOUBLE )\n'
+                b'TRACE\n"note" "string"\n"model_kind" "str_t"\n"M1" "bsim4"\n'
+                b'VALUE\n'
+                b'"note" "str_t"\n'
+                b'"model_kind" "bsim4"\n'
+                b'"untraced_model" "bsim4"\n'
+                b'"M1" "bsim4" ( 1.0e-3 0.5 )\nEND\n'
+            )
+        finally:
+            wf.close()
+        p_str = parse_psf_file(str_p)
+        if p_str["strings"].get("note") != "str_t":
+            raise AssertionError("Declared string trace value 'str_t' was misparsed: %r" % p_str["strings"])
+        if p_str["strings"].get("model_kind") != "bsim4":
+            raise AssertionError("Declared string value 'bsim4' was misparsed: %r" % p_str["strings"])
+        if p_str["strings"].get("untraced_model") != "bsim4":
+            raise AssertionError("Untraced string value matching STRUCT type 'bsim4' was misparsed: %r" % p_str["strings"])
+        if "M1" not in p_str["instances"] or abs(p_str["instances"]["M1"]["fields"]["gm"] - 1.0e-3) > 1e-12:
+            raise AssertionError("STRUCT instance M1 after string collision failed: %r" % p_str["instances"])
+
         return {
             "ok": True,
             "self_test": "PASS",
             "truncated_guard_verified": True,
             "leading_gap_tracking_verified": True,
             "swept_struct_noise_verified": True,
+            "string_type_tag_collision_verified": True,
+            "int_num_types_defined": (int in _INT_TYPES and float in _NUM_TYPES),
         }
     finally:
         shutil.rmtree(tmp_d, ignore_errors=True)

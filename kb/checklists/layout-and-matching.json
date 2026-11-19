@@ -43,7 +43,7 @@
       "name": "Chia đa ngón (Multi-Finger Folding) và nối cực cổng hai đầu cho transistor rộng nhằm hạ điện trở cổng RG và tụ CDB",
       "severity": "warn",
       "method": "estimate",
-      "invariant": "Chia chiều rộng W thành M ngón (W_finger ~ 1..5 um, ưu tiên M chẵn) và nối tiếp xúc kim loại ở hai đầu cực cổng để giảm RG theo 1/(12*M^2) đồng thời chia sẻ vùng S/D giảm gần một nửa C_DB",
+      "invariant": "Chia chiều rộng W thành M ngón (W_finger ~ 1..5 um, ưu tiên M chẵn) và nối tiếp xúc kim loại ở hai đầu cực cổng để đạt điện trở cổng tuyệt đối R_G = (1/(12*M^2)) * R_sq * (W/L) — tức giảm 4*M^2 lần so với 1 ngón nối một đầu (1/3)*R_sq*(W/L) — đồng thời chia sẻ vùng S/D giảm gần một nửa C_DB",
       "why_vi": "Một dải cổng poly dài duy nhất có điện trở phân bố lớn, vừa sinh nhiễu nhiệt 4*k*T*RG cộng thẳng vào ngõ vào vừa tạo cực ký sinh tần số cao; gấp thành M ngón chẵn giúp giảm mạnh RG và giảm điện dung tiếp giáp cực máng xuống đế.",
       "cadence_check": "Kiểm tra tham số CDF `fingers (nf)` vs `multiplier (m)` để trình trích xuất tính đúng diện tích/chu vi chung `AD, PD, AS, PS`, và kiểm tra nhiễu nhiệt cổng trong mô phỏng `noise` sau `PEX`.",
       "related_nodes": [

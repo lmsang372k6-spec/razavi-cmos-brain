@@ -82,7 +82,7 @@ razavi-cmos-brain/
 │   └── manage_kb.py                      # CLI 1 lệnh: new-card, add-edge, rebuild & publish trực tiếp lên GitHub OTA
 ├── validators/
 │   └── validate_brain.py                 # Kiểm định 100% 162 thẻ, 1.504 PT, 1.163 hình, 72 SVG, 21 checklist, Python 2.6 AST & SHA-256
-├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 3 bước mở rộng thẻ/kỹ năng mới & đồng bộ sang ổ F:
+├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 1 lệnh biên soạn thẻ/kỹ năng mới & phát hành đồng bộ OTA qua GitHub
 └── .github/workflows/deploy.yml          # Kiểm định tự động & triển khai GitHub Pages
 ```
 

@@ -176,7 +176,7 @@ $$
 Thế cặp dòng bất đối xứng này vào đặc tuyến cặp vi sai $M_1\text{--}M_2$ cho hai chế độ phân cực:
 1. **Chế độ Nghịch đảo Mạnh (Luật bình phương)**: $V_{TH+} = V_{GS1}(i_1) - V_{GS2}(i_2) = \sqrt{\frac{2 I_{SS}}{\mu_n C_{ox}(W/L)_{1,2}}} \cdot \frac{\sqrt{\alpha} - 1}{\sqrt{\alpha + 1}}$, suy ra cửa sổ trễ tổng $\Delta V_H = 2 V_{TH+}$:
 $$
-\Delta V_{H,\text{strong}} = 2\,V_{OV,\text{bal}} \frac{\sqrt{\alpha} - 1}{\sqrt{\alpha + 1}}, \qquad V_{OV,\text{bal}} = \sqrt{\frac{I_{SS}}{\mu_n C_{ox}(W/L)_{1,2}}} = \frac{2}{(g_m / I_D)_{\text{bal}}}
+\Delta V_{H,\text{strong}} = 2\sqrt{2}\,V_{OV,\text{bal}} \frac{\sqrt{\alpha} - 1}{\sqrt{\alpha + 1}}, \qquad V_{OV,\text{bal}} = \sqrt{\frac{I_{SS}}{\mu_n C_{ox}(W/L)_{1,2}}} = \frac{2}{(g_m / I_D)_{\text{bal}}}
 $$
 2. **Chế độ Nghịch đảo Yếu / Dưới ngưỡng (`T270`, công suất nano-watt cho UVLO/POR luôn bật)**: Vì $i_D = I_0 \exp\!\left(\frac{V_{GS}}{\zeta V_T}\right)$, tỷ số dòng $i_1 / i_2 = \alpha$ cho nghiệm đóng đẹp tuyệt mỹ:
 $$

@@ -238,6 +238,10 @@ def validate(
             try:
                 with open(diag_man_fp, "r", encoding="utf-8-sig") as f:
                     dman = json.load(f)
+                if dman.get("version") != EXPECTED_RELEASE:
+                    errors.append(
+                        f"diagrams-manifest.json unexpected version: {dman.get('version')!r}"
+                    )
                 if len(dman.get("diagrams", [])) != len(svg_files):
                     errors.append(
                         f"diagrams-manifest.json count ({len(dman.get('diagrams', []))}) != SVG files ({len(svg_files)})"
@@ -285,6 +289,8 @@ def validate(
                 catalog_data = json.load(f)
             if catalog_data.get("schema") != "razavi-github-skills-catalog.v1":
                 errors.append(f"catalog.json invalid schema: {catalog_data.get('schema')!r}")
+            if catalog_data.get("release") != EXPECTED_RELEASE:
+                errors.append(f"catalog.json unexpected release: {catalog_data.get('release')!r}")
             repos_list = catalog_data.get("repositories") or catalog_data.get("repos") or []
             if expected_repos and len(repos_list) < expected_repos:
                 errors.append(f"catalog.json expected >= {expected_repos} vetted repos, found {len(repos_list)}")

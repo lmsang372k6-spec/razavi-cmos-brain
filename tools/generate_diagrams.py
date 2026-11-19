@@ -7901,7 +7901,7 @@ def diag_72_closed_loop_cadence_codex_flow():
         "Quy trình Thiết kế Vi mạch Tương tự Tối ưu Khép kín 7 Bước: Tri thức Razavi -> gm/ID LUT -> Cầu nối IC617 -> Tối ưu Jacobian",
         "EDA · Closed-Loop", [1, 9, 10, 11, 17], width=1100, height=620, legend=False
     )
-    d.panel(18,  74, 1064, 344, "(a) End-to-End 7-Stage Closed-Loop Architecture (SKILL-ANALOG 2026.11.18.4)")
+    d.panel(18,  74, 1064, 344, "(a) End-to-End 7-Stage Closed-Loop Architecture (SKILL-ANALOG 2026.11.19.1)")
     d.panel(18, 432, 1064, 170, "(b) Quantitative Engineering Gains vs Legacy Manual Iteration")
 
     # --- (a) Top Row: Stages 1 -> 2 -> 3 -> 4 (y=114..222) ---
@@ -7913,7 +7913,7 @@ def diag_72_closed_loop_cadence_codex_flow():
         (548, 232, "bias",   "3. gmid_lut.py (< 5 ms)",
          "Equation-free BSIM4 LUT:", "gm/ID, gm·ro, fT -> (W,L,M,ID)"),
         (804, 258, "amber",  "4. ic617_live_bridge / VA",
-         "Zero-fork TCP OA update +", "CDF callbacks + Behavioral VA"),
+         "Zero-fork Unix-socket OA +", "CDF callbacks + Behavioral VA"),
     ]
     for bx, bw, btone, bhd, bl1, bl2 in top_boxes:
         bg, bd, hd = TONE_STYLES[btone]
@@ -7931,7 +7931,7 @@ def diag_72_closed_loop_cadence_codex_flow():
     d.rect(804, 282, 258, 114, fill="#fef2f2", stroke=COL_WARN, sw=2.0, rx=8)
     d.text(933, 308, "5. Spectre + psf_audit.py", size=10.8, color=COL_WARN, anchor="middle", weight="bold")
     d.text(933, 332, "Run dcOp / stb / tran / pss;", size=9.6, color=COL_DARK, anchor="middle")
-    d.text(933, 351, "Binary PSF check: region == 2", size=9.6, color=COL_WARN, anchor="middle", weight="bold")
+    d.text(933, 351, "PSF ASCII check: region == 2", size=9.6, color=COL_WARN, anchor="middle", weight="bold")
     d.text(933, 370, "(VDS−VDSAT ≥ 50mV) & PM/GM!", size=9.5, color=COL_DARK, anchor="middle", weight="bold")
     d.arrow(933, 220, 933, 280, color=COL_AMBER, sw=2.2)
 
@@ -7966,7 +7966,7 @@ def diag_72_closed_loop_cadence_codex_flow():
             "  RAM -> < 50 ms schematic/CDF updates!",
         ]),
         (382, "Automated Physical Sanity Gate", "warn", [
-            "• `psf_audit.py` reads binary Spectre PSF",
+            "• `psf_audit.py` reads Spectre PSF ASCII",
             "  with zero OCEAN / libpsf dependencies.",
             "• Flags ANY triode/cutoff FET BEFORE",
             "  wasting iterations on AC/Tran metrics!",
@@ -8094,7 +8094,7 @@ def main():
         })
 
     manifest_obj = {
-        "version": "2026.11.18.4",
+        "version": "2026.11.19.1",
         "generator": "tools/generate_diagrams.py",
         "total_diagrams": len(manifest_entries),
         "diagrams": manifest_entries,

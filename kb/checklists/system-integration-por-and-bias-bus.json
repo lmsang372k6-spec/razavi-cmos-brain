@@ -44,7 +44,7 @@
       "severity": "error",
       "method": "semantic",
       "invariant": "Các khối khuếch đại cần ổn định gm/GBW theo nhiệt độ nhận dòng I_PTAT (~ T); các khối định thời RC Relaxation Oscillator, mạch trễ chuẩn và thang dòng DAC toàn thang bắt buộc nhận dòng bù nhiệt bậc không I_ZTC = I_PTAT + I_CTAT (|TC_I| < 50..150 ppm/°C sau hiệu chỉnh điện trở)",
-      "why_vi": "Nếu cấp nhầm dòng I_PTAT (tăng +55% từ -40 °C lên +125 °C!) vào bộ dao động tích thoát RC hoặc DAC lái dòng, tần số xung nhịp và biên độ toàn thang DAC sẽ trôi thẳng hơn 50% theo nhiệt độ! Ngược lại cấp I_ZTC cho tầng khuếch đại dưới ngưỡng hoặc nghịch đảo vừa sẽ làm gm suy giảm mạnh khi chip nóng lên.",
+      "why_vi": "Nếu cấp nhầm dòng I_PTAT (tăng +71% từ -40 °C lên +125 °C theo tỷ số T_abs = 398.15 K / 233.15 K = 1.708!) vào bộ dao động tích thoát RC hoặc DAC lái dòng, tần số xung nhịp và biên độ toàn thang DAC sẽ trôi thẳng hơn 70% theo nhiệt độ! Ngược lại cấp I_ZTC cho tầng khuếch đại dưới ngưỡng hoặc nghịch đảo vừa sẽ làm gm suy giảm mạnh khi chip nóng lên.",
       "cadence_check": "Quét DC nhiệt độ `-40 °C .. +125 °C` trên khối `bias_hub`: kiểm tra `ibias_ptat` tăng tuyến tính theo `T (K)` trong khi `ibias_ztc` giữ phẳng hình parabol ngược quanh `27 °C`.",
       "related_nodes": [
         "topo-central-bias-hub-powerup-and-sleep-gating",

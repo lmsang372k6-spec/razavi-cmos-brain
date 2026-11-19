@@ -32,12 +32,18 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import time
 import zlib
 from optparse import OptionParser
+
+try:
+    import ssl
+except ImportError:
+    ssl = None
 
 sys.dont_write_bytecode = True
 
@@ -170,8 +176,15 @@ def fetch_url_bytes(url, timeout_sec=8.0, headers=None):
 
     req = _urlreq.Request(url, headers=req_headers)
     try:
-        if ca_bundle and (not PY2) and url.lower().startswith("https://"):
-            resp = _urlreq.urlopen(req, timeout=float(timeout_sec), cafile=ca_bundle)
+        if (
+            ca_bundle
+            and url.lower().startswith("https://")
+            and ssl is not None
+            and hasattr(ssl, "create_default_context")
+            and ((not PY2) or sys.version_info >= (2, 7, 9))
+        ):
+            ctx = ssl.create_default_context(cafile=ca_bundle)
+            resp = _urlreq.urlopen(req, timeout=float(timeout_sec), context=ctx)
         else:
             resp = _urlreq.urlopen(req, timeout=float(timeout_sec))
         try:
@@ -228,7 +241,25 @@ def fetch_rel(rel_path, bases, timeout_sec=10.0):
     raise BootstrapError("No base URLs available for " + clean)
 
 
+def _validate_safe_rel(rel_path):
+    if not rel_path or "\\" in rel_path or ":" in rel_path or rel_path.startswith("/"):
+        raise BootstrapError("Unsafe relative path in manifest: " + repr(rel_path))
+    parts = rel_path.split("/")
+    for part in parts:
+        if part in ("", ".", ".."):
+            raise BootstrapError("Unsafe path segment in manifest: " + repr(rel_path))
+    return parts
+
+
+def _assert_inside_staging(dst_path, staging_dir, rel_label):
+    st_real = os.path.normcase(os.path.realpath(staging_dir))
+    dst_real = os.path.normcase(os.path.realpath(dst_path))
+    if dst_real == st_real or not dst_real.startswith(st_real.rstrip(os.sep) + os.sep):
+        raise BootstrapError("Destination path escapes staging directory: " + repr(rel_label))
+
+
 def map_kb_entry_to_library(kb_rel):
+    _validate_safe_rel(kb_rel)
     if kb_rel == "kb/router-index.json":
         return "kb/router-index.json"
     if kb_rel == "kb/graph/edges.jsonl":
@@ -248,12 +279,16 @@ def map_kb_entry_to_library(kb_rel):
     return None
 
 
-def validate_blob(raw_bytes, rel_path, expected_sha="", expected_bytes=None):
+def validate_blob(raw_bytes, rel_path, expected_sha="", expected_bytes=None, verify_sha=True):
     if expected_bytes is not None and len(raw_bytes) != int(expected_bytes):
         raise ValueError("Size mismatch on %s (%d != %d)" % (rel_path, len(raw_bytes), int(expected_bytes)))
     actual_sha = sha256_bytes(raw_bytes)
-    if expected_sha and actual_sha != expected_sha:
-        raise ValueError("SHA-256 mismatch on %s (%s != %s)" % (rel_path, actual_sha[:12], expected_sha[:12]))
+    if verify_sha:
+        norm_sha = to_text(expected_sha or "").strip().lower()
+        if not re.match(r"^[0-9a-f]{64}$", norm_sha):
+            raise ValueError("Missing or invalid expected SHA-256 in manifest for " + to_text(rel_path))
+        if actual_sha != norm_sha:
+            raise ValueError("SHA-256 mismatch on %s (%s != %s)" % (rel_path, actual_sha[:12], norm_sha[:12]))
     if rel_path.endswith(".json"):
         json.loads(raw_bytes.decode("utf-8-sig"))
     elif rel_path.endswith(".jsonl"):
@@ -320,28 +355,150 @@ def build_library_manifest(staging_dir, version_str):
     return (json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n").encode("utf-8"), len(entries)
 
 
-def swap_atomic(staging_dir, target_dir):
+def _is_link_or_junction(path):
+    if not os.path.lexists(path):
+        return False
+    if os.path.islink(path):
+        return True
+    try:
+        st = os.lstat(path)
+        attrs = getattr(st, "st_file_attributes", 0)
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 1024)
+        if attrs & reparse_flag:
+            return True
+    except OSError:
+        pass
+    return False
+
+
+def _chmod_retry_onerror(func, path, _exc_info):
+    try:
+        os.chmod(path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+    except OSError:
+        pass
+    func(path)
+
+
+def _remove_tree_or_link(path):
+    if not os.path.lexists(path):
+        return
+    if _is_link_or_junction(path):
+        try:
+            os.unlink(path)
+            return
+        except OSError:
+            if os.path.lexists(path):
+                os.rmdir(path)
+            return
+    if os.path.isdir(path):
+        if sys.version_info >= (3, 12):
+            shutil.rmtree(path, onexc=_chmod_retry_onerror)
+        else:
+            shutil.rmtree(path, onerror=_chmod_retry_onerror)
+        return
+    try:
+        os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+    except OSError:
+        pass
+    os.unlink(path)
+
+
+def _is_pid_alive(pid):
+    if not pid or int(pid) <= 0:
+        return False
+    if os.name == "posix":
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except OSError as err:
+            return err.errno == errno.EPERM
+    return True
+
+
+def _is_swap_lock_stale(lock_path, stale_sec):
+    now = time.time()
+    try:
+        raw = read_bytes(lock_path)
+        meta = json.loads(raw.decode("utf-8", "replace"))
+        pid = int(meta.get("pid", 0) or 0)
+        ts = float(meta.get("ts", 0.0) or 0.0)
+        if os.name == "posix" and pid > 0 and not _is_pid_alive(pid):
+            return True
+        if ts > 0.0 and (now - ts) > stale_sec:
+            return True
+    except Exception:
+        try:
+            if (now - os.path.getmtime(lock_path)) > stale_sec:
+                return True
+        except OSError:
+            return True
+    return False
+
+
+def _acquire_swap_lock(lock_path, stale_sec=120.0, timeout_sec=15.0):
+    deadline = time.time() + float(timeout_sec)
+    payload = (json.dumps({"pid": os.getpid(), "ts": time.time()}) + "\n").encode("utf-8")
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 384)
+            try:
+                os.write(fd, payload)
+            finally:
+                os.close(fd)
+            return
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+            if _is_swap_lock_stale(lock_path, stale_sec):
+                try:
+                    os.unlink(lock_path)
+                    continue
+                except OSError:
+                    pass
+            if time.time() >= deadline:
+                raise BootstrapError("Timed out waiting for atomic swap lock: " + lock_path)
+            time.sleep(0.05)
+
+
+def _release_swap_lock(lock_path):
+    try:
+        if os.path.lexists(lock_path):
+            os.unlink(lock_path)
+    except OSError:
+        pass
+
+
+def swap_atomic(staging_dir, target_dir, stale_lock_sec=120.0):
     target_abs = os.path.abspath(target_dir)
     parent = os.path.dirname(target_abs)
     mkdir_p(parent)
-    prev_dir = os.path.join(
-        parent,
-        ".prev-%s-%d-%d" % (os.path.basename(target_abs), os.getpid(), int(time.time() * 1000)),
-    )
-    existed = os.path.isdir(target_abs)
-    if existed:
-        os.rename(target_abs, prev_dir)
+    lock_path = os.path.join(parent, ".swap-%s.lock" % os.path.basename(target_abs))
+    _acquire_swap_lock(lock_path, stale_sec=stale_lock_sec)
     try:
-        os.rename(staging_dir, target_abs)
-    except Exception:
-        if existed and os.path.isdir(prev_dir) and not os.path.exists(target_abs):
-            try:
-                os.rename(prev_dir, target_abs)
-            except OSError:
-                pass
-        raise
-    if existed and os.path.isdir(prev_dir):
-        shutil.rmtree(prev_dir)
+        prev_dir = os.path.join(
+            parent,
+            ".prev-%s-%d-%d" % (os.path.basename(target_abs), os.getpid(), int(time.time() * 1000)),
+        )
+        existed = os.path.lexists(target_abs)
+        if existed:
+            if _is_link_or_junction(target_abs):
+                _remove_tree_or_link(target_abs)
+                existed = False
+            else:
+                os.rename(target_abs, prev_dir)
+        try:
+            os.rename(staging_dir, target_abs)
+        except Exception:
+            if existed and os.path.lexists(prev_dir) and not os.path.lexists(target_abs):
+                try:
+                    os.rename(prev_dir, target_abs)
+                except OSError:
+                    pass
+            raise
+        if existed and os.path.lexists(prev_dir):
+            _remove_tree_or_link(prev_dir)
+    finally:
+        _release_swap_lock(lock_path)
 
 
 def recompile_existing_psf_sweeps(target_lib, user_home):
@@ -450,8 +607,8 @@ def run_bootstrap(
     bases, commit_sha = resolve_bases(base_url_override=base_url_override)
     rt_man_bytes, rt_man_url = fetch_rel("runtime/manifest.json", bases)
     kb_man_bytes, kb_man_url = fetch_rel("kb/manifest.json", bases)
-    validate_blob(rt_man_bytes, "runtime/manifest.json")
-    validate_blob(kb_man_bytes, "kb/manifest.json")
+    validate_blob(rt_man_bytes, "runtime/manifest.json", verify_sha=False)
+    validate_blob(kb_man_bytes, "kb/manifest.json", verify_sha=False)
 
     rt_man = json.loads(rt_man_bytes.decode("utf-8-sig"))
     kb_man = json.loads(kb_man_bytes.decode("utf-8-sig"))
@@ -464,8 +621,11 @@ def run_bootstrap(
         p = to_text(entry.get("path", "")).strip()
         if not p or p == "manifest.json" or p.startswith("sources/") or p == "sources.lock.json":
             continue
+        _validate_safe_rel(p)
+        remote_rel = to_text(entry.get("repo_path") or ("runtime/" + p)).strip()
+        _validate_safe_rel(remote_rel)
         plan[p] = {
-            "remote_rel": to_text(entry.get("repo_path") or ("runtime/" + p)).strip(),
+            "remote_rel": remote_rel,
             "local_rel": p,
             "sha256": to_text(entry.get("sha256", "")).strip().lower(),
             "bytes": entry.get("bytes"),
@@ -475,9 +635,12 @@ def run_bootstrap(
         if not isinstance(entry, dict):
             continue
         kp = to_text(entry.get("path", "")).strip()
+        if not kp:
+            continue
         mapped = map_kb_entry_to_library(kp)
         if not mapped:
             continue
+        _validate_safe_rel(mapped)
         plan[mapped] = {
             "remote_rel": kp,
             "local_rel": mapped,
@@ -514,8 +677,9 @@ def run_bootstrap(
                 blob, _ = fetch_rel(spec["remote_rel"], bases)
                 downloaded += 1
 
-            validate_blob(blob, local_rel, spec["sha256"], spec["bytes"])
+            validate_blob(blob, local_rel, spec["sha256"], spec["bytes"], verify_sha=True)
             dst_fp = os.path.join(*([staging_dir] + local_rel.split("/")))
+            _assert_inside_staging(dst_fp, staging_dir, local_rel)
             mkdir_p(os.path.dirname(dst_fp))
             wh = open(dst_fp, "wb")
             try:
@@ -527,11 +691,11 @@ def run_bootstrap(
                     os.chmod(dst_fp, 493)  # 0755
                 except OSError:
                     pass
-            validate_blob(read_bytes(dst_fp), local_rel, spec["sha256"], spec["bytes"])
+            validate_blob(read_bytes(dst_fp), local_rel, spec["sha256"], spec["bytes"], verify_sha=True)
 
         preserved_sources = preserve_sources(lib_abs, staging_dir)
         lib_man_raw, manifest_total = build_library_manifest(staging_dir, release_str)
-        validate_blob(lib_man_raw, "library.manifest.json")
+        validate_blob(lib_man_raw, "library.manifest.json", verify_sha=False)
         mh = open(os.path.join(staging_dir, "library.manifest.json"), "wb")
         try:
             mh.write(lib_man_raw)
@@ -540,8 +704,8 @@ def run_bootstrap(
 
         swap_atomic(staging_dir, lib_abs)
     finally:
-        if os.path.isdir(staging_dir):
-            shutil.rmtree(staging_dir)
+        if os.path.lexists(staging_dir):
+            _remove_tree_or_link(staging_dir)
 
     sub_env = dict(os.environ)
     sub_env["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -632,7 +796,10 @@ def _make_gz(obj):
         fp = os.path.join(td, "n.gz")
         fh = open(fp, "wb")
         try:
-            gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=fh, mtime=0)
+            if sys.version_info >= (2, 7):
+                gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=fh, mtime=0)
+            else:
+                gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=fh)
             try:
                 gz.write(raw)
             finally:
@@ -641,7 +808,7 @@ def _make_gz(obj):
             fh.close()
         return read_bytes(fp)
     finally:
-        shutil.rmtree(td)
+        _remove_tree_or_link(td)
 
 
 def run_self_test():
@@ -768,13 +935,142 @@ def run_self_test():
         if not os.path.isfile(os.path.join(cache_dir, "synced", "sync-receipt.json")):
             raise AssertionError("Synced cache receipt missing after bootstrap!")
 
+        # 4. Reject empty SHA-256 under verify_sha=True (fail-closed)
+        empty_sha_rejected = False
+        try:
+            validate_blob(b'{"tampered": true}\n', "kb/router-index.json", expected_sha="", verify_sha=True)
+        except ValueError:
+            empty_sha_rejected = True
+        if not empty_sha_rejected:
+            raise AssertionError("validate_blob accepted empty expected_sha under verify_sha=True!")
+
+        # 5. Reject path traversal manifest entry (`../../escaped_pwn.txt`)
+        evil_remote = os.path.join(tmp_root, "evil_remote")
+        mkdir_p(os.path.join(evil_remote, "runtime"))
+        mkdir_p(os.path.join(evil_remote, "kb"))
+        wh_ek = open(os.path.join(evil_remote, "kb", "manifest.json"), "wb")
+        try:
+            wh_ek.write(km_raw)
+        finally:
+            wh_ek.close()
+        evil_rt = {
+            "schema": "skill-analog-runtime.manifest.v1",
+            "release": RELEASE_VERSION,
+            "files": [
+                {
+                    "path": "../../escaped_pwn.txt",
+                    "repo_path": "runtime/evil.txt",
+                    "sha256": sha256_bytes(b"ESCAPED_OUTSIDE_STAGING\n"),
+                    "bytes": 24,
+                }
+            ],
+        }
+        wh_er = open(os.path.join(evil_remote, "runtime", "manifest.json"), "wb")
+        try:
+            wh_er.write((json.dumps(evil_rt, indent=2) + "\n").encode("utf-8"))
+        finally:
+            wh_er.close()
+        wh_ef = open(os.path.join(evil_remote, "runtime", "evil.txt"), "wb")
+        try:
+            wh_ef.write(b"ESCAPED_OUTSIDE_STAGING\n")
+        finally:
+            wh_ef.close()
+        trav_rejected = False
+        try:
+            run_bootstrap(
+                eda_root=eda_dir,
+                target_library=lib_dir,
+                user_home=home_dir,
+                base_url_override=evil_remote,
+                cache_dir_override=cache_dir,
+                skip_install=True,
+            )
+        except BootstrapError:
+            trav_rejected = True
+        if not trav_rejected or os.path.exists(os.path.join(tmp_root, "escaped_pwn.txt")):
+            raise AssertionError("Bootstrap path traversal was not blocked!")
+
+        # 6. Python 3 SSL `context=` path (no `cafile=` kwarg passed to urlopen)
+        if ssl is not None and hasattr(ssl, "create_default_context") and ((not PY2) or sys.version_info >= (2, 7, 9)):
+            fake_ca = os.path.join(tmp_root, "mock_ca.pem")
+            wh_ca = open(fake_ca, "wb")
+            try:
+                wh_ca.write(b"FAKE_CA\n")
+            finally:
+                wh_ca.close()
+            ssl_seen = {}
+            orig_find_curl = globals()["find_curl"]
+            orig_find_ca = globals()["find_ca_bundle"]
+            orig_create_ctx = ssl.create_default_context
+            orig_urlopen = _urlreq.urlopen
+
+            class _MockResp(object):
+                def read(self):
+                    return b"BOOT_HTTPS_OK"
+
+                def close(self):
+                    pass
+
+            def _mock_ctx(cafile=None):
+                ssl_seen["cafile"] = cafile
+                return "BOOT_MOCK_CTX"
+
+            def _mock_open(req, timeout=None, **kwargs):
+                if "cafile" in kwargs:
+                    raise TypeError("urlopen() got an unexpected keyword argument 'cafile'")
+                ssl_seen["context"] = kwargs.get("context")
+                return _MockResp()
+
+            globals()["find_curl"] = lambda: None
+            globals()["find_ca_bundle"] = lambda: fake_ca
+            ssl.create_default_context = _mock_ctx
+            _urlreq.urlopen = _mock_open
+            try:
+                got_b = fetch_url_bytes("https://example.invalid/manifest.json", timeout_sec=3.0)
+            finally:
+                globals()["find_curl"] = orig_find_curl
+                globals()["find_ca_bundle"] = orig_find_ca
+                ssl.create_default_context = orig_create_ctx
+                _urlreq.urlopen = orig_urlopen
+            if got_b != b"BOOT_HTTPS_OK" or ssl_seen.get("cafile") != fake_ca or ssl_seen.get("context") != "BOOT_MOCK_CTX":
+                raise AssertionError("Bootstrap SSL context= check failed: %r" % ssl_seen)
+
+        # 7. `swap_atomic` stale lock recovery & read-only cleanup
+        sw_root = os.path.join(tmp_root, "swap_boot")
+        mkdir_p(sw_root)
+        sw_tgt = os.path.join(sw_root, "tgt")
+        mkdir_p(sw_tgt)
+        ro_p = os.path.join(sw_tgt, "ro.txt")
+        wh_ro = open(ro_p, "wb")
+        try:
+            wh_ro.write(b"RO\n")
+        finally:
+            wh_ro.close()
+        os.chmod(ro_p, stat.S_IREAD)
+        st_lock = os.path.join(sw_root, ".swap-tgt.lock")
+        wh_sl = open(st_lock, "wb")
+        try:
+            wh_sl.write((json.dumps({"pid": 999999, "ts": time.time() - 999.0}) + "\n").encode("utf-8"))
+        finally:
+            wh_sl.close()
+        sw_stg = os.path.join(sw_root, ".staging-tgt")
+        mkdir_p(sw_stg)
+        wh_nw = open(os.path.join(sw_stg, "ok.txt"), "wb")
+        try:
+            wh_nw.write(b"OK\n")
+        finally:
+            wh_nw.close()
+        swap_atomic(sw_stg, sw_tgt, stale_lock_sec=10.0)
+        if os.path.lexists(st_lock) or not os.path.isfile(os.path.join(sw_tgt, "ok.txt")):
+            raise AssertionError("swap_atomic stale lock recovery / readonly cleanup failed")
+
         return {
             "ok": True,
             "command": "self-test",
             "release": RELEASE_VERSION,
             "analogctl_verify_ok": True,
             "kb_sync_ok": True,
-            "tests_passed": 3,
+            "tests_passed": 7,
         }
     finally:
         if saved_env is None:
@@ -782,7 +1078,7 @@ def run_self_test():
                 del os.environ["SKILL_ANALOG_OFFLINE"]
         else:
             os.environ["SKILL_ANALOG_OFFLINE"] = saved_env
-        shutil.rmtree(tmp_root)
+        _remove_tree_or_link(tmp_root)
 
 
 def build_parser():

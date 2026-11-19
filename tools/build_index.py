@@ -220,9 +220,9 @@ DESIGN_CYCLE_METADATA = [
     },
     {
         "stage": 3,
-        "id": "3_gmid_physics_sizing",
+        "id": "3_gmid_lut_sizing",
         "title_vi": "3 · Định cỡ Vật lý gm/ID (< 5 ms)",
-        "title_en": "PDK gm/ID Lookup-Table Inverse Sizing",
+        "title_en": "PDK gm/ID Lookup-Table Sizing",
         "tool": "gpdk_techsweep.py + gmid_lut.py",
     },
     {
@@ -234,14 +234,14 @@ DESIGN_CYCLE_METADATA = [
     },
     {
         "stage": 5,
-        "id": "5_spectre_psf_audit",
+        "id": "5_op_and_stb_audit",
         "title_vi": "5 · Kiểm toán OP Vùng Bão hòa & Vòng STB/PSTB",
         "title_en": "Spectre Simulation & Automated PSF OP/Waveform Audit",
         "tool": "cadence_exec.py + psf_audit.py",
     },
     {
         "stage": 6,
-        "id": "6_pareto_optimization",
+        "id": "6_sensitivity_pareto_opt",
         "title_vi": "6 · Ma trận Độ nhạy & Tối ưu Vùng Tin cậy Pareto",
         "title_en": "Sensitivity Jacobian & Constrained Trust-Region Optimization",
         "tool": "sizing_opt.py",
@@ -1138,14 +1138,27 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         json.dump(manifest, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    # Sync canonical SKILL.md into runtime/skills/analog-design/SKILL.md and build runtime/manifest.json
+    # Sync canonical skills/analog-design/ tree into runtime/skills/analog-design/ with pure LF and build runtime/manifest.json
     runtime_file_count = 0
     if os.path.isdir(RUNTIME_ROOT):
-        ssot_skill_md = os.path.join(REPO_ROOT, "skills", "analog-design", "SKILL.md")
-        rt_skill_md = os.path.join(RUNTIME_ROOT, "skills", "analog-design", "SKILL.md")
-        if os.path.isfile(ssot_skill_md):
-            os.makedirs(os.path.dirname(rt_skill_md), exist_ok=True)
-            shutil.copy2(ssot_skill_md, rt_skill_md)
+        ssot_skill_dir = os.path.join(REPO_ROOT, "skills", "analog-design")
+        rt_skill_dir = os.path.join(RUNTIME_ROOT, "skills", "analog-design")
+        if os.path.isdir(ssot_skill_dir):
+            if os.path.isdir(rt_skill_dir):
+                shutil.rmtree(rt_skill_dir)
+            for s_root, s_dirs, s_files in os.walk(ssot_skill_dir):
+                s_dirs[:] = sorted(d for d in s_dirs if d != "__pycache__")
+                rel_sub = os.path.relpath(s_root, ssot_skill_dir)
+                dst_dir = rt_skill_dir if rel_sub == "." else os.path.join(rt_skill_dir, rel_sub)
+                os.makedirs(dst_dir, exist_ok=True)
+                for s_fn in sorted(s_files):
+                    if s_fn.endswith((".pyc", ".pyo", ".tmp", ".lock")):
+                        continue
+                    src_fp = os.path.join(s_root, s_fn)
+                    dst_fp = os.path.join(dst_dir, s_fn)
+                    raw_skill = open(src_fp, "rb").read().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+                    with open(dst_fp, "wb") as df:
+                        df.write(raw_skill)
 
         rt_manifest_fp = os.path.join(RUNTIME_ROOT, "manifest.json")
         rt_entries = []

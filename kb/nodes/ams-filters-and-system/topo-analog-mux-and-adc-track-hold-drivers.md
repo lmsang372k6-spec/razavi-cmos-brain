@@ -77,7 +77,7 @@
     "T1328",
     "T1335",
     "T1337",
-    "T2015",
+    "T947",
     "T2142",
     "T2143",
     "T2144",
@@ -195,7 +195,7 @@ $$
 - **[INV-02] Bất biến Điện trở Cách ly $R_{\text{iso}}$ Phải Nằm NGOÀI Vòng Hồi tiếp Âm Của Op-Amp Lái**: Nếu mắc nhầm dây lấy hồi tiếp của Op-Amp ra *phía sau* $R_{\text{iso}}$ (ngay trên đầu $C_{\text{bucket}}$) với ý định "khử sụt áp DC trên $R_{\text{iso}}$", cực lớn $R_{\text{iso}} C_{\text{bucket}}$ bị nuốt thẳng vào trong vòng hồi tiếp làm dự trữ pha Op-Amp tụt xuống $< 10^\circ$ và **Op-Amp dao động tự kích điên cuồng**! Vì đầu vào của SAR ADC là tụ điện thuần túy (dòng tĩnh DC trung bình hầu như bằng $0$), sụt áp DC qua $R_{\text{iso}} = 50\text{--}100\,\Omega$ bằng không — dây hồi tiếp âm của Op-Amp luôn lấy ngay tại chân ra Op-Amp *trước* $R_{\text{iso}}$ (hoặc nếu cần độ chính xác DC cao với dòng rò lớn thì dùng cấu trúc bù hai đường phản hồi `Dual-Feedback In-Loop Compensation` tách cao tần qua $C_f$ trước $R_{\text{iso}}$ và DC qua $R_f$ sau $R_{\text{iso}}$!).
 - **[TRAP-01] Bẫy Đấu Tụ Nối Đất Làm $C_{\text{bucket}}$ Thay Vì Tụ Vi sai Giữa Hai Nhánh (`Differential vs. Grounded Bucket Cap`)**: Trên đường lái ADC vi sai hoàn toàn (`V_inp`, `V_inn`), nên chia $C_{\text{bucket}}$ thành **một tụ lớn mắc ngang trực tiếp giữa hai dây vi sai $C_{\text{bkt,diff}}$** (chiếm $80\%$ điện dung, diện tích giảm một nửa nhờ hiệu ứng nhân đôi điện dung vi sai $2 C_{\text{bkt,diff}}$ và tự khử mọi nhiễu đất chung!) kết hợp hai tụ nhỏ nối xuống `VCM` ($20\%$) để dập xung giật chế độ chung!
 - **[TRAP-02] Tụ $C_{\text{bucket}}$ Quá Lớn Gây Trễ Pha & Suy giảm Đáp ứng Tần số Hoặc Quá Nhỏ Gây Hỏng THD**: Nhiều kỹ sư quen tay gắn bừa tụ gốm ngoài chip $1\text{ nF}$ nối tiếp $100\,\Omega$ ($f_{-3\text{dB}} = 1.59\text{ MHz}$) khi đang đo tín hiệu $4\text{ MHz}$, làm suy hao biên độ mất $-8.6\text{ dB}$; ngược lại gắn $C_{\text{bucket}} < 3\,C_{\text{DAC}}$ khiến sụt áp giật ngược ban đầu vượt quá $250\text{ mV}$ đẩy Op-Amp vào vùng `slewing` sinh méo hài bậc ba `HD3` phụ thuộc tần số lấy mẫu!
-- **[TRAP-03] Dùng Cổng Truyền dẫn CMOS Thường Thay Cho Công tắc Bootstrap Trong T-Switch Ở Nguồn $\le 1.0\text{ V}$**: T-Switch đặt **hai** công tắc nối tiếp trên đường tín hiệu ($R_{\text{on,tot}} = R_{\text{on},A} + R_{\text{on},B}$). Ở $V_{DD} = 1.0\text{ V}$ góc `SS`, sự biến thiên $R_{\text{on}}(V_{\text{in}})$ nhân đôi sẽ tạo méo hài bậc ba rất nặng nếu tín hiệu biến thiên nhanh; cho các kênh động tốc độ cao ở áp thấp, cả $S_A$ và $S_B$ của T-Switch nên được điều khiển bởi mạch nâng áp cổng tự cử dùng chung (`shared gate-bootstrapper` — `T2015`)!
+- **[TRAP-03] Dùng Cổng Truyền dẫn CMOS Thường Thay Cho Công tắc Bootstrap Trong T-Switch Ở Nguồn $\le 1.0\text{ V}$**: T-Switch đặt **hai** công tắc nối tiếp trên đường tín hiệu ($R_{\text{on,tot}} = R_{\text{on},A} + R_{\text{on},B}$). Ở $V_{DD} = 1.0\text{ V}$ góc `SS`, sự biến thiên $R_{\text{on}}(V_{\text{in}})$ nhân đôi sẽ tạo méo hài bậc ba rất nặng nếu tín hiệu biến thiên nhanh; cho các kênh động tốc độ cao ở áp thấp, cả $S_A$ và $S_B$ của T-Switch nên được điều khiển bởi mạch nâng áp cổng tự cử dùng chung (`shared gate-bootstrapper` — `T947`)!
 
 ---
 
@@ -238,7 +238,7 @@ tran_kick tran stop=26.6u errpreset=conservative maxstep=50p strobeperiod=100n s
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Nguyên lý lấy mẫu giữ (Track-and-Hold), điện trở dẫn công tắc và phun điện tích | Chương 13, §13.1–13.2.4, PT (13.6)–(13.30), tr. 539–555 & Chương 14, §14.1.5 | `T057` Tính phi tuyến; `T074` Lấy mẫu; `T087` Mạch tụ chuyển mạch; `T523` Tính tuyến tính; `T750` sai số bám theo; `T786` méo dạng; `T1089` nhiễu $kT/C$; `T2015` được tự thiết lập nhờ hồi tiếp (bootstrapped); `T2142` nhiễu lấy mẫu nhiệt $kT/C$; `T2143` chế độ lấy mẫu; `T2144` chế độ giữ mẫu |
+| Nguyên lý lấy mẫu giữ (Track-and-Hold), điện trở dẫn công tắc và phun điện tích | Chương 13, §13.1–13.2.4, PT (13.6)–(13.30), tr. 539–555 & Chương 14, §14.1.5 | `T057` Tính phi tuyến; `T074` Lấy mẫu; `T087` Mạch tụ chuyển mạch; `T523` Tính tuyến tính; `T750` sai số bám theo; `T786` méo dạng; `T1089` nhiễu $kT/C$; `T947` được bootstrap; `T2142` nhiễu lấy mẫu nhiệt $kT/C$; `T2143` chế độ lấy mẫu; `T2144` chế độ giữ mẫu |
 | Trở kháng ra mang tính cảm kháng của bộ đệm/vòng kín và độ ổn định tải tụ | Chương 6, §6.3, PT (6.62)–(6.66); Chương 8, §8.1–8.2; Chương 10, §10.3–10.4 | `T042` Hồi tiếp; `T063` Dự trữ pha; `T1328` trở kháng ngõ ra vòng kín |
 | Đường truyền xuyên trực tiếp qua tụ ký sinh công tắc tắt và che chắn tĩnh điện | Chương 8, §8.6 & Chương 19, §19.3, tr. 317–321, 760–764 | `T687` tỷ số tín hiệu trên nhiễu; `T965` tác dụng che chắn; `T1335` đường truyền xuyên trực tiếp; `T1337` truyền xuyên trực tiếp; `T2150` méo hài; `T2152` HD2 / HD3 |
 | Thiết kế chuỗi lái đầu vào SAR ADC & kiểm chứng FFT mạch lạc | Chương 9, §9.9 & `Arcadia-1/sar-adc-skills` + `Arcadia-1/ADCToolbox` | Ngân sách slewing/settling trong cửa sổ thu nhận $t_{\text{acq}}$ |

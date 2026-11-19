@@ -3008,7 +3008,7 @@
     },
     {
       "id": "T206",
-      "en": "Saturation current",
+      "en": "Saturation current (MOS drain)",
       "vi": "Dòng điện máng trong vùng bão hòa",
       "context": "Phụ trợ / diễn giải khái niệm; không phải trích nguyên văn. Ch2 PDF 11; trang sách tương ứng +6.",
       "chapters": [
@@ -3017,7 +3017,7 @@
       "aliases": [
         "Saturation current"
       ],
-      "search_key": "t206 saturation current dong dien mang trong vung bao hoa saturation current",
+      "search_key": "t206 saturation current mos drain dong dien mang trong vung bao hoa saturation current",
       "curated_extension": false
     },
     {
@@ -8819,7 +8819,7 @@
     },
     {
       "id": "T594",
-      "en": "NFET",
+      "en": "NFET (n-channel FET)",
       "vi": "transistor hiệu ứng trường kênh N (NFET)",
       "context": "Ch4, PDF 5 / sách 104; theo glossary người dùng. Tiếng Anh chuẩn: n-channel field-effect transistor (NFET). [NGUYÊN VĂN] NFET = n-channel field-effect transistor; trong ngữ cảnh CMOS tương ứng transistor kênh N.",
       "chapters": [
@@ -8828,7 +8828,7 @@
       "aliases": [
         "NFET"
       ],
-      "search_key": "t594 nfet transistor hieu ung truong kenh n nfet nfet",
+      "search_key": "t594 nfet n channel fet transistor hieu ung truong kenh n nfet nfet",
       "curated_extension": false
     },
     {
@@ -13975,7 +13975,7 @@
     },
     {
       "id": "T947",
-      "en": "bootstrapped",
+      "en": "bootstrapped (capacitive switch)",
       "vi": "được bootstrap",
       "context": "Ch6, 189; đối chiếu glossary đầu vào hoặc ngữ cảnh PDF nguồn. Tiếng Anh chuẩn: bootstrapped. Điện áp hai đầu C_GS thay đổi rất ít nhờ cực nguồn bám theo cực cổng.",
       "chapters": [
@@ -13984,7 +13984,7 @@
       "aliases": [
         "bootstrapped"
       ],
-      "search_key": "t947 bootstrapped duoc bootstrap bootstrapped",
+      "search_key": "t947 bootstrapped capacitive switch duoc bootstrap bootstrapped",
       "curated_extension": false
     },
     {
@@ -26505,7 +26505,7 @@
     },
     {
       "id": "T1830",
-      "en": "NFET",
+      "en": "NFET (short-channel CMOS)",
       "vi": "transistor hiệu ứng trường kênh N",
       "context": "Ch11: “transistor hiệu ứng trường kênh N” cho “NFET”, sách 459 / PDF 1; theo glossary_chuong_11.md Ch11. Tiếng Anh chuẩn: N-channel field-effect transistor (NFET). NFET = n-channel field-effect transistor.",
       "chapters": [
@@ -26514,7 +26514,7 @@
       "aliases": [
         "NFET"
       ],
-      "search_key": "t1830 nfet transistor hieu ung truong kenh n nfet",
+      "search_key": "t1830 nfet short channel cmos transistor hieu ung truong kenh n nfet",
       "curated_extension": false
     },
     {
@@ -26617,7 +26617,7 @@
     },
     {
       "id": "T1838",
-      "en": "Velocity Saturation",
+      "en": "Velocity Saturation (carrier)",
       "vi": "bão hòa vận tốc hạt tải",
       "context": "Ch11: “bão hòa vận tốc hạt tải” cho “Velocity Saturation”, sách 461 / PDF 3; theo glossary_chuong_11.md Ch11. Tiếng Anh chuẩn: Velocity Saturation. ⚠️ Không đồng nhất với việc dòng cực máng bão hòa theo VDS.",
       "chapters": [
@@ -26626,7 +26626,7 @@
       "aliases": [
         "Velocity Saturation"
       ],
-      "search_key": "t1838 velocity saturation bao hoa van toc hat tai velocity saturation",
+      "search_key": "t1838 velocity saturation carrier bao hoa van toc hat tai velocity saturation",
       "curated_extension": false
     },
     {
@@ -29106,7 +29106,7 @@
     },
     {
       "id": "T2015",
-      "en": "bootstrapped",
+      "en": "bootstrapped (self-biased feedback)",
       "vi": "được tự thiết lập nhờ hồi tiếp",
       "context": "Ch12: “được tự thiết lập nhờ hồi tiếp” cho “bootstrapped”, sách 510 / PDF 2; theo glossary_chuong_12.md Ch12. Tiếng Anh chuẩn: Bootstrapped. ⚠️ Ở đây chỉ liên kết IREF với Iout; không tự động dịch thành 'tụ bootstrap'.",
       "chapters": [
@@ -29115,7 +29115,7 @@
       "aliases": [
         "bootstrapped"
       ],
-      "search_key": "t2015 bootstrapped duoc tu thiet lap nho hoi tiep bootstrapped",
+      "search_key": "t2015 bootstrapped self biased feedback duoc tu thiet lap nho hoi tiep bootstrapped",
       "curated_extension": false
     },
     {
@@ -29414,7 +29414,7 @@
     },
     {
       "id": "T2037",
-      "en": "saturation current",
+      "en": "Saturation current (BJT IS)",
       "vi": "dòng bão hòa",
       "context": "Ch12: “dòng bão hòa” cho “saturation current”, sách 513 / PDF 5; theo glossary_chuong_12.md Ch12. Tiếng Anh chuẩn: Saturation current (IS). ⚠️ IS của BJT trong IC=IS exp(VBE/VT), khác dòng MOSFET ở miền bão hòa.",
       "chapters": [
@@ -29423,7 +29423,7 @@
       "aliases": [
         "saturation current"
       ],
-      "search_key": "t2037 saturation current dong bao hoa saturation current",
+      "search_key": "t2037 saturation current bjt is dong bao hoa saturation current",
       "curated_extension": false
     },
     {
@@ -31460,7 +31460,7 @@
     },
     {
       "id": "T2180",
-      "en": "velocity saturation",
+      "en": "velocity saturation (BSIM4/FinFET)",
       "vi": "bão hòa vận tốc hạt tải",
       "context": "Ch17 §17.2.4 & Ch11 §11.1: Hiện tượng vận tốc trôi hạt tải chạm trần v_sat dưới điện trường dọc kênh lớn, làm dòng ID tuyến tính theo (VGS-VTH) và gm đạt giới hạn W*Cox*v_sat.",
       "chapters": [
@@ -31470,7 +31470,7 @@
       "aliases": [
         "velocity saturation"
       ],
-      "search_key": "t2180 velocity saturation bao hoa van toc hat tai velocity saturation",
+      "search_key": "t2180 velocity saturation bsim4 finfet bao hoa van toc hat tai velocity saturation",
       "curated_extension": true
     },
     {

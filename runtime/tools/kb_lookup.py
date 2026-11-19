@@ -1845,7 +1845,7 @@ def cmd_recipe(circuit_query):
             "stage": 3,
             "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
             "cmds": [
-                _fmt_tool_cmd("gmid_lut.py", "size --lut ~/.cache/skill-analog/gmid-luts/gpdk090_1v2_NN.lut.json.gz --dev nmos --gm 1e-3 --gm-id 15 --l 180e-9 --vds 0.6"),
+                _fmt_tool_cmd("gmid_lut.py", "size --lut ~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_NN_27C.lut.json.gz --dev nmos --gm 1e-3 --gm-id 15 --l 180e-9 --vds 0.6"),
             ],
         },
         {
@@ -1861,8 +1861,8 @@ def cmd_recipe(circuit_query):
             "name": "Run Spectre safely & audit MOS saturation regions + loop/waveform metrics",
             "cmds": [
                 _fmt_tool_cmd("cadence_exec.py", "spectre --project . --netlist ./netlists/tb_top.scs --run-id run_01"),
-                _fmt_tool_cmd("psf_audit.py", "op-audit ./sim/runs/run_01/psf --vds-margin 0.05"),
-                _fmt_tool_cmd("psf_audit.py", "metrics ./sim/runs/run_01/psf --spec ./spec.json"),
+                _fmt_tool_cmd("psf_audit.py", "op-audit ./sim/runs/run_01/psf --vds-margin 0.05 --fail-on-violation"),
+                _fmt_tool_cmd("psf_audit.py", "metrics ./sim/runs/run_01/psf --spec ./spec.json --fail-on-spec"),
             ],
         },
         {
@@ -1948,12 +1948,18 @@ def run_self_test():
         if not cf.get("ok") or not cf.get("figures") or cf["figures"][0].get("book_page") != 679:
             raise AssertionError("Unexpected coord('Fig. 16.43') result: %r" % cf)
 
+        # 5. Recipe Stage 3 & Stage 5 canonical LUT filename and fail-closed flags
+        rec = cmd_recipe("folded cascode")
+        rec_blob = json.dumps(rec)
+        if "gpdk090_core_1v_NN_27C.lut.json.gz" not in rec_blob or "--fail-on-violation" not in rec_blob or "--fail-on-spec" not in rec_blob:
+            raise AssertionError("cmd_recipe missing canonical LUT or fail-closed psf_audit flags: %r" % rec)
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "lookup_ms": dt_ms,
-            "tests_passed": 5,
+            "tests_passed": 6,
         }
     finally:
         if saved_env is None:

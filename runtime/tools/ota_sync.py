@@ -24,12 +24,18 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import time
 import zlib
 from optparse import OptionParser
+
+try:
+    import ssl
+except ImportError:
+    ssl = None
 
 sys.dont_write_bytecode = True
 
@@ -307,8 +313,15 @@ def fetch_url_bytes(url, timeout_sec, cfg, headers=None):
 
     req = _urlreq.Request(url, headers=req_headers)
     try:
-        if ca_bundle and (not PY2) and url.lower().startswith("https://"):
-            resp = _urlreq.urlopen(req, timeout=float(timeout_sec), cafile=ca_bundle)
+        if (
+            ca_bundle
+            and url.lower().startswith("https://")
+            and ssl is not None
+            and hasattr(ssl, "create_default_context")
+            and ((not PY2) or sys.version_info >= (2, 7, 9))
+        ):
+            ctx = ssl.create_default_context(cafile=ca_bundle)
+            resp = _urlreq.urlopen(req, timeout=float(timeout_sec), context=ctx)
         else:
             resp = _urlreq.urlopen(req, timeout=float(timeout_sec))
         try:
@@ -489,18 +502,26 @@ def build_library_sync_plan(kb_manifest, runtime_manifest):
     return plan
 
 
+def _assert_inside_staging(dst_path, staging_dir, rel_label):
+    st_real = os.path.normcase(os.path.realpath(staging_dir))
+    dst_real = os.path.normcase(os.path.realpath(dst_path))
+    if dst_real == st_real or not dst_real.startswith(st_real.rstrip(os.sep) + os.sep):
+        raise OtaSyncError("Destination path escapes staging directory: " + repr(rel_label))
+
+
 def validate_staged_bytes(raw_bytes, rel_path, expected_sha="", expected_bytes=None, verify_sha=True):
     if expected_bytes is not None and len(raw_bytes) != int(expected_bytes):
         raise ValueError(
             "Byte size mismatch for %s (%d != %d)" % (rel_path, len(raw_bytes), int(expected_bytes))
         )
     actual_sha = sha256_bytes(raw_bytes)
-    if verify_sha and expected_sha:
-        if not re.match(r"^[0-9a-f]{64}$", expected_sha):
-            raise ValueError("Invalid expected SHA-256 in manifest for " + rel_path)
-        if actual_sha != expected_sha:
+    if verify_sha:
+        norm_sha = to_text(expected_sha or "").strip().lower()
+        if not re.match(r"^[0-9a-f]{64}$", norm_sha):
+            raise ValueError("Missing or invalid expected SHA-256 in manifest for " + to_text(rel_path))
+        if actual_sha != norm_sha:
             raise ValueError(
-                "SHA-256 mismatch for %s (%s != %s)" % (rel_path, actual_sha[:12], expected_sha[:12])
+                "SHA-256 mismatch for %s (%s != %s)" % (rel_path, actual_sha[:12], norm_sha[:12])
             )
 
     if rel_path.endswith(".json"):
@@ -582,28 +603,150 @@ def generate_library_manifest_bytes(staging_dir, version_str):
     return (json.dumps(manifest_obj, ensure_ascii=True, indent=2, sort_keys=True) + "\n").encode("utf-8"), len(entries)
 
 
-def swap_directory_atomic(staging_dir, target_dir):
+def _is_link_or_junction(path):
+    if not os.path.lexists(path):
+        return False
+    if os.path.islink(path):
+        return True
+    try:
+        st = os.lstat(path)
+        attrs = getattr(st, "st_file_attributes", 0)
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 1024)
+        if attrs & reparse_flag:
+            return True
+    except OSError:
+        pass
+    return False
+
+
+def _chmod_retry_onerror(func, path, _exc_info):
+    try:
+        os.chmod(path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+    except OSError:
+        pass
+    func(path)
+
+
+def _remove_tree_or_link(path):
+    if not os.path.lexists(path):
+        return
+    if _is_link_or_junction(path):
+        try:
+            os.unlink(path)
+            return
+        except OSError:
+            if os.path.lexists(path):
+                os.rmdir(path)
+            return
+    if os.path.isdir(path):
+        if sys.version_info >= (3, 12):
+            shutil.rmtree(path, onexc=_chmod_retry_onerror)
+        else:
+            shutil.rmtree(path, onerror=_chmod_retry_onerror)
+        return
+    try:
+        os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+    except OSError:
+        pass
+    os.unlink(path)
+
+
+def _is_pid_alive(pid):
+    if not pid or int(pid) <= 0:
+        return False
+    if os.name == "posix":
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except OSError as err:
+            return err.errno == errno.EPERM
+    return True
+
+
+def _is_swap_lock_stale(lock_path, stale_sec):
+    now = time.time()
+    try:
+        raw = read_bytes(lock_path)
+        meta = json.loads(raw.decode("utf-8", "replace"))
+        pid = int(meta.get("pid", 0) or 0)
+        ts = float(meta.get("ts", 0.0) or 0.0)
+        if os.name == "posix" and pid > 0 and not _is_pid_alive(pid):
+            return True
+        if ts > 0.0 and (now - ts) > stale_sec:
+            return True
+    except Exception:
+        try:
+            if (now - os.path.getmtime(lock_path)) > stale_sec:
+                return True
+        except OSError:
+            return True
+    return False
+
+
+def _acquire_swap_lock(lock_path, stale_sec=120.0, timeout_sec=15.0):
+    deadline = time.time() + float(timeout_sec)
+    payload = (json.dumps({"pid": os.getpid(), "ts": time.time()}) + "\n").encode("utf-8")
+    while True:
+        try:
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 384)
+            try:
+                os.write(fd, payload)
+            finally:
+                os.close(fd)
+            return
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+            if _is_swap_lock_stale(lock_path, stale_sec):
+                try:
+                    os.unlink(lock_path)
+                    continue
+                except OSError:
+                    pass
+            if time.time() >= deadline:
+                raise OtaSyncError("Timed out waiting for atomic swap lock: " + lock_path)
+            time.sleep(0.05)
+
+
+def _release_swap_lock(lock_path):
+    try:
+        if os.path.lexists(lock_path):
+            os.unlink(lock_path)
+    except OSError:
+        pass
+
+
+def swap_directory_atomic(staging_dir, target_dir, stale_lock_sec=120.0):
     target_abs = os.path.abspath(target_dir)
     parent_dir = os.path.dirname(target_abs)
     mkdir_p(parent_dir)
-    backup_dir = os.path.join(
-        parent_dir,
-        ".prev-%s-%d-%d" % (os.path.basename(target_abs), os.getpid(), int(time.time() * 1000)),
-    )
-    had_existing = os.path.isdir(target_abs)
-    if had_existing:
-        os.rename(target_abs, backup_dir)
+    lock_path = os.path.join(parent_dir, ".swap-%s.lock" % os.path.basename(target_abs))
+    _acquire_swap_lock(lock_path, stale_sec=stale_lock_sec)
     try:
-        os.rename(staging_dir, target_abs)
-    except Exception:
-        if had_existing and os.path.isdir(backup_dir) and not os.path.exists(target_abs):
-            try:
-                os.rename(backup_dir, target_abs)
-            except OSError:
-                pass
-        raise
-    if had_existing and os.path.isdir(backup_dir):
-        shutil.rmtree(backup_dir)
+        backup_dir = os.path.join(
+            parent_dir,
+            ".prev-%s-%d-%d" % (os.path.basename(target_abs), os.getpid(), int(time.time() * 1000)),
+        )
+        had_existing = os.path.lexists(target_abs)
+        if had_existing:
+            if _is_link_or_junction(target_abs):
+                _remove_tree_or_link(target_abs)
+                had_existing = False
+            else:
+                os.rename(target_abs, backup_dir)
+        try:
+            os.rename(staging_dir, target_abs)
+        except Exception:
+            if had_existing and os.path.lexists(backup_dir) and not os.path.lexists(target_abs):
+                try:
+                    os.rename(backup_dir, target_abs)
+                except OSError:
+                    pass
+            raise
+        if had_existing and os.path.lexists(backup_dir):
+            _remove_tree_or_link(backup_dir)
+    finally:
+        _release_swap_lock(lock_path)
 
 
 def _find_reusable_local_bytes(expected_sha, candidate_paths):
@@ -783,6 +926,7 @@ def sync_now(
             ]
             blob = obtain_verified_blob(spec, cands)
             dst_fp = os.path.join(*([cache_staging] + local_rel.split("/")))
+            _assert_inside_staging(dst_fp, cache_staging, local_rel)
             mkdir_p(os.path.dirname(dst_fp))
             h = open(dst_fp, "wb")
             try:
@@ -844,8 +988,8 @@ def sync_now(
 
         swap_directory_atomic(cache_staging, synced_dir)
     finally:
-        if os.path.isdir(cache_staging):
-            shutil.rmtree(cache_staging)
+        if os.path.lexists(cache_staging):
+            _remove_tree_or_link(cache_staging)
 
     # 2. Optionally stage & atomically swap writable SKILL-ANALOG runtime library
     lib_target = os.path.abspath(target_library) if target_library else lib_real
@@ -872,6 +1016,7 @@ def sync_now(
                 ]
                 blob = obtain_verified_blob(spec, cands)
                 dst_fp = os.path.join(*([lib_staging] + local_rel.split("/")))
+                _assert_inside_staging(dst_fp, lib_staging, local_rel)
                 mkdir_p(os.path.dirname(dst_fp))
                 h = open(dst_fp, "wb")
                 try:
@@ -898,8 +1043,8 @@ def sync_now(
             swap_directory_atomic(lib_staging, lib_target)
             library_updated = True
         finally:
-            if os.path.isdir(lib_staging):
-                shutil.rmtree(lib_staging)
+            if os.path.lexists(lib_staging):
+                _remove_tree_or_link(lib_staging)
 
     now_ts = time.time()
     elapsed_ms = round((now_ts - t0) * 1000.0, 2)
@@ -1031,7 +1176,10 @@ def _make_gzip_json_bytes(obj):
         fp = os.path.join(tmp_dir, "b.gz")
         raw_f = open(fp, "wb")
         try:
-            gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=raw_f, mtime=0)
+            if sys.version_info >= (2, 7):
+                gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=raw_f, mtime=0)
+            else:
+                gz = gzip.GzipFile(filename="nodes-bundle.json", mode="wb", fileobj=raw_f)
             try:
                 gz.write(raw)
             finally:
@@ -1040,7 +1188,7 @@ def _make_gzip_json_bytes(obj):
             raw_f.close()
         return read_bytes(fp)
     finally:
-        shutil.rmtree(tmp_dir)
+        _remove_tree_or_link(tmp_dir)
 
 
 def _write_mock_remote_tree(root_dir, version_str, router_extra_note=""):
@@ -1321,11 +1469,121 @@ def run_self_test():
         if b"VAL = 42" not in good_py:
             raise AssertionError("Existing SKILL-ANALOG library tool was corrupted!")
 
+        # 8. Empty SHA-256 rejection under verify_sha=True (fail-closed)
+        empty_sha_caught = False
+        try:
+            validate_staged_bytes(b'{"tampered": true}\n', "router-index.json", expected_sha="", verify_sha=True)
+        except ValueError:
+            empty_sha_caught = True
+        if not empty_sha_caught:
+            raise AssertionError("Empty expected_sha was not rejected under verify_sha=True!")
+
+        # 9. Path traversal rejection in manifest (`../../escaped_pwn.txt`)
+        _write_mock_remote_tree(remote_dir, RELEASE_VERSION, router_extra_note="v4")
+        rt_man_obj = load_json_file(rt_man_fp)
+        rt_man_obj["files"].append(
+            {
+                "path": "../../escaped_pwn.txt",
+                "repo_path": "runtime/README.md",
+                "sha256": sha256_bytes(b"ESCAPED\n"),
+                "bytes": 8,
+            }
+        )
+        h_rm_trav = open(rt_man_fp, "wb")
+        try:
+            h_rm_trav.write((json.dumps(rt_man_obj, indent=2) + "\n").encode("utf-8"))
+        finally:
+            h_rm_trav.close()
+        trav_caught = False
+        try:
+            sync_now(
+                library_root=mock_lib,
+                cache_dir=mock_cache,
+                base_url_override=remote_dir,
+                target_library=mock_lib,
+                update_library=True,
+            )
+        except OtaSyncError:
+            trav_caught = True
+        if not trav_caught or os.path.exists(os.path.join(tmp_root, "escaped_pwn.txt")):
+            raise AssertionError("Path traversal manifest entry was not blocked!")
+
+        # 10. Python 3 SSL `context=` path (no deprecated/removed `cafile=` kwarg to urlopen)
+        if ssl is not None and hasattr(ssl, "create_default_context") and ((not PY2) or sys.version_info >= (2, 7, 9)):
+            fake_ca = os.path.join(tmp_root, "mock_ca.pem")
+            h_ca = open(fake_ca, "wb")
+            try:
+                h_ca.write(b"FAKE_CA\n")
+            finally:
+                h_ca.close()
+            ssl_calls = {}
+            orig_find_curl = globals()["find_curl_binary"]
+            orig_create_ctx = ssl.create_default_context
+            orig_urlopen = _urlreq.urlopen
+
+            class _DummyResp(object):
+                def read(self):
+                    return b"HTTPS_CTX_OK"
+
+                def close(self):
+                    pass
+
+            def _mock_create_ctx(cafile=None):
+                ssl_calls["cafile"] = cafile
+                return "MOCK_SSL_CTX"
+
+            def _mock_urlopen(req, timeout=None, **kwargs):
+                if "cafile" in kwargs:
+                    raise TypeError("urlopen() got an unexpected keyword argument 'cafile'")
+                ssl_calls["context"] = kwargs.get("context")
+                return _DummyResp()
+
+            globals()["find_curl_binary"] = lambda: None
+            ssl.create_default_context = _mock_create_ctx
+            _urlreq.urlopen = _mock_urlopen
+            try:
+                got_https = fetch_url_bytes("https://example.invalid/test.json", 3.0, {"ca_bundle_candidates": [fake_ca]})
+            finally:
+                globals()["find_curl_binary"] = orig_find_curl
+                ssl.create_default_context = orig_create_ctx
+                _urlreq.urlopen = orig_urlopen
+            if got_https != b"HTTPS_CTX_OK" or ssl_calls.get("cafile") != fake_ca or ssl_calls.get("context") != "MOCK_SSL_CTX":
+                raise AssertionError("SSL context= path check failed: %r" % ssl_calls)
+
+        # 11. `swap_directory_atomic` stale lock recovery, read-only file cleanup & symlink/junction safety
+        swap_base = os.path.join(tmp_root, "swap_test")
+        mkdir_p(swap_base)
+        swap_target = os.path.join(swap_base, "target_dir")
+        mkdir_p(swap_target)
+        ro_fp = os.path.join(swap_target, "readonly.txt")
+        h_ro = open(ro_fp, "wb")
+        try:
+            h_ro.write(b"RO_OLD\n")
+        finally:
+            h_ro.close()
+        os.chmod(ro_fp, stat.S_IREAD)
+        stale_lock = os.path.join(swap_base, ".swap-target_dir.lock")
+        h_sl = open(stale_lock, "wb")
+        try:
+            h_sl.write((json.dumps({"pid": 999999, "ts": time.time() - 999.0}) + "\n").encode("utf-8"))
+        finally:
+            h_sl.close()
+        swap_stage = os.path.join(swap_base, ".staging-new")
+        mkdir_p(swap_stage)
+        h_nw = open(os.path.join(swap_stage, "fresh.txt"), "wb")
+        try:
+            h_nw.write(b"FRESH_OK\n")
+        finally:
+            h_nw.close()
+        swap_directory_atomic(swap_stage, swap_target, stale_lock_sec=10.0)
+        if os.path.lexists(stale_lock) or not os.path.isfile(os.path.join(swap_target, "fresh.txt")):
+            raise AssertionError("swap_directory_atomic failed stale lock recovery or read-only cleanup")
+
         return {
             "ok": True,
             "command": "self-test",
             "release": RELEASE_VERSION,
-            "tests_passed": 7,
+            "tests_passed": 11,
             "verified": [
                 "sync_offline_conflict_exit_2",
                 "skill_analog_offline_env_block",
@@ -1334,6 +1592,10 @@ def run_self_test():
                 "ttl_60s_zero_network_guard",
                 "delta_sha256_single_file_download",
                 "sha256_and_python_compile_rollback_safety",
+                "empty_sha256_rejected_fail_closed",
+                "manifest_path_traversal_rejected",
+                "py3_ssl_context_cafile_compat",
+                "swap_lock_recovery_and_readonly_cleanup",
             ],
         }
     finally:
@@ -1342,7 +1604,7 @@ def run_self_test():
                 del os.environ["SKILL_ANALOG_OFFLINE"]
         else:
             os.environ["SKILL_ANALOG_OFFLINE"] = saved_offline
-        shutil.rmtree(tmp_root)
+        _remove_tree_or_link(tmp_root)
 
 
 def build_parser():

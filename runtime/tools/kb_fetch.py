@@ -20,8 +20,10 @@ from __future__ import print_function
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
+import tempfile
 import time
 import zlib
 from optparse import OptionParser
@@ -101,10 +103,11 @@ def get_cache_dir(cfg):
     return ota_sync.get_cache_dir(cfg=cfg, library_root=LIBRARY_ROOT)
 
 
-def sync_from_github(base_url_override=None, offline_only=False):
+def sync_from_github(base_url_override=None, offline_only=False, update_library=True):
     return ota_sync.sync_now(
         library_root=LIBRARY_ROOT,
         base_url_override=base_url_override,
+        update_library=bool(update_library),
         offline=offline_only,
     )
 
@@ -236,7 +239,7 @@ def resolve_node_entry(router, query_id):
     return None
 
 
-def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=False):
+def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=False, update_library=True):
     eff_offline = bool(offline_only or ota_sync.is_offline_env())
     if refresh and eff_offline:
         raise ota_sync.OtaConflictError("--refresh cannot be used when offline mode is active.")
@@ -247,6 +250,7 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
         offline=eff_offline,
         library_root=LIBRARY_ROOT,
         base_url_override=base_url_override,
+        update_library=bool(update_library),
     )
 
     cfg = load_config()
@@ -257,7 +261,7 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
 
     nid = node_meta["id"]
     rel_path = to_text(node_meta.get("raw_rel_path") or node_meta.get("path") or "").lstrip("/")
-    expected_sha = node_meta.get("sha256", "")
+    expected_sha = to_text(node_meta.get("sha256", "")).strip().lower()
     verify_sha = bool(cfg.get("verify_sha256", True))
     timeout_sec = float(cfg.get("http_timeout_sec", 8))
 
@@ -279,22 +283,35 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
         cache_dir = get_cache_dir(cfg)
         cards_cache_dir = os.path.join(cache_dir, "cards")
         cache_file = os.path.join(cards_cache_dir, nid + ".md")
-        if not refresh and not base_url_override and os.path.isfile(cache_file):
-            cached_bytes = ota_sync.read_bytes(cache_file)
-            if not verify_sha or not expected_sha or sha256_bytes(cached_bytes) == expected_sha:
-                markdown_text = strip_frontmatter(cached_bytes.decode("utf-8-sig"))
-                source_used = "read-through-cache (" + cache_file + ")"
+        verified_cached_bytes = None
+        if os.path.isfile(cache_file):
+            try:
+                cand_cached = ota_sync.read_bytes(cache_file)
+                if verify_sha:
+                    if re.match(r"^[0-9a-f]{64}$", expected_sha) and sha256_bytes(cand_cached) == expected_sha:
+                        verified_cached_bytes = cand_cached
+                else:
+                    verified_cached_bytes = cand_cached
+            except OSError:
+                verified_cached_bytes = None
+
+        if not refresh and not base_url_override and verified_cached_bytes is not None:
+            markdown_text = strip_frontmatter(verified_cached_bytes.decode("utf-8-sig"))
+            source_used = "read-through-cache (" + cache_file + ")"
 
         if markdown_text is None:
             try:
                 base_urls, _, _ = ota_sync.resolve_remote_bases(cfg, base_url_override=base_url_override)
                 live_bytes, used_url = ota_sync.fetch_from_bases(rel_path, base_urls, timeout_sec, cfg)
                 actual_sha = sha256_bytes(live_bytes)
-                if verify_sha and expected_sha and actual_sha != expected_sha:
-                    online_note = (
-                        "Live GitHub card updated since local index (%s != %s); run `kb_fetch.py --sync` to refresh router-index."
-                        % (actual_sha[:12], expected_sha[:12])
-                    )
+                if verify_sha:
+                    if not re.match(r"^[0-9a-f]{64}$", expected_sha):
+                        raise ValueError("Missing or invalid expected SHA-256 in router-index for " + nid)
+                    if actual_sha != expected_sha:
+                        raise ValueError(
+                            "SHA-256 mismatch for live card %s (%s != %s); run `kb_fetch.py --sync` if remote updated"
+                            % (nid, actual_sha[:12], expected_sha[:12])
+                        )
                 markdown_text = strip_frontmatter(live_bytes.decode("utf-8-sig"))
                 source_used = "https-live (" + used_url + ")"
                 try:
@@ -302,7 +319,12 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
                 except OSError:
                     pass
             except Exception as exc:
-                online_note = "HTTPS GitHub fetch unavailable (%s); served from local nodes-bundle.json.gz." % str(exc)
+                if verified_cached_bytes is not None:
+                    markdown_text = strip_frontmatter(verified_cached_bytes.decode("utf-8-sig"))
+                    source_used = "read-through-cache (" + cache_file + ")"
+                    online_note = "Rejected/unavailable live GitHub fetch (%s); served from verified read-through cache." % str(exc)
+                else:
+                    online_note = "HTTPS GitHub fetch rejected/unavailable (%s); served from local nodes-bundle.json.gz." % str(exc)
 
     # Path 3: Offline bundle fallback (< 15 ms, guaranteed zero network)
     if markdown_text is None:
@@ -485,12 +507,66 @@ def run_self_test():
         if not card2.get("ok") or len(card2.get("markdown", "")) < 500:
             raise AssertionError("Default fetch returned invalid card")
 
+        # 5. `--no-library-update` forwards update_library=False to ota_sync.sync_now
+        sync_spy = {}
+        orig_sync_now = ota_sync.sync_now
+
+        def _spy_sync_now(**kwargs):
+            sync_spy.update(kwargs)
+            return {"ok": True, "library_updated": False}
+
+        ota_sync.sync_now = _spy_sync_now
+        orig_write_utf8 = globals()["write_utf8"]
+        globals()["write_utf8"] = lambda _txt: None
+        try:
+            rc_nlu = main(["--sync", "--no-library-update", "--quiet-errors"])
+        finally:
+            globals()["write_utf8"] = orig_write_utf8
+            ota_sync.sync_now = orig_sync_now
+        if rc_nlu != 0 or sync_spy.get("update_library") is not False:
+            raise AssertionError("--no-library-update did not pass update_library=False: %r" % sync_spy)
+
+        # 6. Tampered live card bytes under verify_sha256=True are rejected (never cached or returned)
+        tmp_tamp = tempfile.mkdtemp(prefix="kb_fetch_tamper_")
+        saved_cache_env = os.environ.get("RAZAVI_BRAIN_CACHE_DIR")
+        try:
+            iso_cache = os.path.join(tmp_tamp, "isolated_cache")
+            fake_remote = os.path.join(tmp_tamp, "tampered_remote")
+            os.environ["RAZAVI_BRAIN_CACHE_DIR"] = iso_cache
+            router_now = load_active_router(load_config())
+            target_meta = resolve_node_entry(router_now, "topo-folded-cascode-ota")
+            rel_md = to_text(target_meta.get("raw_rel_path") or target_meta.get("path")).lstrip("/")
+            tampered_md_fp = os.path.join(*([fake_remote] + rel_md.split("/")))
+            ota_sync.mkdir_p(os.path.dirname(tampered_md_fp))
+            ota_sync.write_atomic_bytes(tampered_md_fp, b"---\nid: topo-folded-cascode-ota\n---\nTAMPERED_EVIL_MARKER_XYZ\n")
+
+            orig_auto = ota_sync.maybe_auto_sync
+            ota_sync.maybe_auto_sync = lambda **_kw: {"ok": True, "action": "noop_test"}
+            try:
+                safe_card = fetch_card("topo-folded-cascode-ota", base_url_override=fake_remote, offline_only=False, refresh=True)
+            finally:
+                ota_sync.maybe_auto_sync = orig_auto
+
+            if "TAMPERED_EVIL_MARKER_XYZ" in to_text(safe_card.get("markdown", "")):
+                raise AssertionError("kb_fetch returned tampered card bytes despite SHA-256 mismatch!")
+            if "local-bundle" not in to_text(safe_card.get("source", "")):
+                raise AssertionError("Expected fallback to verified local-bundle on SHA mismatch, got %r" % safe_card.get("source"))
+            cached_fp = os.path.join(iso_cache, "cards", "topo-folded-cascode-ota.md")
+            if os.path.exists(cached_fp):
+                raise AssertionError("Tampered card bytes were written to read-through cache!")
+        finally:
+            if saved_cache_env is None:
+                os.environ.pop("RAZAVI_BRAIN_CACHE_DIR", None)
+            else:
+                os.environ["RAZAVI_BRAIN_CACHE_DIR"] = saved_cache_env
+            shutil.rmtree(tmp_tamp, ignore_errors=True)
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "fetch_ms": dt_ms,
-            "tests_passed": 4,
+            "tests_passed": 6,
         }
     finally:
         if saved_env is None:
@@ -502,21 +578,22 @@ def run_self_test():
 
 HELP_TEXT = """Usage:
   python tools/kb_fetch.py <NODE_ID> [options]
-  python tools/kb_fetch.py --sync [--base-url URL]
+  python tools/kb_fetch.py --sync [--no-library-update] [--base-url URL]
   python tools/kb_fetch.py --clear-cache
   python tools/kb_fetch.py --self-test
 
 Options:
-  --sync             Atomically sync all KB indices, 21 checklists, 72 SVGs, nodes-bundle.json.gz & runtime tools
-  --clear-cache      Remove external user cache (~/.cache/razavi-cmos-brain)
-  --json             Emit structured JSON instead of formatted Markdown
-  --raw              Emit only the raw 6-block Markdown card without appended edges/checklists
-  --no-checklists    Omit expanded checklists from Markdown output
-  --offline          Force offline extraction from local kb/nodes-bundle.json.gz (conflicts with --sync)
-  --refresh          Bypass read-through card cache and fetch fresh from GitHub
-  --base-url URL     Override live GitHub base URL (or local staging path) for this call
-  --self-test        Run built-in self-test suite
-  -h, --help         Show this help message
+  --sync                 Atomically sync 100 KB files into ~/.cache/razavi-cmos-brain & update library/ when writable
+  --no-library-update    Sync external user cache (~/.cache/razavi-cmos-brain) only without touching library/
+  --clear-cache          Remove external user cache (~/.cache/razavi-cmos-brain)
+  --json                 Emit structured JSON instead of formatted Markdown
+  --raw                  Emit only the raw 6-block Markdown card without appended edges/checklists
+  --no-checklists        Omit expanded checklists from Markdown output
+  --offline              Force offline extraction from local kb/nodes-bundle.json.gz (conflicts with --sync)
+  --refresh              Bypass read-through card cache and fetch fresh from GitHub
+  --base-url URL         Override live GitHub base URL (or local staging path) for this call
+  --self-test            Run built-in self-test suite
+  -h, --help             Show this help message
 """
 
 
@@ -524,6 +601,7 @@ def build_parser():
     parser = OptionParser(add_help_option=False)
     parser.add_option("-h", "--help", action="store_true", default=False)
     parser.add_option("--sync", action="store_true", default=False)
+    parser.add_option("--no-library-update", dest="no_library_update", action="store_true", default=False)
     parser.add_option("--clear-cache", dest="clear_cache", action="store_true", default=False)
     parser.add_option("--json", dest="as_json", action="store_true", default=False)
     parser.add_option("--raw", dest="raw_only", action="store_true", default=False)
@@ -583,7 +661,11 @@ def main(argv=None):
             write_utf8(json.dumps(clear_cache(), ensure_ascii=False, indent=2, sort_keys=True))
             return 0
         if do_sync:
-            receipt = sync_from_github(base_url_override=opts.base_url, offline_only=eff_offline)
+            receipt = sync_from_github(
+                base_url_override=opts.base_url,
+                offline_only=eff_offline,
+                update_library=(not opts.no_library_update),
+            )
             write_utf8(json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True))
             return 0 if receipt.get("ok") else 1
         if not node_id:
@@ -596,6 +678,7 @@ def main(argv=None):
             base_url_override=opts.base_url,
             offline_only=eff_offline,
             refresh=opts.refresh,
+            update_library=(not opts.no_library_update),
         )
         if opts.as_json:
             write_utf8(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))

@@ -16,7 +16,7 @@ Inspired by LEDRO (physics-pruned subspace & sensitivity guidance) and AnalogCod
 
 Release: 2026.11.19.1
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import copy
 import json
@@ -49,6 +49,18 @@ def _is_inside(path, base):
     p_norm = os.path.normcase(os.path.realpath(path))
     b_norm = os.path.normcase(os.path.realpath(base))
     return p_norm == b_norm or p_norm.startswith(b_norm.rstrip(os.sep) + os.sep)
+
+
+def _safe_finite_float(val):
+    if val is None or isinstance(val, bool):
+        return None
+    try:
+        f = float(val)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(f) or math.isinf(f):
+        return None
+    return f
 
 
 def _clamp(val, lo, hi):
@@ -93,7 +105,7 @@ def _snap_val(val, step_grid, lo, hi):
 class DesignSpace(object):
     """Normalized [0, 1]^d log/linear parameter transform + PDK grid snapper."""
 
-    def __init__(self, variables):
+    def __init__(self, variables, default_step_grid=None):
         if not isinstance(variables, list) or not variables:
             raise SizingOptError("Problem 'variables' must be a non-empty list.")
         self.vars = []
@@ -111,7 +123,12 @@ class DesignSpace(object):
                 raise SizingOptError("Log-scaled variable '%s' requires min > 0." % name)
             if vmax <= vmin:
                 raise SizingOptError("Variable '%s' requires max > min." % name)
-            step = entry.get("step_grid")
+            if "step_grid" in entry:
+                step = entry.get("step_grid")
+            elif "step_grid_m" in entry:
+                step = entry.get("step_grid_m")
+            else:
+                step = default_step_grid
             if step is None or float(step) == 0.0:
                 step_f = None
             else:
@@ -484,6 +501,9 @@ _UNIT_INFO_CASE_SENSITIVE = {
     "S": (1.0, "conductance"),
     "mOhm": (1.0e-3, "resistance"),
     "MOhm": (1.0e6, "resistance"),
+    "Mohm": (1.0e6, "resistance"),
+    "Mohms": (1.0e6, "resistance"),
+    "MOhms": (1.0e6, "resistance"),
     "mV/rtHz": (1.0e-3, "noise_density"),
     "MV/s": (1.0e6, "slew_rate"),
     "mV/s": (1.0e-3, "slew_rate"),
@@ -536,8 +556,13 @@ _UNIT_INFO_LOWER = {
     "nv/rthz": (1.0e-9, "noise_density"),
     "nv/sqrt(hz)": (1.0e-9, "noise_density"),
     "ohm": (1.0, "resistance"),
+    "ohms": (1.0, "resistance"),
     "kohm": (1.0e3, "resistance"),
-    "mohm": (1.0e6, "resistance"),
+    "kohms": (1.0e3, "resistance"),
+    "megohm": (1.0e6, "resistance"),
+    "megohms": (1.0e6, "resistance"),
+    "mohm": (1.0e-3, "resistance"),
+    "mohms": (1.0e-3, "resistance"),
     "f": (1.0, "capacitance"),
     "pf": (1.0e-12, "capacitance"),
     "ff": (1.0e-15, "capacitance"),
@@ -646,7 +671,15 @@ def _convert_constraint_value(raw_val, unit_str, metric_name, cid):
 
 def normalize_constraints(problem):
     raw_list = list(problem.get("hard_constraints", []))
-    sat_min = float(problem.get("mos_sat_margin_min", 0.05))
+    if "mos_sat_margin_min" in problem:
+        raw_sat = problem["mos_sat_margin_min"]
+    elif "mos_sat_margin_min_v" in problem:
+        raw_sat = problem["mos_sat_margin_min_v"]
+    else:
+        raw_sat = 0.05
+    sat_min = _safe_finite_float(raw_sat)
+    if sat_min is None:
+        raise SizingOptError("Invalid or non-finite mos_sat_margin_min: %r" % (raw_sat,))
     has_sat = False
     constraints = []
     for idx, item in enumerate(raw_list):
@@ -654,11 +687,17 @@ def normalize_constraints(problem):
         cid = item.get("id", metric or ("c_%d" % idx))
         op = str(item.get("op", item.get("operator", ">="))).strip()
         unit_str = str(item.get("unit", "") or "").strip()
-        target_raw = float(item["target"])
+        raw_tgt = item.get("target")
+        target_raw = _safe_finite_float(raw_tgt)
+        if target_raw is None:
+            raise SizingOptError("Invalid or non-finite constraint target %r on %s" % (raw_tgt, cid))
         target, unit_factor = _convert_constraint_value(target_raw, unit_str, metric, cid)
         default_scale = max(abs(target) * 0.15, 1e-30) if target != 0.0 else 1e-9
         if "scale" in item and item["scale"] is not None:
-            scale = float(item["scale"]) * unit_factor
+            raw_sc = _safe_finite_float(item["scale"])
+            if raw_sc is None or raw_sc <= 0.0:
+                raise SizingOptError("Invalid or non-positive constraint scale %r on %s" % (item["scale"], cid))
+            scale = raw_sc * unit_factor
         else:
             scale = default_scale
         if metric == "min_sat_margin_v":
@@ -697,9 +736,18 @@ def check_constraints(metrics, constraints, target_shifts=None):
     for c in constraints:
         mname = c["metric"]
         op = c["op"]
-        tgt = float(c["target"])
-        scale_pos = max(float(c.get("scale", max(abs(tgt) * 0.15, 1e-30))), 1e-30)
-        shift = float(shifts.get(c["id"], 0.0))
+        tgt = _safe_finite_float(c.get("target"))
+        if tgt is None:
+            raise SizingOptError("Invalid or non-finite constraint target %r on %s" % (c.get("target"), c.get("id")))
+        raw_scale = c.get("scale", max(abs(tgt) * 0.15, 1e-30))
+        scale_val = _safe_finite_float(raw_scale)
+        if scale_val is None or scale_val <= 0.0:
+            raise SizingOptError("Invalid or non-finite constraint scale %r on %s" % (raw_scale, c.get("id")))
+        scale_pos = max(scale_val, 1e-30)
+        shift_raw = shifts.get(c["id"], 0.0)
+        shift = _safe_finite_float(shift_raw)
+        if shift is None:
+            raise SizingOptError("Invalid or non-finite target shift %r on %s" % (shift_raw, c.get("id")))
 
         if op not in (">=", ">", "<=", "<"):
             raise SizingOptError("Unsupported constraint operator '%s' on %s" % (op, c["id"]))
@@ -723,8 +771,9 @@ def check_constraints(metrics, constraints, target_shifts=None):
             })
             continue
 
-        val = float(metrics[mname])
-        if math.isnan(val) or math.isinf(val):
+        raw_mval = metrics[mname]
+        val = _safe_finite_float(raw_mval)
+        if val is None:
             passed = False
             all_pass = False
             all_guarded_pass = False
@@ -734,7 +783,7 @@ def check_constraints(metrics, constraints, target_shifts=None):
                 "id": c["id"],
                 "metric": mname,
                 "op": op,
-                "value": val,
+                "value": raw_mval,
                 "target": tgt,
                 "effective_target": (tgt + shift) if op in (">=", ">") else (tgt - shift),
                 "unit": c.get("unit", ""),
@@ -785,10 +834,11 @@ def check_constraints(metrics, constraints, target_shifts=None):
             "status": "PASS" if passed else "FAIL",
         })
 
-    if metrics.get("triode_or_cutoff_count", 0) > 0:
+    toc_cnt = _safe_finite_float(metrics.get("triode_or_cutoff_count", 0))
+    if toc_cnt is not None and toc_cnt > 0:
         all_pass = False
         all_guarded_pass = False
-        total_viol += 0.5 * float(metrics["triode_or_cutoff_count"])
+        total_viol += 0.5 * toc_cnt
 
     return {
         "all_pass": all_pass,
@@ -801,10 +851,11 @@ def check_constraints(metrics, constraints, target_shifts=None):
 def compute_objective_norm(metrics, obj_spec, ref_val):
     metric_name = obj_spec.get("metric", "power_w")
     goal = str(obj_spec.get("goal", obj_spec.get("sense", "minimize"))).lower()
-    val = float(metrics[metric_name])
-    if math.isnan(val) or math.isinf(val):
+    val = _safe_finite_float(metrics.get(metric_name)) if isinstance(metrics, dict) else None
+    if val is None:
         return 1.0e6
-    denom = max(abs(ref_val), 1e-18)
+    ref_f = _safe_finite_float(ref_val)
+    denom = max(abs(ref_f) if ref_f is not None else 1.0, 1e-18)
     if goal.startswith("max"):
         return -val / denom
     return val / denom
@@ -868,7 +919,11 @@ def compute_sensitivity_stage1(
         d_phys = actual_du * vspec["span_ln"]
         x_base = x0_dict[vspec["name"]]
         for mname in tracked_metrics:
-            dm = float(m_pert[mname]) - float(m0[mname])
+            v_pert = _safe_finite_float(m_pert.get(mname))
+            v_base = _safe_finite_float(m0.get(mname))
+            if v_pert is None or v_base is None or abs(actual_du) < 1e-18 or abs(d_phys) < 1e-30:
+                continue
+            dm = v_pert - v_base
             jac_u[mname][j] = dm / actual_du
             if vspec["scale"] == "lin":
                 d_lnx[mname][vspec["name"]] = x_base * (dm / d_phys)
@@ -913,7 +968,8 @@ def compute_sensitivity_stage1(
         }
 
     # Include objective sensitivity in variable importance
-    obj_scale = max(abs(float(m0[obj_metric])), 1e-15)
+    obj_base = _safe_finite_float(m0.get(obj_metric))
+    obj_scale = max(abs(obj_base), 1e-15) if obj_base is not None else 1.0
     for j in range(space.dim):
         var_importance[j] = max(var_importance[j], abs(jac_u[obj_metric][j]) / obj_scale)
 
@@ -960,7 +1016,11 @@ def _solve_linearized_tr_step(
     def lin_metrics(delta_u):
         pred = dict(m_cur)
         for mname, grad in jac_u.items():
-            acc = float(m_cur[mname])
+            base_v = _safe_finite_float(m_cur.get(mname))
+            if base_v is None:
+                pred[mname] = None
+                continue
+            acc = base_v
             for j in active_indices:
                 acc += grad[j] * delta_u[j]
             pred[mname] = acc
@@ -1025,9 +1085,9 @@ def _broyden_update(jac_u, du, m_old, m_new):
     for mname, grad in jac_u.items():
         if mname not in m_new or mname not in m_old:
             continue
-        v_new = float(m_new[mname])
-        v_old = float(m_old[mname])
-        if math.isnan(v_new) or math.isinf(v_new) or math.isnan(v_old) or math.isinf(v_old):
+        v_new = _safe_finite_float(m_new.get(mname))
+        v_old = _safe_finite_float(m_old.get(mname))
+        if v_new is None or v_old is None:
             continue
         dm_actual = v_new - v_old
         dm_pred = sum([grad[j] * du[j] for j in range(len(du))])
@@ -1045,7 +1105,12 @@ def optimize_problem(problem, sensitivity_only=False):
     if not isinstance(problem, dict):
         raise SizingOptError("Problem specification must be a JSON object / dict.")
 
-    corners = problem.get("corners", ["TT", "SS", "FF"])
+    if "corners" in problem:
+        corners = problem["corners"]
+    elif "pvt_corners" in problem:
+        corners = problem["pvt_corners"]
+    else:
+        corners = ["TT", "SS", "FF"]
     if not isinstance(corners, list) or len(corners) == 0:
         raise SizingOptError("Problem 'corners' must be a non-empty list of PVT corner names.")
     for c_item in corners:
@@ -1059,7 +1124,8 @@ def optimize_problem(problem, sensitivity_only=False):
     if max_evals < 1:
         raise SizingOptError("Problem 'max_evaluations' must be >= 1, got %d." % max_evals)
 
-    space = DesignSpace(problem["variables"])
+    default_step_grid = problem.get("step_grid", problem.get("step_grid_m"))
+    space = DesignSpace(problem["variables"], default_step_grid=default_step_grid)
     evaluator, evaluator_source = build_evaluator(problem)
     constraints = normalize_constraints(problem)
     obj_spec = problem.get("objective", {"metric": "power_w", "goal": "minimize"})
@@ -1096,9 +1162,8 @@ def optimize_problem(problem, sensitivity_only=False):
     )
     m0 = s1["m0"]
     obj_metric = obj_spec.get("metric", "power_w")
-    obj_ref = float(m0[obj_metric])
-    if math.isnan(obj_ref) or math.isinf(obj_ref) or obj_ref == 0.0:
-        obj_ref = 1.0
+    obj_ref_raw = _safe_finite_float(m0.get(obj_metric))
+    obj_ref = obj_ref_raw if (obj_ref_raw is not None and obj_ref_raw != 0.0) else 1.0
 
     if sensitivity_only:
         return {
@@ -1367,10 +1432,12 @@ def optimize_problem(problem, sensitivity_only=False):
         except _BudgetExhausted:
             final_tt = m_best
 
-    init_obj = float(m0[obj_metric])
-    final_obj = float(final_tt[obj_metric])
+    init_obj = _safe_finite_float(m0.get(obj_metric))
+    final_obj = _safe_finite_float(final_tt.get(obj_metric)) if isinstance(final_tt, dict) else None
     goal_max = str(obj_spec.get("goal", obj_spec.get("sense", "minimize"))).lower().startswith("max")
-    if goal_max:
+    if init_obj is None or final_obj is None:
+        improvement_pct = 0.0
+    elif goal_max:
         improvement_pct = 100.0 * (final_obj - init_obj) / max(abs(init_obj), 1e-18)
     else:
         improvement_pct = 100.0 * (init_obj - final_obj) / max(abs(init_obj), 1e-18)
@@ -1615,7 +1682,7 @@ def run_self_test():
         # 8. Command-based external evaluator + CLI exit code 1 on infeasible spec & 0 on sensitivity-only
         eval_script = os.path.join(tmp_dir, "ext_eval.py")
         ext_code = (
-            "from __future__ import print_function\n"
+            "from __future__ import division, print_function\n"
             "import json, sys\n"
             "sys.path.insert(0, %r)\n"
             "import sizing_opt\n"
@@ -1700,6 +1767,94 @@ def run_self_test():
         if not caught_bad_dim:
             raise AssertionError("Failed to reject dimensionally incompatible unit mV on dc_gain_db!")
 
+        # 10. Unit 'mohm' (1e-3 Ohm) vs 'Mohm' (1e6 Ohm) (#8)
+        res_u_cons = normalize_constraints({
+            "enforce_mos_sat_margin": False,
+            "hard_constraints": [
+                {"id": "r_lo", "metric": "ron_ohm", "op": "<=", "target": 50.0, "unit": "mohm"},
+                {"id": "r_hi", "metric": "rout_ohm", "op": ">=", "target": 2.0, "unit": "Mohm"},
+            ],
+        })
+        if abs(res_u_cons[0]["target"] - 0.05) > 1e-12:
+            raise AssertionError("Expected 50 mohm -> 0.05 ohm, got %r" % res_u_cons[0]["target"])
+        if abs(res_u_cons[1]["target"] - 2.0e6) > 1e-6:
+            raise AssertionError("Expected 2 Mohm -> 2e6 ohm, got %r" % res_u_cons[1]["target"])
+
+        # 11. Stage-1 & TR/Broyden None/non-finite metric crash guard (#9)
+        none_eval_calls = [0]
+
+        def _none_metric_eval(params, corner="TT"):
+            none_eval_calls[0] += 1
+            x = float(params["x"])
+            if none_eval_calls[0] == 2:
+                return {"power_w": None, "gain_db": None}
+            return {"power_w": x * 1e-3, "gain_db": 40.0 + 10.0 * x}
+
+        none_prob = {
+            "enforce_mos_sat_margin": False,
+            "corners": ["TT"],
+            "max_evaluations": 12,
+            "evaluator": {"type": "callable", "fn": _none_metric_eval},
+            "objective": {"metric": "power_w", "goal": "minimize"},
+            "variables": [{"name": "x", "init": 1.0, "min": 0.5, "max": 3.0, "scale": "lin"}],
+            "hard_constraints": [{"id": "g1", "metric": "gain_db", "op": ">=", "target": 55.0, "unit": "dB"}],
+        }
+        none_res = optimize_problem(none_prob)
+        if not none_res["ok"]:
+            raise AssertionError("Optimizer crashed or failed on intermittent None metrics!")
+        if compute_objective_norm({"power_w": None}, {"metric": "power_w", "goal": "minimize"}, 1.0) < 1e5:
+            raise AssertionError("compute_objective_norm must penalize None metric with large finite value!")
+
+        # 12. Reject NaN/Inf/bool constraint targets in normalize_constraints & check_constraints (#16)
+        for bad_t in (float("nan"), float("inf"), float("-inf"), True, False):
+            caught_n = False
+            try:
+                normalize_constraints({
+                    "enforce_mos_sat_margin": False,
+                    "hard_constraints": [{"id": "bt", "metric": "dc_gain_db", "op": ">=", "target": bad_t}],
+                })
+            except SizingOptError:
+                caught_n = True
+            if not caught_n:
+                raise AssertionError("normalize_constraints failed to reject target=%r!" % (bad_t,))
+            caught_c = False
+            try:
+                check_constraints(
+                    {"dc_gain_db": 60.0},
+                    [{"id": "bt", "metric": "dc_gain_db", "op": ">=", "target": bad_t, "scale": 1.0}],
+                )
+            except SizingOptError:
+                caught_c = True
+            if not caught_c:
+                raise AssertionError("check_constraints failed to reject target=%r!" % (bad_t,))
+
+        # 13. Template canonical & legacy aliases (mos_sat_margin_min_v, pvt_corners, step_grid_m) (#21)
+        alias_prob = {
+            "mos_sat_margin_min_v": 0.08,
+            "pvt_corners": ["TT", "SS"],
+            "step_grid_m": 0.1,
+            "max_evaluations": 10,
+            "evaluator": {
+                "type": "callable",
+                "fn": lambda params, corner="TT": {
+                    "power_w": float(params["w"]) * 1e-3,
+                    "min_sat_margin_v": 0.12 if corner == "TT" else 0.09,
+                },
+            },
+            "objective": {"metric": "power_w", "goal": "minimize"},
+            "variables": [{"name": "w", "init": 1.05, "min": 0.5, "max": 2.0, "scale": "lin"}],
+            "hard_constraints": [],
+        }
+        alias_cons = normalize_constraints(alias_prob)
+        if abs(alias_cons[0]["target"] - 0.08) > 1e-12:
+            raise AssertionError("Legacy alias mos_sat_margin_min_v not honored: %r" % alias_cons)
+        alias_res = optimize_problem(alias_prob)
+        if alias_res["corners_requested"] != ["TT", "SS"] or not alias_res["all_specs_pass_pvt"]:
+            raise AssertionError("Legacy aliases pvt_corners/step_grid_m failed: %r" % alias_res)
+        w_snap = alias_res["optimized_variables_grid_snapped"]["w"]
+        if abs((w_snap / 0.1) - round(w_snap / 0.1)) > 1e-6:
+            raise AssertionError("Legacy step_grid_m=0.1 was not snapped: w=%r" % w_snap)
+
         return {
             "ok": True,
             "release": RELEASE,
@@ -1722,6 +1877,10 @@ def run_self_test():
                 "linear_variable_d_metric_d_lnx_exact",
                 "fs_sf_skewed_corners_and_invalid_corner_rejected",
                 "infeasible_cli_returns_exit_1",
+                "mohm_vs_Mohm_unit_scaling_verified",
+                "none_metric_stage1_tr_broyden_guarded",
+                "nonfinite_and_bool_targets_rejected",
+                "template_canonical_and_legacy_aliases_verified",
             ],
             "elapsed_ms": res["elapsed_ms"],
         }

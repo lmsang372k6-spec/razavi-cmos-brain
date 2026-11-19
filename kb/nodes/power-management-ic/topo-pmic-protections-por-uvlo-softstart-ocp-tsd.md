@@ -270,7 +270,7 @@ G_PASS   (vin vout) bsource i=(v(uvlo_ok) > 0.5 && v(vin) > v(vout)) ? v(n_cmd)*
 // 4. Nút chọn Giếng N Động V_NWELL = max(VIN, VOUT) ngăn dòng ngược khi VIN sập về 0.2 V ở t = 2.25 ms!
 B_NWELL  (v_nwell 0) bsource v=0.5*(v(vin) + v(vout) + sqrt(pow(v(vin) - v(vout), 2) + 1e-4))
 
-// Tụ tải 4.7 uF + Sự cố chập tải 0.2 Ohm đóng vào lúc t = 1.6 ms .. 2.0 ms kiểm tra Foldback SOA!
+// Tụ tải 4.7 uF + Sự cố chập tải 0.15 Ohm đóng vào lúc t = 1.6 ms .. 2.0 ms kiểm tra Foldback SOA!
 C_LOAD   (vout 0)  capacitor c=c_out
 I_NOM    (vout 0)  isource dc=0.15
 V_SHORT  (flt_en 0) vsource type=pulse val0=0 val1=1 delay=1.6m rise=1u fall=1u width=400u

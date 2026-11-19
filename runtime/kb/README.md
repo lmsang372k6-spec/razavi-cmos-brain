@@ -6,7 +6,7 @@ Thư mục này kết nối trực tiếp Codex trên máy ảo RHEL 6.5 với *
 - **Bản đồ Tri thức Tọa độ 2D (22 cột, 10 tầng) & Static API:** https://lmsang372k6-spec.github.io/razavi-cmos-brain
 - **Endpoint Raw tức thì:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
 
-## Thành phần cục bộ trong `library/kb/` (`26` tệp chỉ mục/checklist/catalog + `nodes-bundle.json.gz`)
+## Thành phần cục bộ trong `library/kb/` (`100` tệp KB đồng bộ + `config.json` & `README.md`)
 
 - `config.json`: cấu hình sẵn `base_url` (GitHub Pages), `raw_base_url` (Raw GitHub), danh sách gói chứng chỉ CA mới trên RHEL 6.5 (`mozilla-cacert.pem`) và cơ chế lưu đệm bên ngoài thư viện (`~/.cache/razavi-cmos-brain` hoặc `/tmp/razavi-brain-cache-*`) để `analogctl.py verify` luôn sạch tuyệt đối.
 - `router-index.json`: chỉ mục **162 thẻ 6 khối** xuyên suốt **10 tầng tri thức** (**112 thẻ nguyên lý Razavi** Ch.01–Ch.19 + **12 thẻ Quản lý Nguồn PMIC** Buck/Boost/4-Switch Buck-Boost/SC Charge-Pump/Capless LDO/POR-UVLO-OCP-TSD + **12 thẻ Hệ thống Tín hiệu Hỗn hợp AMS** Schmitt/RC-Pierce Osc/INA-Chopper CFIA/Active-RC Tow-Thomas/$G_m$-C/DAC/$\Delta\Sigma$/Pipeline MDAC/LVDS-CTLE-CDR/Central `I_PTAT`-`I_ZTC` Bias Hub + **26 thẻ tầng EDA**; tổng cộng **27 thẻ kỹ năng thực chiến `skill-*`**), tọa độ 2D không chồng lấn trên 22 cột (`coord_2d`), ánh xạ **Chu trình Thiết kế 7 Bước (`design_stages`)**, **72 sơ đồ vector SVG** và ánh xạ triệu chứng $\to$ cấu trúc mạch.
@@ -17,12 +17,13 @@ Thư mục này kết nối trực tiếp Codex trên máy ảo RHEL 6.5 với *
 - `terms-vi-en.json`: **2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB** (`T001–T2280`, bổ sung 80 thuật ngữ chuyên sâu PMIC, AMS và Tối ưu hóa Khép kín Cadence).
 - `nodes-bundle.json.gz`: gói snapshot nén toàn bộ **162 thẻ 6 khối** giúp [kb_fetch.py](../tools/kb_fetch.py) trích xuất trọn vẹn trong `< 15 ms` ngay cả khi máy ảo RHEL 6.5 ngoại tuyến.
 
-## Lệnh tra cứu tọa độ, PMIC/AMS, kỹ năng Cadence & đồng bộ 26 tệp (Python 2.6.6 & Python 3)
+## Lệnh tra cứu tọa độ, PMIC/AMS, kỹ năng Cadence & đồng bộ OTA từ GitHub (Python 2.6.6 & Python 3)
 
 ```bash
-# 0. Kiểm tra trạng thái kết nối GitHub & đồng bộ trọn bộ 26 tệp chỉ mục/checklist/catalog mới nhất
+# 0. Kiểm tra trạng thái kết nối GitHub & đồng bộ 100 tệp KB vào ~/.cache/razavi-cmos-brain (+ cập nhật nguyên tử 150 tệp SSOT trong library/ khi có quyền ghi; thêm --no-library-update nếu chỉ ghi cache)
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py status
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py --sync
+python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py --sync --no-library-update
 
 # 1. Tra cứu TỌA ĐỘ SÁCH CHÍNH XÁC theo Mục (§), Phương trình (Eq.), Số trang hoặc 20_Index
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py coord "9.2"

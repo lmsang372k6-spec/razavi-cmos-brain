@@ -129,7 +129,7 @@ $$V_{OS,\text{in,eff}} = \left(1 + \frac{2 C_{in}}{C_{AZ}}\right)\left(\frac{V_{
 
 $$\left(\frac{G_{m2}}{G_{m1}}\right) \frac{I_{\text{leak}}(T_{\max})}{C_{AZ} \cdot f_{\text{refresh}}} \le \Delta V_{OS,\text{droop,max}} \implies f_{\text{refresh}} \ge \left(\frac{G_{m2}}{G_{m1}}\right) \frac{I_{\text{leak}}(T_{\max})}{C_{AZ} \cdot \Delta V_{OS,\text{droop,max}}}$$
 
-   *(Ví dụ: Với $I_{\text{leak}}(125^\circ\text{C}) = 10\text{ pA}$, $C_{AZ} = 200\text{ fF}$, $G_{m2}/G_{m1} = 0.1$ và yêu cầu độ trôi $\le 10\ \mu\text{V}$, tần số làm tươi tối thiểu là $f_{\text{refresh}} \ge 0.1 \times \frac{10^{-11}}{2\times 10^{-13} \times 10^{-5}} = 500\text{ Hz}$ — hoàn toàn khớp khuyến nghị vài kilohertz của Razavi tr. 602!).*
+   *(Ví dụ: Với $I_{\text{leak}}(125^\circ\text{C}) = 10\text{ pA}$, $C_{AZ} = 200\text{ fF}$, $G_{m2}/G_{m1} = 0.1$ và yêu cầu độ trôi $\le 10\ \mu\text{V}$, tần số làm tươi tối thiểu là $f_{\text{refresh}} \ge 0.1 \times \frac{10^{-11}}{2\times 10^{-13} \times 10^{-5}} = 500\text{ kHz}$ — cao hơn nhiều mức tối thiểu vài kilohertz ở nhiệt độ phòng của Razavi tr. 602 do dòng rò góc nóng $125^\circ\text{C}$ tăng vọt và ngân sách trôi rất chặt; để giảm $f_{\text{refresh}}$ xuống vài kHz cần tăng $C_{AZ}$ lên cỡ $\text{pF}$ hoặc nới ngưỡng trôi $\Delta V_{OS,\text{droop,max}}$).*
 
 3. **Bảng Đối chiếu Nhanh 4 Kiến trúc Khử Độ lệch Động:**
 
@@ -162,7 +162,7 @@ Trong **Bát giác Thiết kế (`concept-analog-design-octagon`)**, `AZ / CDS` 
 ### 5.1. Đặc thù Thiết kế Đa Tiến trình (`90nm` / `65nm` / `45nm`)
 Ở các tiến trình `90nm`, `65nm` và `45nm` (`tech-nanometer-vdsmin-gmid-sizing`), kỹ thuật `AZ/CDS` càng trở nên bắt buộc vì tần số góc nhiễu $1/f$ vọt lên $1\text{–}5\text{ MHz}$ và hệ số Pelgrom $A_{VTH}$ trên transistor cực ngắn tạo $\sigma(V_{OS})$ tới $10\text{–}25\text{ mV}$:
 1. **Dòng rò cổng & dòng rò dưới ngưỡng tăng vọt:** Với oxit cổng mỏng ($1.2\text{–}1.8\text{ nm}$), tuyệt đối **không dùng tụ cổng MOS làm tụ nhớ $C_1, C_2$** vì dòng rò xuyên hầm cổng (`gate tunneling leakage` $I_G$) sẽ xả sạch điện áp chỉnh không! Bắt buộc dùng tụ kim loại `MOM`/`MIM`, dùng công tắc kênh hơi dài hơn tối thiểu ($L_{\text{sw}} \approx 1.5 L_{\min}$) hoặc linh kiện ngưỡng cao (`HVT` / dày oxit nếu áp cho phép) cho công tắc giữ mẫu $S_3, S_4$ để dập dòng rò dưới ngưỡng ở góc `FF, 125°C`.
-2. **Định cỡ Tụ Nhớ $C_{AZ}$ theo Trần Nhiễu $kT/C$:** Vì nhiễu nhiệt trên tụ nhớ cổng phụ được quy về ngõ vào chính theo hệ số $(G_{m2}/G_{m1})^2 \cdot \frac{2kT}{C_{AZ}}$, với $G_{m2}/G_{m1} = 0.1$, chỉ cần tụ $C_{AZ} = 100\text{ fF}$ đã cho nhiễu đóng góp quy về ngõ vào nhỏ tương đương một tụ $10\text{ pF}$ đặt ở ngõ vào chính ($\approx 0.1 \times 200\ \mu\text{V}_{\text{rms}} = 20\ \mu\text{V}_{\text{rms}}$), tiết kiệm $100\times$ diện tích mặt bằng!
+2. **Định cỡ Tụ Nhớ $C_{AZ}$ theo Trần Nhiễu $kT/C$:** Vì nhiễu nhiệt trên tụ nhớ cổng phụ được quy về ngõ vào chính theo hệ số $(G_{m2}/G_{m1})^2 \cdot \frac{2kT}{C_{AZ}}$, với $G_{m2}/G_{m1} = 0.1$, chỉ cần tụ $C_{AZ} = 100\text{ fF}$ ($\sqrt{2kT/C_{AZ}} \approx 288\ \mu\text{V}_{\text{rms}}$) đã cho nhiễu đóng góp quy về ngõ vào nhỏ tương đương một tụ $10\text{ pF}$ đặt ở ngõ vào chính ($\approx 0.1 \times 288\ \mu\text{V}_{\text{rms}} \approx 28.8\ \mu\text{V}_{\text{rms}}$), tiết kiệm $100\times$ diện tích mặt bằng!
 
 ### 5.2. Quy trình Kiểm chứng Chuyên sâu trong Cadence Spectre / SpectreRF
 1. **Kiểm chứng Độ lệch Dư sau Chỉnh Không bằng `Transient + Monte Carlo`:**

@@ -92,13 +92,13 @@ $$
 3. **Two-Stage Op-Amp (Hình 9.23 & Hình 9.86, Phương trình 9.92–9.95):** Tầng 1 ($M_1\text{–}M_4$, độ lợi $A_{v1} = g_{m1,2}(r_{O1,2} \parallel r_{O3,4})$) ghép nối tiếp Tầng 2 ($M_5\text{–}M_8$):
 
 $$
-\overline{V_{n,in,\text{2stg}}^2} = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{g_{m1,2}^2 g_{m5,6}^2 (r_{O1,2} \parallel r_{O3,4})^2} \cdot g_{m5,6}^2 \right] = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{A_{v1}^2 \cdot g_{m5,6}^2} \cdot g_{m5,6}^2 \right]
+\overline{V_{n,in,\text{2stg}}^2} = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{g_{m1,2}^2 g_{m5,6}^2 (r_{O1,2} \parallel r_{O3,4})^2} \right] = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{A_{v1}^2 \cdot g_{m5,6}^2} \right]
 $$
 
 Viết gọn chính xác theo dòng nhiễu ngắn mạch Tầng 2 chia cho bình phương hỗ dẫn nhân độ lợi Tầng 1 (Phương trình 9.94–9.95):
 
 $$
-\overline{V_{n,in,\text{2stg,th}}^2} = 8 k T \gamma \left( \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} \right) + \frac{8 k T \gamma (g_{m5,6} + g_{m7,8})}{g_{m1,2}^2 (r_{O1,2} \parallel r_{O3,4})^2 g_{m5,6}^2} \cdot g_{m5,6}^2 = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{g_{m1,2}^2 (r_{O1,2} \parallel r_{O3,4})^2} \cdot \frac{1}{1} \right]
+\overline{V_{n,in,\text{2stg,th}}^2} = 8 k T \gamma \left( \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} \right) + \frac{8 k T \gamma (g_{m5,6} + g_{m7,8})}{g_{m1,2}^2 (r_{O1,2} \parallel r_{O3,4})^2 g_{m5,6}^2}
 $$
 
 *(Kiểm chứng thứ nguyên với Phương trình 9.93–9.95 của Razavi: điện áp nhiễu tại nút liên tầng do Tầng 2 quy về cổng Tầng 2 là $\frac{8kT\gamma(g_{m5,6} + g_{m7,8})}{g_{m5,6}^2}$, sau đó chia tiếp cho bình phương độ lợi Tầng 1 là $A_{v1}^2 = g_{m1,2}^2 (r_{O1,2} \parallel r_{O3,4})^2$, cho số hạng cuối cùng cực nhỏ: $\dfrac{8 k T \gamma (g_{m5,6} + g_{m7,8})}{g_{m5,6}^2 \, g_{m1,2}^2 (r_{O1,2} \parallel r_{O3,4})^2}$!)*

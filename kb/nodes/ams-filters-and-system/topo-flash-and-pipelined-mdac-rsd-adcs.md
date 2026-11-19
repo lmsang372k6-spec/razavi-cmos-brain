@@ -214,7 +214,7 @@ e^{-t_{\text{lin}} / \tau_{\text{CL}}} < \frac{1}{2^{N_{\text{rem}} + 1}} \;\imp
 $$
 
    *(Ví dụ $12\text{-bit}$, $f_s = 100\text{ MS/s} \implies T_s/2 = 5\text{ ns}$, $t_{\text{lin}} = 3.2\text{ ns}$, $\beta_{\text{flip}} = 0.45$: cần $(12 \ln 2) = 8.32$ hằng số thời gian $\implies \tau_{\text{CL}} < 385\text{ ps} \implies f_{u,\text{OTA1}} > \mathbf{918\text{ MHz}}$!).*
-3. **Độ khớp Tụ $C_1$ và $C_2$:** Lệch tụ $\Delta C / C$ gây bước nhảy độ dốc gián đoạn $\Delta V_{\text{jump}} = \frac{1}{2}\left(\frac{\Delta C}{C}\right) V_{\text{REF}}$ tại $\pm V_{\text{REF}}/4$; ở $\ge 12\text{–}14\text{ bit}$ cần ghép tâm chung kỹ lưỡng kèm hiệu chuẩn số trọng số bit (`Arcadia-1/ADCToolbox`).
+3. **Độ khớp Tụ $C_1$ và $C_2$:** Lệch tụ $\Delta C / C$ gây bước nhảy gián đoạn $\Delta V_{\text{jump,in}} = \frac{1}{2}\left(\frac{\Delta C}{C}\right) V_{\text{REF}}$ **quy về ngõ vào** (tương ứng bước nhảy $\Delta V_{\text{jump,out}} = \left(\frac{\Delta C}{C}\right) V_{\text{REF}}$ tại ngõ ra $V_{\text{res}}$ do $G = 2$) tại $\pm V_{\text{REF}}/4$; ở $\ge 12\text{–}14\text{ bit}$ cần ghép tâm chung kỹ lưỡng kèm hiệu chuẩn số trọng số bit (`Arcadia-1/ADCToolbox`).
 
 ---
 

@@ -638,8 +638,31 @@ def run_socket_helper(socket_dir=None):
 # Built-in SKILL Command Builders
 # ---------------------------------------------------------------------------
 
+def _validate_lib_cell_pair(lib, cell):
+    """Require both `--lib` and `--cell` together when either is supplied."""
+    lib_clean = lib.strip() if isinstance(lib, TEXT_TYPES) else lib
+    cell_clean = cell.strip() if isinstance(cell, TEXT_TYPES) else cell
+    if bool(lib_clean) != bool(cell_clean):
+        raise ValueError(
+            "Both --lib and --cell must be specified together (got lib=%s, cell=%s)"
+            % (repr(lib), repr(cell))
+        )
+    return (lib_clean if lib_clean else None, cell_clean if cell_clean else None)
+
+
+def _guard_output_outside_library(out_path, flag_name="--out"):
+    """Fail closed before touching any socket if an output path targets SKILL-ANALOG library."""
+    abs_out = os.path.abspath(out_path)
+    if _inside_library(abs_out):
+        raise ValueError(
+            "Refusing to write %s inside SKILL-ANALOG library: %s" % (flag_name, abs_out)
+        )
+    return abs_out
+
+
 def _skill_open_or_active_expr(lib, cell, view, mode, body_with_cv):
     """Build SKILL code that reuses `geGetEditCellView()` when matching, or opens safely in `unwindProtect`."""
+    lib, cell = _validate_lib_cell_pair(lib, cell)
     if not lib and not cell:
         return (
             "let((cv) "
@@ -707,9 +730,11 @@ def cmd_active_cv(socket_dir=None, timeout=30.0):
 
 
 def cmd_dump_json(lib=None, cell=None, view="schematic", out_path=None, socket_dir=None, timeout=60.0):
-    out_arg = _skill_quote(os.path.abspath(out_path)) if out_path else "nil"
+    lib, cell = _validate_lib_cell_pair(lib, cell)
+    abs_out = _guard_output_outside_library(out_path, "--out") if out_path else None
+    out_arg = _skill_quote(abs_out) if abs_out else "nil"
     body = "saDumpSchematicJson(cv nil)"
-    if out_path:
+    if abs_out:
         body = "progn(saDumpSchematicJson(cv %s) saSerializeSchematicJson(cv))" % out_arg
     expr = _skill_open_or_active_expr(lib, cell, view, "r", body)
     resp = send_bridge_request(expr, socket_dir=socket_dir, timeout=timeout)
@@ -719,19 +744,20 @@ def cmd_dump_json(lib=None, cell=None, view="schematic", out_path=None, socket_d
             del resp["result"]
         except Exception:
             pass
-    if out_path and resp.get("ok"):
-        resp["out_path"] = os.path.abspath(out_path)
+    if abs_out and resp.get("ok"):
+        resp["out_path"] = abs_out
     resp["command"] = "dump-json"
     return resp
 
 
 def cmd_set_param(inst_name, param_pairs, order=None, lib=None, cell=None, view="schematic", socket_dir=None, timeout=60.0):
+    lib, cell = _validate_lib_cell_pair(lib, cell)
     skill_pairs = " ".join(
         "(list %s %s)" % (_skill_quote(k), _skill_quote(v)) for k, v in param_pairs
     )
     order_names = order if order else [k for k, _ in param_pairs]
     skill_order = " ".join(_skill_quote(k) for k in order_names)
-    if lib or cell:
+    if lib and cell:
         body = (
             "let((inst cs okFlag savedFlag errsCnt) "
             "inst = dbFindAnyInstByName(cv %s) "
@@ -782,7 +808,9 @@ def cmd_set_param(inst_name, param_pairs, order=None, lib=None, cell=None, view=
 
 
 def cmd_check_save(lib=None, cell=None, view="schematic", out_path=None, socket_dir=None, timeout=60.0):
-    out_arg = _skill_quote(os.path.abspath(out_path)) if out_path else "nil"
+    lib, cell = _validate_lib_cell_pair(lib, cell)
+    abs_out = _guard_output_outside_library(out_path, "--out") if out_path else None
+    out_arg = _skill_quote(abs_out) if abs_out else "nil"
     body = (
         "let((r) "
         "r = saCheckAndSave(cv %s) "
@@ -804,7 +832,8 @@ def cmd_check_save(lib=None, cell=None, view="schematic", out_path=None, socket_
 
 
 def cmd_export_png(out_png, lib=None, cell=None, view="schematic", width=2600, height=1700, socket_dir=None, timeout=60.0):
-    abs_png = os.path.abspath(out_png)
+    lib, cell = _validate_lib_cell_pair(lib, cell)
+    abs_png = _guard_output_outside_library(out_png, "--out")
     if lib and cell:
         expr = "saExportSchematicPng(%s %s %s %s %d %d)" % (
             _skill_quote(lib), _skill_quote(cell), _skill_quote(view or "schematic"),
@@ -897,6 +926,12 @@ def _check_skill_syntax_and_contracts():
         raise AssertionError("ic617_oa_cdf.il missing verified backup error guard")
     if "when(errs == 0" not in o_txt or "saCollectSchErrorMarkersJson" not in o_txt:
         raise AssertionError("ic617_oa_cdf.il missing errs == 0 save gate or error marker collector")
+    for code_num in (92, 34, 10, 13, 9):
+        bare_sym = "= intToChar(%d)" % code_num
+        if bare_sym in o_txt:
+            raise AssertionError("ic617_oa_cdf.il contains bare symbol intToChar(%d) without string conversion" % code_num)
+    if "saCoerceCdfParamValue" not in o_txt or "saReplaceInstPropTyped" not in o_txt:
+        raise AssertionError("ic617_oa_cdf.il missing typed CDF parameter coercion helpers")
 
 
 def run_self_test():
@@ -1082,6 +1117,38 @@ def run_self_test():
             raise AssertionError("Helper did not clean up socket file on exit")
         helper_proc = None
         checks.append("helper_graceful_cleanup_ok")
+
+        # 4. Require both --lib and --cell together (never emit "None") & guard --out outside SKILL-ANALOG library
+        for bad_pair in (("myLib", None), (None, "myCell"), ("   ", "myCell"), ("myLib", "")):
+            got_pair_err = False
+            try:
+                _skill_open_or_active_expr(bad_pair[0], bad_pair[1], "schematic", "r", "cv")
+            except ValueError as verr:
+                if "--lib and --cell" in str(verr):
+                    got_pair_err = True
+            if not got_pair_err:
+                raise AssertionError("Expected ValueError for partial --lib/--cell %r" % (bad_pair,))
+
+        got_png_pair_err = False
+        try:
+            cmd_export_png(os.path.join(tmp_root, "ok.png"), lib="myLib", cell=None)
+        except ValueError as verr:
+            if "--lib and --cell" in str(verr):
+                got_png_pair_err = True
+        if not got_png_pair_err:
+            raise AssertionError("Expected ValueError for cmd_export_png with partial --lib")
+        checks.append("partial_lib_cell_rejected_ok")
+
+        lib_evil_png = os.path.join(_LIBRARY_ROOT, "evil_inside_lib.png")
+        got_lib_guard = False
+        try:
+            cmd_export_png(lib_evil_png)
+        except ValueError as verr:
+            if "SKILL-ANALOG library" in str(verr):
+                got_lib_guard = True
+        if not got_lib_guard:
+            raise AssertionError("Expected ValueError blocking cmd_export_png inside SKILL-ANALOG library")
+        checks.append("export_png_library_write_guard_ok")
 
         return {
             "ok": True,

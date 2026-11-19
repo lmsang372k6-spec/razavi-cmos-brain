@@ -27,10 +27,10 @@
   const DEFAULT_DESIGN_CYCLE = [
     { stage: 1, id: "1_spec_and_kb", title_vi: "1 · Tra cứu KB & Checklist", tool: "kb_lookup.py + checklists" },
     { stage: 2, id: "2_hierarchical_budget", title_vi: "2 · Phân bổ Spec & Giao tiếp", tool: "spec.json + blocks[]" },
-    { stage: 3, id: "3_gmid_physics_sizing", title_vi: "3 · Định cỡ Vật lý gm/ID", tool: "gmid_lut.py (<5ms)" },
+    { stage: 3, id: "3_gmid_lut_sizing", title_vi: "3 · Định cỡ Vật lý gm/ID", tool: "gmid_lut.py (<5ms)" },
     { stage: 4, id: "4_schematic_and_veriloga", title_vi: "4 · Dựng OA & Verilog-A", tool: "ic617_live_bridge.il" },
-    { stage: 5, id: "5_spectre_psf_audit", title_vi: "5 · Kiểm toán OP & STB/PSTB", tool: "cadence_exec + psf_audit.py" },
-    { stage: 6, id: "6_pareto_optimization", title_vi: "6 · Độ nhạy & Tối ưu Pareto", tool: "sizing_opt.py" },
+    { stage: 5, id: "5_op_and_stb_audit", title_vi: "5 · Kiểm toán OP & STB/PSTB", tool: "cadence_exec + psf_audit.py" },
+    { stage: 6, id: "6_sensitivity_pareto_opt", title_vi: "6 · Độ nhạy & Tối ưu Pareto", tool: "sizing_opt.py" },
     { stage: 7, id: "7_pvt_mc_pex_signoff", title_vi: "7 · Nghiệm thu PVT / MC / PEX", tool: "psf_audit + CACE" },
   ];
 
@@ -66,7 +66,7 @@
     graphScope: "all", // all | razavi | pmic | ams | skill
     graphRel: "all",
     graphFocusNodeId: null,
-    coordsTab: "sections", // sections | equations | index
+    coordsTab: "sections", // sections | equations | figures | index
     expandedChapters: new Set([1, 2, 3, 8, 9, 10, 12, 13, 15, 16, 19]),
     skillsTab: "all", // all | playbooks | repos
     skillsCategory: "all",
@@ -76,6 +76,7 @@
     glossaryLimit: 50,
     indexLimit: 80,
     eqLimit: 60,
+    figLimit: 80,
   };
 
   const el = {
@@ -221,6 +222,11 @@
     return m ? m[1].toLowerCase() : "";
   }
 
+  function normalizeFigKey(raw) {
+    const m = String(raw || "").match(/(\d{1,2}\.\d+[a-z]?)/i);
+    return m ? m[1].toLowerCase() : "";
+  }
+
   function pageMatchesRange(pageNum, rangeStr) {
     if (!rangeStr || !Number.isFinite(pageNum)) return false;
     const s = String(rangeStr);
@@ -250,12 +256,20 @@
     }
 
     // 2. Equation query: "Eq. 10.25", "eq 2.10", "(2.10)", "pt 9.17"
-    const eqMatch = q.match(/^(?:eq\.?|equation|pt|phuong\s*trinh)\s*\(?(\d{1,2}\.\d+[a-z]?)\)?$/i) || q.match(/^\((\d{1,2}\.\d+[a-z]?)\)$/i);
+    const eqMatch = q.match(/^(?:eqs?\.?|equations?|pt|phuong\s*trinh)\s*\(?(\d{1,2}\.\d+[a-z]?)\)?$/i) || q.match(/^\((\d{1,2}\.\d+[a-z]?)\)$/i);
     if (eqMatch) {
       return { type: "equation", eq: eqMatch[1].toLowerCase(), raw: q };
     }
 
-    // 3. Section query: "§9.2", "9.2", "9.2.4", "sec 12.3", "muc 13.4"
+    // 3. Figure query: "Fig. 16.43", "Figure 12.34(a)", "Hình 16.43", "hinh 9.82"
+    const figMatch = foldAscii(q).match(/^(?:figs?\.?|figures?|hinh)\s*\(?(\d{1,2}\.\d+)\s*([a-z])?\)?\.?$/i);
+    if (figMatch) {
+      const figBase = figMatch[1].toLowerCase();
+      const sub = (figMatch[2] || "").toLowerCase();
+      return { type: "figure", fig: figBase + sub, figBase, raw: q };
+    }
+
+    // 4. Section query: "§9.2", "9.2", "9.2.4", "sec 12.3", "muc 13.4"
     const secMatch = q.match(/^(?:§|sec\.?|section|muc)\s*(\d{1,2}(?:\.\d+)+)$/i) || q.match(/^(\d{1,2}(?:\.\d+)+)$/);
     if (secMatch) {
       return { type: "section", section: secMatch[1], raw: q };
@@ -350,7 +364,7 @@
 
   function normalizeCoordsPayload(raw) {
     if (!raw || typeof raw !== "object") {
-      return { chapters: [], sections: [], equations: [], index_terms: [] };
+      return { chapters: [], sections: [], equations: [], figures: [], index_terms: [] };
     }
     const chapters = Array.isArray(raw.chapters) ? raw.chapters : [];
     const sections = (Array.isArray(raw.sections) ? raw.sections : []).map((s) => ({
@@ -364,7 +378,7 @@
       key_figures: Array.isArray(s.key_figures) ? s.key_figures : [],
       primary_nodes: Array.isArray(s.primary_nodes) ? s.primary_nodes : Array.isArray(s.nodes) ? s.nodes : [],
       summary_vi: s.summary_vi || s.summary || "",
-      search_key: foldWords(`${s.section_id || ""} ${s.title_en || ""} ${s.title_vi || ""} ${s.summary_vi || ""} ${(s.key_equations || []).join(" ")}`),
+      search_key: foldWords(`${s.section_id || ""} ${s.title_en || ""} ${s.title_vi || ""} ${s.summary_vi || ""} ${(s.key_equations || []).join(" ")} ${(s.key_figures || []).join(" ")}`),
     }));
     const equations = (Array.isArray(raw.equations) ? raw.equations : []).map((e) => {
       const rawId = String(e.eq_id || e.id || e.equation || "");
@@ -386,6 +400,28 @@
         search_key: foldWords(`${rawId} ${e.section || ""} ${e.meaning_vi || ""} ${e.latex || ""}`),
       };
     });
+    const figures = (Array.isArray(raw.figures) ? raw.figures : []).map((f) => {
+      const rawId = String(f.fig_id || f.id || f.label || "");
+      const normNum = normalizeFigKey(f.fig_num || rawId);
+      const mergedNodes = [];
+      for (const cand of [f.node_id, ...(Array.isArray(f.node_ids) ? f.node_ids : []), ...(Array.isArray(f.related_nodes) ? f.related_nodes : [])]) {
+        if (cand && !mergedNodes.includes(cand)) mergedNodes.push(cand);
+      }
+      const caption = String(f.caption || f.caption_en || "");
+      return {
+        fig_id: rawId || (normNum ? `Fig.${normNum}` : ""),
+        fig_num: normNum,
+        label: String(f.label || (normNum ? `Fig. ${normNum}` : rawId)),
+        chapter: Number(f.chapter || (normNum ? normNum.split(".")[0] : 1)),
+        section: String(f.section || ""),
+        book_page: f.book_page ?? f.page ?? "",
+        pdf_page: f.pdf_page ?? "",
+        caption,
+        node_id: f.node_id || "",
+        node_ids: mergedNodes,
+        search_key: foldWords(`${rawId} ${f.label || ""} ${f.section || ""} ${caption}`),
+      };
+    });
     const indexTerms = (Array.isArray(raw.index_terms) ? raw.index_terms : []).map((t) => ({
       term_en: t.term_en || t.en || t.term || "",
       term_vi: t.term_vi || t.vi || "",
@@ -394,7 +430,7 @@
       mapped_nodes: Array.isArray(t.mapped_nodes) ? t.mapped_nodes : Array.isArray(t.nodes) ? t.nodes : [],
       search_key: foldWords(`${t.term_en || ""} ${t.term_vi || ""} ${t.book_pages || ""}`),
     }));
-    return { chapters, sections, equations, index_terms: indexTerms };
+    return { chapters, sections, equations, figures, index_terms: indexTerms };
   }
 
   async function ensureCoordsLoaded() {
@@ -405,10 +441,10 @@
       if (res.ok) {
         state.coords = normalizeCoordsPayload(await res.json());
       } else {
-        state.coords = { chapters: [], sections: [], equations: [], index_terms: [] };
+        state.coords = { chapters: [], sections: [], equations: [], figures: [], index_terms: [] };
       }
     } catch (_err) {
-      state.coords = { chapters: [], sections: [], equations: [], index_terms: [] };
+      state.coords = { chapters: [], sections: [], equations: [], figures: [], index_terms: [] };
     } finally {
       state.coordsLoading = false;
     }
@@ -530,15 +566,17 @@
   // ---------------- Coordinate & Full-Text Search Engine ----------------
   function searchExactCoordinates(rawQuery) {
     const parsed = parseCoordinateQuery(rawQuery);
-    if (parsed.type === "empty") return { parsed, sections: [], equations: [], indexTerms: [], repos: [] };
+    if (parsed.type === "empty") return { parsed, sections: [], equations: [], figures: [], indexTerms: [], repos: [] };
 
-    const coords = state.coords || { sections: [], equations: [], index_terms: [] };
+    const coords = state.coords || { sections: [], equations: [], figures: [], index_terms: [] };
+    const figuresList = coords.figures || [];
     const catalog = state.catalog || { repos: [] };
     const qWords = foldWords(rawQuery);
     const qTokens = qWords ? qWords.split(/\s+/).filter(Boolean) : [];
 
     let hitSections = [];
     let hitEquations = [];
+    let hitFigures = [];
     let hitIndex = [];
     let hitRepos = [];
 
@@ -548,6 +586,14 @@
         (s) => s.section_id === target || s.section_id.startsWith(`${target}.`) || target.startsWith(`${s.section_id}.`)
       );
       hitEquations = coords.equations.filter((e) => e.section === target || e.section.startsWith(`${target}.`));
+      hitFigures = figuresList.filter((f) => f.section === target || f.section.startsWith(`${target}.`));
+      if (hitSections.length === 0 && hitEquations.length === 0) {
+        const targetLow = target.toLowerCase();
+        const eqByBare = coords.equations.filter((e) => e.eq_num === targetLow);
+        const figByBare = figuresList.filter((f) => f.fig_num === targetLow);
+        if (eqByBare.length > 0) hitEquations = eqByBare;
+        if (figByBare.length > 0) hitFigures = figByBare;
+      }
     } else if (parsed.type === "equation") {
       const targetEq = parsed.eq;
       hitEquations = coords.equations.filter((e) => e.eq_num === targetEq || e.eq_num.startsWith(targetEq));
@@ -555,19 +601,39 @@
       hitSections = coords.sections.filter(
         (s) => secSet.has(s.section_id) || (s.key_equations || []).some((ke) => normalizeEqKey(ke) === targetEq)
       );
+    } else if (parsed.type === "figure") {
+      const targetFig = parsed.fig;
+      const baseFig = parsed.figBase || targetFig.replace(/[a-z]$/, "");
+      hitFigures = figuresList.filter(
+        (f) => f.fig_num === targetFig || f.fig_num === baseFig || f.fig_num.replace(/[a-z]$/, "") === baseFig
+      );
+      const secSet = new Set(hitFigures.map((f) => f.section).filter(Boolean));
+      hitSections = coords.sections.filter(
+        (s) =>
+          secSet.has(s.section_id) ||
+          (s.key_figures || []).some((kf) => {
+            const nk = normalizeFigKey(kf);
+            return nk === targetFig || nk === baseFig;
+          })
+      );
     } else if (parsed.type === "page") {
       const p = parsed.page;
       hitSections = coords.sections.filter((s) => pageMatchesRange(p, s.book_pages));
       hitEquations = coords.equations.filter((e) => Number(e.book_page) === p || pageMatchesRange(p, String(e.book_page)));
+      hitFigures = figuresList.filter((f) => Number(f.book_page) === p || pageMatchesRange(p, String(f.book_page)));
       hitIndex = coords.index_terms.filter((t) => pageMatchesRange(p, t.book_pages));
     } else if (parsed.type === "chapter") {
       hitSections = coords.sections.filter((s) => s.chapter === parsed.chapter).slice(0, 6);
+      hitFigures = figuresList.filter((f) => f.chapter === parsed.chapter).slice(0, 6);
     } else if (qTokens.length > 0) {
       hitSections = coords.sections
         .filter((s) => qTokens.every((t) => s.search_key.includes(t)))
         .slice(0, 4);
       hitEquations = coords.equations
         .filter((e) => qTokens.every((t) => e.search_key.includes(t)))
+        .slice(0, 4);
+      hitFigures = figuresList
+        .filter((f) => qTokens.every((t) => f.search_key.includes(t)))
         .slice(0, 4);
       hitIndex = coords.index_terms
         .filter((it) => qTokens.every((t) => it.search_key.includes(t)))
@@ -581,12 +647,13 @@
       parsed,
       sections: hitSections.slice(0, 6),
       equations: hitEquations.slice(0, 6),
+      figures: hitFigures.slice(0, 6),
       indexTerms: hitIndex.slice(0, 6),
       repos: hitRepos.slice(0, 4),
     };
   }
 
-  function scoreNode(node, parsed, qWords, qTokens, coordBoostIds) {
+  function scoreNode(node, parsed, qWords, qTokens, coordBoostIds, coordPrimaryIds) {
     if (parsed.type === "empty") return 1;
 
     if (parsed.type === "chapter") {
@@ -595,7 +662,7 @@
 
     if (parsed.type === "section") {
       const target = parsed.section;
-      let sc = coordBoostIds.has(node.id) ? 140 : 0;
+      let sc = coordPrimaryIds?.has(node.id) ? 155 : coordBoostIds.has(node.id) ? 140 : 0;
       for (const r of node.razavi_refs || []) {
         const sec = String(r.section || "");
         if (sec === target || sec.includes(target)) sc = Math.max(sc, 150);
@@ -608,10 +675,23 @@
 
     if (parsed.type === "equation") {
       const targetEq = parsed.eq;
-      let sc = coordBoostIds.has(node.id) ? 140 : 0;
+      let sc = coordPrimaryIds?.has(node.id) ? 165 : coordBoostIds.has(node.id) ? 140 : 0;
       for (const r of node.razavi_refs || []) {
         for (const eq of r.equations || []) {
           if (normalizeEqKey(eq) === targetEq) sc = Math.max(sc, 160);
+        }
+      }
+      return sc;
+    }
+
+    if (parsed.type === "figure") {
+      const targetFig = parsed.fig;
+      const baseFig = parsed.figBase || targetFig.replace(/[a-z]$/, "");
+      let sc = coordPrimaryIds?.has(node.id) ? 165 : coordBoostIds.has(node.id) ? 145 : 0;
+      for (const r of node.razavi_refs || []) {
+        for (const fg of r.figures || []) {
+          const nk = normalizeFigKey(fg);
+          if (nk === targetFig || nk === baseFig) sc = Math.max(sc, 160);
         }
       }
       return sc;
@@ -660,8 +740,19 @@
   function filterNodes() {
     const coordHits = searchExactCoordinates(state.query);
     const coordBoostIds = new Set();
-    for (const s of coordHits.sections) for (const id of s.primary_nodes) coordBoostIds.add(id);
-    for (const e of coordHits.equations) for (const id of e.node_ids) coordBoostIds.add(id);
+    const coordPrimaryIds = new Set();
+    for (const s of coordHits.sections) {
+      if (coordHits.parsed.type === "section" && s.primary_nodes[0]) coordPrimaryIds.add(s.primary_nodes[0]);
+      for (const id of s.primary_nodes) coordBoostIds.add(id);
+    }
+    for (const e of coordHits.equations) {
+      if (coordHits.parsed.type === "equation" && e.node_ids[0]) coordPrimaryIds.add(e.node_ids[0]);
+      for (const id of e.node_ids) coordBoostIds.add(id);
+    }
+    for (const f of coordHits.figures || []) {
+      if (coordHits.parsed.type === "figure" && f.node_id) coordPrimaryIds.add(f.node_id);
+      for (const id of f.node_ids) coordBoostIds.add(id);
+    }
     for (const it of coordHits.indexTerms) for (const id of it.mapped_nodes) coordBoostIds.add(id);
     for (const rp of coordHits.repos) for (const id of rp.linked_nodes) coordBoostIds.add(id);
 
@@ -675,7 +766,7 @@
       if (!passesKindFilter(node, state.filterKind)) continue;
       if (state.filterStage !== null && !getNodeDesignStages(node).includes(state.filterStage)) continue;
 
-      const sc = scoreNode(node, coordHits.parsed, qWords, qTokens, coordBoostIds);
+      const sc = scoreNode(node, coordHits.parsed, qWords, qTokens, coordBoostIds, coordPrimaryIds);
       if (sc > 0) results.push({ node, score: sc });
     }
 
@@ -737,31 +828,34 @@
   function renderMarkdownToHtml(mdBody) {
     const mathStore = [];
     const codeStore = [];
+    const inlineCodeStore = [];
 
-    let working = mdBody.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (_m, lang, code) => {
+    let working = mdBody.replace(/```([a-zA-Z0-9_+-]*)[ \t]*\r?\n([\s\S]*?)```/g, (_m, lang, code) => {
       const idx = codeStore.length;
       codeStore.push({ lang: lang || "text", code });
       return `\u0000CODEBLOCK_${idx}\u0000`;
     });
 
-    const inlineCodeStore = [];
-    working = working.replace(/`([^`\n]+)`/g, (_m, code) => {
-      const idx = inlineCodeStore.length;
-      inlineCodeStore.push(code);
-      return `\u0000INLINECODE_${idx}\u0000`;
-    });
-
-    working = working.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => {
-      const idx = mathStore.length;
-      mathStore.push({ tex, display: true });
-      return `\u0000MATH_${idx}\u0000`;
-    });
-
-    working = working.replace(/(?<!\\)\$([^\n$]+?)(?<!\\)\$/g, (_m, tex) => {
-      const idx = mathStore.length;
-      mathStore.push({ tex, display: false });
-      return `\u0000MATH_${idx}\u0000`;
-    });
+    // Single left-to-right pass so display math $$...$$, inline code `...`, and inline math $...$
+    // never corrupt backticks inside math ($n^+\text{-drain (`SW`)}$) or $VARS inside inline code (`$ANALOG_ROOT`).
+    working = working.replace(
+      /\$\$([\s\S]+?)\$\$|``([^\r\n]+?)``|`([^`\r\n]+)`|(?<!\\)\$([^\r\n$]+?)(?<!\\)\$/g,
+      (_m, dispTex, dblCode, sglCode, inlTex) => {
+        if (dispTex !== undefined) {
+          const idx = mathStore.length;
+          mathStore.push({ tex: dispTex, display: true });
+          return `\u0000MATH_${idx}\u0000`;
+        }
+        if (dblCode !== undefined || sglCode !== undefined) {
+          const idx = inlineCodeStore.length;
+          inlineCodeStore.push(dblCode !== undefined ? dblCode : sglCode);
+          return `\u0000INLINECODE_${idx}\u0000`;
+        }
+        const idx = mathStore.length;
+        mathStore.push({ tex: inlTex, display: false });
+        return `\u0000MATH_${idx}\u0000`;
+      }
+    );
 
     function formatInline(rawLine) {
       let s = escapeHtml(rawLine);
@@ -796,8 +890,15 @@
       s = s.replace(/\u0000MATH_(\d+)\u0000/g, (_m, idxStr) => {
         const item = mathStore[Number(idxStr)];
         if (!item) return "";
-        const rendered = renderMathToken(item.tex, item.display);
+        const cleanTex = String(item.tex).replace(/\u0000INLINECODE_(\d+)\u0000/g, (_m2, cIdx) => `\`${inlineCodeStore[Number(cIdx)] || ""}\``);
+        const rendered = renderMathToken(cleanTex, item.display);
         return item.display ? `<div class="math-display">${rendered}</div>` : rendered;
+      });
+
+      s = s.replace(/\u0000CODEBLOCK_(\d+)\u0000/g, (_m, idxStr) => {
+        const cb = codeStore[Number(idxStr)];
+        if (!cb) return "";
+        return `<pre data-lang="${escapeHtml(cb.lang)}"><code>${escapeHtml(cb.code.replace(/\r?\n$/, ""))}</code></pre>`;
       });
 
       return s;
@@ -820,7 +921,7 @@
       const cbMatch = trimmed.match(/^\u0000CODEBLOCK_(\d+)\u0000$/);
       if (cbMatch) {
         const cb = codeStore[Number(cbMatch[1])];
-        out.push(`<pre data-lang="${escapeHtml(cb.lang)}"><code>${escapeHtml(cb.code.replace(/\n$/, ""))}</code></pre>`);
+        out.push(`<pre data-lang="${escapeHtml(cb.lang)}"><code>${escapeHtml(cb.code.replace(/\r?\n$/, ""))}</code></pre>`);
         i++;
         continue;
       }
@@ -983,9 +1084,11 @@
   }
 
   function renderCoordHitsStripHtml(coordHits) {
+    const figHits = coordHits.figures || [];
     const totalHits =
       coordHits.sections.length +
       coordHits.equations.length +
+      figHits.length +
       coordHits.indexTerms.length +
       coordHits.repos.length;
     if (!state.query || totalHits === 0) return "";
@@ -1020,6 +1123,21 @@
           <div style="font-size:12.5px;color:var(--ink-secondary)">${escapeHtml(eq.meaning_vi)}</div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:4px">
             ${renderNodePillsHtml(eq.node_ids, 2)}
+          </div>
+        </div>
+      `);
+    }
+
+    for (const fg of figHits.slice(0, 3)) {
+      cards.push(`
+        <div class="coord-hit-card">
+          <div class="card-topline">
+            <span class="badge badge-topology">${escapeHtml(fg.label || fg.fig_id)}</span>
+            <span class="meta">Ch.${fg.chapter}${fg.section ? ` §${escapeHtml(fg.section)}` : ""}${fg.book_page ? ` · p.${escapeHtml(fg.book_page)}` : ""}${fg.pdf_page ? ` (PDF p.${escapeHtml(fg.pdf_page)})` : ""}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--ink-secondary)">${escapeHtml(fg.caption)}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:4px">
+            ${renderNodePillsHtml(fg.node_ids, 3)}
           </div>
         </div>
       `);
@@ -1806,6 +1924,7 @@
       ["requires", "requires"],
       ["governed_by", "governed_by"],
       ["trades_off_with", "trades_off_with"],
+      ["layout_constrained_by", "layout_constrained_by"],
     ];
 
     el.view.innerHTML = `
@@ -1899,14 +2018,16 @@
       el.view.innerHTML = `<div class="status-card"><p class="eyebrow">ĐANG TẢI TỌA ĐỘ 19 CHƯƠNG &amp; 20_INDEX</p><h2>Đang nạp book-coordinates.json…</h2></div>`;
       await ensureCoordsLoaded();
     }
-    const coords = state.coords || { chapters: [], sections: [], equations: [], index_terms: [] };
+    const coords = state.coords || { chapters: [], sections: [], equations: [], figures: [], index_terms: [] };
+    const figuresAll = coords.figures || [];
     const parsed = parseCoordinateQuery(state.query);
     const qWords = foldWords(state.query);
     const qTokens = qWords ? qWords.split(/\s+/).filter(Boolean) : [];
 
-    // Auto-switch sub-tab if user typed Eq. or Section
+    // Auto-switch sub-tab if user typed Eq., Fig., or Section
     let activeTab = state.coordsTab;
     if (parsed.type === "equation") activeTab = "equations";
+    else if (parsed.type === "figure") activeTab = "figures";
     else if (parsed.type === "section") activeTab = "sections";
 
     let bodyHtml = "";
@@ -2049,6 +2170,49 @@
             : ""
         }
       `;
+    } else if (activeTab === "figures") {
+      const figMatches = figuresAll.filter((fg) => {
+        if (state.filterChapter !== null && fg.chapter !== state.filterChapter) return false;
+        if (parsed.type === "figure") {
+          const baseFig = parsed.figBase || parsed.fig.replace(/[a-z]$/, "");
+          return fg.fig_num === parsed.fig || fg.fig_num === baseFig || fg.fig_num.replace(/[a-z]$/, "") === baseFig;
+        }
+        if (parsed.type === "section") return fg.section === parsed.section || fg.section.startsWith(`${parsed.section}.`);
+        if (parsed.type === "page") return Number(fg.book_page) === parsed.page || pageMatchesRange(parsed.page, String(fg.book_page));
+        if (parsed.type === "chapter") return fg.chapter === parsed.chapter;
+        if (qTokens.length > 0) return qTokens.every((t) => fg.search_key.includes(t));
+        return true;
+      });
+      const slice = figMatches.slice(0, state.figLimit);
+
+      bodyHtml = `
+        <div class="section-bar">
+          <h2>Hình vẽ Razavi 2nd Ed. (${figMatches.length} hình vẽ)</h2>
+          <span class="meta">Hiển thị ${slice.length} hình vẽ</span>
+        </div>
+        <div class="eq-grid">
+          ${slice
+            .map(
+              (fg) => `
+            <article class="eq-card">
+              <div class="card-topline">
+                <span class="badge badge-topology">${escapeHtml(fg.label || fg.fig_id)}</span>
+                <span class="badge badge-neutral">Ch.${fg.chapter}${fg.section ? ` §${escapeHtml(fg.section)}` : ""}${fg.book_page ? ` · p.${escapeHtml(fg.book_page)}` : ""}${fg.pdf_page ? ` (PDF p.${escapeHtml(fg.pdf_page)})` : ""}</span>
+              </div>
+              <p style="margin:4px 0 0;font-size:13.5px;color:var(--ink-secondary)">${escapeHtml(fg.caption)}</p>
+              <div style="margin-top:auto;padding-top:6px;display:flex;flex-wrap:wrap;gap:6px">
+                ${renderNodePillsHtml(fg.node_ids, 3)}
+              </div>
+            </article>`
+            )
+            .join("")}
+        </div>
+        ${
+          figMatches.length > slice.length
+            ? `<div style="margin-top:18px;text-align:center"><button type="button" class="btn-subtle" id="btn-more-fig">Hiện thêm 80 hình vẽ (${figMatches.length - slice.length} còn lại)</button></div>`
+            : ""
+        }
+      `;
     } else {
       const idxMatches = coords.index_terms.filter((it) => {
         if (state.filterChapter !== null && !(it.chapters || []).includes(state.filterChapter)) return false;
@@ -2091,13 +2255,14 @@
     el.view.innerHTML = `
       <section class="hero-header" style="margin-bottom:18px;padding-bottom:16px">
         <p class="eyebrow">EXACT RAZAVI 2ND EDITION BOOK COORDINATES · CH.01–CH.19 + 20_INDEX</p>
-        <h1>Mục lục Tọa độ Sách 19 Chương, Phương trình &amp; Chỉ mục Trang</h1>
-        <p>Đối chiếu 1-1 từng mục <code>§1.1</code>..<code>§19.x</code>, số trang sách gốc, số trang tệp PDF, phương trình cột mốc và chỉ mục <code>20_Index.pdf</code> thẳng tới thẻ tri thức 6 khối tương ứng.</p>
+        <h1>Mục lục Tọa độ Sách 19 Chương, Phương trình, Hình vẽ &amp; Chỉ mục Trang</h1>
+        <p>Đối chiếu 1-1 từng mục <code>§1.1</code>..<code>§19.x</code>, số trang sách gốc, số trang tệp PDF, phương trình cột mốc, hình vẽ Razavi và chỉ mục <code>20_Index.pdf</code> thẳng tới thẻ tri thức 6 khối tương ứng.</p>
       </section>
 
       <div class="sub-tabs" role="tablist">
         <button type="button" class="sub-tab ${activeTab === "sections" ? "is-active" : ""}" data-ctab="sections">Cây Mục lục 19 Chương (${coords.sections.length})</button>
         <button type="button" class="sub-tab ${activeTab === "equations" ? "is-active" : ""}" data-ctab="equations">Phương trình Cột mốc (${coords.equations.length})</button>
+        <button type="button" class="sub-tab ${activeTab === "figures" ? "is-active" : ""}" data-ctab="figures">Hình vẽ Razavi (${figuresAll.length})</button>
         <button type="button" class="sub-tab ${activeTab === "index" ? "is-active" : ""}" data-ctab="index">Chỉ mục 20_Index (${coords.index_terms.length})</button>
       </div>
 
@@ -2128,6 +2293,10 @@
     });
     document.getElementById("btn-more-eq")?.addEventListener("click", () => {
       state.eqLimit += 60;
+      renderBookCoordsView();
+    });
+    document.getElementById("btn-more-fig")?.addEventListener("click", () => {
+      state.figLimit += 80;
       renderBookCoordsView();
     });
     document.getElementById("btn-more-idx")?.addEventListener("click", () => {
@@ -2423,6 +2592,7 @@
                 <span><i class="legend-dot" style="background:#346538"></i>fixes</span>
                 <span><i class="legend-dot" style="background:#956400"></i>compensated_by</span>
                 <span><i class="legend-dot" style="background:#5b3b8c"></i>requires</span>
+                <span><i class="legend-dot" style="background:#0f766e"></i>layout_constrained_by</span>
               </div>
             </div>
           </section>
@@ -2520,7 +2690,7 @@
     });
 
     document.getElementById("btn-copy-cli")?.addEventListener("click", () => {
-      const cmd = `python /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py ${node.id}`;
+      const cmd = `python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py ${node.id}`;
       navigator.clipboard?.writeText(cmd);
       showToast("Đã chép lệnh kb_fetch.py cho Codex CLI!");
     });
@@ -2742,7 +2912,7 @@
             <div class="glossary-top">
               <div>
                 <span class="badge badge-neutral">${escapeHtml(term.id)}</span>
-                ${term.curated_extension ? `<span class="badge badge-technique">Ch.13–19 Mở rộng</span>` : ""}
+                ${term.curated_extension ? `<span class="badge badge-technique">Mở rộng CLB / PMIC / AMS</span>` : ""}
                 <strong style="font-size:16.5px;margin-left:6px">${escapeHtml(term.vi)}</strong>
                 <div style="font-size:13px;color:var(--ink-muted);margin-top:2px">${escapeHtml(term.en)}</div>
               </div>
@@ -2794,6 +2964,7 @@
     el.clearSearch.hidden = !q;
     state.glossaryLimit = 50;
     state.eqLimit = 60;
+    state.figLimit = 80;
     state.indexLimit = 80;
     if (state.mode === "detail" && q) {
       state.mode = "nodes";

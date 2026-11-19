@@ -75,11 +75,11 @@ procedure(saTimestampCompact()
 procedure(saJsonEscapeString(val)
   let((str out i n ch bs dq lf cr tab)
     str = if(stringp(val) val sprintf(nil "%L" val))
-    bs = intToChar(92)
-    dq = intToChar(34)
-    lf = intToChar(10)
-    cr = intToChar(13)
-    tab = intToChar(9)
+    bs = buildString(list(intToChar(92)))
+    dq = buildString(list(intToChar(34)))
+    lf = buildString(list(intToChar(10)))
+    cr = buildString(list(intToChar(13)))
+    tab = buildString(list(intToChar(9)))
     out = ""
     n = strlen(str)
     for(i 1 n
@@ -187,8 +187,84 @@ procedure(saValidateCdfParamNames(inst cdfData propPairs)
   )
 )
 
+procedure(saCdfParamDbPropType(paramType)
+  let((pt)
+    pt = if(stringp(paramType) paramType "string")
+    cond(
+      (pt == "int" "int")
+      (pt == "float" "float")
+      (pt == "boolean" "boolean")
+      (t "string")
+    )
+  )
+)
+
+procedure(saCoerceCdfParamValue(paramType val)
+  let((pt lv parsed)
+    pt = if(stringp(paramType) paramType "string")
+    cond(
+      (pt == "int"
+        cond(
+          (fixp(val) val)
+          (floatp(val) round(val))
+          (stringp(val) atoi(val))
+          (t atoi(sprintf(nil "%L" val)))
+        )
+      )
+      (pt == "float"
+        cond(
+          (floatp(val) val)
+          (fixp(val) float(val))
+          (stringp(val)
+            parsed = if(isCallable('cdfParseFloatString) errset(cdfParseFloatString(val) nil) nil)
+            parsed = if(parsed car(parsed) nil)
+            if(numberp(parsed) float(parsed) atof(val))
+          )
+          (t atof(sprintf(nil "%L" val)))
+        )
+      )
+      (pt == "boolean"
+        cond(
+          (val == nil nil)
+          (val == t t)
+          (fixp(val) val != 0)
+          (floatp(val) val != 0.0)
+          (stringp(val)
+            lv = lowerCase(val)
+            !(lv == "" || lv == "nil" || lv == "false" || lv == "0" || lv == "no" || lv == "off")
+          )
+          (t t)
+        )
+      )
+      ((pt == "cyclic" || pt == "radio" || pt == "string")
+        cond(
+          (stringp(val) val)
+          (symbolp(val) symbolToString(val))
+          (t sprintf(nil "%L" val))
+        )
+      )
+      (t
+        if(stringp(val) val sprintf(nil "%L" val))
+      )
+    )
+  )
+)
+
+procedure(saReplaceInstPropTyped(inst propName paramType rawVal)
+  let((dbType typedVal existing)
+    dbType = saCdfParamDbPropType(paramType)
+    typedVal = saCoerceCdfParamValue(paramType rawVal)
+    existing = dbGetPropByName(inst propName)
+    when(existing && existing~>valueType && existing~>valueType != dbType
+      errset(dbDeletePropByName(inst propName) nil)
+    )
+    dbReplaceProp(inst propName dbType typedVal)
+    typedVal
+  )
+)
+
 procedure(saApplyInstCdfCallbacks(inst propPairs @optional callbackOrder derivedProps)
-  let((cdfData cdfgData cdfgForm param val strVal)
+  let((cdfData cdfgData cdfgForm param pname ptype val syncNames)
     unless(derivedProps
       derivedProps = list(
         "l" "w" "fw" "fingers" "nf" "m" "simM" "simW" "ad" "as" "pd" "ps"
@@ -202,24 +278,22 @@ procedure(saApplyInstCdfCallbacks(inst propPairs @optional callbackOrder derived
     saValidateCdfParamNames(inst cdfData propPairs)
 
     foreach(pair propPairs
+      pname = car(pair)
       val = cadr(pair)
-      strVal = if(stringp(val) val sprintf(nil "%L" val))
-      dbReplaceProp(inst car(pair) "string" strVal)
+      param = if(cdfData cdfFindParamByName(cdfData pname) nil)
+      ptype = if(param && stringp(param~>paramType) param~>paramType "string")
+      saReplaceInstPropTyped(inst pname ptype val)
     )
 
     cdfData = cdfGetInstCDF(inst)
     when(cdfData
       foreach(pair propPairs
-        param = cdfFindParamByName(cdfData car(pair))
+        pname = car(pair)
+        param = cdfFindParamByName(cdfData pname)
         val = cadr(pair)
         when(param
-          if(param~>paramType == "string" then
-            param~>value = if(stringp(val) val sprintf(nil "%L" val))
-          else
-            when(stringp(val) && param~>paramType == "int"
-              param~>value = atoi(val)
-            )
-          )
+          ptype = if(stringp(param~>paramType) param~>paramType "string")
+          param~>value = saCoerceCdfParamValue(ptype val)
         )
       )
       cdfgData = cdfData
@@ -233,11 +307,20 @@ procedure(saApplyInstCdfCallbacks(inst propPairs @optional callbackOrder derived
           evalstring(param~>callback)
         )
       )
-      foreach(name derivedProps
+      syncNames = copy(derivedProps)
+      foreach(pair propPairs
+        pname = car(pair)
+        unless(member(pname syncNames)
+          syncNames = append1(syncNames pname)
+        )
+      )
+      foreach(name syncNames
         param = cdfFindParamByName(cdfData name)
-        when(param && param~>value != nil
-          val = param~>value
-          dbReplaceProp(inst name "string" if(stringp(val) val sprintf(nil "%L" val)))
+        when(param
+          ptype = if(stringp(param~>paramType) param~>paramType "string")
+          when(ptype == "boolean" || param~>value != nil
+            saReplaceInstPropTyped(inst name ptype param~>value)
+          )
         )
       )
     )
@@ -250,7 +333,7 @@ procedure(saApplyInstCdfCallbacks(inst propPairs @optional callbackOrder derived
 
 ;;; Backward-compatible alias requested by SKILL-ANALOG adapters & prompts
 procedure(saTriggerInstanceCdfCallbacks(inst @optional propPairs callbackOrder derivedProps)
-  let((cdfData pairs)
+  let((cdfData pairs ptype)
     if(propPairs then
       saApplyInstCdfCallbacks(inst propPairs callbackOrder derivedProps)
     else
@@ -258,8 +341,9 @@ procedure(saTriggerInstanceCdfCallbacks(inst @optional propPairs callbackOrder d
       pairs = nil
       when(cdfData && cdfData~>parameters
         foreach(p cdfData~>parameters
-          when(p~>callback && p~>callback != "" && p~>value != nil
-            pairs = append1(pairs list(p~>name if(stringp(p~>value) p~>value sprintf(nil "%L" p~>value))))
+          ptype = if(stringp(p~>paramType) p~>paramType "string")
+          when(p~>callback && p~>callback != "" && (ptype == "boolean" || p~>value != nil)
+            pairs = append1(pairs list(p~>name p~>value))
           )
         )
       )

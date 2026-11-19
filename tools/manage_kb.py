@@ -223,21 +223,39 @@ def cmd_new_checklist(args):
     payload = {
         "checklist_id": cid,
         "title_vi": args.title_vi,
-        "title_en": args.title_en,
+        "applies_to": [],
         "process_agnostic": True,
-        "applies_to": [cid],
-        "razavi_chapters": [args.chapter],
         "checks": [
             {
                 "id": f"CHK-{prefix}-01",
+                "name": "Core structural invariant",
                 "severity": "error",
                 "method": "structural",
-                "name": "Core structural invariant",
                 "invariant": "Define exact process-agnostic branch/headroom/loop invariant here",
                 "why_vi": "Giải thích cơ chế vật lý và hậu quả nếu vi phạm điều kiện bất biến.",
-                "fix_vi": "Cách khắc phục cấu trúc hoặc định cỡ linh kiện.",
-                "spectre_verify": "Quy trình kiểm chứng cụ thể trên Cadence Spectre 15.1 (`dc`, `ac`, `stb`, `pss`/`pstb`, `tran`).",
-            }
+                "cadence_check": "Quy trình kiểm chứng cụ thể trên Cadence Spectre 15.1 (`dc`, `ac`, `stb`, `pss`/`pstb`, `tran`).",
+                "related_nodes": [],
+            },
+            {
+                "id": f"CHK-{prefix}-02",
+                "name": "Operating-point saturation & headroom margin",
+                "severity": "error",
+                "method": "op-audit",
+                "invariant": "Every active transistor operates in saturation (region == 2) with V_DS - V_DSAT >= 50 mV across PVT",
+                "why_vi": "Transistor rơi vào vùng triode hoặc cắt dòng ở góc PVT biên làm sụp độ lợi vòng và méo tín hiệu.",
+                "cadence_check": "Chạy `dcOp` qua mọi góc PVT và kiểm toán bằng `psf_audit.py op-audit`.",
+                "related_nodes": [],
+            },
+            {
+                "id": f"CHK-{prefix}-03",
+                "name": "Stability & mismatch Monte Carlo verification",
+                "severity": "warn",
+                "method": "montecarlo",
+                "invariant": "Closed-loop PM >= 60 deg, GM >= 10 dB, and 3-sigma mismatch yield meets spec",
+                "why_vi": "Đảm bảo ổn định pha không bị vọt lố và chịu được sai lệch Pelgrom trên silicon.",
+                "cadence_check": "Chạy `stb`/`pstb` đa góc và Monte Carlo `mismatch` (200 runs).",
+                "related_nodes": [],
+            },
         ],
     }
     with open(dest, "w", encoding="utf-8", newline="\n") as f:
