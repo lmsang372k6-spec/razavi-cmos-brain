@@ -1,10 +1,10 @@
-# Razavi CMOS Knowledge Brain & SKILL-ANALOG Runtime (`2026.11.18.6` · v4.0 Unified SSOT + 60s-TTL OTA)
+# Razavi CMOS Knowledge Brain & SKILL-ANALOG Runtime (`2026.11.18.7` · v4.0 Unified SSOT + 60s-TTL OTA)
 
 - **Kho lưu trữ GitHub SSOT chính thức:** https://github.com/lmsang372k6-spec/razavi-cmos-brain
 - **Bản đồ Tọa độ Tri thức Tương tác & Static API (GitHub Pages):** https://lmsang372k6-spec.github.io/razavi-cmos-brain/
 - **Endpoint Raw tức thì cho Codex / Antigravity / RHEL 6.5 OTA:** https://raw.githubusercontent.com/lmsang372k6-spec/razavi-cmos-brain/main
 
-**Nguồn Chân lý Duy nhất (Unified Single-Source-of-Truth v4.0)** hợp nhất trọn vẹn **Bộ não Tri thức Toàn Chip CMOS, PMIC & AMS** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), **72 sơ đồ nguyên lý vector SVG offline**, **482 cạnh đồ thị có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách đầy đủ (`293` mục, `1.475` phương trình Razavi, `423` mục `20_Index`)**, **52 kho GitHub đã kiểm định**, **2.280 thuật ngữ chuẩn CLB (`T001–T2280`)**, cùng **trọn bộ Runtime Engine `SKILL-ANALOG` (`runtime/`)** tương thích kép Python 2.6.6 (RHEL 6.5) & Python 3.x!
+**Nguồn Chân lý Duy nhất (Unified Single-Source-of-Truth v4.0)** hợp nhất trọn vẹn **Bộ não Tri thức Toàn Chip CMOS, PMIC & AMS** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), **72 sơ đồ nguyên lý vector SVG offline**, **482 cạnh đồ thị có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách đầy đủ (`311` mục, `1.504` phương trình & `1.163` hình vẽ Razavi, `423` mục `20_Index`)**, **52 kho GitHub đã kiểm định**, **2.280 thuật ngữ chuẩn CLB (`T001–T2280`)**, cùng **trọn bộ Runtime Engine `SKILL-ANALOG` (`runtime/`)** tương thích kép Python 2.6.6 (RHEL 6.5) & Python 3.x!
 
 Kiến trúc đa tác tử đồng bộ tức thì không cần remount `.iso`:
 - **Windows (`Codex Desktop` + `Antigravity Desktop`):** Kết nối trực tiếp `0 ms` qua NTFS Directory Junctions (`setup_windows_agents.py --install`), tra cứu NVMe `< 20 ms`, biên soạn & xuất bản 1 lệnh (`manage_kb.py publish`).
@@ -48,11 +48,11 @@ Khi xuất bản qua `.github/workflows/deploy.yml`, thư mục `_site/` phục 
 ```text
 razavi-cmos-brain/
 ├── kb/
-│   ├── manifest.json                     # Phiên bản 2026.11.18.6, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
+│   ├── manifest.json                     # Phiên bản 2026.11.18.7, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
 │   ├── router-index.json                 # Chỉ mục định tuyến tức thì (162 Nodes + 22-col coord_2d + design_cycle + Symptoms)
 │   ├── nodes-bundle.json.gz              # Gói nén tất định 162 thẻ phục vụ tra cứu offline < 15 ms
 │   ├── coordinates/
-│   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 293 mục, 1.475 phương trình & 423 mục 20_Index
+│   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 311 mục, 1.504 phương trình, 1.163 hình & 423 mục 20_Index
 │   ├── github-skills/
 │   │   └── catalog.json                  # Danh mục 52 kho GitHub Analog/PMIC/AMS/EDA đã kiểm định giấy phép & IC617
 │   ├── graph/
@@ -81,7 +81,7 @@ razavi-cmos-brain/
 │   ├── build_index.py                    # Trình biên dịch 10 miền (.build.lock), nodes-bundle & kb/runtime manifests
 │   └── manage_kb.py                      # CLI 1 lệnh: new-card, add-edge, rebuild & publish trực tiếp lên GitHub OTA
 ├── validators/
-│   └── validate_brain.py                 # Kiểm định 100% 162 thẻ, 1.475 PT, 72 SVG, 21 checklist, Python 2.6 AST & SHA-256
+│   └── validate_brain.py                 # Kiểm định 100% 162 thẻ, 1.504 PT, 1.163 hình, 72 SVG, 21 checklist, Python 2.6 AST & SHA-256
 ├── HUONG-DAN-CAP-NHAT.md                 # Quy trình 3 bước mở rộng thẻ/kỹ năng mới & đồng bộ sang ổ F:
 └── .github/workflows/deploy.yml          # Kiểm định tự động & triển khai GitHub Pages
 ```

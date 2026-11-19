@@ -5,25 +5,25 @@
   "domain": "ams-filters-and-system",
   "title_vi": "Kiến trúc Bộ Điều chế Delta-Sigma (ΔΣ ADC): Định dạng Nhiễu Schreier, Cấu trúc CIFB vs CIFF, Tụ Chuyển mạch (SC) vs Thời gian Liên tục (CT), Bù Trễ Vòng Dư ELD & Xoay vòng DWA",
   "title_en": "Oversampling Delta-Sigma (ΔΣ) Modulator Architectures: Schreier NTF Synthesis, CIFB vs CIFF, Switched-Capacitor vs Continuous-Time, ELD Compensation, and DWA",
-  "summary": "Toàn tập thiết kế bộ chuyển đổi quá lấy mẫu định dạng nhiễu ΔΣ từ bậc 1 đến bậc cao theo phương pháp luận Richard Schreier: dẫn xuất độ lợi SQNR lý thuyết theo OSR và bậc L, quy tắc ổn định Lee ||H_inf|| < 1.5, đối chiếu giảm biên độ dao động nội của CIFF so với CIFB, phân tích sâu đối ngẫu SC-ΔΣ vs CT-ΔΣ (tự khử chồng phổ nội tại đối đầu nhạy jitter xung nhịp và nhánh phản hồi trực tiếp k_0 bù trễ vòng dư ELD), thuật toán trung bình trọng số dữ liệu DWA định dạng bậc 1 sai lệch DAC đa bit và bộ lọc rút mẫu số Sinc^(L+1).",
+  "summary": "Toàn tập thiết kế bộ chuyển đổi quá lấy mẫu định dạng nhiễu ΔΣ từ bậc 1 đến bậc cao theo phương pháp luận Richard Schreier: dẫn xuất độ lợi SQNR lý thuyết theo OSR và bậc L, quy tắc kinh nghiệm Lee ||NTF||_inf < 1.5 cho vòng 1-bit (kèm kiểm chứng biên độ ổn định cực đại MSA bằng quét quá độ), đối chiếu giảm biên độ dao động nội của CIFF so với CIFB, phân tích sâu đối ngẫu SC-ΔΣ vs CT-ΔΣ (tự khử chồng phổ nội tại đối đầu nhạy jitter xung nhịp NRZ DAC và biến đổi bất biến xung IIT giải đồng thời L+1 hệ số kèm nhánh trực tiếp k_0 bù trễ vòng dư ELD), thuật toán trung bình trọng số dữ liệu DWA định dạng bậc 1 sai lệch DAC đa bit và bộ lọc rút mẫu số Sinc^(L+1).",
   "diagram": "../../diagrams/deltasigma-ciff-modulator.svg",
   "razavi_refs": [
     {
       "chapter": 7,
       "section": "7.8",
-      "pages": "238-241",
+      "pages": "264",
       "equations": ["7.146"]
     },
     {
       "chapter": 10,
       "section": "10.8",
-      "pages": "451-456",
+      "pages": "439-455",
       "equations": []
     },
     {
       "chapter": 13,
       "section": "13.3-13.5",
-      "pages": "555-571",
+      "pages": "555-572",
       "equations": ["13.45", "13.46", "13.48"]
     },
     {
@@ -137,18 +137,20 @@ $$
 
    - **Đọc nhanh tốc độ tăng độ phân giải theo từng Octave (`nhân đôi OSR`):**
      * Quá lấy mẫu không định dạng nhiễu ($L = 0$): chỉ tăng **$+3\text{ dB/octave}$** ($+0.5\text{ bit}$ mỗi lần nhân đôi $f_s$).
-     * Bậc $L = 1$: tăng **$+9\text{ dB/octave}$** ($+1.5\text{ bit/oct}$).
-     * Bậc $L = 2$: tăng **$+15\text{ dB/octave}$** ($+2.5\text{ bit/oct}$; tại $\text{OSR} = 64, N_q = 1 \implies \text{SQNR}_{\text{ideal}} \approx 7.78 - 5.17 + 50 \times 1.806 = \mathbf{92.9\text{ dB}}$ trước khi trừ giảm tải ổn định!).
-     * Bậc $L = 3$: tăng **$+21\text{ dB/octave}$** ($+3.5\text{ bit/oct}$).
-   - **Tối ưu hóa điểm không NTF (`Optimized Resonator Zeros`, `opt=1` trong Schreier `python-deltasigma`):** Thay vì gom toàn bộ $L$ điểm không của $\text{NTF}(z)$ nằm trùng tại DC ($z = 1$), chèn một nhánh hồi tiếp cục bộ $g_1$ tạo cặp điểm không phức liên hợp trên đường tròn đơn vị ngay tại $f_z = \frac{f_B}{\sqrt{3}}$ (cho $L = 2$) hoặc $\sqrt{3/5}\,f_B$ (cho $L = 3$) giúp khoét sâu đáy nhiễu đều khắp dải thông, tặng thêm **miễn phí $+3.5\text{ dB}$ ($L=2$), $+8.0\text{ dB}$ ($L=3$) và $+13\text{ dB}$ ($L=4$)**!
+     * Bậc $L = 1$: tăng **$+9\text{ dB/octave}$** ($+1.5\text{ bit/oct}$; $10\log_{10}(\pi^2 / 3) = 5.17\text{ dB}$).
+     * Bậc $L = 2$: tăng **$+15\text{ dB/octave}$** ($+2.5\text{ bit/oct}$; với $10\log_{10}(\pi^4 / 5) = 12.90\text{ dB}$, tại $\text{OSR} = 64, N_q = 1 \implies \text{SQNR}_{\max} = 7.78 - 12.90 + 50\log_{10}(64) = 7.78 - 12.90 + 90.31 = \mathbf{85.19\text{ dB}}$ lý thuyết toàn thang trước khi giảm biên độ ổn định `MSA`!).
+     * Bậc $L = 3$: tăng **$+21\text{ dB/octave}$** ($+3.5\text{ bit/oct}$; $10\log_{10}(\pi^6 / 7) = 21.38\text{ dB}$).
+   - **Tối ưu hóa điểm không NTF (`Optimized Resonator Zeros`, `opt=1` trong Schreier `python-deltasigma`):** Thay vì gom toàn bộ $L$ điểm không của $\text{NTF}(z)$ nằm trùng tại DC ($z = 1$), chèn một nhánh hồi tiếp cục bộ $g_1$ tạo cặp điểm không phức liên hợp trên đường tròn đơn vị ngay tại $f_z = \frac{f_B}{\sqrt{3}}$ (cho $L = 2$) hoặc $\sqrt{3/5}\,f_B$ (cho $L = 3$) giúp khoét sâu đáy nhiễu đều khắp dải thông, tặng thêm **miễn phí $+3.5\text{ dB}$ ($L=2$), $+8.0\text{ dB}$ ($L=3$) và $+12.8\text{ dB}$ ($L=4$)**!
 
-2. **Giới hạn Quá tải Bộ lượng tử & Quy tắc Bán thực nghiệm Lee (`Lee's Rule`, $\|H_\infty\| < 1.5$):**
-   Hàm vi phân thuần túy $(1 - z^{-1})^L$ có độ lợi cực đại tại $f = f_s / 2$ ($z = -1$) bằng $\|\text{NTF}\|_\infty = 2^L$ ($= 4$ với $L=2$, $= 8$ với $L=3$!). Trong bộ điều chế $1\text{-bit}$ bậc $L \ge 3$, độ lợi ngoài dải $= 8$ phóng đại sai số lượng tử quay ngược lại làm tràn ngõ vào bộ so sánh, giảm độ lợi hiệu dụng $k_q$ của bộ lượng tử 1-bit và đẩy các cực vòng kín vọt ra ngoài đường tròn đơn vị (`tech-nyquist-stability-criterion`) gây dao động tự kích biên độ lớn không thể phục hồi!
-   - **Quy tắc Thiết kế Schreier / Lee:** Để vòng $\Delta\Sigma$ **1-bit** bậc $L \ge 2$ ổn định bền vững với biên độ vào cực đại ổn định (`Maximum Stable Amplitude — MSA`) đạt $0.65\text{–}0.75\,V_{\text{REF}}$ ($\sim -3\text{ dBFS}$), bắt buộc đặt thêm đa thức mẫu số Butterworth/Chebyshev $D(z)$ vào $\text{NTF}(z) = \frac{(z - 1)^L}{D(z)}$ sao cho chuẩn vô cùng thỏa mãn:
+2. **Giới hạn Quá tải Bộ lượng tử & Quy tắc Kinh nghiệm Lee (`Lee's Rule`, $\|\text{NTF}\|_\infty < 1.5$):**
+   Hàm vi phân thuần túy $(1 - z^{-1})^L$ có độ lợi cực đại tại $f = f_s / 2$ ($z = -1$) bằng $\|\text{NTF}\|_\infty = 2^L$ ($= 4$ với $L=2$, $= 8$ với $L=3$!). Trong bộ điều chế $1\text{-bit}$ bậc $L \ge 3$, độ lợi ngoài dải $= 8$ phóng đại sai số lượng tử quay ngược lại làm tràn ngõ vào bộ so sánh, giảm độ lợi hiệu dụng tuyến tính hóa $k_q$ của bộ lượng tử 1-bit và đẩy các cực hiệu dụng vọt ra ngoài đường tròn đơn vị (`tech-nyquist-stability-criterion`) gây dao động tự kích biên độ lớn không thể phục hồi!
+   - **Quy tắc Kinh nghiệm Schreier / Lee (`Empirical Rule-of-Thumb`):** Trong tổng hợp vòng $\Delta\Sigma$ **1-bit** bậc $L \ge 2$, người thiết kế đặt đa thức mẫu số Butterworth/Chebyshev $D(z)$ vào $\text{NTF}(z) = \frac{(z - 1)^L}{D(z)}$ sao cho chuẩn vô cùng thỏa mãn hướng dẫn kinh nghiệm:
 
 $$
-\|H_\infty\| \triangleq \max_{\omega \in [0, \pi]} \left|\text{NTF}\!\left(e^{j\omega}\right)\right| < 1.5 \quad \text{(cho 1-bit quantizer; mở rộng lên } 2.5\text{–}3.5 \text{ khi dùng } B \ge 3\text{-bit quantizer!)}
+\|\text{NTF}\|_\infty \triangleq \max_{\omega \in [0, \pi]} \left|\text{NTF}\!\left(e^{j\omega}\right)\right| < 1.5 \quad \text{(hướng dẫn kinh nghiệm cho 1-bit; mở rộng lên } 2.5\text{–}3.5 \text{ khi dùng } N_q \ge 3\text{-bit!)}
 $$
+
+   - **Lưu ý Toán học Bắt buộc:** $\|\text{NTF}\|_\infty < 1.5$ **CHỈ là quy tắc kinh nghiệm thực hành (`empirical design heuristic`), KHÔNG PHẢI điều kiện đủ toán học đảm bảo ổn định tuyệt đối và cũng KHÔNG PHẢI công thức tất định để tính biên độ vào ổn định cực đại (`Maximum Stable Amplitude — MSA`)**! Vì bộ lượng tử 1-bit là khâu phi tuyến cứng có điều kiện ổn định phụ thuộc trạng thái đầu và dạng sóng vào, mọi thiết kế bắt buộc phải **xác minh trực tiếp `MSA` (thường đạt $\sim 0.55\text{–}0.75\,V_{\text{REF}}$ tức $-5\text{ đến }-2.5\text{ dBFS}$ cho 1-bit bậc 3) bằng mô phỏng quét biên độ quá độ (`transient amplitude sweep`)** qua nhiều tần số tín hiệu, nhiễu bước nhảy DC và các góc PVT!
 
 ### 2.2. Cấu trúc Vòng lọc `CIFB` vs `CIFF` & Phép Biến đổi Giảm Biên độ Tích phân
 Hai họ cấu trúc hiện thực hóa ma trận trạng thái `ABCD` phổ biến nhất (`realizeNTF` trong `ggventurini/python-deltasigma`) mang đặc tính mạch điện trái ngược nhau:
@@ -173,20 +175,23 @@ $$
 $$
 
 2. **Tự Chống Chồng Phổ Nội tại (`Intrinsic Anti-Aliasing`) của `CT-ΔΣ`:**
-   Trong `CT-ΔΣ` cấu trúc phản hồi phân tán (`CIFB`, không kéo nhánh truyền thẳng trực tiếp từ cổng vào tắt qua bộ lọc vòng tới trước bộ lấy mẫu), khâu lấy mẫu rời rạc nằm ở **cuối chuỗi bộ lọc liên tục bậc $L$** chứ không nằm ở cổng vào! Một nhiễu giao thoa tại tần số ảnh $f_{\text{alias}} = f_s - f_0$ ($f_0 \le f_B \ll f_s$) đi qua hàm lọc liên tục rồi gấp phổ về $f_0$ bị nén theo tỷ số dạng $\text{sinc}^L$: $\left|\frac{\sin(\pi f_{\text{alias}}/f_s)}{\pi f_{\text{alias}} / f_s}\right|^L = \left|\frac{\sin(\pi f_0 / f_s)}{\pi (f_s - f_0) / f_s}\right|^L \approx \left(\frac{f_0}{f_s - f_0}\right)^L \approx \frac{1}{(2\,\text{OSR} - 1)^L}$ (ví dụ tại $L = 3, \text{OSR} = 16$ đạt $\approx -89.8\text{ dB}$ suy hao chống chồng phổ miễn phí; lưu ý nếu dùng nhánh truyền thẳng $b_1 = 1$ nối tắt trực tiếp tới bộ cộng trước bộ lượng tử trong `CIFF`, đường tắt này lấy mẫu trực tiếp nhiễu ở $f_s - f_0$ nên phải lọc RC thụ động hoặc dẫn tín hiệu vào qua tầng tích phân liên tục đầu tiên!).
+   Trong `CT-ΔΣ` cấu trúc phản hồi phân tán (`CIFB`, không kéo nhánh truyền thẳng trực tiếp từ cổng vào tắt qua bộ lọc vòng tới trước bộ lấy mẫu), khâu lấy mẫu rời rạc nằm ở **cuối chuỗi bộ lọc liên tục bậc $L$** chứ không nằm ở cổng vào! Một nhiễu giao thoa tại tần số ảnh $f_{\text{alias}} = f_s - f_0$ ($f_0 \le f_B \ll f_s$) đi qua hàm lọc liên tục rồi gấp phổ về $f_0$ bị nén theo tỷ số dạng $\text{sinc}^L$: $\left|\frac{\sin(\pi f_{\text{alias}}/f_s)}{\pi f_{\text{alias}} / f_s}\right|^L = \left|\frac{\sin(\pi f_0 / f_s)}{\pi (f_s - f_0) / f_s}\right|^L \approx \left(\frac{f_0}{f_s - f_0}\right)^L \approx \frac{1}{(2\,\text{OSR} - 1)^L}$ (ví dụ tại $L = 3, \text{OSR} = 16$ đạt $\approx -89.5\text{ dB}$ suy hao chống chồng phổ miễn phí; lưu ý nếu dùng nhánh truyền thẳng $b_1 = 1$ nối tắt trực tiếp tới bộ cộng trước bộ lượng tử trong `CIFF`, đường tắt này lấy mẫu trực tiếp nhiễu ở $f_s - f_0$ nên phải lọc RC thụ động hoặc dẫn tín hiệu vào qua tầng tích phân liên tục đầu tiên!).
 3. **Tử huyệt Jitter Xung nhịp (`Clock Jitter`) & Bù Trễ Vòng Dư (`Excess Loop Delay — ELD`) của `CT-ΔΣ`:**
-   - *Độ nhạy Jitter:* Trong `SC-ΔΣ`, dòng nạp tụ tắt hẳn về $0$ cuối pha nên xê dịch sườn xung nhịp $\Delta t_j$ hầu như vô hại. Trái lại trong `CT-ΔΣ` dùng xung dòng DAC không trở về không (`NRZ`), sai lệch sườn xung nhịp $\sigma_{t,j}$ làm thay đổi diện tích điện tích $\Delta Q_j = I_{\text{DAC}} \cdot \Delta D[n] \cdot \Delta t_j$ bơm vào nút đất ảo mỗi chu kỳ! Với DAC `NRZ`, trần $\text{SNR}$ do jitter bị khóa cứng tại:
+   - *Dẫn xuất Chặt chẽ Trần $\text{SNR}$ Do Jitter Cạnh Xung DAC `NRZ`:* Trong `SC-ΔΣ`, dòng nạp tụ tắt hẳn về $0$ cuối pha nên xê dịch sườn xung nhịp hầu như vô hại. Trái lại trong `CT-ΔΣ` dùng DAC dòng `NRZ` có bước dòng đơn vị `LSB` bằng $I_u$ (dải dòng toàn thang đỉnh–đỉnh $(2^{N_q} - 1)I_u \implies$ công suất sóng sin toàn thang $P_{\text{sig,FS}} = \frac{[(2^{N_q} - 1)I_u / 2]^2}{2} = \frac{(2^{N_q} - 1)^2 I_u^2}{8}$), tại nhịp $n$ bước nhảy mã nguyên $\Delta D[n] = D[n] - D[n-1]$ (tính theo đơn vị `LSB`) gặp sai số thời điểm chuyển sườn $\delta t[n]$ tạo ra xung điện tích lỗi $\Delta Q_j[n] = I_u \cdot \Delta D[n] \cdot \delta t[n]$, tương đương dòng lỗi trung bình quy về ngõ vào mỗi chu kỳ $T_s = 1/f_s$ là $i_j[n] = I_u \cdot \Delta D[n] \cdot \delta t[n] \cdot f_s$. Khi jitter sườn $\delta t[n]$ là nhiễu trắng độc lập có phương sai $\sigma_{t,j}^2$, phương sai toàn dải của $i_j[n]$ bằng $I_u^2 \, \mathbb{E}\!\left[(\Delta D)^2\right] \sigma_{t,j}^2 f_s^2$ trải đều trên $[-f_s/2, +f_s/2]$, nên công suất nhiễu rơi vào dải gốc $[-f_B, +f_B]$ bị chia cho $\text{OSR} = \frac{f_s}{2 f_B}$: $P_{j,\text{in-band}} = \frac{I_u^2 \, \mathbb{E}[(\Delta D)^2] \, \sigma_{t,j}^2 f_s^2}{\text{OSR}}$. Lập tỷ số $P_{\text{sig,FS}} / P_{j,\text{in-band}}$ và thay $f_s = 2\,\text{OSR}\,f_B$:
 
 $$
-\text{SNR}_{\text{jitter,NRZ}} \approx 10\log_{10}\!\left(\frac{\text{OSR} \cdot (2^{N_q} - 1)^2}{8 \pi^2 f_B^2 \sigma_{t,j}^2 \cdot \overline{(\Delta D)^2_{\text{norm}}}}\right) \quad \left(\text{dùng đa bit } N_q = 4 \text{ giảm bước nhảy } \Delta D \text{ cứu ngay } +18\text{–}22\text{ dB jitter SNR!}\right)
+\text{SNR}_{\text{jitter,NRZ,FS}} = 10\log_{10}\!\left(\frac{\text{OSR} \cdot \left(2^{N_q} - 1\right)^2}{8 \, f_s^2 \, \sigma_{t,j}^2 \, \mathbb{E}\!\left[(\Delta D)^2\right]}\right) = 10\log_{10}\!\left(\frac{\left(2^{N_q} - 1\right)^2}{32 \, \text{OSR} \, f_B^2 \, \sigma_{t,j}^2 \, \mathbb{E}\!\left[(\Delta D)^2\right]}\right)
 $$
 
+     *(Nhận xét thiết kế sống còn: tăng số bit bộ lượng tử lên đa bit $N_q = 3\text{–}4$ tăng tử số $(2^{N_q} - 1)^2$ lên hàng trăm lần trong khi $\mathbb{E}[(\Delta D)^2]$ chỉ cỡ $\sim 0.5\text{–}2.5\text{ LSB}^2$ nhờ độ nhạy Bode của $\|\text{NTF}\|_\infty$, giúp cứu ngay $+15\text{–}22\text{ dB}$ trần jitter! Lưu ý thêm: ở cùng $f_B$, tăng $\text{OSR}$ tức tăng $f_s$ với $\sigma_{t,j}$ trắng cố định làm dòng lỗi mỗi sườn xảy ra dày hơn nên bất lợi theo $1/\text{OSR}$, nhưng trên silicon thực tế phương sai hoạt động bước nhảy $\mathbb{E}[(\Delta D)^2]$ và tích phân nhiễu pha `PLL` có phổ $1/f^2$ cuốn chập với núi nhiễu lượng tử ngoài dải cũng thay đổi theo $\text{OSR}$ và dạng `NTF`, nên luôn phải kiểm chứng bằng mô phỏng `transient noise / pnoise` với phổ nhiễu pha thực của PLL hoặc dùng `FIR-DAC` giảm bước nhảy $\Delta D$!).*
    - *Phép biến đổi Bất biến Xung (`Impulse-Invariant Transformation — IIT`) & Nhánh $k_0$ khử `ELD`:*
-     Để `CT-ΔΣ` có cùng chính xác $\text{NTF}(z)$ với mẫu thiết kế `SC-ΔΣ`, đáp ứng xung lấy mẫu tại $t = n T_s$ của vòng mở liên tục phải khớp từng điểm: $\mathcal{Z}^{-1}\!\left\{L_{\text{DT}}(z)\right\} = \left.\mathcal{L}^{-1}\!\left\{L_{\text{CT}}(s) \cdot H_{\text{DAC}}(s) \cdot e^{-s \tau_d}\right\}\right|_{t = n T_s}$. Khi tồn tại trễ vòng dư $\tau_d = \alpha_d T_s$ ($0 < \alpha_d \le 1$, do thời gian chốt bộ so sánh + logic `DWA`), xung DAC bị đẩy sang chu kỳ kế tiếp làm xuất hiện cực phụ $z = 0$ (tăng bậc vòng lên $L+1$)! Ví dụ với $L = 1$, xung `NRZ` từ $[\tau_d, T_s + \tau_d]$ qua bộ tích phân $\frac{k_1}{s T_s}$ cho biến đổi $\mathcal{Z}$ là $k_1 \frac{(1 - \alpha_d) z^{-1} + \alpha_d z^{-2}}{1 - z^{-1}} \neq \frac{z^{-1}}{1 - z^{-1}}$! Bằng cách **thêm một nhánh DAC phản hồi trực tiếp hệ số $k_0$ vào ngay bộ cộng trước bộ lượng tử** (tạo số hạng $-k_0 z^{-1}$) và chỉnh $k_1 = 1, k_0 = \alpha_d$:
+     Để `CT-ΔΣ` có cùng chính xác $\text{NTF}(z)$ với mẫu thiết kế rời rạc `DT/SC-ΔΣ`, đáp ứng xung lấy mẫu tại $t = n T_s$ của vòng mở liên tục phải khớp từng điểm: $\mathcal{Z}^{-1}\!\left\{L_{\text{DT}}(z)\right\} = \left.\mathcal{L}^{-1}\!\left\{L_{\text{CT}}(s) \cdot H_{\text{DAC}}(s) \cdot e^{-s \tau_d}\right\}\right|_{t = n T_s}$. Khi tồn tại trễ vòng dư $\tau_d = \alpha_d T_s$ ($0 < \alpha_d \le 1$, do thời gian chốt bộ so sánh + logic `DWA`), xung DAC bị đẩy lấn sang chu kỳ kế tiếp làm xuất hiện cực phụ tại $z = 0$ (tăng bậc vòng lên $L+1$)! Minh họa cơ sở với **mắt tích phân bậc $L = 1$ dùng xung `NRZ`** từ $[\tau_d, T_s + \tau_d]$ qua $\frac{k_1}{s T_s}$: biến đổi $\mathcal{Z}$ bị lệch thành $k_1 \frac{(1 - \alpha_d) z^{-1} + \alpha_d z^{-2}}{1 - z^{-1}} \neq \frac{z^{-1}}{1 - z^{-1}}$; bằng cách **thêm nhánh DAC phản hồi trực tiếp hệ số $k_0$ vào ngay bộ cộng trước bộ lượng tử** (tạo số hạng $k_0 z^{-1}$) và chọn $k_1 = 1, k_0 = \alpha_d$:
 
 $$
-k_1 \frac{(1 - \alpha_d) z^{-1} + \alpha_d z^{-2}}{1 - z^{-1}} + k_0 z^{-1} \;\xrightarrow{\;k_1 = 1,\; k_0 = \alpha_d\;}\; \frac{z^{-1}}{1 - z^{-1}} \quad \text{(Khôi phục 100% NTF gốc không lệch một cực nào!)}
+k_1 \frac{(1 - \alpha_d) z^{-1} + \alpha_d z^{-2}}{1 - z^{-1}} + k_0 z^{-1} \;\xrightarrow{\;L = 1\text{ NRZ: } k_1 = 1,\; k_0 = \alpha_d\;}\; \frac{z^{-1}}{1 - z^{-1}}
 $$
+
+     **Cảnh báo Mở rộng lên Bậc Cao ($L \ge 2$, ví dụ `CIFF / CIFB` bậc $L = 3$):** Nghiệm đơn giản $k_1 = 1, k_0 = \alpha_d$ ở trên **CHỈ khôi phục đúng $\text{NTF}(z)$ cho bộ điều chế bậc $L = 1$**! Trong bộ điều chế bậc cao $L \ge 2$, trễ $\tau_d = \alpha_d T_s$ của xung DAC làm dịch chuyển đáp ứng xung lấy mẫu xuyên qua **tất cả $L$ đường tích phân bậc $1/s, 1/s^2, \dots, 1/s^L$** (xuất hiện các đa thức theo $\alpha_d, \alpha_d^2, \dots, \alpha_d^L$ trên mọi nhánh!). Do đó, để bảo toàn chính xác $\text{NTF}(z)$ ở bậc $L \ge 2$, ngoài việc bổ sung nhánh trực tiếp $k_0$ quanh bộ lượng tử, bắt buộc phải **giải đồng thời hệ phương trình cân bằng `IIT` để tính lại TOÀN BỘ $(L + 1)$ hệ số vòng lọc $\{k_0, k_1, \dots, k_L\}$** ứng với đúng độ rộng, trễ $\alpha_d$ và dạng xung DAC (`NRZ`, `RZ` hay `SCR`)!
 
 ### 2.4. Định dạng Sai lệch Phần tử Động `DWA` (`Data-Weighted Averaging`) & Lọc Rút mẫu $\text{Sinc}^{L+1}$
 1. **Nguyên lý Con trỏ Xoay vòng `DWA` cho DAC Đa bit:**
@@ -242,21 +247,23 @@ $$
      $$C_{s1} \ge \frac{4 \times 4.14\times 10^{-21} \times 1.6}{64 \times 1.88\times 10^{-10}} \approx \mathbf{2.20\text{ pF}} \quad (\text{trong khi SAR Nyquist 15-bit sẽ phải tốn tụ } \sim 140\text{ pF gấp } 64\times!)$$
 3. **Chọn Cấu trúc OTA Trên `65nm / 45nm`:** Nhờ cấu trúc `CIFF` giữ biên độ ra OTA nhỏ ($\pm 0.3\text{ V}$), có thể dùng `topo-folded-cascode-ota` hoặc **Inverter-Based / Ring-Amplifier OTA** tiết kiệm công suất tĩnh kèm `tech-switched-capacitor-cmfb` và kỹ thuật chặt pha (`chopping` `tech-chopper-stabilization-vs-autozeroing`) ở tầng 1 để đẩy góc nhiễu $1/f$ xuống dưới DC!
 
-### 5.2. Phác đồ Mô phỏng Phổ Chuẩn Có Cửa sổ Hann (`Hann-Windowed Coherent FFT`) trong Spectre
-Khác với ADC Nyquist không được dùng cửa sổ khi đã lấy mẫu mạch lạc, trong **$\Delta\Sigma$ ADC** nhiễu lượng tử ngoài dải lớn hơn sàn nhiễu trong dải tới **$80\text{–}100\text{ dB}$** và có thành phần trạng thái quá độ vòng lặp: **BẮT BUỘC dùng cửa sổ Hann ($w_{\text{Hann}}[n] = 0.5(1 - \cos(2\pi n / N_{\text{FFT}}))$) kết hợp chọn tần số nguyên tố lẻ nằm xa biên số 0 ($M_{\text{sig}}$ đủ lớn sao cho toàn bộ $3$ vạch phổ trải rộng của cửa sổ Hann nằm gọn trong $[3, N_{\text{in-band}}]$)**!
+### 5.2. Quy tắc Chọn Cửa sổ Phổ FFT Theo Schreier & Temes (`Windowing Raw Bitstreams vs. Post-Decimation`) trong Spectre
+Theo quy tắc chuẩn mực của Schreier & Temes (*Understanding Delta-Sigma Data Converters*, 2nd Ed., Appendix A), việc dùng cửa sổ `FFT` phải phân biệt rõ hai trường hợp vật lý:
+1. **Trên dữ liệu ngõ ra SAU bộ lọc số rút mẫu (`Post-Decimation Coherent Output`) hoặc quỹ đạo chu kỳ giới hạn tuần hoàn chính xác (`Exact Periodic Limit Cycle`):** Ngọn núi nhiễu lượng tử ngoài dải đã bị bộ lọc số cắt sạch (hoặc chuỗi hoàn toàn tuần hoàn trên $N_{\text{FFT}}$), nên lấy mẫu mạch lạc có thể dùng **cửa sổ chữ nhật (`Rectangular Window`, không cần cửa sổ phụ)** tương tự ADC Nyquist.
+2. **Trên chuỗi bit thô trực tiếp tại ngõ ra bộ điều chế (`Raw Modulator Bitstream`):** Dù chọn tần số sóng sin vào mạch lạc tuyệt đối $f_{\text{in}} = \frac{M_{\text{sig}}}{N_{\text{FFT}}} f_s$, điều đó **KHÔNG làm cho nhiễu lượng tử hỗn loạn định dạng thông cao bậc $L$ (cao hơn sàn trong dải tới $80\text{–}100\text{ dB}$ ở $f_s / 2$!) trở thành tuần hoàn theo $N_{\text{FFT}}$**! Nếu dùng cửa sổ chữ nhật (búp phụ `sinc` chỉ tắt dần chậm theo $1/f$, tức $-20\text{ dB/dec}$), năng lượng nhiễu lượng tử tần số cao sẽ rò phổ tràn ngập ngược vào dải gốc ngay khi $L \ge 1$! **Quy tắc bất biến trên chuỗi bit thô:** tốc độ tắt dần biên độ búp phụ của cửa sổ phải **dốc hơn độ dốc $\text{NTF} \propto f^L$** — cụ thể dùng **cửa sổ `Hann`** (tắt dần theo $1/f^3$, $-60\text{ dB/dec}$, trải rộng đúng $3$ bin) cho $L \le 2$ (và $L = 3$ ở $\text{SNDR}$ vừa phải), còn với các vòng bậc cao độ phân giải rất lớn ($L \ge 3\text{–}4$, $\text{SQNR} > 95\text{–}100\text{ dB}$) phải dùng **`Hann` bình phương (`Hann^2`) hoặc `Blackman-Harris`** (tắt dần $\propto 1/f^5$ hoặc dốc hơn), đồng thời đặt $M_{\text{sig}}$ xa biên DC và **cộng đủ tổng công suất trên toàn bộ các vạch búp chính của cửa sổ** ($3$ bin cho `Hann`, $5\text{–}7$ bin cho `Hann^2`/`Blackman-Harris`, kèm chuẩn hóa băng thông nhiễu tương đương `ENBW`)!
 ```spice
-// Testbench Coherent + Hann-Window FFT cho 3rd-Order CIFF Delta-Sigma Modulator (OSR = 64)
+// Testbench Coherent + Windowed FFT tren Raw Bitstream cho 3rd-Order CIFF DSM (OSR = 64)
 parameters fb=20k osr=64 fs=(2*osr*fb) Nfft=8192 Msig=19 fin=(Msig*fs/Nfft)
 // Luu y: N_inband = Nfft / (2*osr) = 8192 / 128 = 64 bins; Msig = 19 nam an toan giua dai!
-// Bien do dau vao dat tai -3.5 dBFS (MSA an toan): Vin_diff_pk = 1.0 * 10^(-3.5/20) = 0.668 V
+// Bien do dau vao dat tai -3.5 dBFS (kiem chung trong vung MSA): Vin_diff_pk = 1.0 * 10^(-3.5/20) = 0.668 V
 
 // Bo qua 256 chu ky xac lap trang thai tich phan dau tien, thu dung 8192 mau dau ra luong tu:
 tran_dsm tran stop=((256 + Nfft)/fs) errpreset=conservative maxstep=(1/(32*fs)) \
     strobeperiod=(1/fs) strobedelay=((256/fs) + (0.95/fs)) save=selected
 
-// Hau xu ly tren Python (ADCToolbox / python-deltasigma):
-// 1. Nhan chuoi 8192 mau dout[n] voi cua so Hann (chu y Msig=19 chiem 3 bin: 18, 19, 20)
-// 2. P_sig = sum(PSD[18:21]); P_noise_ib = sum(PSD[3:65]) - P_sig (bo DC bin 0..2)
+// Hau xu ly tren Python (Schreier delsig / python-deltasigma):
+// 1. Nhan chuoi thô dout[n] voi cua so Hann (3 bin: Msig-1..Msig+1) hoac Blackman-Harris 4-term (7 bin: Msig-3..Msig+3 cho L>=3 SNR cao)
+// 2. Voi Hann: P_sig = sum(PSD[18:21]); P_noise_ib = sum(PSD[3:65]) - P_sig (bo DC bin 0..2, chuan hoa ENBW)
 // 3. SNDR_dB = 10 * log10(P_sig / P_noise_ib);  FoM_S = SNDR_dB + 10*log10(fb / P_total)
 ```
 
@@ -265,8 +272,8 @@ tran_dsm tran stop=((256 + Nfft)/fs) errpreset=conservative maxstep=(1/(32*fs)) 
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 7 & Chương 10:** §7.8 *Noise Bandwidth* (tr. 238–241, Phương trình 7.146 — cơ sở tích phân nhiễu nhiệt $kT/C$ được chia giảm bởi $\text{OSR}$); §10.8 *Nyquist's Stability Criterion* (tr. 451–456 — phân tích ổn định có điều kiện khi độ lợi bộ lượng tử giảm do quá tải biên độ lớn).
-- **Chương 13 & Chương 14:** §13.3–§13.5 *Switched-Capacitor Integrators & SC-CMFB* (tr. 555–571, Phương trình 13.45–13.48 — tế bào tích phân `SC` không nhạy tụ ký sinh trực tiếp cấu thành bộ lọc vòng `SC-ΔΣ`); §14.2.1 *Mismatch* (tr. 593–598 — gốc rễ sai lệch phần tử DAC được khử bởi `DWA`).
+- **Chương 7 & Chương 10:** §7.8 *Noise Bandwidth* (tr. 264–265, Phương trình 7.146 — cơ sở tích phân nhiễu nhiệt $kT/C$ được chia giảm bởi $\text{OSR}$); §10.8 *Nyquist's Stability Criterion* (tr. 439–455 — phân tích ổn định có điều kiện khi độ lợi bộ lượng tử giảm do quá tải biên độ lớn).
+- **Chương 13 & Chương 14:** §13.3–§13.5 *Switched-Capacitor Amplifiers, Integrators & SC-CMFB* (tr. 555–572, Phương trình 13.45–13.48 — tế bào tích phân `SC` không nhạy tụ ký sinh trực tiếp cấu thành bộ lọc vòng `SC-ΔΣ`); §14.2.1 *Mismatch* (tr. 593–598 — gốc rễ sai lệch phần tử DAC được khử bởi `DWA`).
 - **Đối chiếu GitHub:** Bộ công cụ `ggventurini/python-deltasigma` (Schreier `delsig`), thiết kế silicon `r09g/iadc` (Stanford 12-bit Incremental SC-$\Delta\Sigma$), `iic-jku/iic-audiodac-v1` (16-bit $\Delta\Sigma$ DAC) và khảo sát `bmurmann/ADC-survey`.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

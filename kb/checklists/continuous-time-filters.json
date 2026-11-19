@@ -72,7 +72,7 @@
       "name": "Độ phủ dải hiệu chỉnh tự động hằng số thời gian trên chip (On-Chip RC / Gm-C PVT Tuning Range & Step Resolution)",
       "severity": "error",
       "method": "estimate",
-      "invariant": "[tau_tune_min, tau_tune_max] bao trùm hoàn toàn [1.15 * R_max(SS,T) * C_max(SS,T), 0.85 * R_min(FF,T) * C_min(FF,T)] với bước nhảy tương đối Delta_f0 / f0 <= (2 * Tolerance_spec) trên toàn mã nhị phân mà không chạm mã biên 00...0 hay 11...1",
+      "invariant": "[tau_tune_min, tau_tune_max] bao trùm hoàn toàn khoảng [0.85 * R_min(FF,T) * C_min(FF,T), 1.15 * R_max(SS,T) * C_max(SS,T)] (tương đương khả năng co hằng số thời gian tại góc chậm tau_cal_min(SS,T) <= 0.85 * tau_nom và giãn tại góc nhanh tau_cal_max(FF,T) >= 1.15 * tau_nom) với bước nhảy tương đối Delta_f0 / f0 <= Tolerance_spec (trần lượng tử hóa tối đa <= 2 * Tolerance_spec cho sai số +-0.5 LSB) trên toàn mã nhị phân mà không chạm mã biên 00...0 hay 11...1",
       "why_vi": "Trên công nghệ CMOS tiêu chuẩn, điện trở tấm poly biến thiên +-20% và tụ MIM/MOM biến thiên +-15% hoàn toàn không tương quan nhau, cộng thêm trôi nhiệt tạo tổng độ lệch hằng số thời gian +-32% đến +-40%! Nếu không có giàn tụ chuyển mạch mã nhị phân (hiệu chuẩn SAR theo xung thạch anh) cho Active-RC hoặc vòng khóa Master-Slave cho Gm-C, bộ lọc trên silicon thực sẽ cắt lẹm vào băng thông tín hiệu ở góc SS hoặc mở toang cho nhiễu lọt qua ở góc FF.",
       "cadence_check": "Quét ma trận góc kết hợp cực trị chéo `(R_slow + C_slow, 125C, VDD_min)` và `(R_fast + C_fast, -40C, VDD_max)`; chạy mô phỏng hiệu chuẩn xác nhận mã hội tụ `tune<B-1:0>` còn dư tối thiểu `>= 2 LSB` cách hai đầu biên và sai số `f_-3dB` sau hiệu chuẩn `< +-2%`.",
       "related_nodes": [

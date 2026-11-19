@@ -11,13 +11,13 @@
     {
       "chapter": 7,
       "section": "7.8",
-      "pages": "262-265",
+      "pages": "264",
       "equations": ["7.145", "7.146"]
     },
     {
       "chapter": 8,
-      "section": "8.2-8.5",
-      "pages": "286-321",
+      "section": "8.1-8.5",
+      "pages": "274-315",
       "equations": ["8.15", "8.50"]
     },
     {
@@ -29,7 +29,7 @@
     {
       "chapter": 10,
       "section": "10.2-10.3",
-      "pages": "414-425",
+      "pages": "414-419",
       "equations": ["10.5", "10.12", "10.15"]
     },
     {
@@ -171,7 +171,7 @@ Nếu chọn $R_1 = R_2 = R$, để đạt hệ số phẩm chất $Q$ chỉ c�
 $$
 \left|H_{\text{SK}}(j\omega \to \infty)\right| \approx \frac{R_o}{R_1 + R_o \left(1 + \frac{R_1}{R_2}\right)}
 $$
-Ví dụ $R_1 = R_2 = 10\text{ k}\Omega$ và tầng ra Op-Amp công suất nhỏ có $R_o = 2\text{ k}\Omega$: suy hao dải chắn bị khóa cứng ở trần tồi tệ **$-23.5\text{ dB}$**! Giải pháp bắt buộc khi dùng Sallen-Key: luôn đặt một mắt lọc thụ động $R_{\text{pre}} C_{\text{pre}}$ trước hoặc sau Sallen-Key (tại chân vào ADC), hoặc dùng cấu trúc hồi tiếp âm đảo đa đường (`Multiple-Feedback — MFB` / `Tow-Thomas`) nơi mọi tụ nối ra ngõ ra đều bị chặn bởi nút đất ảo đảo pha!
+Ví dụ $R_1 = R_2 = 10\text{ k}\Omega$ và tầng ra Op-Amp công suất nhỏ có $R_o = 2\text{ k}\Omega$: suy hao dải chắn bị khóa cứng ở trần tồi tệ $\frac{2}{10 + 4} = \frac{1}{7} \equiv \mathbf{-16.9\text{ dB}}$! Giải pháp bắt buộc khi dùng Sallen-Key: luôn đặt một mắt lọc thụ động $R_{\text{pre}} C_{\text{pre}}$ trước hoặc sau Sallen-Key (tại chân vào ADC), hoặc dùng cấu trúc hồi tiếp âm đảo đa đường (`Multiple-Feedback — MFB` / `Tow-Thomas`) nơi mọi tụ nối ra ngõ ra đều bị chặn bởi nút đất ảo đảo pha!
 
 ### 2.3. Tổng hợp Trực giao 3 Bước Của Biquad Vi sai Hoàn toàn Tow-Thomas & Fleischer-Tow
 Xét Biquad vi sai hoàn toàn Tow-Thomas dùng 2 OTA (`OTA1` có tụ tích phân $C_1$, điện trở vào $R_{\text{in}}$, điện trở tắt dần song song $R_Q$, điện trở hồi tiếp vòng $R_3$; nối tiếp sang `OTA2` không tổn hao có điện trở $R_2$ và tụ $C_2$, rồi tráo dây vi sai hồi tiếp về $R_3$). Hàm truyền vi sai tại ngõ ra `OTA2` (Thông thấp) và `OTA1` (Thông dải) là:
@@ -193,10 +193,10 @@ Khi tổng hợp bộ lọc bậc cao $N = 2 K$ bằng cách ghép nối tiếp 
 - **Quy tắc Vàng Xếp Thứ tự (`Low-Q First, High-Q Last`) & Cân bằng $L_\infty$**:
   - *Ví dụ Thiết kế Bộ lọc Chống chồng phổ Butterworth Bậc 4*, $f_{-3\text{dB}} = 2\text{ MHz}$ ($\omega_0 = 12.566 \times 10^6\text{ rad/s}$), độ lợi tổng $0\text{ dB}$, nhiễu trong dải $< 35\,\mu\text{V}_{\text{rms}}$ trên 65nm CMOS ($V_{DD} = 1.2\text{ V}$):
   - Tra bảng cực chuẩn hóa Butterworth bậc 4: gồm hai cặp cực phức cùng $\omega_0 = 2\pi \times 2\text{ MHz}$ nhưng có **$Q_1 = 0.5412$** và **$Q_2 = 1.3066$**.
-  - **Bước 1 (Thứ tự ghép tầng)**: Đặt **Mắt 1 có $Q_1 = 0.5412$ đứng trước** (không hề nhô đỉnh $|H_1(j\omega)| \le 1$, dập phẳng ngay các nhiễu chặn lớn ngoài dải!) và đặt **Mắt 2 có $Q_2 = 1.3066$ đứng sau** (nhô đỉnh $+3.01\text{ dB}$ tại $0.786\,f_0$, nhưng tích tổng $|H_1(j\omega) \cdot H_2(j\omega)|$ tại ngõ ra cuối bằng phẳng đơn điệu $\le 0\text{ dB}$!).
-  - **Bước 2 (Định cỡ tụ theo trần nhiễu $Q \cdot kT/C$ và đổi thang trở)**: Chọn tụ đơn vị trung tâm $C = 4\text{ pF}$ (giàn tụ MOM 5-bit để hiệu chuẩn PVT $\pm 35\%$), suy ra $R = \frac{1}{\omega_0 C} = \frac{1}{12.566\times 10^6 \times 4\text{ pF}} = 19.89\text{ k}\Omega \approx 20\text{ k}\Omega$.
-    - Tại **Mắt 1 ($Q_1 = 0.5412$)**: $R_{\text{in},1} = R_2 = R_3 = 20\text{ k}\Omega$, $R_{Q,1} = Q_1 R = 10.82\text{ k}\Omega$. Kiểm tra nút nội `OTA1_1` (ngõ ra thông dải): đỉnh biên độ thông dải của Tow-Thomas bằng $\max_\omega |H_{\text{BP}}(j\omega)| = |H_{\text{BP}}(j\omega_0)| = \frac{R_Q}{R_{\text{in}}} = Q_1 = 0.5412$ ($-5.3\text{ dB}$)! Để nâng nút nội `OTA1_1` lên tận dụng hết toàn dải không xén $0\text{ dB}$ (**Chuẩn hóa $L_\infty$**), ta nhân tụ $C_{1,\text{stage1}} \leftarrow Q_1 C = 2.165\text{ pF}$ và đổi $R_{2,\text{stage1}} \leftarrow R / Q_1 = 36.95\text{ k}\Omega$ (hoặc nhân tỷ lệ trở nối vào nút ra `OTA1_1`): lúc này $\max|V_{\text{OTA1,1}}/V_{\text{in}}| \equiv 1.00$ và $\max|V_{\text{OTA2,1}}/V_{\text{in}}| \equiv 1.00$!
-    - Tại **Mắt 2 ($Q_2 = 1.3066$)**: $R_{Q,2} = 1.3066 \times 20\text{ k}\Omega = 26.13\text{ k}\Omega$; tương tự đổi thang $C_{1,\text{stage2}} \leftarrow Q_2 C = 5.226\text{ pF}$ để ghim đỉnh thông dải `OTA1_2` không vọt quá $0\text{ dB}$!
+  - **Bước 1 (Thứ tự ghép tầng)**: Đặt **Mắt 1 có $Q_1 = 0.5412$ đứng trước** (không hề nhô đỉnh $|H_1(j\omega)| \le 1$, dập phẳng ngay các nhiễu chặn lớn ngoài dải!) và đặt **Mắt 2 có $Q_2 = 1.3066$ đứng sau** (bản thân $H_2$ nhô đỉnh $+3.01\text{ dB}$ tại $f_0\sqrt{1 - \frac{1}{2 Q_2^2}} = 0.841\,f_0$, nhưng tích tổng $|H_1(j\omega) \cdot H_2(j\omega)|$ tại ngõ ra cuối bằng phẳng đơn điệu $\le 0\text{ dB}$!).
+  - **Bước 2 (Định cỡ tụ theo trần nhiễu $Q \cdot kT/C$ và chuẩn hóa dải động $L_\infty$)**: Chọn tụ đơn vị trung tâm $C = 4\text{ pF}$ (giàn tụ MOM 5-bit để hiệu chuẩn PVT $\pm 35\%$), suy ra $R = \frac{1}{\omega_0 C} = \frac{1}{12.566\times 10^6 \times 4\text{ pF}} = 19.89\text{ k}\Omega \approx 20\text{ k}\Omega$. Phép đổi thang nút nội $V_{\text{OTA1}} \leftarrow \frac{1}{k} V_{\text{OTA1}}$ giữ nguyên bất biến cả $\omega_0$, $Q$ lẫn $H_{\text{LP}}(s)$ khi và chỉ khi đổi thang đồng bộ **cả 3 linh kiện gắn với nút ra `OTA1`**: $C_1 \leftarrow k C$, $R_Q \leftarrow \frac{Q}{k} R$ và $R_2 \leftarrow \frac{R}{k}$!
+    - Tại **Mắt 1 ($Q_1 = 0.5412$)**: Trước khi đổi thang ($R_{\text{in},1} = R_2 = R_3 = 20\text{ k}\Omega$, $R_{Q,1} = Q_1 R = 10.82\text{ k}\Omega$), đỉnh biên độ thông dải tại `OTA1_1` chỉ đạt $\max_\omega |H_{\text{BP},1}(j\omega)| = Q_1 = 0.5412$ ($-5.33\text{ dB}$). Áp dụng **chuẩn hóa $L_\infty$** với $k_1 = Q_1 = 0.5412$: đặt $C_{1,\text{stage1}} = Q_1 C = 2.165\text{ pF}$, **$R_{Q,1} = R = 20\text{ k}\Omega$** và $R_{2,\text{stage1}} = R / Q_1 = 36.95\text{ k}\Omega$ $\implies \max_\omega |V_{\text{OTA1,1}}/V_{\text{in}}| \equiv 1.00$ ($0\text{ dB}$) và $\max_\omega |V_{\text{OTA2,1}}/V_{\text{in}}| \equiv 1.00$ với đúng $Q_1 = 0.5412$!
+    - Tại **Mắt 2 ($Q_2 = 1.3066$, nhận tín hiệu đã qua $H_1(j\omega)$)**: Đỉnh biên độ dây chuyền chưa đổi thang tại `OTA1_2` bằng $\max_\omega |H_1(j\omega)\cdot H_{\text{BP},2}(j\omega)| = k_2 = 0.755$ ($-2.44\text{ dB}$; trong khi xét riêng mắt 2 độc lập là $Q_2 = 1.3066 \equiv +2.32\text{ dB}$). Chọn $k_2 = 0.755$ cho dây chuyền chuẩn $L_\infty$ toàn tuyến: $C_{1,\text{stage2}} = k_2 C = 3.02\text{ pF}$, $R_{Q,2} = (Q_2 / k_2) R = 34.61\text{ k}\Omega$, $R_{2,\text{stage2}} = R / k_2 = 26.49\text{ k}\Omega$ (hoặc nếu chuẩn hóa độc lập từng mắt $k_2 = Q_2$: $C_{1,\text{stage2}} = 5.226\text{ pF}, R_{Q,2} = 20\text{ k}\Omega, R_{2,\text{stage2}} = 15.31\text{ k}\Omega$) để ghim mọi ngõ ra OTA đúng $\le 0\text{ dB}$!
   - **Bước 3 (Ngân sách OTA)**: Tại Mắt 2 ($Q_2 = 1.31, f_0 = 2\text{ MHz}$), yêu cầu $\text{GBW}_{\text{OTA}} \ge 30 \times Q_2 \times f_0 \approx 79\text{ MHz}$ (hoặc chỉ cần $\text{GBW} = 35\text{ MHz}$ kèm tụ bù sớm pha $C_{\text{lead}} = \frac{2}{2\pi\times 35\text{M}\times 20\text{k}} \approx 455\text{ fF}$!).
 
 ---
@@ -257,7 +257,7 @@ qpss_im3 qpss funds=["tone1" "tone2"] maxharms=[7 7] errpreset=conservative
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Khái niệm băng thông nhiễu bậc cao Butterworth và giới hạn $kT/C$ | Chương 7, §7.8, PT (7.145)–(7.146), tr. 262–265 | `T803` bộ lọc thông cao; `T861` bộ lọc thông thấp; `T1031` bộ lọc thông dải; `T1080` nhiễu nhiệt điện trở; `T1089` nhiễu $kT/C$; `T1158` tần số cắt của bộ lọc; `T1169` băng thông nhiễu |
-| Hồi tiếp âm nén tính phi tuyến, tính tải mạng hai cửa và trở kháng ra đóng vòng | Chương 8, §8.1–8.5 & Chương 14, §14.1.3, PT (14.27), tr. 274–321, 581–583 | `T042` Hồi tiếp; `T057` Tính phi tuyến; `T523` Tính tuyến tính; `T786` méo dạng; `T812` hồi tiếp âm; `T1228` giảm tính phi tuyến; `T1328` trở kháng ngõ ra vòng kín; `T1335` đường truyền xuyên trực tiếp; `T2150` méo hài; `T2152` HD2 / HD3 |
-| Hệ bậc hai, hệ số tắt dần $\zeta = \frac{1}{2Q}$, dự trữ pha và vọt đỉnh tần số | Chương 10, §10.2–10.3, PT (10.5)–(10.15), tr. 414–425 | `T063` Dự trữ pha; `T1004` độ dịch pha; `T2176` hệ số tắt dần |
+| Khái niệm băng thông nhiễu bậc cao Butterworth và giới hạn $kT/C$ | Chương 7, §7.8, PT (7.145)–(7.146), tr. 264–265 | `T803` bộ lọc thông cao; `T861` bộ lọc thông thấp; `T1031` bộ lọc thông dải; `T1080` nhiễu nhiệt điện trở; `T1089` nhiễu $kT/C$; `T1158` tần số cắt của bộ lọc; `T1169` băng thông nhiễu |
+| Hồi tiếp âm nén tính phi tuyến, tính tải mạng hai cửa và trở kháng ra đóng vòng | Chương 8, §8.1–8.5 & Chương 14, §14.1.3, PT (14.27), tr. 274–315, 581–583 | `T042` Hồi tiếp; `T057` Tính phi tuyến; `T523` Tính tuyến tính; `T786` méo dạng; `T812` hồi tiếp âm; `T1228` giảm tính phi tuyến; `T1328` trở kháng ngõ ra vòng kín; `T1335` đường truyền xuyên trực tiếp; `T2150` méo hài; `T2152` HD2 / HD3 |
+| Hệ bậc hai, hệ số tắt dần $\zeta = \frac{1}{2Q}$, dự trữ pha và vọt đỉnh tần số | Chương 10, §10.2–10.3, PT (10.5)–(10.15), tr. 414–419 | `T063` Dự trữ pha; `T1004` độ dịch pha; `T2176` hệ số tắt dần |
 | OTA vi sai hoàn toàn kèm CMFB và bộ tích phân RC thời gian liên tục | Chương 9, §9.6–9.7, tr. 373–387 & Chương 13, §13.4, PT (13.60), tr. 568 | `T800` hồi tiếp chế độ chung; `iic-jku/analog-circuit-design` & `Arcadia-1/analog-design-bench` |

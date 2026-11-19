@@ -11,7 +11,7 @@
     {
       "chapter": 10,
       "section": "10.8",
-      "pages": "439-456",
+      "pages": "439-455",
       "equations": ["10.52", "10.53", "10.54", "10.55", "10.56", "10.57", "10.58"]
     }
   ],
@@ -39,8 +39,8 @@
 
 ## 1. Bản chất Nguyên lý, Sơ đồ Mạch & Vai trò Từng Nhánh Cấu trúc
 
-Trong 95% các bộ khuếch đại một tầng và hai tầng đơn giản, góc pha của hàm truyền vòng $\angle \beta H(j\omega)$ giảm đơn điệu theo tần số, nên quy tắc đồ thị Bode ($\omega_{GX} < \omega_{PX} \iff \text{PM} > 0^\circ$) là đủ để kết luận tính ổn định. Tuy nhiên, Razavi mở đầu §10.8.1 (tr. 439–440) bằng hai nghịch lý thực tế đánh gục hoàn toàn quy tắc đọc Bode ngây thơ:
-1. **Hệ có khối hồi tiếp dương cục bộ hoặc cực RHP vòng hở (Hình 10.46, Phương trình 10.52–10.53):** Một tầng tăng cường độ lợi dùng tải kháng âm chéo có cực mở vòng nằm ở nửa mặt phẳng phải $H(s) = \frac{1}{s/a - 1}$ ($P = 1 > 0$). Khi đóng vòng hồi tiếp âm đủ mạnh ($\beta > 1$), cực vòng kín $s_{\text{cl}} = -a(\beta - 1) < 0$ **nhảy sang nửa mặt phẳng trái và hoàn toàn ổn định**, mặc dù nhìn biên độ/pha kiểu Bode truyền thống không sao giải thích nổi!
+Trong 95% các bộ khuếch đại một tầng và hai tầng đơn giản, góc pha của hàm truyền vòng $\angle \beta H(j\omega)$ giảm đơn điệu theo tần số, nên quy tắc đồ thị Bode ($\omega_{GX} < \omega_{PX} \iff \text{PM} > 0^\circ$) là đủ để kết luận tính ổn định. Tuy nhiên, Razavi mở đầu §10.8.1 (tr. 439–440) và tổng kết ở §10.8.7 bằng những nghịch lý thực tế phơi bày giới hạn của việc chỉ xét $s = j\omega$ trên đồ thị Bode:
+1. **Nghịch lý $Y/X(j\omega) < \infty$ trên hệ mất ổn định & Hệ có cực RHP vòng hở (§10.8.1 Hình 10.47, Phương trình 10.52–10.53):** Trên Hình 10.47 ($\beta = 1$ và $|H(j\omega_0)| = 3$ tại tần số cắt pha $-180^\circ$, tức dự trữ pha âm), nếu chỉ thay $s = j\omega_0$ vào hàm truyền vòng kín thì $\frac{Y}{X}(j\omega_0) = \frac{-3}{1 - 3} = \frac{3}{2} < \infty$ (không hề phân kỳ tại bất kỳ tần số hình sin thuần ảo $s = j\omega$ nào, vì nghiệm dao động thực sự là sóng sin tăng trưởng mũ $s = \sigma_1 + j\omega_1$ với $\sigma_1 > 0$ nơi $\beta H(\sigma_1 + j\omega_1) = -1$!). Ngược lại, một tầng có hồi tiếp dương cục bộ / tải kháng âm chéo mang cực vòng hở ở nửa mặt phẳng phải $H(s) = \frac{1}{s/a - 1}$ ($P = 1 > 0$) khi đóng hồi tiếp âm đủ mạnh ($\beta > 1$) lại đẩy cực vòng kín sang nửa mặt phẳng trái $s_{\text{cl}} = -a(\beta - 1) < 0$ **hoàn toàn ổn định**, mặc dù quy tắc Bode truyền thống không sao giải thích nổi!
 2. **Hệ có nhiều điểm cắt pha $-180^\circ$ (`Multiple 180° Crossings` / Hệ ổn định có điều kiện — §10.8.7, Hình 10.72):** Trong các bộ khuếch đại đa tầng bù nhiều nhánh (nested Miller), bộ điều chế $\Sigma\Delta$ bậc cao, vòng khóa pha PLL bậc 2/3 (`topo-charge-pump-type2-pll`), hoặc mạch LDO có nhiều cặp cực–zero phức, pha của $\beta H(j\omega)$ có thể **lặn xuống dưới $-180^\circ$ ở tần số trung bình (khi độ lợi vòng vẫn đang lớn tới $+20\text{ dB}$!), rồi nhờ hai LHP zero kéo vọt ngược lên lại trên $-180^\circ$ (ví dụ $-120^\circ$) trước khi biên độ cắt qua $0\text{ dB}$**! Nếu nhìn tại tần số cắt pha đầu tiên $\omega_{PX1}$, $|\beta H| > 1$ khiến quy tắc Bode tưởng rằng mạch tự dao động — trong khi thực tế mạch **ổn định hoàn toàn** (gọi là **hệ ổn định có điều kiện — conditionally stable**)!
 
 ![Đồ thị cực Nyquist bao quanh điểm tới hạn (-1, 0) cho hệ nhiều cực và hệ ổn định có điều kiện](../../diagrams/nyquist-polar-stability.svg)
@@ -79,7 +79,7 @@ trong đó:
 
 **Hai trường hợp áp dụng trực tiếp:**
 - **Trường hợp 1 — Mạch vòng hở tự thân ổn định ($P = 0$, chiếm $> 99\%$ các Op-Amp/LDO/PLL):** Điều kiện cần và đủ để vòng kín ổn định là **$N = 0$** — đồ thị cực của $\beta H(j\omega)$ **KHÔNG ĐƯỢC đi qua và KHÔNG ĐƯỢC bao quanh điểm $(-1, 0)$** một vòng ròng nào!
-- **Trường hợp 2 — Mạch vòng hở có $P > 0$ cực RHP (như tải kháng âm Hình 10.46 có $P = 1$):** Để vòng kín được cứu sống thành ổn định ($Z = 0$), đồ thị cực của $\beta H(j\omega)$ **BẮT BUỘC phải bao quanh điểm $(-1, 0)$ đúng $P$ vòng theo chiều NGƯỢC kim đồng hồ ($N = -P$)**!
+- **Trường hợp 2 — Mạch vòng hở có $P > 0$ cực RHP (như tầng có tải kháng âm cục bộ mang $P = 1$ cực RHP):** Để vòng kín được cứu sống thành ổn định ($Z = 0$), đồ thị cực của $\beta H(j\omega)$ **BẮT BUỘC phải bao quanh điểm $(-1, 0)$ đúng $P$ vòng theo chiều NGƯỢC kim đồng hồ ($N = -P$)**!
 
 ### 2.3. Quy tắc Đếm Số Vòng Bao Quanh Bằng Tia Bán Vô hạn (Ray-Crossing Rule — tr. 450)
 Khi đường cong Nyquist xoắn phức tạp qua lại trục thực nhiều lần (như Hình 10.72d), làm sao đếm $N$ không bao giờ nhầm? Razavi chỉ dẫn thuật toán hình học 3 bước bất bại:
@@ -156,7 +156,7 @@ $$
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
-- **Chương 10:** §10.8 *Nyquist's Stability Criterion* — §10.8.1 *Motivation* (tr. 439–440, Phương trình 10.52–10.53, Hình 10.46–10.47), §10.8.2 *Basic Concepts* (tr. 440–442, Phương trình 10.54–10.56), §10.8.3 *Construction of Polar Plots* (tr. 442–447, Hình 10.52–10.59), §10.8.4 *Cauchy's Principle* (tr. 447), §10.8.5 *Nyquist's Method* (tr. 447–450, Phương trình 10.57, Hình 10.60–10.65, Ví dụ 10.9–10.11), §10.8.6 *Systems with Poles at Origin* (tr. 450–454, Phương trình 10.58, Hình 10.66–10.71), §10.8.7 *Systems with Multiple $180^\circ$ Crossings* (tr. 454–456, Hình 10.72).
+- **Chương 10:** §10.8 *Nyquist's Stability Criterion* — §10.8.1 *Motivation* (tr. 439–440, Phương trình 10.52–10.53, Hình 10.47–10.48), §10.8.2 *Basic Concepts* (tr. 440–442, Phương trình 10.54–10.56, Hình 10.49–10.52), §10.8.3 *Construction of Polar Plots* (tr. 442–447, Hình 10.53–10.59), §10.8.4 *Cauchy's Principle* (tr. 447, Hình 10.60), §10.8.5 *Nyquist's Method* (tr. 447–450, Phương trình 10.57, Hình 10.61–10.65, Ví dụ 10.9–10.11), §10.8.6 *Systems with Poles at Origin* (tr. 450–453, Phương trình 10.58, Hình 10.66–10.71, Ví dụ 10.12–10.14), §10.8.7 *Systems with Multiple $180^\circ$ Crossings* (tr. 454–455, Hình 10.72–10.73).
 - **Chú giải Hiệu đính Học thuật CLB (`NG10`):**
   - **`NG10-06` (tr. 450, Hình 10.65a):** Trên trục thực của mặt phẳng $s$ ở Hình 10.65(a) minh họa hệ ba cực (Ví dụ 10.11), bản in gốc in lặp nhãn $-\omega_{p2}$ tại hai vị trí; theo đúng thứ tự ba cực của ví dụ, nhãn nằm ngoài cùng bên trái phải là **$-\omega_{p3}$**.
   - **`NG10-07` (tr. 455, §10.8.7):** Khi kết luận Trường hợp 1 của hệ có nhiều lần cắt $-180^\circ$ (nơi đầu mục trang 454 và chính Hình 10.72d đều xác định hai giao điểm $B$ và $C$ nằm ở **bên trái** điểm $(-1, 0)$, tức thực hơn về phía âm $< -1$), câu văn ở đầu trang 455 bản in gốc lại viết nhầm chữ *"to the right of $(-1, 0)$"*; từ phù hợp với sơ đồ Hình 10.72(d) của Trường hợp 1 là **bên trái (*to the left of $(-1, 0)$*)**!

@@ -11,7 +11,7 @@
     {
       "chapter": 5,
       "section": "5.1-5.3",
-      "pages": "137-158",
+      "pages": "134-160",
       "equations": [
         "5.5",
         "5.18"
@@ -37,10 +37,12 @@
     },
     {
       "chapter": 19,
-      "section": "19.2.7, 19.3",
-      "pages": "752-762",
+      "section": "19.2.7, 19.3, 19.4",
+      "pages": "753-772",
       "equations": [
-        "19.16"
+        "19.14",
+        "19.19",
+        "19.22"
       ]
     }
   ],
@@ -256,8 +258,8 @@ tran_brownout tran stop=5m errpreset=conservative
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 5 & Chương 9:** §5.1–§5.3 *Current Mirrors & Low-Voltage Cascode* (tr. 137–158 — cơ sở gương dòng cascode áp thấp xuất dòng trở kháng cao); §9.11 *Power-Supply Rejection* (tr. 400–402 — cơ chế tụ nối đất ở cổng gương PMOS làm sụp đổ PSRR+ về $0\text{ dB}$!).
-- **Chương 12 & Chương 19:** §12.1–§12.5 *Supply-Independent Biasing, Bandgap, PTAT & Constant-$G_m$* (tr. 509–525 — mạch mồi khởi động và tổng hợp dòng PTAT/CTAT); §19.2.7 & §19.3 *Substrate Noise & Packaging* (tr. 752–762 — nhiễu đế bán dẫn và quy tắc tách đất sao Kelvin).
+- **Chương 5 & Chương 9:** §5.1–§5.3 *Current Mirrors & Low-Voltage Cascode* (tr. 134–160 — cơ sở gương dòng cascode áp thấp xuất dòng trở kháng cao); §9.11 *Power-Supply Rejection* (tr. 400–402 — cơ chế tụ nối đất ở cổng gương PMOS làm sụp đổ PSRR+ về $0\text{ dB}$!).
+- **Chương 12 & Chương 19:** §12.1–§12.5 *Supply-Independent Biasing, Bandgap, PTAT & Constant-$G_m$* (tr. 509–525 — mạch mồi khởi động và tổng hợp dòng PTAT/CTAT); §19.2.7, §19.3 & §19.4 *Interconnects, Substrate Noise & Packaging* (tr. 753–772 — nhiễu đế bán dẫn, điện cảm dây hàn và quy tắc tách đất sao Kelvin).
 - **Đối chiếu GitHub:** Trạm phân cực silicon `RTimothyEdwards/sky130_ef_ip__biasgen`, khối khởi động nguồn `efabless/sky130_ef_ip__power_on_reset`, dữ liệu đo chip `johnkustin/bandgapReferenceCircuit` và bộ quy tắc `iic-jku/Circuit-Designers-Etiquette`.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

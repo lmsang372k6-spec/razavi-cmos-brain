@@ -140,13 +140,13 @@ Phương pháp định cỡ `tech-nanometer-vdsmin-gmid-sizing` là cầu nối 
 
 **Quy trình Thực thi 3 Bước bằng Spectre / SKILL cho mọi PDK (gpdk090 / gpdk045 / TSMC 65nm):**
 1. **Tạo Bảng Tra Chuẩn hóa (`LUT`) bằng 1 Netlist Spectre Siêu gọn:**
-   - Dựng 1 NMOS và 1 PMOS có kích thước ngón đơn vị chuẩn $W_f = 1\,\mu\text{m}$, $nf_{\text{REF}} = 4$ ($W_{\text{REF}} = 4\,\mu\text{m}$), quét `L` trên tập lưới $\{L_{\min},\, 1.5 L_{\min},\, 2 L_{\min},\, 4 L_{\min},\, 8 L_{\min}\}$ và quét `VGS` bước $10\,\text{mV}$ tại `VDS = VDD/2` (và `VDS = 0.15V`).
+   - Dựng 1 NMOS và 1 PMOS có kích thước ngón đơn vị chuẩn $W_f = 1\,\mu\text{m}$, $nf_{\text{REF}} = 5$ ($W_{\text{REF}} = 5\,\mu\text{m}$, đồng nhất với transistor tham chiếu $5\,\mu\text{m}$ của Razavi), quét `L` trên tập lưới $\{L_{\min},\, 1.5 L_{\min},\, 2 L_{\min},\, 4 L_{\min},\, 8 L_{\min}\}$ và quét `VGS` bước $10\,\text{mV}$ tại `VDS = VDD/2` (và `VDS = 0.15V`).
    - Xuất các cột chuẩn hóa bất biến bề rộng: `gm_id = gm/id`, `jd = id/W_REF` ($\text{A}/\mu\text{m}$), `av0 = gm/gds`, `ft = gm/(2*pi*abs(cgg))`, `vdsat`.
 2. **Giải Tức thì Bất kỳ Nhánh Mạch Nào:**
    - Ví dụ cần thiết kế cặp đầu vào PMOS ở **65nm** (hoặc **45nm**) có $g_m = 8\,\text{mS}$ với dòng nhánh $I_D = 500\,\mu\text{A}$:
      - Tính $\frac{g_m}{I_D} = \frac{8\,\text{mS}}{0.5\,\text{mA}} = 16\,\text{V}^{-1} < 25.6\,\text{V}^{-1}$ (hợp lệ, vùng nghịch đảo vừa).
      - Tra hàng có `gm_id = 16` tại $L = 2 L_{\min}$: đọc ngay mật độ dòng chuẩn `jd` (ví dụ $4\,\mu\text{A}/\mu\text{m}$), `vdsat` ($\approx 95\,\text{mV}$) và `av0` ($\approx 18$).
-     - Tính tổng bề rộng $W = \frac{I_D}{\texttt{jd}} = \frac{500\,\mu\text{A}}{4\,\mu\text{A}/\mu\text{m}} = 125\,\mu\text{m} \longrightarrow$ đặt chính xác $W_f = 1\,\mu\text{m}$, `nf = 25`, `m = 5` (tổng $125$ ngón đơn vị giống hệt cấu hình tham chiếu!).
+     - Tính tổng bề rộng $W = \frac{I_D}{\texttt{jd}} = \frac{500\,\mu\text{A}}{4\,\mu\text{A}/\mu\text{m}} = 125\,\mu\text{m} \longrightarrow$ đặt chính xác $W_f = 1\,\mu\text{m}$, `nf = 5`, `m = 25` (ghép $25$ ô đơn vị chuẩn $5$ ngón, tổng $125$ ngón đơn vị bảo toàn tuyệt đối môi trường STI/WPE của linh kiện tham chiếu!).
 3. **Kiểm định lại bằng `dcOp` trong Virtuoso:** Chạy mô phỏng mạch hoàn chỉnh, xác nhận sai số `gm` và `id` thực tế so với bảng tra nhỏ hơn $2\text{–}3\%$ ngay từ lần chạy đầu tiên!
 
 **Mẫu Bảng Tra Chuẩn Hóa Điển hình & Script Trích xuất `gm/ID` Trong Spectre/OCEAN:**

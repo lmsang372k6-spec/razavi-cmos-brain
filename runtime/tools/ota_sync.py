@@ -13,7 +13,7 @@
   to main raw and GitHub Pages.
 - Performs fail-closed Atomic Sibling Staging Swap for ~/.cache/razavi-cmos-brain/synced
   and (when writable outside SSOT) /home/disk/eda/references/SKILL-ANALOG, preserving
-  sources/ + sources.lock.json and regenerating library.manifest.json (2026.11.18.6).
+  sources/ + sources.lock.json and regenerating library.manifest.json (2026.11.18.7).
 """
 from __future__ import print_function
 
@@ -33,7 +33,7 @@ from optparse import OptionParser
 
 sys.dont_write_bytecode = True
 
-RELEASE_VERSION = "2026.11.18.6"
+RELEASE_VERSION = "2026.11.18.7"
 
 PY2 = sys.version_info[0] < 3
 if PY2:

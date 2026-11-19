@@ -10,7 +10,7 @@
   "razavi_refs": [
     {
       "chapter": 9,
-      "section": "9.1.1, 9.8",
+      "section": "9.1.1, 9.8-9.9",
       "pages": "347-348, 388-390",
       "equations": ["9.58"]
     }

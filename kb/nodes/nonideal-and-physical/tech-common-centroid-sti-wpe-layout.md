@@ -11,7 +11,7 @@
     {
       "chapter": 19,
       "section": "19.2.1-19.2.4",
-      "pages": "736-744",
+      "pages": "737-744",
       "equations": ["19.1", "19.2", "19.4", "19.5", "19.6", "19.7", "19.8", "19.9"]
     },
     {
@@ -146,7 +146,7 @@ $$V_{P2} = \frac{V_1 + V_2}{2} - V_{OV,\text{eq}} = V_2 - \left(1 + \frac{\sqrt{
 ## 3. Bất biến Cấu trúc & Các Bẫy Lỗi Kinh điển (Structural Invariants & Traps)
 
 - **`[INV-LAY-01]` Bất biến Bốn Điều kiện Đồng nhất Để Khớp Linh kiện:** Hai linh kiện ghép cặp chỉ thực sự khớp ở mức giới hạn Pelgrom khi thỏa mãn đồng thời **4 điều kiện**: (1) Cùng cấu trúc ô đơn vị $(W_u, L_u)$ — tuyệt đối không suy rộng tỷ lệ bằng cách đổi $L$ hay vẽ $W$ liền khối khác bội số; (2) Cùng trục định hướng và **cùng chiều dòng chảy `Source -> Drain`** (khử bóng che nghiêng $7^\circ$); (3) Trùng trọng tâm hình học (`Common-Centroid`); và (4) Cùng môi trường bao quanh (ngón giả `STI/LOD`, khoảng lùi giếng `WPE` và đường kim loại đi phía trên đối xứng!).
-- **`[INV-LAY-02]` Bất biến Mật độ Dòng Chống Di cư Điện tử (`Electromigration` — §18.7.3):** Mọi đường kim loại và ma trận lỗ `via/contact` dẫn dòng một chiều lớn phải thỏa mãn giới hạn mật độ dòng $J_{\text{DC}} \le J_{\max}$ (điển hình $\sim 1\text{–}2\text{ mA}/\mu\text{m}$ bề rộng kim loại tùy lớp và nhiệt độ) để tránh đứt mạch hở sau vài năm vận hành.
+- **`[INV-LAY-02]` Bất biến Mật độ Dòng Chống Di cư Điện tử (`Electromigration` — §18.7.3):** Mọi đường kim loại (bề rộng $W$, bề dày $t$) và ma trận lỗ `via/contact` dẫn dòng một chiều lớn phải thỏa mãn giới hạn mật độ dòng diện tích $J_{\text{DC}} = \frac{I_{\text{DC}}}{W \cdot t} \le J_{\max}$ [$\text{A/cm}^2$], tương đương giới hạn dòng tuyến tính chuẩn hóa theo bề rộng của PDK $J_{W,\text{DC}} = \frac{I_{\text{DC}}}{W} \le J_{W,\max} = J_{\max}\cdot t$ (điển hình $\sim 1\text{–}2\text{ mA}/\mu\text{m}$ bề rộng kim loại tùy lớp và nhiệt độ, xem `tech-interconnect-rc-electromigration-and-ir-drop`) để tránh đứt mạch hở sau vài năm vận hành.
 - **`[TRAP-LAY-01]` Bẫy Đi Một Sợi Dây Kim loại "Vô hại" Băng Ngang Qua Một Nửa Cặp Vi sai (Hình 19.17):** Dù đã xếp `ABBA` hoàn hảo dưới lớp silic, chỉ cần kéo một đường kim loại ở lớp trên vắt ngang qua riêng các ngón của $M_2$ mà không có trên $M_1$, trường cơ học/tĩnh điện và tụ ký sinh chồng lấn sẽ phá vỡ đối xứng, làm tăng cả $V_{OS}$ lẫn $HD_2$ tần số cao! Nếu không thể tránh, bắt buộc đặt một **đoạn dây giả đối xứng (`dummy replica wire` nối đất)** bên trên $M_1$ (Hình 19.17b).
 - **`[TRAP-LAY-02]` Bẫy Cắt Rời Vùng Khuếch tán Active Giữa Ngón Thật và Ngón Giả:** Nhiều người đặt `Dummy MOS` tách rời thành một đảo Active riêng biệt cách transistor chính một rãnh `STI`! Làm vậy hoàn toàn **vô hiệu hóa tác dụng chống ứng suất `STI/LOD`** vì mép rãnh `STI` vẫn nằm sát sườn ngón thật! Ngón giả bắt buộc phải nằm chung trên **cùng một dải `OD` liên tục** với các ngón thật (Hình 19.21b, c).
 - **`[TRAP-LAY-03]` Bẫy Cộng hưởng Nổ Nhiễu Nguồn do Tụ Lọc Trên Chip $Q$ Cao (§19.4 tr. 768):** Gắn tụ lọc nguồn `MOM` thuần dung kháng (ESR cực thấp) nối tiếp với tự cảm dây hàn $L_D + L_G \approx 4\text{–}10\text{ nH}$ tạo mạch cộng hưởng $LC$ hệ số phẩm chất $Q$ cao ngay vùng $100\text{–}500\text{ MHz}$; nếu hài xung nhịp rơi trúng $\omega_{\text{res}}$, biên độ rung nguồn `VDD` sẽ bị **khuếch đại vọt lên gấp $Q$ lần** thay vì được lọc êm! Phải tính chọn điện trở nối tiếp kênh MOS (`RS`) để đạt đáp ứng tắt dần tới hạn ($R_S \approx \sqrt{(L_D + L_G)/C_{\text{decap}}}$).

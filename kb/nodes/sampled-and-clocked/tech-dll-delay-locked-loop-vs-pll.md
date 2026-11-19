@@ -10,9 +10,15 @@
   "razavi_refs": [
     {
       "chapter": 16,
+      "section": "16.3.2",
+      "pages": "681-683",
+      "equations": ["16.48"]
+    },
+    {
+      "chapter": 16,
       "section": "16.4, 16.5.2",
       "pages": "683-685, 687-688",
-      "equations": ["16.48"]
+      "equations": []
     }
   ],
   "glossary_codes": [
@@ -194,7 +200,7 @@ tran_dll tran stop=80n errpreset=conservative
 
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
-- **Sách gốc Razavi (2nd Ed.)**: Chương 16, trọng tâm Mục `16.4` (*Delay-Locked Loops*, trang 683–685, Hình `16.52`–`16.54`, Ví dụ `16.12`, Phương trình `16.48`) và Mục `16.5.2` (*Skew Reduction*, trang 687–688, Hình `16.57`–`16.59`, Bài tập `16.17`–`16.18`).
+- **Sách gốc Razavi (2nd Ed.)**: Chương 16, đối chiếu Mục `16.3.2` (*Jitter in PLLs*, trang 681–683, Phương trình `16.48`), trọng tâm Mục `16.4` (*Delay-Locked Loops*, trang 683–685, Hình `16.52`–`16.54`, Ví dụ `16.12`) và Mục `16.5.2` (*Skew Reduction*, trang 687–688, Hình `16.57`–`16.60`, Ví dụ `16.13`, Phương trình `16.55`–`16.56`).
 - **Đối chiếu Thuật ngữ Chuẩn CLB Vi Mạch (`terms-vi-en.json`)**:
   - `T029` (`delay-locked loop, DLL`): **vòng khóa trễ**; `T064` (`phase-locked loop, PLL`): **vòng khóa pha**.
   - `T2161` (`ring oscillator`): **bộ dao động vòng**; `T1802` (`integrator`): **mạch tích phân**.

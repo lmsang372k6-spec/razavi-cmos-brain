@@ -5,7 +5,7 @@
   "domain": "references-and-biasing",
   "title_vi": "Mạch tham chiếu vùng cấm điện áp thấp dưới 1 V (Banba Fractional Sub-1V Bandgap Reference)",
   "title_en": "Low-Voltage Sub-1V Fractional Bandgap Reference",
-  "summary": "Kiến trúc cộng dòng điện có hệ số nhiệt đối dấu (cấu trúc Banba và phân áp dòng Neuteboom) phá vỡ trần vật lý 1.25 V của tham chiếu vùng cấm truyền thống, cho phép tạo điện áp tham chiếu bất kỳ dưới 1 V (như 0.5 V - 0.8 V) và vận hành ở nguồn cấp VDD thấp tới 0.75 V trong các tiến trình CMOS 90nm / 65nm / 45nm.",
+  "summary": "Kiến trúc cộng dòng điện có hệ số nhiệt đối dấu (cấu trúc Banba và phân áp dòng Neuteboom) phá vỡ trần vật lý 1.25 V của tham chiếu vùng cấm truyền thống, cho phép tạo điện áp tham chiếu bất kỳ dưới 1 V (như 0.5 V - 0.8 V) và vận hành ở nguồn cấp VDD tối thiểu max(|VBE1(Tmin)| + |VSD3,min|, VBG + |VSD5,min|, VDD,min,OTA) thấp tới ~0.75 V (khi VBG <= 0.70 V) trong các tiến trình CMOS 90nm / 65nm / 45nm.",
   "diagram": "../../diagrams/low-voltage-sub1v-bandgap.svg",
   "razavi_refs": [
     {
@@ -41,7 +41,7 @@
     "shunt_ctat_resistors": "Cặp điện trở đối xứng R2 = R3 mắc song song từ hai nút kẹp X, Y xuống đất sinh ra thành phần dòng hệ số nhiệt âm ICTAT = |VBE1|/R2 mà không làm lệch tỉ số dòng cực góp IC1 = IC2",
     "current_summing_pmos_mirror": "Gương dòng PMOS M3-M4-M5 cộng trực tiếp hai dòng IPTAT + ICTAT thành dòng có hệ số nhiệt bằng không (zero-TC current) và sao chép sang nhánh ngõ ra",
     "scaling_load_resistor_r4": "Điện trở tải ngõ ra R4 chuyển đổi dòng zero-TC thành điện áp tham chiếu phân số tùy ý VBG = (R4/R2)·(|VBE1| + (R2/R1)·VT·ln(n)) < 1 V",
-    "low_vdd_ota_and_startup": "Bộ khuếch đại 5T-OTA đầu vào PMOS vận hành ngay dưới ngưỡng |VBE1| kèm transistor NMOS khởi động nối giữa nút cổng PMOS và nút X"
+    "low_vdd_ota_and_startup": "Bộ khuếch đại 5T-OTA đầu vào NMOS (Hình 12.34a, VGS,a + VDS,min,ISS <= |VBE1|) hoặc biến thể PMOS-in dịch mức, kèm transistor NMOS khởi động Me nối giữa nút cổng PMOS P và nút X"
   },
   "symptoms_addressed": [
     "classic-1p25v-bandgap-exceeds-sub1v-supply",
@@ -77,7 +77,9 @@ Quá trình tiến hóa 3 bước trong Hình 12.32 làm sáng tỏ trọn vẹn
 2. **Sửa lỗi đối xứng hoàn hảo của Banba (Hình 12.32b–c):** Thay vì mắc $R_2$ dưới $R_1$, ta nối $R_2$ trực tiếp từ nút kẹp $Y$ xuống đất, và **đặt thêm một điện trở đối xứng $R_3 = R_2$ từ nút kẹp $X$ xuống đất** (song song với $Q_1$).
    - Khi Op-Amp $A_1$ ép $V_X = V_Y = |V_{BE1}|$ và gương PMOS $M_3$–$M_4$ ($1:1$) ép $I_{D3} = I_{D4}$, hai dòng rẽ qua $R_3$ và $R_2$ hoàn toàn bằng nhau ($\frac{|V_{BE1}|}{R_3} = \frac{|V_{BE1}|}{R_2}$), nhờ đó hai dòng đi vào hai nhánh BJT vẫn bằng nhau tuyệt đối $I_{C1} = I_{C2} = \frac{V_T \ln n}{R_1}$!
    - Đồng thời, tổng dòng chảy trên mỗi nhánh PMOS chính là tổng của dòng PTAT (nhánh BJT) cộng với dòng CTAT (nhánh điện trở $R_2$): $|I_{D4}| = \frac{V_T \ln n}{R_1} + \frac{|V_{BE1}|}{R_2}$.
-3. **Nhánh xuất áp phân số ($M_5$ và $R_4$):** Transistor PMOS $M_5$ sao chép dòng zero-TC $|I_{D4}|$ đổ xuống điện trở $R_4$, tạo ra bất kỳ mức điện áp tham chiếu nào (ví dụ $0,50\text{ V}$, $0,60\text{ V}$ hoặc $0,80\text{ V}$), trong khi khoảng dự trữ nguồn cấp tối thiểu toàn mạch chỉ cần **$V_{DD,\min} = |V_{BE1}| + |V_{DS3,\min}| \approx 0,70\text{ V} + 0,05\text{ V} = 0,75\text{ V}$**!
+3. **Nhánh xuất áp phân số ($M_5$ và $R_4$) & Quy tắc nguồn cấp tối thiểu $V_{DD,\min}$ chính xác:** Transistor PMOS $M_5$ sao chép dòng zero-TC $|I_{D4}|$ đổ xuống điện trở $R_4$, tạo ra bất kỳ mức điện áp tham chiếu phân số nào (ví dụ $0,50\text{ V}$, $0,60\text{ V}$ hoặc $0,80\text{ V}$). Lưu ý phân biệt chặt chẽ trần nguồn cấp: con số kinh điển **$0,75\text{ V}$** ($|V_{BE1}| + |V_{SD3,\min}| \approx 0,70\text{ V} + 0,05\text{ V}$) chỉ áp dụng khi **$V_{BG} \le |V_{BE1}|$** ($\le 0,70\text{ V}$); đối với mạch đầy đủ Hình 12.32(c) bao gồm cả nhánh xuất áp $M_5 + R_4$ và khối OTA/khởi động trên toàn dải nhiệt độ:
+   $$V_{DD,\min} = \max\!\Big(|V_{BE1}(T_{\min})| + |V_{SD3,\min}|,\; V_{BG} + |V_{SD5,\min}|,\; V_{DD,\min,\text{OTA/startup}}\Big)$$
+   Do đó nếu thiết kế $V_{BG} = 0,80\text{ V}$ (với $|V_{SD5,\min}| = 0,05\text{ V}$) thì nhánh ra đòi hỏi tối thiểu **$V_{DD,\min} \ge 0,85\text{ V}$** (và ở $-40\,^\circ\text{C}$ khi $|V_{BE1}| \approx 0,85\text{ V}$, nhánh lõi cũng yêu cầu $\ge 0,90\text{ V}$)!
 4. **Biến thể phân áp dòng Neuteboom (Hình 12.35):** Giữ nhánh thứ ba $|V_{BE3}| + R_2$ như Hình 12.20 nhưng mắc thêm điện trở $R_3$ từ $V_{out}$ xuống đất để trích bớt một phần dòng PTAT $|I_{D5}|$, hạ áp chuẩn $1,25\text{ V}$ xuống theo tỉ số $\frac{R_3}{R_2 + R_3}$.
 
 ---
@@ -124,14 +126,14 @@ Tổng mật độ phổ công suất nhiễu tại ngõ ra $V_{BG}$ của mạc
    $$S_{V,\text{op}}(f) = \left(\frac{R_4}{R_1 \parallel R_2}\right)^2 \overline{V_{n,op}^2(f)}$$
 2. **Nhiễu dòng của cặp gương PMOS $M_4$–$M_5$:** Dòng nhiễu của $M_4$ (được hồi tiếp truyền qua cổng chung) và $M_5$ đổ trực tiếp vào $R_4$:
    $$S_{V,\text{mirror}}(f) \approx 2 R_4^2 \left(4 k T \gamma g_{m4} + \frac{K_P}{C_{ox} W_4 L_4 f} g_{m4}^2\right)$$
-3. **Nhiễu nhiệt của chính các điện trở $R_1, R_2, R_3, R_4$:**
-   $$S_{V,R} \approx 4 k T R_4 + 4 k T R_1 \left(\frac{R_4}{R_1}\right)^2 = 4 k T R_4 \left(1 + \frac{R_4}{R_1}\right)$$
+3. **Nhiễu nhiệt của chính các điện trở $R_1, R_2, R_3, R_4$** (xét khi $1/g_{m,Q} \ll R_1$, nút $X$ ghim gần đất AC nên cả dòng nhiễu của $R_1$ lẫn $R_2$ tại nút $Y$ đều phản chiếu qua $M_4 \to M_5$ sang $R_4$):
+   $$S_{V,R} \approx 4 k T R_4 + \frac{4 k T}{R_1 \parallel R_2}\,R_4^2 = 4 k T R_4 \left(1 + \frac{R_4}{R_1} + \frac{R_4}{R_2}\right)$$
 - **Ví dụ định cỡ số thực tế cho SoC $65\text{nm}$ ($V_{DD} = 0,85\text{ V}$, mục tiêu $V_{BG} = 0,600\text{ V}$, tổng dòng $< 30\,\mu\text{A}$):**
   - Chọn ma trận BJT đơn vị $n = 24$ (lưới $5 \times 5$ lấy tâm là $Q_1$, 24 ô xung quanh là $Q_2$) $\implies \ln 24 = 3,178$, tại $300\text{ K}$ cho $\Delta V_{BE} \approx 82,2\text{ mV}$.
   - Với $|V_{BE1}(300\text{ K})| \approx 740\text{ mV}$ và $|\partial V_{BE1}/\partial T| \approx 1,42\text{ mV/K}$, điều kiện zero-TC cho $\frac{R_2}{R_1} \approx \frac{1,42}{0,0862 \times 3,178} \approx 5,18$.
   - Chọn dòng nhánh BJT $I_{C1} = I_{C2} = 4,1\,\mu\text{A} \implies R_1 = \frac{82,2\text{ mV}}{4,1\,\mu\text{A}} = 20\text{ k}\Omega$, suy ra $R_2 = R_3 = 5,18 \times 20\text{ k}\Omega = 103,6\text{ k}\Omega$ (dòng qua $R_2$ là $740\text{ mV} / 103,6\text{ k}\Omega \approx 7,14\,\mu\text{A}$).
-  - Tổng dòng zero-TC mỗi nhánh gương PMOS là $|I_{D3}| = |I_{D4}| = |I_{D5}| \approx 4,1 + 7,14 = 11,24\,\mu\text{A}$ (cả 3 nhánh cộng OTA chỉ tiêu thụ $\approx 38\,\mu\text{A}$, hoặc giảm nửa dòng bằng cách nhân đôi các điện trở!).
-  - Đặt mức ngõ ra $V_{BG} = 0,600\text{ V}$: chọn $R_4 = \frac{0,600\text{ V}}{11,24\,\mu\text{A}} \approx 53,4\text{ k}\Omega$ (tức $R_4 / R_2 \approx 0,515$). Hệ số nhân offset chỉ còn $\frac{R_4}{R_1 \parallel R_2} = 0,515 \times (1 + 5,18) \approx 3,18\times$!
+  - Tổng dòng zero-TC mỗi nhánh gương PMOS là $|I_{D3}| = |I_{D4}| = |I_{D5}| \approx 4,1 + 7,14 = 11,24\,\mu\text{A}$ (nếu giảm một nửa dòng bằng cách nhân đôi các điện trở, cả 3 nhánh cộng OTA chỉ tiêu thụ $< 22\,\mu\text{A}$!).
+  - Đặt mức ngõ ra $V_{BG} = 0,600\text{ V}$: chọn $R_4 = \frac{0,600\text{ V}}{11,24\,\mu\text{A}} \approx 53,4\text{ k}\Omega$ (tức $R_4 / R_2 \approx 0,515$). Hệ số nhân offset lý tưởng là $\frac{R_4}{R_1 \parallel R_2} = 0,515 \times (1 + 5,18) \approx 3,18\times$ (nếu kể thêm trở kháng động hữu hạn $1/g_{m,Q} \approx 6,3\text{ k}\Omega$ ở $4,1\,\mu\text{A}$ thì hệ số chính xác là $3,55\times$)!
 
 ---
 
@@ -139,13 +141,16 @@ Tổng mật độ phổ công suất nhiễu tại ngõ ra $V_{BG}$ của mạc
 
 - **[INV-LVBG-01] Bất biến đối xứng tuyệt đối $R_2 = R_3$ trong lưới điện trở đơn vị:**
   Nếu $R_2$ và $R_3$ lệch nhau $\Delta R$, phương trình (12.66) làm $I_{C1} - I_{C2} = |V_{BE1}|\left(\frac{1}{R_2} - \frac{1}{R_3}\right) \neq 0$, tiêm một thành phần CTAT ký sinh lọt vào vòng tạo $\Delta V_{BE}$. Bắt buộc dựng $R_2$ và $R_3$ từ các thanh điện trở đơn vị đan xen tâm chung (`tech-common-centroid-sti-wpe-layout`) ngay sát nhau.
-- **[INV-LVBG-02] Bất biến ngân sách khoảng dự trữ ngõ vào OTA dưới mức $|V_{BE1}|$ (Hình 12.34a):**
-  Ở $V_{DD} = 0,85\text{–}1,0\text{ V}$, hai ngõ vào của OTA ($M_a, M_b$) nối vào $X, Y$ có mức đồng pha bằng $|V_{BE1}|$.
-  - Nếu dùng **5T-OTA đầu vào PMOS** như Hình 12.34(a), nguồn dòng đuôi $I_{SS}$ nằm phía $V_{DD}$, nên điều kiện bắt buộc để $I_{SS}$ không bị bóp nghẹt vào vùng triode là:
-    $$|V_{BE1}| + |V_{GS,a}| + |V_{DS,\min,ISS}| \le V_{DD,\min}$$
-    Ví dụ tại $-40\,^\circ\text{C}$, $|V_{BE1}| \approx 0,85\text{ V}$! Nếu $V_{DD,\min} = 0,90\text{ V}$, một cặp PMOS ngưỡng chuẩn ($|V_{TH,P}| \approx 0,35\text{ V}$) nối trực tiếp vào $X, Y$ **chắc chắn làm tắt nguồn dòng đuôi $I_{SS}$**! Bắt buộc phải: (a) dùng transistor PMOS ngưỡng thấp (`LVT`) chạy trong vùng dưới ngưỡng sâu với diện tích cực rộng để $|V_{GS,a}|$ cực nhỏ, hoặc (b) dịch mức đồng pha xuống thấp hơn bằng bộ chia điện trở $R_2$ thành hai đoạn ($R_{2a} + R_{2b}$) rồi đưa nút chia thấp hơn ($\sim 0,4\text{ V}$) vào cổng PMOS của OTA!
+- **[INV-LVBG-02] Bất biến khoảng dự trữ đồng pha ngõ vào 5T-OTA quanh mức $|V_{BE1}|$ (Đối chiếu Hình 12.34a NMOS-in vs. Biến thể PMOS-in):**
+  Hai ngõ vào của OTA ($M_a, M_b$) nối trực tiếp vào $X, Y$ có mức điện áp đồng pha bằng $|V_{BE1}(T)|$ (biến thiên từ $\sim 0,85\text{ V}$ ở $-40\,^\circ\text{C}$ xuống $\sim 0,55\text{–}0,60\text{ V}$ ở $+125\,^\circ\text{C}$):
+  1. **Cấu trúc chuẩn trong sách gốc Razavi (trang 532, Hình 12.34a — 5T-OTA đầu vào NMOS):** Cặp vi sai ngõ vào $M_a, M_b$ là **NMOS** có nguồn dòng đuôi $I_{SS}$ nối xuống đất và tải gương chủ động PMOS $M_c, M_d$ treo lên $V_{DD}$. Điều kiện bắt buộc để nguồn dòng đuôi $I_{SS}$ không bị ép vào vùng triode (đặc biệt khắc nghiệt ở **nhiệt độ cao $+125\,^\circ\text{C}$** khi $|V_{BE1}|$ tụt thấp nhất!) là:
+     $$V_{GS,a} + V_{DS,\min,ISS} \le |V_{BE1}(T_{\max})|$$
+     Do đó $M_a, M_b$ bắt buộc định cỡ bề rộng lớn (hoặc dùng NMOS ngưỡng thấp / vùng dưới ngưỡng) để giảm $V_{GS,a}$ xuống dưới $0,42\text{–}0,45\text{ V}$, đồng thời $V_{DD,\min}$ của bản thân OTA phải thỏa $|V_{SG,c}| + V_{DS,\min,a} + V_{DS,\min,ISS} \le V_{DD,\min}$.
+  2. **Biến thể 5T-OTA đầu vào PMOS (nguồn dòng đuôi $I_{SS}$ treo lên $V_{DD}$):** Ngược lại, nếu chọn cặp đầu vào PMOS nối trực tiếp vào $X, Y$, điều kiện sống còn chuyển sang đầu **nhiệt độ thấp $-40\,^\circ\text{C}$** (khi $|V_{BE1}| \approx 0,85\text{ V}$ vọt cao nhất!):
+     $$|V_{BE1}(T_{\min})| + |V_{SG,a}| + |V_{SD,\min,ISS}| \le V_{DD,\min}$$
+     Ở $V_{DD,\min} = 0,90\text{ V}$, cặp PMOS ngưỡng chuẩn nối thẳng vào $X, Y$ chắc chắn bóp tắt $I_{SS}$, buộc phải dùng PMOS `LVT` dưới ngưỡng sâu hoặc hạ mức đồng pha qua cầu chia điện trở tách đoạn $R_2 = R_{2a} + R_{2b}$ (xem §5.1)!
 - **[TRAP-LVBG-01] Bẫy mạch khởi động ở $V_{DD} < 1\text{ V}$ (Hình 12.34b):**
-  Khi mạch kẹt ở điểm chết $V_X = V_Y = 0\text{ V}$, trong 5T-OTA đầu vào PMOS của Hình 12.34(a), $M_a, M_b$ lại dẫn mạnh hoặc tải gương NMOS khóa nút $P$ (cổng $M_3, M_4$) sát $V_{DD}$, giữ chặt $M_3, M_4$ ở trạng thái tắt! Razavi chỉ ra mẹo tinh tế trong Hình 12.34(b): ở trạng thái chết ($V_X = 0, V_P \approx V_{DD}$), hiệu điện thế $V_P - V_X \approx V_{DD} > 0$ phân cực thuận một transistor NMOS mắc diode $M_e$ nối từ $P$ sang $X$, kéo $P$ xuống và bơm dòng vào $X$ để đánh thức mạch; khi mạch đã khóa ở $V_{DD} < 1\text{ V}$, $V_X \approx 0,75\text{ V}$ còn $V_P = V_{DD} - |V_{GS3}| \approx 0,5\text{–}0,6\text{ V}$ khiến **$V_P - V_X < 0$** — $M_e$ bị phân cực ngược nên tự ngắt hoàn toàn không tốn một pA dòng rò! (Nhưng cẩn thận: nếu đem nguyên sơ đồ $M_e$ này lên $V_{DD} = 1,5\text{ V}$, lúc khóa $V_P \approx 1,1\text{ V}$ khiến $V_P - V_X = +0,35\text{ V} > 0$, ở góc `FF, 125 °C` $M_e$ sẽ rò dòng làm hỏng $V_{BG}$!).
+  Khi mạch mới bật nguồn kẹt ở điểm chết $V_X = V_Y = 0\text{ V}$, trong **5T-OTA đầu vào NMOS của Hình 12.34(a)**, cặp NMOS $M_a, M_b$ **tắt hoàn toàn** ($V_{GS,a} = 0\text{ V}$), khiến nút ngõ ra $P$ (cổng của $M_3, M_4$) nằm sát $V_{DD}$ và giữ chặt $M_3, M_4$ ở trạng thái tắt! Razavi chỉ ra mẹo tinh tế trong Hình 12.34(b): ở trạng thái chết ($V_X = 0, V_P \approx V_{DD}$), hiệu điện thế $V_P - V_X \approx V_{DD} > 0$ phân cực thuận một transistor NMOS mắc diode $M_e$ nối từ $P$ sang $X$, kéo $P$ xuống và bơm dòng vào $X$ để đánh thức mạch; khi mạch đã khóa ở $V_{DD} < 1\text{ V}$, $V_X = |V_{BE1}| \approx 0,75\text{ V}$ còn $V_P = V_{DD} - |V_{SG3}| \approx 0,45\text{–}0,55\text{ V}$ khiến **$V_P - V_X < 0$** — $M_e$ bị phân cực ngược nên tự ngắt hoàn toàn! (Nhưng cẩn thận: nếu đem nguyên sơ đồ $M_e$ này lên $V_{DD} = 1,5\text{ V}$, lúc khóa $V_P \approx 1,1\text{ V}$ khiến $V_P - V_X = +0,35\text{ V} > 0$, ở góc `FF, 125 °C` $M_e$ sẽ rò dòng làm hỏng $V_{BG}$!).
 - **[TRAP-LVBG-02] Bẫy trở kháng ra cao của $R_4$ khi nối tải tiếp theo:**
   Khác với Bandgap Kuijk Hình 12.9 có ngõ ra được đệm bởi trở kháng thấp của Op-Amp, ngõ ra $V_{BG}$ của mạch Banba là một nguồn dòng $M_5$ đổ vào điện trở $R_4$ (trở kháng ra bằng $R_4 \parallel r_{O5} \approx R_4 \sim 50\text{ k}\Omega$)! Bất kỳ dòng rò ngõ vào hay dòng chuyển mạch tụ nào hút từ nút $V_{BG}$ đều gây sụt áp tức thời $I_{load} R_4$. Chỉ được nối $V_{BG}$ vào cực cổng cách điện của MOSFET (ví dụ ngõ vào của `topo-cmos-ldo-regulator`) kèm tụ lọc lớn song song với $R_4$.
 

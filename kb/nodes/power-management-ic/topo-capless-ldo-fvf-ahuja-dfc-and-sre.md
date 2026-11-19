@@ -10,8 +10,8 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.2.1, 8.3, 8.5",
-      "pages": "286-291, 298-299, 303-312",
+      "section": "8.1.1, 8.2.1, 8.3, 8.5",
+      "pages": "275-282, 286-291, 298-299, 303-312",
       "equations": [
         "8.14",
         "8.36"
@@ -20,7 +20,7 @@
     {
       "chapter": 9,
       "section": "9.10-9.11",
-      "pages": "396-402",
+      "pages": "397-402",
       "equations": [
         "9.81",
         "9.85"
@@ -40,7 +40,7 @@
     {
       "chapter": 12,
       "section": "12.6, 12.8",
-      "pages": "525-528, 534-535",
+      "pages": "525-529, 533-535",
       "equations": [
         "12.60"
       ]
@@ -160,10 +160,10 @@ $$
    Khối DFC mắc một bộ khuếch đại đảo phụ nhỏ $A_{\text{DFC}} = -g_{m,d} R_{o,d}$ phối hợp với tụ $C_{\text{DFC}}$ nối tại nút trung gian (giữa Tầng 1 và Tầng 2) hoặc nối tiếp điện trở giảm chấn $R_{\text{DFC}}$ trong nhánh hồi tiếp phụ từ cổng $M_{\text{pass}}$. Khối này bơm một thành phần dẫn nạp tỉ lệ với đạo hàm bậc nhất $s$ vào hệ số bậc một $\dfrac{2\zeta}{\omega_n}$ của mẫu số mà không tiêu tốn dòng tĩnh ở tải nặng, ép hệ số tắt dần tối thiểu tại $I_{\text{load}} = 0$ luôn thỏa mãn:
 
 $$
-\zeta_{\text{DFC}}(I_{\text{load}} = 0) \ge \frac{1}{\sqrt{2}} \approx 0{,}707 \implies \text{Xóa sạch 100\% gai cộng hưởng trên đồ thị Bode \& bước nhảy không rung!}
+\zeta_{\text{DFC}}(I_{\text{load}} = 0) \ge \frac{1}{\sqrt{2}} \approx 0{,}707 \implies \text{Xóa sạch 100\% gai cộng hưởng biên độ AC (0 dB peaking)!}
 $$
 
-   Đồng thời nó còn sinh một zero LHP khử bớt trễ pha quanh $\omega_u$, cho phép dùng tụ bù trên chip cực gọn ($C_c + C_{\text{DFC}} \le 8\text{–}15\text{ pF}$)!
+   *(Lưu ý phân biệt chính xác giữa miền tần số và miền thời gian: với hệ thông thấp thuần 2 cực không có zero, điểm Butterworth $\zeta = 1/\sqrt{2}$ triệt tiêu hoàn toàn đỉnh nhô biên độ AC $0\text{ dB}$, nhưng đáp ứng bậc thang thời gian vẫn còn độ vọt lố tắt dần $\exp\!\left(-\frac{\pi\zeta}{\sqrt{1-\zeta^2}}\right) = e^{-\pi} \approx \mathbf{4{,}32\%}$ — muốn đáp ứng bậc thang 2 cực đơn điệu tuyệt đối không vọt lố cần $\zeta \ge 1$; còn trong LDO đa vòng có thêm zero LHP từ nhánh DFC, biên độ vọt lố thực tế phụ thuộc vào toàn bộ cấu hình cực–zero vòng kín.)* Đồng thời khối DFC còn sinh một zero LHP khử bớt trễ pha quanh $\omega_u$, cho phép dùng tụ bù trên chip cực gọn ($C_c + C_{\text{DFC}} \le 8\text{–}15\text{ pF}$)!
 
 ### 2.3. Mạch Tăng tốc Sườn Động Ghép Tụ (`Dynamic SRE`) & Kẹp Hút Dòng Chống Vọt Lố Nhả Tải
 Để giải bài toán $\Delta V_{\text{droop}}$ và $\Delta V_{\text{overshoot}}$ trên $C_{\text{OUT}} = 100\text{ pF}$ mà không tốn thêm dòng tĩnh $I_Q$ ở trạng thái nghỉ (`vyges/sg13cmos5l_vyges_ip__ldo_capless`):
@@ -178,13 +178,13 @@ Viết tỉ số truyền nhiễu từ $\hat{v}_{\text{in}}(s)$ xuống $\hat{v}
   $$\frac{\hat{v}_{\text{out}}}{\hat{v}_{\text{in}}}(0) \approx \frac{1}{T_0} \left(\frac{R_{\text{out,open}}}{r_{O,\text{pass}}} + g_{m,\text{pass}} R_{\text{out,open}} \big(1 - A_{g,\text{sup}}\big)\right) + \frac{1}{\beta}\frac{\Delta V_{\text{REF}}}{\Delta V_{\text{IN}}}$$
   trong đó $A_{g,\text{sup}} = \frac{\partial V_{G,\text{pass}}}{\partial V_{\text{IN}}}$ là hệ số bám nguồn của nút cổng $M_{\text{pass}}$! **Muốn PSRR cao, bắt buộc tầng lái cổng $M_{\text{pass}}$ phải tham chiếu lên chính $V_{\text{IN}}$ để $A_{g,\text{sup}} \to 1$ (`CHK-LDO-04`), biến $\hat{v}_{sg,\text{pass}} = \hat{v}_{\text{in}} - \hat{v}_g \approx 0$!**
 - **Miền II — Trung tần ($f_{p1} < f < f_u$):** $|T(jf)|$ giảm $-20\text{ dB/dec}$ làm trở kháng ra đóng vòng tăng lên như một cuộn cảm ảo $Z_{\text{out,cl}}(jf) \approx \frac{R_{\text{out,open}}}{|T(jf)|} \propto f$, tạo **thung lũng suy giảm PSRR (`PSRR Valley`)** chạm đáy quanh $f_u$! Đẩy rộng $f_u$ (như trong FVF-LDO hoặc Ahuja-LDO) trực tiếp nâng sâu khả năng khử nhiễu chuyển mạch $1\text{–}10\text{ MHz}$ từ bộ nguồn Buck đứng trước!
-- **Miền III — Siêu cao tần ($f \gg f_u$):** Vòng hồi tiếp mở hoàn toàn ($|T| \ll 1$), nhiễu từ $V_{\text{IN}}$ truyền thẳng qua điện dung ký sinh cực nguồn-máng và cổng-máng của $M_{\text{pass}}$ chia áp với tụ trên chip $C_{\text{OUT}}$:
+- **Miền III — Siêu cao tần ($f \gg f_u$):** Vòng hồi tiếp mở hoàn toàn ($|T| \ll 1$, dòng dẫn kênh $g_{m,\text{pass}}\hat{v}_{sg}$ nhỏ hơn nhiều dòng dịch chuyển điện dung $j\omega C$). Viết KCL trực tiếp tại nút $V_{\text{OUT}}$ với $\hat{v}_g = A_{g,\text{sup}} \hat{v}_{\text{in}}$, nhiễu từ $V_{\text{IN}}$ truyền qua hai điện dung ký sinh $C_{SD,\text{pass}}$ (nối $V_{\text{IN}}$) và $C_{GD,\text{pass}}$ (nối cổng $M_{\text{pass}}$) chia áp với tụ trên chip $C_{\text{OUT}}$:
 
 $$
-\left.\frac{\hat{v}_{\text{out}}}{\hat{v}_{\text{in}}}\right|_{f \gg f_u} \approx \frac{C_{SD,\text{pass}} + (1 - A_{g,\text{sup}}) C_{GD,\text{pass}}}{C_{\text{OUT}} + C_{SD,\text{pass}} + C_{GD,\text{pass}}}
+\left.\frac{\hat{v}_{\text{out}}}{\hat{v}_{\text{in}}}\right|_{f \gg f_u} \approx \frac{C_{SD,\text{pass}} + A_{g,\text{sup}}\,C_{GD,\text{pass}}}{C_{\text{OUT}} + C_{SD,\text{pass}} + C_{GD,\text{pass}}}
 $$
 
-  Công thức này giải thích tại sao ở $f > 50\text{ MHz}$, nếu không định cỡ $W_{\text{pass}}$ vừa đủ gọn (tránh thừa diện tích khuếch tán cực máng làm phình $C_{SD,\text{pass}}$) trên nền $C_{\text{OUT}} = 100\text{ pF}$, PSRR cao tần có thể tụt về chỉ còn $12\text{–}18\text{ dB}$!
+  **Tính đối ngẫu vật lý cực kỳ sâu sắc giữa trung tần và siêu cao tần:** Ở DC và trung tần ($f \lesssim f_u$), thiết kế tầng lái cổng bám nguồn để $A_{g,\text{sup}} \to 1$ triệt tiêu $\hat{v}_{sg,\text{pass}} = (1 - A_{g,\text{sup}})\hat{v}_{\text{in}} \to 0$, khóa chặt đường khuếch đại chủ động $g_{m,\text{pass}}$; thế nhưng ở miền siêu cao tần ($f \gg f_u$), chính việc cực cổng đi theo $V_{\text{IN}}$ ($A_{g,\text{sup}} \to 1$) lại biến $C_{GD,\text{pass}}$ thành nhánh ghép điện dung **mắc song song cùng chiều** với $C_{SD,\text{pass}}$ bơm gợn thẳng sang $V_{\text{OUT}}$ theo tỉ số $\frac{C_{SD,\text{pass}} + C_{GD,\text{pass}}}{C_{\text{OUT}} + C_{SD,\text{pass}} + C_{GD,\text{pass}}}$! Vì vậy ở $f > 50\text{ MHz}$, nếu không định cỡ $W_{\text{pass}}$ vừa đủ gọn (giảm thiểu cả $C_{GD,\text{pass}}$ lẫn diện tích khuếch tán cực máng $C_{SD,\text{pass}}$) trên nền $C_{\text{OUT}} = 100\text{ pF}$, PSRR cao tần sẽ bị chặn trần ở $20\log_{10}\!\left(\frac{C_{\text{OUT}} + C_{SD} + C_{GD}}{C_{SD} + C_{GD}}\right) \approx 18\text{–}28\text{ dB}$!
 
 ---
 

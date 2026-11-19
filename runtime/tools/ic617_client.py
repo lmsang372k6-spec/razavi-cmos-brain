@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Zero-Python3 Live Virtuoso IC617 CIW Bridge Helper & Client CLI.
 
-Managed by SKILL-ANALOG (release 2026.11.18.6).
+Managed by SKILL-ANALOG (release 2026.11.18.7).
 100% Python 2.6.6+ and Python 3 standard-library compatible (`optparse`, zero external deps).
 
 Modes:
@@ -40,7 +40,7 @@ import time
 
 sys.dont_write_bytecode = True
 
-RELEASE_VERSION = "2026.11.18.6"
+RELEASE_VERSION = "2026.11.18.7"
 _TOOLS_DIR = os.path.dirname(os.path.realpath(__file__))
 _LIBRARY_ROOT = os.path.dirname(_TOOLS_DIR)
 _MODE_0700 = int("700", 8)

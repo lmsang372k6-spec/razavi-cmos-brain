@@ -11,20 +11,20 @@
     {
       "chapter": 2,
       "section": "2.1.1, 2.2.2",
-      "pages": "9-11, 16-21",
-      "equations": ["2.7", "2.9"]
+      "pages": "7-8, 12-19",
+      "equations": ["2.7", "2.10", "2.11"]
     },
     {
       "chapter": 5,
       "section": "5.1-5.2",
-      "pages": "135-147",
+      "pages": "134-146",
       "equations": ["5.10"]
     },
     {
       "chapter": 14,
-      "section": "14.2.1-14.2.2",
-      "pages": "591-601",
-      "equations": ["14.78"]
+      "section": "14.2-14.2.2",
+      "pages": "593-602",
+      "equations": ["14.68", "14.78"]
     },
     {
       "chapter": 19,
@@ -131,7 +131,7 @@ $$
   Chỉ bằng một nút cộng dòng điện trở thấp $R_{\text{sum}} \sim 2\text{–}10\text{ k}\Omega$ rất nhanh, ta thu được tổng $(R_i i_L + R_i m_a t)$ đưa thẳng vào ngõ vào dương (`+`) của bộ so sánh tốc độ cao, trong khi ngõ vào âm (`-`) nối trực tiếp vào `VCOMP` với trở kháng vào vô cùng lớn!
 
 ### 2.2. Khối 2 — Cảm Biến Dòng Không Tổn Hao `SenseFET` ($1:N$) & Mặt Nạ Chắn Gai `LEB`
-Xét công tắc công suất High-Side PMOS $M_{\text{P,main}}$ được ghép song song từ $N$ ô ngón đơn vị hoàn toàn giống nhau ($N \in [500,\; 2500]$, ví dụ $N = 1000$). Tách riêng $1$ ô đơn vị đặt ngay tại **tâm hình học và tâm nhiệt độ** của mảng công suất làm transistor mẫu $M_{\text{P,sense}}$ (`T2194`). Cả $M_{\text{P,main}}$ và $M_{\text{P,sense}}$ đều được lái chung cực cổng `HGATE` và nối chung cực nguồn lên `VIN`, nên khi bật dẫn cả hai cùng nằm sâu trong **vùng tuyến tính / triode sâu (`T188`)** với điện áp vượt ngưỡng $|V_{SG} - |V_{THP}|| \gg |V_{SD}|$ (Razavi Chương 2 §2.2.2, Phương trình 2.9):
+Xét công tắc công suất High-Side PMOS $M_{\text{P,main}}$ được ghép song song từ $N$ ô ngón đơn vị hoàn toàn giống nhau ($N \in [500,\; 2500]$, ví dụ $N = 1000$). Tách riêng $1$ ô đơn vị đặt ngay tại **tâm hình học và tâm nhiệt độ** của mảng công suất làm transistor mẫu $M_{\text{P,sense}}$ (`T2194`). Cả $M_{\text{P,main}}$ và $M_{\text{P,sense}}$ đều được lái chung cực cổng `HGATE` và nối chung cực nguồn lên `VIN`, nên khi bật dẫn cả hai cùng nằm sâu trong **vùng tuyến tính / triode sâu (`T188`)** với điện áp vượt ngưỡng $|V_{SG} - |V_{THP}|| \gg |V_{SD}|$ (Razavi Chương 2 §2.2.2, Phương trình 2.10):
 
 $$
 I_{D,\text{main}} \approx N \mu_p C_{\text{ox}} \left(\frac{W_u}{L}\right)\left(V_{SG} - |V_{THP}|\right) V_{SD,\text{main}}, \qquad I_{D,\text{sense}} \approx \mu_p C_{\text{ox}} \left(\frac{W_u}{L}\right)\left(V_{SG} - |V_{THP}|\right) V_{SD,\text{sense}}
@@ -214,7 +214,7 @@ $$
 
 ### 5.1. Quy trình Định cỡ Nhanh Cho Khối High-Side PMOS SenseFET ($N = 1000$, $I_{\max} = 2\text{ A}$)
 1. **Định cỡ ma trận công suất và ô mẫu:** Tổng chiều rộng PMOS công suất $W_{\text{main}} = 20\text{ mm}$ ($1000$ ngón đơn vị $W_u = 20\,\mu\text{m}, L = 180\text{ nm}$, đạt $R_{\text{on,HS}} \approx 95\text{ m}\Omega$ tại $V_{\text{IN}} = 3{,}3\text{ V}$). Ô mẫu $M_{\text{sense}}$ dùng đúng $1$ ngón đơn vị $W_u = 20\,\mu\text{m}, L = 180\text{ nm}$ đặt tại trung tâm ma trận kèm các ngón thuộc $M_{\text{main}}$ bao bọc tứ phía (`A B A` đối xứng, `T2194`). Tại $I_L = 2\text{ A} \implies I_{\text{sense}} = 2\text{ mA}$.
-2. **Định cỡ OTA Kẹp Máng Ảo (NMOS-in Folded-Cascode):** Để sai số dòng ở $I_L = 0{,}2\text{ A}$ ($V_{SD} = 19\text{ mV}$) nhỏ hơn $5\%$, yêu cầu $3\sigma(V_{OS}) < 0{,}95\text{ mV} \implies \sigma(V_{OS}) \le 0{,}31\text{ mV}$. Với hằng số Pelgrom $A_{VT} = 5\text{ mV}\cdot\mu\text{m}$, diện tích cổng mỗi transistor cặp đầu vào phải đạt $W_1 L_1 \ge \left(\frac{5}{\sqrt{2}\cdot 0{,}31}\right)^2 \approx 130\,\mu\text{m}^2$ (chọn $W_1 = 160\,\mu\text{m}, L_1 = 0{,}9\,\mu\text{m}$, ghép tâm chung chữ thập 8 phần tử!). Đặt băng thông vòng kẹp máng $f_{u,\text{eq}} \ge 25\text{ MHz}$ để xác lập xong dưới $15\text{ ns}$ ngay trong cửa sổ `LEB`!
+2. **Định cỡ OTA Kẹp Máng Ảo (NMOS-in Folded-Cascode):** Để sai số dòng ở $I_L = 0{,}2\text{ A}$ ($V_{SD} = 19\text{ mV}$) nhỏ hơn $5\%$, yêu cầu $3\sigma(V_{OS}) < 0{,}95\text{ mV} \implies \sigma(V_{OS}) \le 0{,}31\text{ mV}$. Theo định luật Pelgrom (Razavi Chương 14, Phương trình 14.68 & 14.70: $\sigma(\Delta V_{TH}) = \frac{A_{VTH}}{\sqrt{W_1 L_1}}$), với $A_{VTH} = 5\text{ mV}\cdot\mu\text{m}$, diện tích cổng mỗi transistor cặp đầu vào phải đạt $W_1 L_1 \ge \left(\frac{5}{0{,}31}\right)^2 \approx 260\,\mu\text{m}^2$ (chọn $W_1 = 290\,\mu\text{m}, L_1 = 0{,}9\,\mu\text{m}$, ghép tâm chung chữ thập 8 phần tử!). Đặt băng thông vòng kẹp máng $f_{u,\text{eq}} \ge 25\text{–}40\text{ MHz}$ để xác lập xong dưới $15\text{–}20\text{ ns}$ ngay trong cửa sổ `LEB`!
 3. **Định cỡ Điện trở Cộng $R_{\text{sum}}$:** Với $I_{\text{sense,max}} = 2\text{ mA}$ (hoặc chia gương xuống lần hai $1:10$ còn $200\,\mu\text{A}$ để tiết kiệm dòng tĩnh!), chọn nhánh chia lần hai $1:10$ đổ $200\,\mu\text{A}$ vào $R_{\text{sum}} = 2{,}5\text{ k}\Omega \implies$ hệ số đo dòng $R_i = \frac{2500}{1000 \times 10} = 0{,}25\text{ V/A}$ ($V_{\Sigma} = 0{,}50\text{ V}$ ở $2\text{ A}$), chỉ tiêu tốn trung bình $< 100\,\mu\text{A}$ dòng cảm biến!
 
 ### 5.2. Netlist Spectre 15.1 Mô phỏng Quá độ Khối `SenseFET + Virtual-Drain Loop + LEB + Slope Summer` (`tb_sensefet_leb.scs`)
@@ -241,12 +241,14 @@ I_SPIKE (sw 0) isource type=pulse val0=0 val1=1.5 period=tsw delay=20n rise=1n f
 D_LS_BD (0 sw) diode is=1e-12 rs=0.05
 
 // Công tắc giữ ấm điểm làm việc OTA khi HS tắt (HS_ON = 1 khi v(hgate) thấp)
-B_SW_MUX (v_target 0) bsource v=(v(hgate) < 0.4*vin) ? (v(sw) + vos_err) : v(vin)
+R_PARK   (vin vsense_d) resistor r=20k
+V_PARK   (v_park 0)     vsource dc=(vin - 0.6)
+B_SW_MUX (v_target 0)   bsource v=(v(hgate) < 0.4*vin) ? (v(sw) + vos_err) : v(vin)
 
-// OTA Kẹp Máng Ảo băng rộng (A0 = 60 dB, fu = 40 MHz) lái cổng PMOS Cascode M_CAS đổ dòng xuống R_SUM
-E_EQ_RAW (n_eq 0 vsense_d v_target) vcvs gain=1000
-R_EQ_BW  (n_eq g_cas)  resistor r=1k
-C_EQ_BW  (g_cas 0)     capacitor c=4p
+// OTA Kẹp Máng Ảo hồi tiếp âm (A0 = 60 dB, fu_loop ≈ 40 MHz) lái cổng PMOS Cascode M_CAS đổ dòng xuống R_SUM
+E_EQ_RAW (n_eq v_park v_target vsense_d) vcvs gain=1000
+R_EQ_BW  (n_eq g_cas)   resistor r=1k
+C_EQ_BW  (g_cas v_park) capacitor c=1.9n
 G_MCAS   (vsense_d vsig) bsource i=max(0.0, 5m*(vin - 0.6 - v(g_cas)))
 
 // Dòng bù độ dốc răng cưa I_slope(t) (0 -> 0.76 mA trong chu kỳ 500 ns) cộng trực tiếp trên R_SUM!

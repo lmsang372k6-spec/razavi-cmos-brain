@@ -14,7 +14,7 @@ Inspired by LEDRO (physics-pruned subspace & sensitivity guidance) and AnalogCod
     snaps final geometry to PDK manufacturing grid (5nm), and verifies Worst-Case PVT
     Corners (TT, SS, FF, FS, SF) under a strict hard evaluation budget ceiling.
 
-Release: 2026.11.18.6
+Release: 2026.11.18.7
 """
 from __future__ import print_function
 
@@ -31,7 +31,7 @@ import time
 
 sys.dont_write_bytecode = True
 
-RELEASE = "2026.11.18.6"
+RELEASE = "2026.11.18.7"
 LIBRARY_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 TIMER = getattr(time, "perf_counter", time.time)
 

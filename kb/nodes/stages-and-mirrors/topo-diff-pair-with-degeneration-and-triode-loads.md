@@ -180,7 +180,7 @@ Trên **bát giác thiết kế mạch tương tự** (`concept-analog-design-oc
 ```text
 ; Mẫu biểu thức ADE / OCEAN kiểm chứng Cặp Vi sai Suy biến Nguồn & Tải Triode:
 Gm_Zero_Diff    = value(deriv(IS("/M1/D") - IS("/M2/D")) 0.0)             ; Doi chieu gm/(1 + (gm+gmb)*RS)
-Triode_Margin_P = abs(pv("M3" "vgs") - pv("M3" "vth")) - 2.0*abs(pv("M3" "vds")) ; > 0 de giu triode sau
+Triode_Margin_P = abs(pv("M3" "vgs")) - abs(pv("M3" "vth")) - 2.0*abs(pv("M3" "vds")) ; > 0 de giu triode sau
 Av_DM_dB        = dB20(mag(VF("/vout_p") - VF("/vout_n")))                ; Khi dat vdm = 1 V, vcm = 0 V
 Av_CM2DM_dB     = dB20(mag(VF("/vout_p") - VF("/vout_n")))                ; Khi dat vdm = 0 V, vcm = 1 V (co mismatch)
 CMRR_dB         = Av_DM_dB - Av_CM2DM_dB                                  ; Doi chieu PT (4.58) co suy bien RS

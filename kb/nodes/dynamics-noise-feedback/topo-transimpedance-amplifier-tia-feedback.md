@@ -10,9 +10,9 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.1.2, 8.2.3, 8.3, 8.5.4",
-      "pages": "282-284, 294-299, 310-313",
-      "equations": ["8.27", "8.45", "8.47", "8.48", "8.50", "8.53", "8.54", "8.89", "8.96", "8.101", "8.102"]
+      "section": "8.1.1-8.1.2, 8.2.3, 8.3, 8.5.4",
+      "pages": "281-284, 294-299, 310-313",
+      "equations": ["8.27", "8.45", "8.47", "8.48", "8.50", "8.53", "8.54", "8.89", "8.95", "8.96", "8.97"]
     }
   ],
   "glossary_codes": ["T042", "T051", "T515", "T535", "T812", "T1182", "T1186", "T1192"],
@@ -198,7 +198,7 @@ tran_eye  tran  stop=20n errpreset=conservative
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Chú giải Học thuật CLB
-- **Chương 8:** §8.1.1 (tr. 282: Phương trình 8.27–8.28 về nén phi tuyến biên độ), §8.1.2 *Types of Amplifiers* (tr. 282–284: định nghĩa bộ khuếch đại hỗ trở Hình 8.13c), §8.2.3 *Voltage-Current Feedback* (tr. 294–298: Phương trình 8.45–8.53, Ví dụ 8.8–8.10, Hình 8.35–8.40 — đặc biệt Hình 8.40 so sánh điện trở vòng hở với TIA đầu thu quang!), §8.3 *Effect of Feedback on Noise* (tr. 298–299: Phương trình 8.54), §8.5.4 *Loading in Voltage-Current Feedback* (tr. 310–313: Phương trình 8.89–8.100, Ví dụ 8.15–8.16, Hình 8.60–8.63; đối chiếu cùng phương trình hai cửa 8.101–8.102 và Chương 7 Ví dụ 7.13 tr. 242–243 về nhiễu của CS hồi tiếp $R_F$).
+- **Chương 8:** §8.1.1 (tr. 282: Phương trình 8.27–8.28 về nén phi tuyến biên độ), §8.1.2 *Types of Amplifiers* (tr. 282–284: định nghĩa bộ khuếch đại hỗ trở Hình 8.13c), §8.2.3 *Voltage-Current Feedback* (tr. 294–297: Phương trình 8.45–8.53, Ví dụ 8.8–8.10, Hình 8.35–8.40 — đặc biệt Hình 8.40 so sánh điện trở vòng hở với TIA đầu thu quang!), §8.3 *Effect of Feedback on Noise* (tr. 298–299: Phương trình 8.54), §8.5.4 *Loading in Voltage-Current Feedback* (tr. 310–313: Phương trình 8.89–8.100, Ví dụ 8.15–8.16, Hình 8.60–8.63; đối chiếu cùng Chương 7 Ví dụ 7.13 tr. 242–243 về nhiễu của CS hồi tiếp $R_F$).
 - **Chú giải Hiệu đính Học thuật CLB (`source_issues.json` — Chương 07 & Chương 08):**
   - **`NG08-04` (tr. 312, Ví dụ 8.15):** Đoạn nhận xét ngay dưới Phương trình (8.97) trong sách gốc viết nhầm cụm *"This transconductance amplifier..."* (bộ khuếch đại hỗ dẫn này); vì mạch Hình 8.62 nhận dòng điện $I_{in}$ và xuất điện áp $V_{\text{out}}$ cho ứng dụng thông tin quang, tên gọi chính xác của mạch là **bộ khuếch đại hỗ trở (*transimpedance amplifier*)**.
   - **`NG08-01` (tr. 282, sau Phương trình 8.28):** Lời văn nguồn gọi $(1 + \beta A_2)$ là *"độ lợi vòng"*; theo định nghĩa chuẩn `T051` ở tr. 276, **độ lợi vòng là $\beta A_2$**, còn $(1 + \beta A_2)$ là hệ số giảm độ nhạy (*desensitization factor*).

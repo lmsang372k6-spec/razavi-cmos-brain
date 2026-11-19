@@ -15,7 +15,7 @@ What it does atomically:
 2. Stages the full v4.0 SKILL-ANALOG library into a sibling .staging-* directory, preserving
    existing third-party sources/ + sources.lock.json, adding all 72 kb/diagrams/*.svg +
    diagrams-manifest.json and kb/nodes-bundle.json.gz, validating every file's SHA-256 +
-   JSON syntax + Python 2.6 compile(), regenerating library.manifest.json (2026.11.18.6),
+   JSON syntax + Python 2.6 compile(), regenerating library.manifest.json (2026.11.18.7),
    and atomically swapping /home/disk/eda/references/SKILL-ANALOG.
 3. Executes integration/install.py (when /home/disk/eda/admin/bin/eda is present),
    tools/analogctl.py verify, and tools/kb_fetch.py --sync.
@@ -41,7 +41,7 @@ from optparse import OptionParser
 
 sys.dont_write_bytecode = True
 
-RELEASE_VERSION = "2026.11.18.6"
+RELEASE_VERSION = "2026.11.18.7"
 
 PY2 = sys.version_info[0] < 3
 if PY2:

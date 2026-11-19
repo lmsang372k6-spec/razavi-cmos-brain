@@ -5,7 +5,7 @@
   "domain": "opamps-and-compensation",
   "title_vi": "Tốc độ Biến thiên Điện áp Cực đại (Slew Rate), Bẫy Phục hồi Quá kích & Bộ Khuếch đại Đẩy–Kéo Lớp AB (Slew Rate, Overdrive Recovery & Class-AB Op-Amps)",
   "title_en": "Large-Signal Slew Rate, Folded-Cascode Overdrive Recovery Clamping, Two-Stage Slewing, and Class-AB Push-Pull Op-Amps",
-  "summary": "Giải phẫu giới hạn động học phi tuyến tín hiệu lớn của Op-Amp: sự tách rời giữa xác lập tuyến tính và Slew Rate, cơ chế sập áp nút gập gây trễ phục hồi quá kích (overdrive recovery) trong Folded-Cascode kèm mạch kẹp diode, công thức slewing hai nhánh min(ISS/Cc, (I2 - ISS)/(Cc + CL)) của Op-Amp hai tầng, và các kiến trúc đẩy–kéo lớp AB phá vỡ trần dòng tĩnh.",
+  "summary": "Giải phẫu giới hạn động học phi tuyến tín hiệu lớn của Op-Amp: sự tách rời giữa xác lập tuyến tính và Slew Rate, cơ chế sập áp nút gập gây trễ phục hồi quá kích (overdrive recovery) trong Folded-Cascode kèm mạch kẹp diode, công thức slewing hai nhánh min(ISS/Cc, (I1 - ISS)/CL) [hoặc I1/(Cc + CL) khi Tầng 1 chạm triode] của Op-Amp hai tầng, và các kiến trúc đẩy–kéo lớp AB phá vỡ trần dòng tĩnh.",
   "diagram": "../../diagrams/folded-cascode-ota.svg",
   "razavi_refs": [
     {
@@ -67,7 +67,7 @@ $$
 \left.\frac{d}{dt}\big(V_0 \sin \omega_0 t\big)\right|_{\max} = V_0 \omega_0 \le \text{SR} \implies f_{\max,\text{full-power}} = \frac{\text{SR}}{2\pi V_0}
 $$
 
-Với bước nhảy đầu vào biên độ lớn $V_0$ trong mạch khuếch đại tụ điện ($C_1, C_2$, hệ số hồi tiếp $\beta = \frac{C_2}{C_1 + C_2}$, bỏ qua $C_L$ ngoài để minh họa như Ví dụ 9.23), Op-Amp rời chế độ slewing để bước vào chế độ xác lập tuyến tính khi hiệu điện áp hai cổng vi sai thu nhỏ về ngưỡng tuyến tính $\Delta V_G \approx \alpha V_{OV,\text{eq}}$ (Phương trình 9.70–9.71):
+Với bước nhảy đầu vào biên độ lớn $V_0$ trong mạch khuếch đại tụ điện ($C_1, C_2$, với $C_1$ nối hồi tiếp từ $V_{\text{out}}$ về nút $X$ và $C_2$ nối từ nút $X$ xuống đất theo Hình 9.73a cho hệ số hồi tiếp $\beta = \frac{C_1}{C_1 + C_2}$, bỏ qua $C_L$ ngoài để minh họa như Ví dụ 9.23), Op-Amp rời chế độ slewing để bước vào chế độ xác lập tuyến tính khi hiệu điện áp hai cổng vi sai thu nhỏ về ngưỡng tuyến tính $\Delta V_G \approx \alpha V_{OV,\text{eq}}$ (Phương trình 9.70–9.71):
 
 $$
 t_{\text{slew}} \approx \frac{C_2}{I_{SS}} \left( V_0 - \alpha V_{OV,\text{eq}} \right), \qquad t_{\text{total}} = t_{\text{slew}} + \tau_{\text{cl}} \ln\left(\frac{\text{sai số tại ranh giới}}{\epsilon_{\text{spec}}}\right)
@@ -81,22 +81,22 @@ Xét Folded-Cascode NMOS-in (nguồn đuôi $I_{SS}$ dưới đáy, hai nguồn 
 
 ### 2.3. Slewing trong Op-Amp Hai Tầng Bù Miller: Hai Nút Thắt & Bước Nhảy Ngược (§10.6, Phương trình 10.36–10.38)
 Xét Op-Amp hai tầng đơn đầu (Hình 10.38: Tầng 1 dòng đuôi $I_{SS}$, Tầng 2 transistor nguồn chung PMOS $M_5$ nối từ $V_{DD}$ đấu với nguồn dòng tải NMOS $I_1$ xuống đất, tụ bù $C_C$ và tụ tải ngõ ra $C_L$):
-1. **Bước nhảy âm tức thời tại $t = 0^+$ (Feedforward Step, Phương trình 10.37–10.38):** Ngay khoảnh khắc dòng bậc thang $I_{SS} u(t)$ phóng vào tụ $C_C$, tụ $C_C$ đóng vai trò ngắn mạch tức thời dẫn dòng ngược chiều với độ lợi đảo pha của $M_5$, tạo một vết sụt bước nhỏ $-\frac{I_{SS}}{g_{m5} \parallel r_{O5}^{-1}}$ tại $t = 0^+$ trước khi dốc đi lên theo hệ số tụ nhân Miller ở đầu ra $C_C \left(1 + \frac{1}{g_{m5} r_{O5}}\right) \approx C_C$!
+1. **Bước nhảy âm tức thời tại $t = 0^+$ (Feedforward Step, Phương trình 10.37–10.38):** Ngay khoảnh khắc dòng bậc thang $I_{SS} u(t)$ phóng vào tụ $C_C$, tụ $C_C$ đóng vai trò ngắn mạch tức thời dẫn dòng ngược chiều với độ lợi đảo pha của $M_5$, tạo một vết sụt bước nhỏ $-\frac{I_{SS}}{g_{m5} + r_{O5}^{-1}} = -I_{SS}\left(\frac{1}{g_{m5}} \parallel r_{O5}\right)$ tại $t = 0^+$ trước khi dốc đi lên theo hệ số tụ nhân Miller ở đầu ra $C_C \left(1 + \frac{1}{g_{m5} r_{O5}}\right) \approx C_C$!
 2. **Sườn lên dương (`T1726`, Positive Slew Rate — $\text{SR}^+$, Hình 10.38b):** $M_1$ hút dòng $I_{SS}$ rút khỏi nút liên tầng $X$ (vốn được Tầng 2 giữ làm đất ảo xoay chiều), buộc $C_C$ nạp với tốc độ $I_{SS}/C_C$. Lúc này transistor khuếch đại PMOS $M_5$ của Tầng 2 tự mở rộng $V_{SG5}$ để cấp tổng dòng $I_{D5} = I_1 + I_{SS} + C_L \frac{dV_{\text{out}}}{dt}$ dễ dàng (miễn là $M_5$ đủ rộng không sập $V_X$ đẩy $M_1$ vào triode!):
 
 $$
 \text{SR}^+ \approx \frac{I_{SS}}{C_C}
 $$
 
-3. **Sườn xuống âm (`T1728`, Negative Slew Rate — $\text{SR}^-$, Hình 10.38c):** Đây là nơi **Op-Amp hai tầng hay chết bất đối xứng nhất!** Khi đảo dấu bước nhảy, nhánh gương Tầng 1 bơm dòng $I_{SS}$ đẩy điện áp nút $X$ tăng lên làm **khóa tắt dần PMOS $M_5$**. Lúc đó chỉ còn duy nhất nguồn dòng tĩnh NMOS $I_1$ dưới đáy Tầng 2 phải gánh đồng thời **CẢ dòng $I_{SS}$ đổ qua $C_C$ LẪN dòng xả tụ tải $C_L$**!
-   - Nếu $I_1$ dư dả ($I_1 > I_{SS} \frac{C_C + C_L}{C_C}$): $M_5$ vẫn còn dẫn nhẹ giữ đất ảo tại $X$, tốc độ xả do Tầng 1 quyết định bằng $\frac{I_{SS}}{C_C}$.
-   - Nếu $I_1$ không đủ lớn: $M_5$ tắt hẳn về $0\text{ A}$, và tổng dòng $I_1$ phải chia sẻ cho $C_C$ và $C_L$ (hoặc nếu $I_1 < I_{SS}$ thì gương Tầng 1 tràn vào triode!):
+3. **Sườn xuống âm (`T1728`, Negative Slew Rate — $\text{SR}^-$, Hình 10.38c & Ví dụ 10.8 Hình 10.39c):** Đây là nơi **Op-Amp hai tầng hay chết bất đối xứng nhất!** Khi đảo dấu bước nhảy, nhánh gương Tầng 1 bơm dòng $I_{SS}$ đẩy điện áp nút $X$ tăng lên làm **khóa tắt dần PMOS $M_5$**. Lúc đó chỉ còn duy nhất nguồn dòng tĩnh NMOS $I_1$ dưới đáy Tầng 2 phải gánh đồng thời **CẢ dòng qua $C_C$ LẪN dòng xả tụ tải $C_L$**!
+   - Nếu $I_1$ dư dả ($I_1 \ge I_{SS} \left(1 + \frac{C_L}{C_C}\right)$): $M_5$ vẫn còn dẫn nhẹ giữ đất ảo tại $X$, tốc độ xả do Tầng 1 quyết định bằng $\frac{I_{SS}}{C_C}$.
+   - Nếu $I_{SS} < I_1 < I_{SS}\left(1 + \frac{C_L}{C_C}\right)$: $M_5$ tắt hẳn về $0\text{ A}$; trong khi Tầng 1 vẫn đang bơm dòng $I_{SS}$ qua $C_C$, KCL tại ngõ ra chỉ còn chừa lại dòng $I_1 - I_{SS}$ để xả $C_L$ với tốc độ $\frac{I_1 - I_{SS}}{C_L}$ (Ví dụ 10.8, tr. 435), làm $V_X$ tiếp tục dâng lên cho tới khi kẹp gương Tầng 1 vào vùng triode ($\frac{dV_X}{dt} \approx 0$), lúc đó dòng $I_1$ chia cho tổng hai tụ cho tốc độ $\frac{I_1}{C_C + C_L}$:
 
 $$
-\text{SR}_{\text{2-stage}} = \min\left( \frac{I_{SS}}{C_C}, \; \frac{I_1}{C_C + C_L} \right) \quad \big(\text{khi Tầng 2 dùng nguồn dòng cố định } I_1\big)!
+\text{SR}_{\text{2-stage}} = \min\left( \frac{I_{SS}}{C_C}, \; \frac{I_1 - I_{SS}}{C_L} \;\xrightarrow{\text{Tầng 1 chạm triode}}\; \frac{I_1}{C_C + C_L} \right) \quad \big(\text{khi Tầng 2 dùng nguồn dòng cố định } I_1\big)!
 $$
 
-*(Tương tự với Tầng 2 dùng NMOS khuếch đại và nguồn dòng tải PMOS $I_1$ ở đỉnh: vai trò bị tráo lại khiến $\text{SR}^+$ mới là nhánh bị khóa ở $\frac{I_1}{C_C + C_L}$!)*
+*(Tương tự với Tầng 2 dùng NMOS khuếch đại và nguồn dòng tải PMOS $I_1$ ở đỉnh như Ví dụ 10.8 Hình 10.39: vai trò bị tráo lại khiến $\text{SR}^+$ mới là nhánh bị khóa ở $\frac{I_1 - I_{SS}}{C_L} \to \frac{I_1}{C_C + C_L}$!)*
 
 ### 2.4. Các Cấu trúc Đẩy–Kéo Lớp AB Tăng Tốc độ Biến thiên (§9.10 & §10.6, Hình 9.78–9.80 & 10.39–10.40)
 - **Op-Amp Một Tầng Lớp AB Đầu vào Chéo (Cross-Coupled Input Pair + Current Mirrors, Hình 9.79d, Phương trình 9.72–9.79):** Dùng cặp đầu vào lai NMOS–PMOS chéo nhau sao cho điện áp vi sai lớn $\Delta V_{in}$ đặt trực tiếp lên tổng cổng–nguồn mà không bị nguồn dòng đuôi chặn trần! Dòng cực máng tăng theo luật bậc hai $\propto (\Delta V_{in})^2$ nạp xả $C_L$ cực nhanh, đồng thời hỗ dẫn tín hiệu nhỏ cũng được tăng cường $G_m = g_{m1} + (W_4/W_8) g_{m5}$ (đổi lại xuất hiện cực gương dòng tại đường sao chép dòng!).
@@ -114,7 +114,7 @@ $$
 $$
 
 **Bất biến sâu sắc:** Nếu bạn đẩy cặp vi sai đầu vào vào vùng nghịch đảo yếu/dưới ngưỡng ($g_m/I_D \approx 25\text{ V}^{-1}$) để lấy $\text{GBW}$ lớn và nhiễu thấp trên dòng $I_{SS}$ nhỏ, tỉ số $\frac{\text{SR}}{\omega_u} = \frac{2}{25} = 0{,}08\text{ V}$ trở nên cực kỳ thấp — khiến mạch rất dễ rơi vào slewing! Ngược lại muốn tăng $\text{SR}$ trên cùng $\omega_u$, bắt buộc phải giảm $(g_m/I_D)_1$ (tăng $V_{OV,1}$ hoặc suy biến nguồn `topo-degenerated-diffpair-and-gilbert`) hoặc chuyển sang **Lớp AB**!
-- **[TRAP-SR-01] Chỉ Đo Sườn Lên Mà Quên Đo Sườn Xuống Trong Op-Amp Hai Tầng:** Rất nhiều người thiết kế đặt $I_{SS} = 200\,\mu\text{A}, C_C = 1\text{ pF}$ ($\text{SR}^+ = 200\text{ V}/\mu\text{s}$), rồi chọn dòng Tầng 2 $I_1 = 300\,\mu\text{A}$ để lái tụ tải lớn $C_L = 10\text{ pF}$. Khi mô phỏng xung lên thấy nhanh đúng $200\text{ V}/\mu\text{s}$, nhưng ở sườn xuống tốc độ sụp thảm hại còn $\text{SR}^- = \frac{300\,\mu\text{A}}{1\text{ pF} + 10\text{ pF}} = 27{,}3\text{ V}/\mu\text{s}$ — **chậm hơn $7{,}3$ lần**! Để đối xứng $\text{SR}^+ \approx \text{SR}^-$ với Tầng 2 lớp A, bắt buộc phải cấp dòng Tầng 2 cực lớn:
+- **[TRAP-SR-01] Chỉ Đo Sườn Lên Mà Quên Đo Sườn Xuống Trong Op-Amp Hai Tầng:** Rất nhiều người thiết kế đặt $I_{SS} = 200\,\mu\text{A}, C_C = 1\text{ pF}$ ($\text{SR}^+ = 200\text{ V}/\mu\text{s}$), rồi chọn dòng Tầng 2 $I_1 = 300\,\mu\text{A}$ để lái tụ tải lớn $C_L = 10\text{ pF}$. Khi mô phỏng xung lên thấy nhanh đúng $200\text{ V}/\mu\text{s}$, nhưng ở sườn xuống tốc độ sụp thảm hại ban đầu chỉ còn $\frac{I_1 - I_{SS}}{C_L} = \frac{100\,\mu\text{A}}{10\text{ pF}} = 10\text{ V}/\mu\text{s}$ (và ngay cả sau khi $V_X$ chạm nguồn kẹp Tầng 1 vào triode cũng chỉ đạt $\frac{300\,\mu\text{A}}{1\text{ pF} + 10\text{ pF}} = 27{,}3\text{ V}/\mu\text{s}$ — **chậm hơn từ $7{,}3$ đến $20$ lần**)! Để đối xứng $\text{SR}^+ \approx \text{SR}^-$ với Tầng 2 lớp A, bắt buộc phải cấp dòng Tầng 2 cực lớn:
 
 $$
 I_{1,\text{stage2}} \ge I_{SS} \left(1 + \frac{C_L}{C_C}\right)!

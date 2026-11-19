@@ -117,9 +117,9 @@
       "name": "Định lượng vạch phổ giả tham chiếu (Reference Spurs) từ gợn Vcont của PFD + Bơm điện tích bằng PSS Spectrum",
       "severity": "warn",
       "method": "estimate",
-      "invariant": "P_spur(+-f_ref) [dBc] = 20 * log10(Delta_Vcont_fref * K_VCO / (2 * w_ref)) <= Spur_spec_dBc dưới điều kiện lệch dòng UP/DN, lệch trễ PFD và dòng rò tụ lọc thực tế",
+      "invariant": "P_spur(+-f_ref) [dBc] = 20 * log10(Delta_Vcont_fref,pk * K_VCO_rad / (2 * w_ref)) = 20 * log10(Delta_Vcont_fref,pk * K_VCO_Hz / (2 * f_ref)) <= Spur_spec_dBc dưới điều kiện lệch dòng UP/DN, lệch trễ PFD và dòng rò tụ lọc thực tế (với Delta_Vcont_fref,pk là biên độ đỉnh hài bậc 1 trên Vcont, K_VCO_rad tính bằng rad/(s*V) và K_VCO_Hz = K_VCO_rad / (2*pi) tính bằng Hz/V)",
       "why_vi": "Khi PLL đã khóa, sai lệch dòng UP/DN, xuyên xung nhịp công tắc và chia sẻ điện tích trong bơm điện tích tạo thành phần hài tuần hoàn tại bội số f_ref trên đường Vcont; qua độ nhạy K_VCO, gợn áp rất nhỏ (vài chục microvolt) đã sinh ra hai dải biên điều tần giả +-f_ref vượt ngưỡng cho phép của chuẩn thu phát vô tuyến.",
-      "cadence_check": "Chạy `pss` cho khối PFD + CP + Loop Filter ở trạng thái khóa (có áp đặt lệch `Vcont` gần biên dải tuân thủ), lấy biến đổi DFT phổ `Vcont(f)` tại `f_ref, 2*f_ref` rồi nhân hàm truyền điều tần VCO để kiểm chứng biên độ spur.",
+      "cadence_check": "Chạy `pss` cho khối PFD + CP + Loop Filter ở trạng thái khóa (có áp đặt lệch `Vcont` gần biên dải tuân thủ), lấy biến đổi DFT phổ biên độ đỉnh `Delta_Vcont_fref,pk` tại `f_ref, 2*f_ref` rồi nhân hàm truyền điều tần VCO để kiểm chứng biên độ spur.",
       "related_nodes": [
         "topo-pfd-deadzone-and-charge-pump-nonidealities",
         "tech-cp-pll-third-order-loop-filter-synthesis",
@@ -128,12 +128,12 @@
     },
     {
       "id": "CHK-PSS-09",
-      "name": "Quy đổi chính xác từ Phổ Nhiễu Pha L(Delta_f) sang Jitter Chu kỳ Tích phân theo Cửa sổ Băng thông Giao thức",
+      "name": "Phân biệt rạch ròi Jitter Pha Tích phân RMS (TIE / Absolute Jitter) với Jitter Chu kỳ RMS (Period Jitter) từ Phổ L(f)",
       "severity": "warn",
       "method": "estimate",
-      "invariant": "sigma_t_rms = (1 / (2 * pi * f_0)) * sqrt( 2 * integral_{f_low}^{f_high} 10^(L(f)/10) df ) tính trên tổng nhiễu đóng vòng (PFD/CP/Ref đi qua hàm thông thấp + VCO đi qua hàm thông cao)",
-      "why_vi": "Tích phân phổ nhiễu pha tự do của VCO từ 0 Hz sẽ phân kỳ vô hạn vì dốc 1/f^2 và 1/f^3! Trong hệ thống thực, vòng khóa pha cắt bỏ nhiễu VCO dưới băng thông vòng f_loop, còn bộ khôi phục xung nhịp (CDR) phía thu định nghĩa cận dưới f_low và cận trên f_high của cửa sổ tích phân jitter.",
-      "cadence_check": "Kết hợp đường cong `pnoise` của PFD+CP (nhân `N^2 |H_cl(jf)|^2`) và đường cong `pnoise` của VCO (nhân `|1 - H_cl(jf)|^2`) để tính tích phân `RMS Phase Jitter [fs]` trên băng thông chuẩn (ví dụ `12 kHz .. 20 MHz`).",
+      "invariant": "Integrated RMS Phase Jitter (TIE / Absolute Jitter): sigma_t_rms = (1 / (2 * pi * f_0)) * sqrt( 2 * integral_{f_low}^{f_high} 10^(L(f)/10) df ) tính trên tổng nhiễu đóng vòng trong cửa sổ giao thức [f_low, f_high]; RMS Period Jitter (sai lệch độ dài từng chu kỳ liền kề T_0 = 1/f_0): sigma_per_rms = (1 / (2 * pi * f_0)) * sqrt( 2 * integral_{0}^{inf} 10^(L(f)/10) * 4 * sin^2(pi * f * T_0) df )",
+      "why_vi": "Tuyệt đối không đánh đồng Jitter pha tuyệt đối (TIE, quy định ngân sách lấy mẫu SNR của ADC tốc độ cao và mắt tín hiệu SerDes) với Jitter chu kỳ (Period Jitter, quy định vi phạm thời gian giữ/thiết lập setup-time của đường ống logic đồng bộ)! Trong biểu thức Period Jitter của Ken Kundert, phép lấy sai phân hai cạnh kề nhau cách T_0 nhân mật độ phổ nhiễu pha S_phi(f) = 2 * 10^(L(f)/10) với trọng số thông cao 4 * sin^2(pi * f * T_0) tự động triệt tiêu nhiễu trôi chậm gần sóng mang, trong khi TIE tích phân trực tiếp S_phi(f) không có trọng số sin^2 nên bắt buộc khóa cận dưới/trên [f_low, f_high] theo băng thông PLL/CDR của giao thức!",
+      "cadence_check": "Trong Spectre `pnoise` / OCEAN: tích phân tổng phổ nhiễu pha đóng vòng (PFD+CP nhân `N^2 |H_cl(jf)|^2` cộng VCO nhân `|1 - H_cl(jf)|^2`) trên cửa sổ chuẩn (ví dụ `12 kHz .. 20 MHz`) để báo cáo `sigma_t_rms` (TIE), và dùng `pnoise (noisetype=jitter)` hoặc nhân trọng số `4 * sin^2(pi * f / f_0)` khi báo cáo `sigma_per_rms` (Period Jitter).",
       "related_nodes": [
         "law-oscillator-phase-noise-leeson-and-isf",
         "tech-cp-pll-third-order-loop-filter-synthesis",

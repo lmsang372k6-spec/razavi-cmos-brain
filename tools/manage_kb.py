@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""1-Command Authoring, Rebuilding & OTA Publishing Helper for Razavi CMOS Knowledge Brain (2026.11.18.6).
+"""1-Command Authoring, Rebuilding & OTA Publishing Helper for Razavi CMOS Knowledge Brain (2026.11.18.7).
 
 Pure Python 3 standard library. Zero external pip packages, zero bytecode clutter.
 
@@ -93,6 +93,7 @@ def cmd_status():
         "glossary_terms": manifest.get("glossary_count"),
         "book_sections": stats.get("book_section_count"),
         "book_equations": stats.get("book_equation_count"),
+        "book_figures": stats.get("book_figure_count"),
         "github_repos": stats.get("github_repo_count"),
         "tracked_kb_files": manifest.get("file_count", len(manifest.get("files", []))),
     }, ensure_ascii=False, indent=2))
@@ -326,7 +327,7 @@ def export_offline_bundle(dest_gz_path):
         }
     bundle_obj = {
         "schema": "razavi-nodes-bundle.v1",
-        "release": router.get("release", "2026.11.18.6"),
+        "release": router.get("release", "2026.11.18.7"),
         "node_count": len(nodes_payload),
         "nodes": nodes_payload,
     }
@@ -379,7 +380,7 @@ def cmd_publish(args):
     if not st:
         print("Working tree already clean and up to date; nothing to commit.")
         return 0
-    msg = args.message or "kb/runtime(2026.11.18.6): rebuild & publish verified OTA snapshot"
+    msg = args.message or "kb/runtime(2026.11.18.7): rebuild & publish verified OTA snapshot"
     subprocess.check_call(["git", "commit", "-m", msg], cwd=ROOT)
     if not args.no_push:
         subprocess.check_call(["git", "push", "origin", "main"], cwd=ROOT)

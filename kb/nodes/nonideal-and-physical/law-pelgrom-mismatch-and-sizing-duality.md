@@ -24,7 +24,7 @@
     },
     {
       "chapter": 14,
-      "section": "14.2.4",
+      "section": "14.2.4, 14.Problems",
       "pages": "603-605",
       "equations": [
         "14.96",

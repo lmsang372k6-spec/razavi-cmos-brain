@@ -12,7 +12,7 @@
       "chapter": 2,
       "section": "2.1.1, 2.2.2",
       "pages": "7-8, 12-19",
-      "equations": ["2.9", "2.10"]
+      "equations": ["2.9", "2.10", "2.11"]
     },
     {
       "chapter": 8,
@@ -212,7 +212,7 @@ $$
 
 ### 5.1. Quy trình 5 Bước Định cỡ Mắt lọc Công suất $L\text{–}C$ & Kiểm tra Điểm Tĩnh Bất biến Tiến trình
 Khi tích hợp bộ điều khiển và tầng công suất DC-DC trên các tiến trình CMOS 180nm/90nm/65nm/45nm (dùng linh kiện I/O dày cổng $3{,}3\text{ V}/5\text{ V}$ hoặc xếp chồng cascode cho pin Li-ion, hoặc linh kiện core $1{,}0\text{–}1{,}2\text{ V}$ cho Point-of-Load SoC tần số cao $2\text{–}10\text{ MHz}$):
-1. **Chọn tần số đóng cắt $f_{sw}$ theo bài toán tối ưu thể tích thụ động – tổn hao chuyển mạch:** $f_{sw}$ cao ($2\text{–}5\text{ MHz}$) cho phép thu nhỏ $L$ xuống $0{,}47\text{–}1{,}5\,\mu\text{H}$ (thậm chí cuộn cảm gắn trên gói chip Package-Embedded) và $C$ xuống $2{,}2\text{–}10\,\mu\text{F}$, nhưng làm tổn hao lái cổng $Q_g V_{drv}^2 f_{sw}$ và tổn hao giao thoa $V\cdot I$ tăng tuyến tính theo $f_{sw}$.
+1. **Chọn tần số đóng cắt $f_{sw}$ theo bài toán tối ưu thể tích thụ động – tổn hao chuyển mạch:** $f_{sw}$ cao ($2\text{–}5\text{ MHz}$) cho phép thu nhỏ $L$ xuống $0{,}47\text{–}1{,}5\,\mu\text{H}$ (thậm chí cuộn cảm gắn trên gói chip Package-Embedded) và $C$ xuống $2{,}2\text{–}10\,\mu\text{F}$, nhưng làm tổn hao lái cổng $Q_g V_{drv} f_{sw}$ ($= C_{gg} V_{drv}^2 f_{sw}$) và tổn hao giao thoa $V\cdot I$ tăng tuyến tính theo $f_{sw}$.
 2. **Định cỡ cuộn cảm $L$ theo tỷ lệ gợn dòng chuẩn công nghiệp $r_i = \frac{\Delta i_L}{I_{load,\max}} \in [0{,}25;\, 0{,}40]$:**
    - Tính tại góc $V_{in,\max}$ (nơi $\Delta i_L$ của Buck đạt cực đại!): $L = \dfrac{V_{out}\left(1 - \frac{V_{out}}{V_{in,\max}}\right)}{r_i\, I_{load,\max}\, f_{sw}}$.
    - Chọn $r_i \approx 0{,}30$ là điểm ngọt vàng: nếu chọn $r_i < 0{,}15$, $L$ quá to làm chậm tốc độ bám bước nhảy dòng tải $\frac{di_L}{dt} = \frac{V_{in}-V_{out}}{L}$ (gây sụt/vọt áp quá độ lớn); nếu chọn $r_i > 0{,}60$, tổn hao lõi từ AC, gợn áp ngõ ra và dòng đỉnh $I_{\text{pk}}$ đều tăng vọt. Kiểm tra bắt buộc $I_{\text{sat,core}} \ge 1{,}30 \times I_{\text{OCP,max}}$ ở $125\,^\circ\text{C}$!
@@ -239,7 +239,7 @@ Khi tích hợp bộ điều khiển và tầng công suất DC-DC trên các ti
 ## 6. Mốc Đối chiếu Sách Razavi, Tài liệu Chuẩn Công nghiệp & Thuật ngữ CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Giáo trình Điện tử Công suất Kinh điển
-- **Razavi Chương 2:** §2.1.1 *MOSFET as a Switch* (tr. 7–8) & §2.2.2 *Derivation of I/V Characteristics* (tr. 12–19, Phương trình 2.9–2.10: điện trở dẫn vùng triode sâu $R_{on} = \frac{1}{\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$ nền tảng cho công tắc công suất).
+- **Razavi Chương 2:** §2.1.1 *MOSFET as a Switch* (tr. 7–8) & §2.2.2 *Derivation of I/V Characteristics* (tr. 12–19, Phương trình 2.10–2.11: dòng tuyến tính và điện trở dẫn vùng triode sâu $R_{on} = \frac{1}{\mu_n C_{ox}\frac{W}{L}(V_{GS}-V_{TH})}$ nền tảng cho công tắc công suất).
 - **Razavi Chương 8 & Chương 10:** §8.1.1 & §8.2.1 *Voltage-Voltage Feedback* (tr. 275–291, Phương trình 8.3, 8.36 — nén trở kháng ra vòng kín $Z_{out,\text{closed}}(s) = \frac{Z_{out,\text{open}}(s)}{1 + T(s)}$); §10.2–10.3 *Multipole Systems & Phase Margin* (tr. 414–419, Phương trình 10.5–10.18 — quan hệ giữa hệ bậc hai có hệ số tắt dần $\zeta = \frac{1}{2Q}$ với sụt pha $-180^\circ$ và độ vọt lố bước nhảy).
 - **Razavi Chương 12:** §12.8 *Case Study — Linear Regulator* (tr. 533–535, Phương trình 12.76 — mốc đối chiếu hiệu suất và điều áp tuyến tính so với điều áp đóng cắt).
 - **Tài liệu Chuẩn Mở rộng PMIC:** R. W. Erickson & D. Maksimović, *Fundamentals of Power Electronics* (3rd Ed., Ch. 2 *Principles of Steady-State Converter Analysis*, Ch. 5 *Discontinuous Conduction Mode*, Ch. 7–8 *AC Equivalent Circuit Modeling & Converter Transfer Functions*); B. Wicht, *Design of Power Management Integrated Circuits* (Wiley-IEEE, Ch. 5 *Inductive DC-DC Converters*).

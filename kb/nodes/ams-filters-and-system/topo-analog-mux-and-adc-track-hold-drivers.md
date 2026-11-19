@@ -10,26 +10,26 @@
   "razavi_refs": [
     {
       "chapter": 6,
-      "section": "6.4",
-      "pages": "190-195",
+      "section": "6.3",
+      "pages": "188-193",
       "equations": ["6.62", "6.66"]
     },
     {
       "chapter": 8,
-      "section": "8.2, 8.5",
-      "pages": "286-291, 311-321",
+      "section": "8.1, 8.2, 8.5",
+      "pages": "274-291, 303-315",
       "equations": ["8.16"]
     },
     {
       "chapter": 9,
       "section": "9.9",
-      "pages": "391-396",
+      "pages": "390-397",
       "equations": ["9.62"]
     },
     {
       "chapter": 10,
       "section": "10.3-10.4",
-      "pages": "419-432",
+      "pages": "416-426",
       "equations": ["10.12"]
     },
     {
@@ -41,7 +41,7 @@
     {
       "chapter": 14,
       "section": "14.1.5",
-      "pages": "586-588",
+      "pages": "584-585",
       "equations": ["14.49"]
     }
   ],
@@ -141,12 +141,12 @@ Xét một kênh đang tắt mang tín hiệu gây nhiễu tần số cao $V_{\t
 $$
 \left|\frac{V_{\text{bus}}}{V_{\text{in,off}}}\right|_{\text{1-sw}} \approx \omega \, C_{\text{off}} \, R_{\text{bus}}
 $$
-  Ví dụ với $C_{\text{off}} = 20\text{ fF}$, $R_{\text{bus}} = 500\,\Omega$ tại $f = 20\text{ MHz}$: một kênh tắt rò $-52\text{ dB}$; nếu có $15$ kênh tắt đồng pha cùng rò thì cách ly sập xuống chỉ còn **$-28.5\text{ dB}$**!
+  Ví dụ với $C_{\text{off}} = 20\text{ fF}$, $R_{\text{bus}} = 500\,\Omega$ tại $f = 20\text{ MHz}$: một kênh tắt rò $\omega C_{\text{off}} R_{\text{bus}} = 1.257\times 10^{-3} \equiv \mathbf{-58.0\text{ dB}}$; nếu có $15$ kênh tắt đồng pha cùng rò thì cách ly sập xuống chỉ còn **$-34.5\text{ dB}$**!
 - **Với Công tắc Chữ T (`T-Switch` có công tắc nối tắt $S_{\text{sh}}$ điện trở dẫn nhỏ $R_{\text{on,sh}}$)**: Nút giữa $V_{\text{mid}}$ bị chia áp bậc nhất còn $V_{\text{mid}} \approx j\omega C_{\text{off},A} R_{\text{on,sh}} V_{\text{in,off}}$, sau đó lại bị chia áp lần thứ hai qua $C_{\text{off},B}$ sang $R_{\text{bus}}$, biến độ rò thành **tích bậc hai siêu nhỏ** (`shielding` — `T965`):
 $$
 \left|\frac{V_{\text{bus}}}{V_{\text{in,off}}}\right|_{\text{T-sw}} \approx \omega^2 \, C_{\text{off},A} \, C_{\text{off},B} \, R_{\text{on,sh}} \, R_{\text{bus}}
 $$
-  Thay cùng thông số trên ($C_{\text{off},A} = C_{\text{off},B} = 20\text{ fF}$, $R_{\text{on,sh}} = 100\,\Omega$, $R_{\text{bus}} = 500\,\Omega$ tại $20\text{ MHz}$): độ cách ly nhảy vọt từ $-52\text{ dB}$ lên tới **$-118\text{ dB}$** (trên thực tế đạt **$-85\text{ đến }-95\text{ dB}$** sau khi tính ký sinh ghép dây kim loại layout)!
+  Thay cùng thông số trên ($C_{\text{off},A} = C_{\text{off},B} = 20\text{ fF}$, $R_{\text{on,sh}} = 100\,\Omega$, $R_{\text{bus}} = 500\,\Omega$ tại $20\text{ MHz}$): độ cách ly nội tại lý thuyết nhảy vọt từ $-58.0\text{ dB}$ lên tới **$-130.0\text{ dB}$** (trên silicon thực tế đạt **$-85\text{ đến }-95\text{ dB}$** sau khi tính ký sinh ghép dây kim loại layout)!
 - **Phép màu khử dòng rò DC ở $125\,^\circ\text{C}$**: Khi ghim chân nối tắt của $S_{\text{sh}}$ vào một bộ đệm mức đồng pha $V_{\text{guard}} \approx V_{\text{bus,DC}}$, điện thế nút giữa của mọi kênh tắt được giữ ở $V_{\text{mid}} \approx V_{\text{bus,DC}}$. Nhờ đó, hiệu điện thế cực máng–nguồn đặt ngang qua công tắc nối tiếp thứ hai $S_B$ tiến về **$V_{DS,B} = V_{\text{mid}} - V_{\text{bus}} \approx 0\text{ V}$**! Mà dòng rò dưới ngưỡng của MOSFET tỉ lệ với $\left(1 - e^{-V_{DS}/V_T}\right) \to 0$ khi $V_{DS} \to 0$, nên dòng rò kênh chảy vào `MUX_BUS` giảm đi hàng chục lần ngay cả ở $+125\,^\circ\text{C}$!
 
 ### 2.2. Ký ức Xuyên Kênh (`Channel-to-Channel Settling Memory Crosstalk`) & Công tắc San Bằng Bus
@@ -158,7 +158,7 @@ $$
 Để đạt sai số $< 0.5\text{ LSB}$ cho ADC $12\text{ bit}$ ($\ln(2^{13}) \approx 9.01$), bắt buộc đảm bảo $t_{\text{mux}} \ge 9.01\,(R_{\text{src},2} + R_{\text{on,mux}}) C_{\text{bus}}$, đồng thời kích hoạt một **xung xóa đường bus ngắn (`Bus Equalization Pulse` $S_{\text{eq}}$ kéo `V_bus -> VCM` trong khoảng hở `Break-Before-Make` $5\text{--}10\text{ ns}$)** để xả sạch điện tích phụ thuộc mã kênh trước trên các tụ tiếp giáp phi tuyến $C_{DB}(V)$, chặn đứng xuyên âm phi tuyến giữa các kênh!
 
 ### 2.3. Giải phẫu Hai Thang Thời gian của Mạng Lái ADC $R_{\text{iso}}\text{--}C_{\text{bucket}}$ (Chống Giật Ngược & Rung Chuông)
-Xét một Op-Amp đệm lái (độ lợi DC $A_0$, băng thông đơn vị $\omega_u = 2\pi f_u$, trở kháng ra vòng hở tầng cuối $R_{o,\text{open}}$, hệ số hồi tiếp $\beta \le 1$). Theo Razavi §6.4 và §8.2 (`concept-source-follower-inductive-zout`), trở kháng ra đóng vòng (`T1328`) của Op-Amp tăng theo tần số đúng như một **cuộn cảm nối tiếp điện trở nhỏ**:
+Xét một Op-Amp đệm lái (độ lợi DC $A_0$, băng thông đơn vị $\omega_u = 2\pi f_u$, trở kháng ra hở vòng vùng cao tần của tầng cuối $R_{o,\text{open}}$, hệ số hồi tiếp $\beta \le 1$). Theo Razavi §6.3 và §8.1–§8.2 (`concept-source-follower-inductive-zout`), trở kháng ra đóng vòng (`T1328`) của Op-Amp tăng theo tần số đúng như một **cuộn cảm nối tiếp điện trở nhỏ**:
 $$
 Z_{\text{out,CL}}(s) \approx \frac{R_{o,\text{open}}}{1 + A_0 \beta} \cdot \frac{1 + s / \omega_{p1}}{1 + s / (\beta \omega_u)}
 \approx R_{o,\text{DC}} + s \, L_{\text{eq,OA}} \quad \text{với} \quad L_{\text{eq,OA}} = \frac{R_{o,\text{open}}}{\beta \, \omega_u}
@@ -185,7 +185,7 @@ $$
 - Thời gian thu nhận đầu vào $t_{\text{acq}} = 30\text{ ns}$ ($30\%$ chu kỳ $100\text{ ns}$), tần số Nyquist $f_{\text{Nyq}} = 5\text{ MHz}$.
 - **Bước 1**: Chọn hệ số kho chứa $K_{\text{bkt}} = 15 \implies C_{\text{bucket}} = 15 \times 2\text{ pF} = 30\text{ pF}$ (tổng tải tụ trong pha bám $C_{\text{tot}} = 32\text{ pF}$). Số hằng số thời gian cần thiết còn lại: $(12 + 2)\ln 2 - \ln(16) = 9.704 - 2.773 = 6.93 \implies \tau_{\text{eff,max}} = \frac{30\text{ ns}}{6.93} = 4.33\text{ ns}$!
 - **Bước 2**: Chọn $\tau_{\text{filt}} = R_{\text{iso}} C_{\text{tot}} = 3.2\text{ ns}$ (cắt nhiễu dải rộng của chính Op-Amp ở $f_{-3\text{dB,rc}} = \frac{1}{2\pi \times 3.2\text{n}} = 49.7\text{ MHz} \gg 5\text{ MHz}$ nên độ suy hao biên độ tại Nyquist chỉ $0.04\text{ dB}$!), suy ra **$R_{\text{iso}} = \frac{3.2\text{ ns}}{32\text{ pF}} = 100\,\Omega$**!
-- **Bước 3**: Với tầng ra Class-AB của Op-Amp có $R_{o,\text{open}} = 400\,\Omega$ và chọn băng thông vòng kín $\frac{\beta\omega_u}{2\pi} = 200\text{ MHz}$ ($\beta\omega_u = 1.257 \times 10^9\text{ rad/s}$), cảm kháng tương đương là $L_{\text{eq,OA}} = \frac{400}{1.257\times 10^9} = 0.318\text{ nH}$. Kiểm tra điều kiện chống rung chuông: $2 \times 0.85 \times \sqrt{\frac{0.318\text{ nH}}{32\text{ pF}}} = 5.37\,\Omega \ll R_{\text{iso}} = 100\,\Omega$ — **đáp ứng phẳng tuyệt đối không một gợn chuông và đạt $\text{SNDR} = 73.2\text{ dB}$ ở $4.9\text{ MHz}$**!
+- **Bước 3**: Với tầng ra đẩy–kéo Class-AB có trở kháng ra cao tần khi tụ Miller nối tắt cổng–máng là $R_{o,\text{open}} \approx \frac{1}{g_{m,\text{out}}} = 40\,\Omega$ và chọn băng thông vòng kín $\frac{\beta\omega_u}{2\pi} = 200\text{ MHz}$ ($\beta\omega_u = 1.257 \times 10^9\text{ rad/s}$), cảm kháng ra tương đương là $L_{\text{eq,OA}} = \frac{40\,\Omega}{1.257\times 10^9\text{ rad/s}} = \mathbf{31.8\text{ nH}}$. Kiểm tra điều kiện chống rung chuông: $2 \times 0.85 \times \sqrt{\frac{31.8\text{ nH}}{32\text{ pF}}} = \mathbf{53.6\,\Omega} < R_{\text{iso}} = 100\,\Omega$ (đạt hệ số tắt dần $\zeta = 1.59$ quá tắt dần êm ái) — **đáp ứng phẳng tuyệt đối không một gợn chuông và đạt $\text{SNDR} = 73.2\text{ dB}$ ở $4.9\text{ MHz}$**!
 
 ---
 
@@ -239,6 +239,6 @@ tran_kick tran stop=26.6u errpreset=conservative maxstep=50p strobeperiod=100n s
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
 | Nguyên lý lấy mẫu giữ (Track-and-Hold), điện trở dẫn công tắc và phun điện tích | Chương 13, §13.1–13.2.4, PT (13.6)–(13.30), tr. 539–555 & Chương 14, §14.1.5 | `T057` Tính phi tuyến; `T074` Lấy mẫu; `T087` Mạch tụ chuyển mạch; `T523` Tính tuyến tính; `T750` sai số bám theo; `T786` méo dạng; `T1089` nhiễu $kT/C$; `T2015` được tự thiết lập nhờ hồi tiếp (bootstrapped); `T2142` nhiễu lấy mẫu nhiệt $kT/C$; `T2143` chế độ lấy mẫu; `T2144` chế độ giữ mẫu |
-| Trở kháng ra mang tính cảm kháng của bộ đệm/vòng kín và độ ổn định tải tụ | Chương 6, §6.4, PT (6.62)–(6.66); Chương 8, §8.2; Chương 10, §10.3–10.4 | `T042` Hồi tiếp; `T063` Dự trữ pha; `T1328` trở kháng ngõ ra vòng kín |
+| Trở kháng ra mang tính cảm kháng của bộ đệm/vòng kín và độ ổn định tải tụ | Chương 6, §6.3, PT (6.62)–(6.66); Chương 8, §8.1–8.2; Chương 10, §10.3–10.4 | `T042` Hồi tiếp; `T063` Dự trữ pha; `T1328` trở kháng ngõ ra vòng kín |
 | Đường truyền xuyên trực tiếp qua tụ ký sinh công tắc tắt và che chắn tĩnh điện | Chương 8, §8.6 & Chương 19, §19.3, tr. 317–321, 760–764 | `T687` tỷ số tín hiệu trên nhiễu; `T965` tác dụng che chắn; `T1335` đường truyền xuyên trực tiếp; `T1337` truyền xuyên trực tiếp; `T2150` méo hài; `T2152` HD2 / HD3 |
 | Thiết kế chuỗi lái đầu vào SAR ADC & kiểm chứng FFT mạch lạc | Chương 9, §9.9 & `Arcadia-1/sar-adc-skills` + `Arcadia-1/ADCToolbox` | Ngân sách slewing/settling trong cửa sổ thu nhận $t_{\text{acq}}$ |

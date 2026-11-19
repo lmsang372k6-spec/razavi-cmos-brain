@@ -17,20 +17,20 @@
     {
       "chapter": 6,
       "section": "6.2-6.3",
-      "pages": "173-185",
+      "pages": "180-193",
       "equations": ["6.43"]
     },
     {
       "chapter": 16,
       "section": "16.1-16.3",
-      "pages": "655-688",
+      "pages": "651-683",
       "equations": ["16.21", "16.27", "16.32"]
     },
     {
       "chapter": 19,
-      "section": "19.3",
-      "pages": "755-762",
-      "equations": ["19.16"]
+      "section": "19.3-19.4",
+      "pages": "760-772",
+      "equations": ["19.19", "19.22"]
     }
   ],
   "github_refs": [
@@ -181,9 +181,9 @@ $$
      * *Ưu điểm tuyệt đối:* Bản thân chốt lấy mẫu cạnh $E_n$ đồng dạng hình học 100% với chốt lấy mẫu dữ liệu $D_n$, nên nó **tự động đặt xung nhịp vào đúng điểm cân bằng thời gian thiết lập/giữ (`setup-and-hold center`) với sai số pha tĩnh bằng $0$** ở hàng chục $\text{Gb/s}$! Đổi lại hàm đặc tính là hàm dấu bậc thang $\text{sgn}(\Delta\phi)$ phi tuyến gây dao động săn đuổi biên độ nhỏ (`limit-cycle hunting jitter`).
 
 3. **Bộ Ba Đặc tả Jitter Chuẩn Hóa Của `CDR` (`The CDR Jitter Triad`):**
-   - **Hàm truyền Jitter (`Jitter Transfer` $J_{\text{tran}}(s) = \frac{\Phi_{\text{out}}(s)}{\Phi_{\text{in}}(s)}$):** Bộ lọc thông thấp băng thông $\omega_{-3\text{dB}}$. Trong vòng khóa pha loại II (`topo-charge-pump-type2-pll`), điểm không ổn định hóa $\omega_z = \frac{1}{R_P C_1}$ bắt buộc gây **nhô đỉnh biên độ (`Jitter Peaking`)**:
-     $$\text{Jitter Peaking} \approx 20\log_{10}\!\left(1 + \frac{1}{4 \zeta^2}\right) \approx \frac{8.686}{4 \zeta^2}\text{ [dB]} \quad (\text{khi } \zeta \gg 1)$$
-     Để chuỗi $20\text{–}50$ trạm lặp nối tiếp không khuếch đại nổ tung jitter, tiêu chuẩn SONET/PCIe ép `Jitter Peaking` **$\le 0.1\text{ dB}$**, đòi hỏi hệ số tắt dần **$\zeta \ge 3.0\text{–}5.0$** và tỷ số tụ bộ lọc vòng $C_1 / C_2 \ge 50\text{–}100$!
+   - **Hàm truyền Jitter (`Jitter Transfer` $J_{\text{tran}}(s) = \frac{\Phi_{\text{out}}(s)}{\Phi_{\text{in}}(s)}$):** Bộ lọc thông thấp băng thông $\omega_{-3\text{dB}}$. Trong vòng khóa pha loại II bậc hai lý tưởng (`topo-charge-pump-type2-pll`, bỏ qua cực phụ $C_2$ khi $C_1 \gg C_2$), $J_{\text{tran}}(s) = \frac{2\zeta\omega_n s + \omega_n^2}{s^2 + 2\zeta\omega_n s + \omega_n^2}$ có điểm không ổn định hóa $\omega_z = \frac{1}{R_P C_1} = \frac{\omega_n}{2\zeta}$ bắt buộc gây **nhô đỉnh biên độ (`Jitter Peaking`)**:
+     $$\text{Jitter Peaking} = 10\log_{10}\!\left(\frac{8\zeta^4}{8\zeta^4 - 4\zeta^2 - 1 + \sqrt{1 + 8\zeta^2}}\right) \approx 20\log_{10}\!\left(1 + \frac{1}{4 \zeta^2}\right) \approx \frac{8.686}{4 \zeta^2}\text{ [dB]} \quad (\text{khi } \zeta \gg 1)$$
+     Tính chính xác: $\zeta = 2 \implies 0.40\text{ dB}$, $\zeta = 3 \implies 0.195\text{ dB}$, và $\zeta = 5 \implies 0.076\text{ dB}$. Để chuỗi $20\text{–}50$ trạm lặp nối tiếp không khuếch đại nổ tung jitter, tiêu chuẩn SONET/PCIe ép `Jitter Peaking` **$\le 0.1\text{ dB}$**, đòi hỏi hệ số tắt dần lý thuyết **$\zeta \ge 4.4$** (thực tế chọn **$\zeta \ge 4.5\text{–}5.0$** kèm tỷ số tụ bộ lọc vòng $C_1 / C_2 \ge 50\text{–}100$, trong khi $\zeta \approx 2\text{–}3$ chỉ đáp ứng các chuẩn nới lỏng $\le 0.2\text{–}0.4\text{ dB}$)!
    - **Tự sinh Jitter (`Jitter Generation`):** Tổng jitter RMS của xung nhịp khôi phục khi cấp dữ liệu đầu vào sạch hoàn hảo (băng thông vòng rộng giúp nén nhiễu pha VCO nhưng lại đón nhiều nhiễu kênh vào hơn!).
    - **Khả năng Chịu đựng Jitter (`Jitter Tolerance — JTOL` $J_{\text{tol}}(\omega_m)$):** Biên độ điều chế pha hình sin cực đại $\Phi_{\text{in,pk}}(\omega_m)$ chồng lên dữ liệu ở tần số điều chế $\omega_m$ mà bộ thu vẫn đạt tỷ lệ lỗi bit $\text{BER} < 10^{-12}$ (tức sai số pha bám còn dư $|\Phi_{\text{err}}| = |\Phi_{\text{in}}(1 - J_{\text{tran}}(j\omega_m))| < 0.5\text{ UI} - \Phi_{\text{margin}}$):
      $$J_{\text{tol}}(\omega_m) = \frac{0.5\text{ UI} - \Phi_{\text{margin}}}{\left|1 - J_{\text{tran}}(j\omega_m)\right|}$$
@@ -247,8 +247,8 @@ tran_eye tran stop=(520*UI) errpreset=conservative maxstep=(UI/40)
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 4 & Chương 6:** §4.1–§4.3 *Differential Pair & Degeneration* (tr. 100–128 — đặc tính chuyển mạch toàn phần $\Delta V_{\text{in}} = \sqrt{2} V_{\text{OV}}$ của `CML` và khử nhiễu đồng pha); §6.2 *CS Stage with Source Degeneration* (tr. 173–178, Phương trình 6.43 — chứng minh trực tiếp điểm không $\omega_z = \frac{1}{R_S C_S}$ và cực $\omega_{p1} = \frac{1 + g_m R_S}{R_S C_S}$ cấu thành bộ cân bằng `CTLE`!).
-- **Chương 16 & Chương 19:** §16.1–§16.3 *Phase-Locked Loops* (tr. 655–688 — động lực học vòng khóa pha loại II, nhô đỉnh hàm truyền do điểm không $\omega_z$ trong `CDR`); §19.3 *Packaging* (tr. 755–762 — điện cảm dây hàn $L_{\text{bond}}$ gây nảy đất và phản xạ đường truyền).
+- **Chương 4 & Chương 6:** §4.1–§4.3 *Differential Pair & Degeneration* (tr. 100–121 — đặc tính chuyển mạch toàn phần $\Delta V_{\text{in}} = \sqrt{2} V_{\text{OV}}$ của `CML` và khử nhiễu đồng pha); §6.2–§6.3 *CS Stage with Source Degeneration & Source Follower* (tr. 180–193, Phương trình 6.43 — chứng minh trực tiếp điểm không $\omega_z = \frac{1}{R_S C_S}$ và cực $\omega_{p1} = \frac{1 + g_m R_S}{R_S C_S}$ cấu thành bộ cân bằng `CTLE`!).
+- **Chương 16 & Chương 19:** §16.1–§16.3 *Phase-Locked Loops* (tr. 651–683 — động lực học vòng khóa pha loại II, nhô đỉnh hàm truyền do điểm không $\omega_z$ trong `CDR`); §19.3–§19.4 *Substrate Coupling & Packaging* (tr. 760–772, Phương trình 19.19, 19.22 — điện cảm dây hàn $L_{\text{bond}}$ gây nảy đất và phản xạ đường truyền).
 - **Đối chiếu GitHub:** Giáo trình `iic-jku/radio-frequency-integrated-circuits` và quy chuẩn mô hình hóa hành vi xung nhịp `Arcadia-1/veriloga-skills` + `Arcadia-1/analog-design-bench`.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ
@@ -259,4 +259,4 @@ tran_eye tran stop=(520*UI) errpreset=conservative maxstep=(UI/40)
 | `T040` / `T041` | equalization / equalizer | cân bằng / bộ cân bằng (`CTLE`) | Bù suy hao kênh truyền tần số cao, khử nhiễu xuyên ký tự `ISI` mở biểu đồ mắt |
 | `T028` / `T081` | degenerated diff pair / source degeneration | cặp vi sai có suy biến / suy biến nguồn | Mạng $R_S \parallel C_S$ ở cực nguồn sinh điểm không nâng đỉnh tại $\omega_z = 1/(R_S C_S)$ |
 | `T020` / `T2170` | clock recovery / phase detector | khôi phục xung nhịp (`CDR`) / bộ tách pha | Dùng `Hogge PD` hoặc `Alexander Bang-Bang PD` bám dữ liệu `NRZ` thiếu cạnh chuyển |
-| `T2176` | damping factor, zeta | hệ số tắt dần | Chọn quá tắt dần sâu $\zeta \ge 3\text{–}5$ trong `CDR` để ép nhô đỉnh truyền jitter $\le 0.1\text{ dB}$ |
+| `T2176` | damping factor, zeta | hệ số tắt dần | Chọn quá tắt dần sâu $\zeta \ge 4.4\text{–}5$ trong `CDR` để ép nhô đỉnh truyền jitter $\le 0.1\text{ dB}$ |

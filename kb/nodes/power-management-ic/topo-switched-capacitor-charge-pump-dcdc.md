@@ -225,7 +225,7 @@ Trên các công nghệ CMOS 90nm/65nm/45nm, mật độ điện dung trên đơ
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Công trình Nền tảng SC DC-DC
 - **Razavi Chương 13:** §13.1 *General Considerations* (tr. 539–543, Phương trình 13.1–13.5 — dẫn xuất truyền điện tích rời rạc và điện trở tương đương tụ chuyển mạch $R_{eq} = \frac{1}{f_{sw}C}$), §13.2.1 *MOSFETs as Switches* (tr. 543–547 — $R_{on}$ của NMOS, PMOS và cổng truyền dẫn CMOS) & §13.3.3 *Precision Multiply-by-Two Circuit* (tr. 567–568).
-- **Razavi Chương 2, 18 & 19:** §2.3 (tr. 20–26 — hiệu ứng thân làm tăng $V_{TH}$), §18.7.2 *Passive Devices* (tr. 724–727, Phương trình 18.3–18.4 — cấu trúc vật lý tụ MOS/MIM/MOM) & §19.2.6 (tr. 750–753, Phương trình 19.10–19.13 — tỷ lệ điện dung ký sinh đáy tấm dưới).
+- **Razavi Chương 2, 18 & 19:** §2.3 (tr. 20–26 — hiệu ứng thân làm tăng $V_{TH}$), §18.7.2 *Passive Devices* (tr. 721–727, Phương trình 18.3–18.4 — cấu trúc vật lý tụ MOS/MIM/MOM) & §19.2.6 (tr. 746–753, Phương trình 19.10–19.13 — tỷ lệ điện dung ký sinh đáy tấm dưới).
 - **Tài liệu Kinh điển Chuyên ngành:** M. D. Seeman & S. R. Sanders, *"Analysis and Optimization of Switched-Capacitor DC–DC Converters"*, IEEE Trans. Power Electronics, 2008; J. F. Dickson, IEEE JSSC 1976; P. Favrat, P. Deval & M. Declercq, IEEE JSSC 1998 (*Cross-Coupled Voltage Doubler*); H.-P. Le, S. R. Sanders & E. Alon, IEEE JSSC 2011 (*Fully Integrated Monolithic Multiphase SC DC-DC*).
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

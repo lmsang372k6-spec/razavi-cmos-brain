@@ -15,9 +15,9 @@
       "name": "Hằng số thời gian tái sinh chốt dương (Regeneration Time Constant) đảm bảo tỷ lệ lỗi siêu ổn định (Metastability BER)",
       "severity": "error",
       "method": "estimate",
-      "invariant": "exp( - T_decision_min / tau_reg ) <= BER_target * (V_FS / V_LSB) với tau_reg = C_latch / Gm_latch_eff tại góc SS, VDD_min và nhiệt độ xấu nhất",
-      "why_vi": "Khi hiệu điện áp đầu vào bộ so sánh tiến sát 0 V (dưới 0.01 LSB), bộ chốt ghép chéo cần nhiều hằng số thời gian hàm mũ tau_reg = C_L / gm để khuếch đại vi sai lên mức logic. Trong SAR ADC bất đồng bộ hoặc tốc độ cao, nếu T_decision / tau_reg < 25..30, xác suất rơi vào trạng thái lơ lửng siêu ổn định (metastability) làm lật sai các bit thấp sau đó và tạo gai lỗi mã (sparkle code).",
-      "cadence_check": "Trong Spectre `tran`, quét logarit bước nhảy đầu vào siêu nhỏ `Delta_Vin = 1 mV, 100 uV, 10 uV, 1 uV` tại góc `SS, VDD_min`, trích xuất độ dốc `d(T_clk_to_out)/d(ln(Delta_Vin))` để tìm chính xác `tau_reg` và suy ra `BER` ở tốc độ lấy mẫu danh định.",
+      "invariant": "exp( - (T_decision_min - T_int) / tau_reg ) <= BER_target * (A_int * V_LSB / V_DD) (tương đương BER_meta ≈ (V_DD / (A_int * V_LSB)) * exp(-(T_decision_min - T_int) / tau_reg) <= BER_target trên lưới bước lượng tử V_LSB, hoặc nhân 2 * V_logic / (A_pre * V_FS) cho bộ cắt lát đơn 1-bit) với tau_reg = C_latch / Gm_latch_eff tại góc SS, VDD_min và nhiệt độ xấu nhất",
+      "why_vi": "Khi hiệu điện áp dư trên giàn tụ C-DAC rơi sát ngưỡng chuyển mã trong vùng [-V_LSB/2, +V_LSB/2], bộ chốt ghép chéo cần nhiều hằng số thời gian hàm mũ tau_reg = C_latch / Gm_latch_eff để khuếch đại vi sai từ A_int * Delta_V_in lên mức logic V_DD. Vì V_LSB = V_FS / 2^N rất nhỏ, xác suất siêu ổn định tỷ lệ nghịch với V_LSB: nếu (T_decision_min - T_int) / tau_reg < 28..35, lỗi siêu ổn định sẽ làm lật sai các bit thấp kế tiếp và sinh gai lỗi mã lấp lánh (sparkle code).",
+      "cadence_check": "Trong Spectre `tran`, quét logarit bước nhảy đầu vào siêu nhỏ `Delta_Vin = 1 mV, 100 uV, 10 uV, 1 uV` tại góc `SS, VDD_min`, trích xuất độ dốc `d(T_clk_to_out)/d(ln(Delta_Vin))` để tìm chính xác `tau_reg` và kiểm chứng `BER_meta <= 1e-12..1e-15` ở tốc độ lấy mẫu danh định.",
       "related_nodes": [
         "topo-dynamic-strongarm-and-miyahara-comparator",
         "topo-sar-adc-charge-redistribution-architecture"

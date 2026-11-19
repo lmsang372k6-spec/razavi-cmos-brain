@@ -10,26 +10,26 @@
   "razavi_refs": [
     {
       "chapter": 4,
-      "section": "4.3",
-      "pages": "118-126",
+      "section": "4.2.3-4.3",
+      "pages": "116-123",
       "equations": ["4.34", "4.38", "4.44"]
     },
     {
       "chapter": 7,
       "section": "7.2-7.6",
-      "pages": "229-258",
+      "pages": "228-262",
       "equations": ["7.41", "7.53", "7.129"]
     },
     {
       "chapter": 8,
-      "section": "8.2.1, 8.6",
-      "pages": "286-291, 322-331",
+      "section": "8.1, 8.2.1, 8.5, 8.6",
+      "pages": "274-291, 303-330",
       "equations": ["8.15", "8.88"]
     },
     {
       "chapter": 14,
       "section": "14.2.1-14.2.4",
-      "pages": "593-606",
+      "pages": "593-604",
       "equations": ["14.75", "14.88", "14.96"]
     }
   ],
@@ -136,12 +136,12 @@ Qua tầng trừ $A_3$ có tham chiếu $V_{\text{REF}}$:
 $$
 V_{\text{out}} = V_{\text{REF}} + \left(1 + \frac{2 R_1}{R_G}\right)\frac{R_3}{R_2}\left(V_{in+} - V_{in-}\right) \implies A_{\text{DM}} = G_1 \cdot G_2 = \left(1 + \frac{2 R_1}{R_G}\right)\frac{R_3}{R_2}
 $$
-- **Định luật Nhân Bội CMRR Nhờ Độ lợi Tầng 1**: Giả sử bốn điện trở tầng trừ $A_3$ có sai số ghép tương đối tổng cộng là $\delta_R = \frac{\Delta(R_3/R_2)}{R_3/R_2}$ (ví dụ $\delta_R = 0.1\% = 10^{-3}$). Vì Tầng 1 truyền $V_{CM}$ với hệ số $1$ nhưng đã khuếch đại tín hiệu vi sai lên $G_1 = 1 + \frac{2 R_1}{R_G}$ lần *trước khi* bước vào tầng trừ bị lệch trở, nên tỷ số khử đồng pha tổng thể được **nhân bội trực tiếp theo $G_1$**:
+- **Định luật Nhân Bội CMRR Nhờ Độ lợi Tầng 1**: Giả sử hai cặp điện trở tầng trừ $A_3$ ($G_2 = R_3 / R_2$) có sai số tỷ số ghép tương đối tổng cộng là $\delta_R = \frac{\Delta(R_3/R_2)}{R_3/R_2}$ (ví dụ $|\delta_R| = 0.1\% = 10^{-3}$). Tầng trừ tạo độ lợi đồng pha rò $|A_{\text{CM},2}| = \frac{G_2 |\delta_R|}{1 + G_2}$; vì Tầng 1 truyền $V_{CM}$ với hệ số $A_{\text{CM},1} = 1$ nhưng khuếch đại vi sai lên $A_{\text{DM}} = G_1 G_2$, thừa số $G_2$ ở tử và mẫu giản ước sạch để cho trần $\text{CMRR}$ giới hạn bởi lệch trở:
 $$
-\text{CMRR}_{\text{total}} \approx \left( \frac{1}{\text{CMRR}_{A1,A2,\text{mismatch}}} + \frac{\delta_R}{G_1 \left(1 + R_2 / R_3\right)} \right)^{-1}
-\approx G_1 \frac{1 + G_2}{G_2 \, \delta_R} \quad (\text{khi giới hạn bởi lệch trở tầng 2})
+\text{CMRR}_{\text{total}} \approx \left( \frac{1}{\text{CMRR}_{A1,A2,\text{mismatch}}} + \frac{\left|\delta_R\right|}{G_1 \left(1 + G_2\right)} \right)^{-1}
+\implies \text{CMRR}_{\text{res}} = \frac{G_1 \left(1 + G_2\right)}{\left|\delta_R\right|}
 $$
-Với $\delta_R = 0.1\%$ và $G_2 = 1$: ở $G_1 = 1$ ta chỉ đạt $\text{CMRR} = 2 / 10^{-3} \equiv 66\text{ dB}$, nhưng khi đặt $G_1 = 100$ ở Tầng 1 thì $\text{CMRR}$ vọt thẳng lên **$106\text{ dB}$** mà không cần laser-trim! (Ngược lại, nếu sai lầm đặt $G_1 = 1$ và dồn độ lợi $G_2 = 100$ về Tầng 2, $\text{CMRR}$ sụp về $60\text{ dB}$!).
+Với $|\delta_R| = 0.1\%$: tại $G_1 = 1, G_2 = 1$ ta đạt $\text{CMRR}_{\text{res}} = 2 / 10^{-3} \equiv \mathbf{66.0\text{ dB}}$; khi đặt $G_1 = 100, G_2 = 1$ thì $\text{CMRR}_{\text{res}} = 200 / 10^{-3} \equiv \mathbf{106.0\text{ dB}}$! *(Lưu ý bản chất vật lý: nếu dồn độ lợi về tầng sau $G_1 = 1, G_2 = 100$, riêng sai lệch điện trở tĩnh cho $\text{CMRR}_{\text{res}} = 101 / 10^{-3} \equiv \mathbf{100.1\text{ dB}}$ — thấp hơn $6\text{ dB}$; tuy nhiên trong thiết kế thực tế người ta **luôn ưu tiên đặt độ lợi lớn ở $G_1$ thay vì $G_2$** vì 3 lý do sống còn: (1) đổi độ lợi khả trình chỉ bằng **duy nhất 1 điện trở nổi $R_G$** mà không chạm vào tứ giác điện trở khớp đồng tâm $R_2\text{--}R_3$, (2) độ lợi $G_1 = 100$ chia nhỏ toàn bộ điện áp lệch $V_{OS3}$, nhiễu $1/f$ + nhiễu nhiệt của $A_3$ & $R_2$, cùng giới hạn $\text{CMRR}_{A3}$ hữu hạn của bản thân Op-Amp $A_3$ đi **$100\times$ ($40\text{ dB}$)** khi quy về đầu vào, và (3) giữ hệ số hồi tiếp của $A_3$ ở $\beta_3 = \frac{1}{1+G_2} = 0.5$ thay vì $\frac{1}{101}$ để không làm sập băng thông vòng kín lẫn $\text{CMRR}$ tần số cao của tầng trừ!).*
 - **Phương trình Vùng Làm việc Hình Kim cương (`Diamond Plot Constraint`)**: Gọi $[V_{\text{min},1}, V_{\text{max},1}]$ là biên độ ra không xén của $A_1, A_2$. Thay $V_{\text{id}} = \frac{V_{\text{out}} - V_{\text{REF}}}{G_1 G_2}$ vào biểu thức $V_{o1}, V_{o2}$, điều kiện cả hai nút nội không bị xén đỉnh hay xén đáy tạo thành **4 đường biên chéo khép kín hình thoi (kim cương)** trên mặt phẳng $(V_{CM}, V_{\text{out}})$:
 $$
 V_{\text{min},1} \le V_{CM} \pm \frac{V_{\text{out}} - V_{\text{REF}}}{2\,G_2} \le V_{\text{max},1}
@@ -165,7 +165,7 @@ $$
 $$
 R_{\text{in},0} = \frac{1}{2\,f_{\text{chop}}\,C_{\text{in}}}
 $$
-Với $f_{\text{chop}} = 20\text{ kHz}$ và $C_{\text{in}} = 10\text{ pF}$, $R_{\text{in},0}$ tụt xuống chỉ còn **$2.5\text{ M}\Omega$**! Nếu hai điện cực khô trên da lệch trở kháng nguồn $\Delta R_{\text{src}} = 50\text{ k}\Omega$, sự phân áp qua $2.5\text{ M}\Omega$ làm sập $\text{CMRR}$ hệ thống xuống còn $34\text{ dB}$! Bằng cách mắc cặp tụ hồi tiếp dương $C_{\text{pf}}$ từ ngõ ra vi sai $V_{\text{out}} = A_{\text{CL}} V_{\text{in}}$ quay ngược về *trước* cầu băm đầu vào, dòng điện cần nạp cho $C_{\text{in}}$ được chính ngõ ra bơm trả lại:
+Với $f_{\text{chop}} = 20\text{ kHz}$ và $C_{\text{in}} = 10\text{ pF}$, $R_{\text{in},0}$ tụt xuống chỉ còn **$2.5\text{ M}\Omega$**! Nếu hai điện cực khô trên da lệch trở kháng nguồn $\Delta R_{\text{src}} = 50\text{ k}\Omega$, sự phân áp qua $2.5\text{ M}\Omega$ làm sập $\text{CMRR}$ hệ thống xuống còn $34\text{ dB}$! Bằng cách dẫn ngõ ra vi sai $V_{\text{out}} = A_{\text{CL}} V_{\text{in}}$ qua cầu băm đồng bộ `CH_pf` nối cặp tụ hồi tiếp dương $C_{\text{pf}}$ quay ngược về *trước* cầu băm đầu vào, gói điện tích cần nạp cho $C_{\text{in}}$ mỗi nửa chu kỳ được chính ngõ ra bơm trả lại:
 $$
 I_{\text{in,net}} = 2 f_{\text{chop}} \Big[ C_{\text{in}} V_{\text{in}} - C_{\text{pf}} \left(A_{\text{CL}} - 1\right) V_{\text{in}} \Big]
 \implies R_{\text{in,boost}} = \frac{R_{\text{in},0}}{1 - \frac{C_{\text{pf}}}{C_{\text{in}}}\left(A_{\text{CL}} - 1\right)}
@@ -232,8 +232,8 @@ pstb_loop pstb start=0.1 stop=9.9k dec=20 probe=IPROBE_MAIN
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Đáp ứng chế độ chung và tỷ số khử đồng pha CMRR do bất đối xứng tải | Chương 4, §4.3, PT (4.34)–(4.44), tr. 118–126 | `T572` nhiễu chế độ chung; `T655` sai lệch kích thước và điện áp ngưỡng; `T661` tỷ số khử chế độ chung (CMRR) |
-| Quy đổi nhiễu nhiệt và nhiễu nhấp nháy $1/f$ về ngõ vào cặp vi sai | Chương 7, §7.2 & §7.6, PT (7.41), (7.53), (7.129), tr. 229–258 | `T392` Nhiễu nhấp nháy; `T1009` nhiễu nhiệt; `T1080` nhiễu nhiệt điện trở; `T1137` điện áp nhiễu quy về ngõ vào; `T1178` nhiễu nhấp nháy quy về ngõ vào |
-| Hồi tiếp điện áp–điện áp nâng trở kháng vào và phối hợp vòng âm/dương | Chương 8, §8.2.1 & §8.6, PT (8.15), (8.88), tr. 286–331 | `T042` Hồi tiếp; `T812` hồi tiếp âm; `T1184` hồi tiếp dương; `T1257` hồi tiếp điện áp–điện áp |
-| Định luật Pelgrom, tự động khử lệch và biến thiên CMRR theo $V_{CM}$ | Chương 14, §14.2.1–14.2.4, PT (14.75), (14.88), (14.96), tr. 593–606 | `T087` Mạch tụ chuyển mạch; `T620` độ lệch; `T788` điện áp lệch quy về ngõ vào; `T803` bộ lọc thông cao; `T2153` định luật Pelgrom; `T2155` điện áp lệch không ngẫu nhiên; `T2157` tự động khử lệch không; `T2194` bố trí đồng tâm chung |
+| Đáp ứng chế độ chung và tỷ số khử đồng pha CMRR do bất đối xứng tải | Chương 4, §4.2.3–4.3, PT (4.34)–(4.44), tr. 116–123 | `T572` nhiễu chế độ chung; `T655` sai lệch kích thước và điện áp ngưỡng; `T661` tỷ số khử chế độ chung (CMRR) |
+| Quy đổi nhiễu nhiệt và nhiễu nhấp nháy $1/f$ về ngõ vào cặp vi sai | Chương 7, §7.2–7.6, PT (7.41), (7.53), (7.129), tr. 228–262 | `T392` Nhiễu nhấp nháy; `T1009` nhiễu nhiệt; `T1080` nhiễu nhiệt điện trở; `T1137` điện áp nhiễu quy về ngõ vào; `T1178` nhiễu nhấp nháy quy về ngõ vào |
+| Hồi tiếp điện áp–điện áp nâng trở kháng vào và phối hợp vòng âm/dương | Chương 8, §8.1, §8.2.1, §8.5 & §8.6, PT (8.15), (8.88), tr. 274–330 | `T042` Hồi tiếp; `T812` hồi tiếp âm; `T1184` hồi tiếp dương; `T1257` hồi tiếp điện áp–điện áp |
+| Định luật Pelgrom, tự động khử lệch và biến thiên CMRR theo $V_{CM}$ | Chương 14, §14.2.1–14.2.4, PT (14.75), (14.88), (14.96), tr. 593–604 | `T087` Mạch tụ chuyển mạch; `T620` độ lệch; `T788` điện áp lệch quy về ngõ vào; `T803` bộ lọc thông cao; `T2153` định luật Pelgrom; `T2155` điện áp lệch không ngẫu nhiên; `T2157` tự động khử lệch không; `T2194` bố trí đồng tâm chung |
 | Thiết kế PGA / Instrumentation Amp CMOS thực tế & mô hình nhiễu $1/f$ chu kỳ | `efabless/sky130_pa_ip__instramp` (Prof. Phil Allen) & `KenKundert/flicker-noise` | Kiến trúc khuếch đại đo lường khả trình & kiểm định `pss + pnoise` |

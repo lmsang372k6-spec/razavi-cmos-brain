@@ -54,8 +54,8 @@ Từ nguyên lý đó, mọi transistor trong mạch tương tự phân hóa th�
 
 ## 2. Hệ Phương trình Cốt lõi & Tư duy "Nhìn Mạch Đọc Nhanh" (Analysis by Inspection)
 
-### 2.1. Tầng Nguồn Chung (CS) & CS Suy biến Cực nguồn (§7.4.1, Phương trình 7.75–7.85)
-- **CS tải nguồn dòng PMOS $M_2$ (Hình 7.41):** Tổng dòng nhiễu ngắn mạch ngõ ra là $\overline{I_{n,\text{out}}^2} = \overline{I_{n1}^2} + \overline{I_{n2}^2}$. Chia cho $g_{m1}^2$, điện áp nhiễu tổng quy về cổng $M_1$ (gồm cả nhiễu nhiệt và $1/f$) là (Phương trình 7.75, 7.78):
+### 2.1. Tầng Nguồn Chung (CS) & CS Suy biến Cực nguồn (§7.4.1, Phương trình 7.75–7.85 & Bài tập 7.13, 7.18)
+- **CS tải nguồn dòng PMOS $M_2$ (Hình 7.42):** Tổng dòng nhiễu ngắn mạch ngõ ra là $\overline{I_{n,\text{out}}^2} = \overline{I_{n1}^2} + \overline{I_{n2}^2}$. Chia cho $g_{m1}^2$, điện áp nhiễu tổng quy về cổng $M_1$ (gồm cả nhiễu nhiệt và $1/f$) là (Phương trình 7.75 cho tải $R_D$, Phương trình 7.78 cho tải nguồn dòng $M_2$, và Phương trình 7.85 cho tải $M_2 \parallel R_D$):
 
 $$
 \overline{V_{n,in}^2} = 4 k T \gamma \left( \frac{1}{g_{m1}} + \frac{g_{m2}}{g_{m1}^2} \right) + \frac{K_N}{C_{ox} W_1 L_1 f} + \frac{K_P}{C_{ox} W_2 L_2 f} \cdot \left(\frac{g_{m2}}{g_{m1}}\right)^2
@@ -67,20 +67,20 @@ $$
 \overline{V_{n,\text{out,tot}}^2} = \gamma (g_{m1} + g_{m2})(r_{O1} \parallel r_{O2}) \frac{k T}{C_L}
 $$
 
-- **CS suy biến bằng điện trở cực nguồn $R_S$ tải $R_D$ (Phương trình 7.85):** Suy biến nguồn cải thiện độ tuyến tính nhưng **luôn làm xấu đi nhiễu quy về ngõ vào** vì cộng thẳng nhiễu nhiệt $4kT R_S$ và làm giảm hỗ dẫn hiệu dụng làm nhiễu của tải $R_D$ bị đẩy tăng lên $(1 + g_{m1} R_S)^2$ lần:
+- **CS suy biến bằng điện trở cực nguồn $R_S$ tải $R_D$ (Bài tập 7.13 & 7.18, Hình 7.76 & 7.78):** Suy biến nguồn cải thiện độ tuyến tính nhưng **luôn làm xấu đi nhiễu quy về ngõ vào** vì cộng thẳng nhiễu nhiệt $4kT R_S$ và làm giảm hỗ dẫn hiệu dụng khiến nhiễu của tải $R_D$ bị đẩy tăng lên $(1 + g_{m1} R_S)^2$ lần:
 
 $$
 \overline{V_{n,in,\text{deg}}^2} = \frac{4 k T \gamma}{g_{m1}} + 4 k T R_S + \frac{4 k T}{R_D} \left( \frac{1}{g_{m1}} + R_S \right)^2
 $$
 
 ### 2.2. Tầng Cổng Chung (CG) & Tầng Theo Nguồn (SF) (§7.4.2–7.4.3, Phương trình 7.98–7.111)
-- **Tầng CG phân cực bằng nguồn dòng dưới nguồn $M_2$ và tải nguồn dòng trên máng $M_3$ (Hình 7.48):** Cực kỳ bất lợi về nhiễu dòng vì cả hai nguồn dòng phân cực $M_2$ (dưới cực nguồn) và $M_3$ (trên cực máng) đều bơm thẳng nhiễu vào mạch (Phương trình 7.98, 7.103):
+- **Tầng CG phân cực bằng nguồn dòng dưới nguồn $M_2$ và tải nguồn dòng trên máng $M_3$ (Ví dụ 7.20, Hình 7.49):** Cực kỳ bất lợi về nhiễu dòng vì cả hai nguồn dòng phân cực $M_2$ (dưới cực nguồn) và $M_3$ (trên cực máng) đều bơm thẳng nhiễu vào mạch (Phương trình 7.98, 7.103):
 
 $$
 \overline{V_{n,in,\text{CG}}^2} = \frac{4 k T \gamma (g_{m1} + g_{m3})}{(g_{m1} + g_{mb1})^2}, \qquad \overline{I_{n,in,\text{CG}}^2} = 4 k T \gamma (g_{m2} + g_{m3})
 $$
 
-- **Tầng Theo Nguồn (Source Follower $M_1$ phân cực bởi nguồn dòng $M_2$, Hình 7.50):** Tuy độ lợi điện áp nhỏ hơn 1 ($A_v = \frac{g_{m1}}{g_{m1} + g_{mb1}}$), các hệ số $g_{mb1}$ rút gọn sạch sẽ để cho điện áp nhiễu nhiệt quy về ngõ vào **giống hệt tầng CS** (Phương trình 7.111):
+- **Tầng Theo Nguồn (Source Follower $M_1$ phân cực bởi nguồn dòng $M_2$, Hình 7.51):** Tuy độ lợi điện áp nhỏ hơn 1 ($A_v = \frac{g_{m1}}{g_{m1} + g_{mb1}}$), các hệ số $g_{mb1}$ rút gọn sạch sẽ để cho điện áp nhiễu nhiệt quy về ngõ vào **giống hệt tầng CS** (Phương trình 7.111):
 
 $$
 \overline{V_{n,in,\text{SF}}^2} = 4 k T \gamma \left( \frac{1}{g_{m1}} + \frac{g_{m2}}{g_{m1}^2} \right)
@@ -171,10 +171,10 @@ Công thức bất biến theo $g_m/I_D$ này giải thích vì sao phương ph�
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
 - **Chương 7:** §7.4 *Noise in Single-Stage Amplifiers* — §7.4.1 *CS Stage* (tr. 244–249), §7.4.2 *CG Stage* (tr. 249–253), §7.4.3 *Source Followers* (tr. 253–254), §7.4.4 *Cascode Stage* (tr. 254); §7.5 *Noise in Current Mirrors* (tr. 254–256); §7.6 *Noise in Differential Pairs* (tr. 256–262); §7.7 *Noise-Power Trade-Off* (tr. 263–264).
 - **Chú giải Hiệu đính Học thuật CLB (`NG07`):**
-  - **`NG07-04` (tr. 247, Hình 7.44b):** Trong sơ đồ tầng CS suy biến nguồn, nguồn dòng nhiễu của điện trở tải cực máng bị in nhầm nhãn là $\overline{I_{n,R1}^2}$; điện trở tải thực tế trên hình và trong Phương trình (7.85) là $R_D$.
+  - **`NG07-04` (tr. 247, Ví dụ 7.17, Hình 7.44b):** Trong sơ đồ tầng CS tải nguồn dòng song song điện trở $R_D$, nguồn dòng nhiễu của điện trở tải cực máng bị in nhầm nhãn là $\overline{I_{n,R1}^2}$; điện trở tải thực tế trên hình và trong Phương trình (7.85) là $R_D$.
   - **`NG07-05` (tr. 252, Phương trình 7.101–7.102):** Khi quy đổi nhiễu tải $M_3$ của tầng CG về ngõ vào, (7.101) viết theo biên độ $I_{n,in}\big|_{M3} \approx I_{n3}$ rồi sang (7.102) viết nối tiếp $\approx 4kT\gamma g_{m3}$ (vốn là bình phương trung bình $\overline{I_{n,in}^2}\big|_{M3}$, đơn vị $\text{A}^2/\text{Hz}$); hiểu bước (7.102) là mật độ phổ bình phương trung bình như viết tường minh ở (7.103).
   - **`NG07-06` (tr. 254, Hình 7.52c):** Khi giải thích trực quan vì sao transistor cascode ít nhiễu, câu cuối sách chỉ ghi gọn "$V_{out}/V_n$ vẫn lớn hơn rất nhiều" mà không ghi rõ vế so sánh là độ lợi từ nguồn nhiễu $V_{n2}$ tại cổng cascode tới $V_{out}$ (tức $|A_{v,\text{in}}| \gg |A_{v,\text{cas-gate}}|$ nhờ suy biến $r_{O1}$!).
-  - **`NG07-07` & `NG07-08` (tr. 255–256, Ví dụ 7.15 & Hình 7.54):** Ở Ví dụ 7.15 tính tụ lọc gương dòng $C_B^2 = 2{,}533 \times 10^{-18}$, đơn vị của $C_B^2$ phải là $\text{F}^2$ (sách in nhầm $\text{F}$); và ở tr. 256, ký hiệu $g_{m1,\text{REF}}$ chính là $g_{m,\text{REF}}$ của $M_{\text{REF}}$, còn nghịch đảo hằng số thời gian cho $\omega_c$ (rad/s) nên $f_c = \omega_c/(2\pi)$ (Hz).
+  - **`NG07-07` & `NG07-08` (tr. 255–256, §7.5 & Hình 7.54):** Trong ví dụ số ở §7.5 (tr. 255) tính tụ lọc gương dòng $C_B^2 \gg 2{,}533 \times 10^{-18}$, đơn vị của $C_B^2$ phải là $\text{F}^2$ (sách in nhầm $\text{F}$); và ở tr. 256, ký hiệu $g_{m1,\text{REF}}$ chính là $g_{m,\text{REF}}$ của $M_{\text{REF}}$, còn nghịch đảo hằng số thời gian cho $\omega_c$ (rad/s) nên $f_c = \omega_c/(2\pi)$ (Hz).
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ
 | Mã CLB | Thuật ngữ Tiếng Anh | Thuật ngữ Tiếng Việt Chuẩn | Ghi chú Ngữ cảnh |

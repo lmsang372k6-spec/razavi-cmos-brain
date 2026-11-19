@@ -10,8 +10,8 @@
   "razavi_refs": [
     {
       "chapter": 2,
-      "section": "2.4.1-2.4.2",
-      "pages": "26-31",
+      "section": "2.3-2.4.2",
+      "pages": "24-31",
       "equations": ["2.38", "2.40", "2.42"]
     },
     {
@@ -91,7 +91,7 @@ Nếu bỏ qua CDF Callback khi chạy SKILL, bạn sẽ rơi vào cảnh: sửa
 Xét một transistor đa ngón có chiều rộng mỗi ngón $W_f$, chiều dài $L$, số ngón $N_f$ (chẵn) và chiều dài phần khuếch tán cực máng/nguồn chuẩn $L_{\text{diff}}$ (thường $0{,}24\text{–}0{,}45\text{ }\mu\text{m}$ tùy công nghệ). Nhờ dùng chung vùng máng/nguồn giữa các ngón kề nhau (Razavi Chương 2 Ví dụ 2.10 & Chương 19 §19.2.1), hàm CDF Callback của PDK tính diện tích và chu vi vùng máng hiệu dụng giảm gần một nửa so với transistor đơn ngón:
 
 $$
-W_{\text{tot}} = N_f \cdot W_f, \qquad A_D = \frac{N_f}{2} \cdot W_f \cdot L_{\text{diff}}, \qquad P_D = \frac{N_f}{2} \cdot \left(2 L_{\text{diff}} + W_f_{\text{sidewall}}\right)
+W_{\text{tot}} = N_f \cdot W_f, \qquad A_D = \frac{N_f}{2} \cdot W_f \cdot L_{\text{diff}}, \qquad P_D = \frac{N_f}{2} \cdot \left(2 L_{\text{diff}} + W_{f,\text{sidewall}}\right)
 $$
 
 Trong trình thông dịch SKILL của IC617 (xem quy chuẩn kiểm định tại `ic617_oa_cdf.il`), các hàm callback viết bởi nhà máy đúc PDK luôn đọc đối tượng CDF thông qua **biến phạm vi động (dynamic-scoped global variable) tên là `cdfgData`** (và đôi khi kiểm tra `cdfgForm`) đồng thời gọi hàm khởi tạo thư viện Analog Artist **`PasCdfFormInit(cdf)`**! Do đó, thứ tự bắt buộc gồm 5 bước không được đảo lộn:

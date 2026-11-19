@@ -32,7 +32,7 @@
     {
       "chapter": 14,
       "section": "14.2.1",
-      "pages": "597-605",
+      "pages": "593-598",
       "equations": [
         "14.78",
         "14.82"
@@ -40,8 +40,8 @@
     },
     {
       "chapter": 17,
-      "section": "17.1-17.4",
-      "pages": "691-711",
+      "section": "17.1-17.4, 17.Problems",
+      "pages": "691-710",
       "equations": [
         "17.12",
         "17.32",
@@ -174,10 +174,10 @@ với lưới chế tạo $\Delta_{\text{mfg}} = 5\text{ nm}$ và số ngón $N_
 
 | Công cụ & Lệnh Con | Tham số Đầu vào Chính | Đầu ra JSON Chuẩn | Thời gian Chạy & Ngữ cảnh Sử dụng |
 |---|---|---|---|
-| `gpdk_techsweep.py --pdk gpdk090 --corners NN,SS,FF` | Đường dẫn model PDK, danh sách góc, bước lưới `L/VDS/VSB/VGS` | Tệp `~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_<corner>_27C.lut.json.gz` | Chạy **1 lần duy nhất** mỗi PDK (`2–6 phút`), tái sử dụng vĩnh viễn cho mọi dự án |
+| `gpdk_techsweep.py --pdk gpdk090 --corner NN --run` | `--model-file`, `--corner` (`NN/SS/FF/FS/SF`), `--temp`, bước lưới `L/VDS/VSB/VGS`, `[--out]` | Tệp `~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_<corner>_27C.lut.json.gz` | Chạy **1 lần duy nhất** mỗi góc PDK (`1–2 phút/góc`), tái sử dụng vĩnh viễn cho mọi dự án |
 | `gpdk_techsweep.py --generate-demo-lut <path>` | Đường dẫn xuất tệp LUT mẫu | Bảng tra vật lý chuẩn EKV/BSIM đa chiều dài kênh cho NMOS & PMOS | `< 0.5 s` — phục vụ tự kiểm thử ngoại tuyến (`--self-test`) khi chưa bật Spectre |
-| `gmid_lut.py query` | `--lut`, `--dev nmos\|pmos`, `--l`, `--gm-id`, `--vds`, `[--vsb]` | `{jd_a_per_m, gm_gds, ft_hz, vgs, vdsat, vth, cgg_f_per_m, cgd_cgg, cdd_cgg}` | **`< 5 ms`** — khảo sát điểm phân cực và lấy hệ số tự tải ký sinh |
-| `gmid_lut.py size` | `--lut`, `--dev`, `--gm`, `--gm-id`, `--l`, `--vds`, `[--w-finger-max]` | `{id_a, w_total_m, nf, w_finger_m, ro_ohm, intrinsic_gain_db, cgg_f, vds_min}` | **`< 5 ms`** — Giai đoạn 3 định cỡ trực tiếp từng nhánh transistor |
+| `gmid_lut.py query` | `--lut`, `--dev nmos\|pmos`, `--l`, `--gm-id`, `--vds`, `[--vsb]` | `{jd_a_per_m, gm_gds, intrinsic_gain_db, ft_hz, vgs, vdsat, vth, cgg_f_per_m, cgd_cgg, cdd_cgg}` | **`< 5 ms`** — khảo sát điểm phân cực và lấy hệ số tự tải ký sinh |
+| `gmid_lut.py size` | `--lut`, `--dev`, `--gm`, `--gm-id`, `--l`, `--vds`, `[--w-finger-max]` | `{id_a, w_total_m, nf, w_finger_m, ro_ohm, gm_gds, intrinsic_gain_db, cgg_f, vds_min, spectre_params}` | **`< 5 ms`** — Giai đoạn 3 định cỡ trực tiếp từng nhánh transistor |
 | `gmid_lut.py tradeoff` | `--lut`, `--dev`, `--l-list`, `--gm-id-range`, `--vds` | Bảng ma trận Pareto `(gm/ID, L) -> (gm*ro, fT, JD, Vdsat)` | **`< 8 ms`** — chọn cặp $(g_m/I_D, L)$ tối ưu trước khi chốt kiến trúc tầng |
 
 ---
@@ -188,12 +188,14 @@ với lưới chế tạo $\Delta_{\text{mfg}} = 5\text{ nm}$ và số ngón $N_
 Trên máy RHEL 6.5 (hoặc máy phát triển bất kỳ), luôn truyền `PYTHONDONTWRITEBYTECODE=1 python -B`:
 
 ```bash
-# A. Khi chạy trên máy chủ Cadence có sẵn GPDK090 + Spectre 15.1 (lưu vào ~/.cache/skill-analog/gmid-luts/)
-PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gpdk_techsweep.py \
-  --pdk gpdk090 \
-  --model-file /home/disk/eda/pdks/gpdk090_v4.6/models/spectre/gpdk090.scs \
-  --corners NN,SS,FF \
-  --out-dir ~/.cache/skill-analog/gmid-luts
+# A. Khi chạy trên máy chủ Cadence có sẵn GPDK090 + Spectre 15.1 (tự động lưu vào ~/.cache/skill-analog/gmid-luts/)
+for c in NN SS FF; do
+  PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gpdk_techsweep.py \
+    --pdk gpdk090 \
+    --model-file /home/disk/eda/apps/cadence/pdks/gpdk090_v4.6/models/spectre/gpdk090.scs \
+    --corner "$c" \
+    --run
+done
 
 # B. Kiểm tra nhanh độ chính xác nội bộ (< 0.5s, dùng thư mục tạm tự dọn sạch hoặc đường dẫn cache)
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/gpdk_techsweep.py \
@@ -220,26 +222,42 @@ PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools
   --dev pmos --gm 0.445e-3 --gm-id 7.5 --l 500e-9 --vds 0.40 --vsb 0.0 --w-finger-max 4e-6
 ```
 
-Đầu ra JSON của lệnh `size` cung cấp trọn bộ thông số vật lý chỉ trong $2\text{ ms}$:
+Đầu ra JSON phẳng của lệnh `size` cung cấp trọn bộ thông số vật lý kèm gợi ý netlist chỉ trong $2\text{ ms}$:
 
 ```json
 {
   "ok": true,
-  "dev": "nmos",
-  "inputs": {"gm_s": 0.00095, "gm_id": 16.0, "l_m": 2.5e-07, "vds_v": 0.35, "vsb_v": 0.25},
-  "sized": {
-    "id_a": 5.9375e-05,
-    "w_total_m": 1.44e-05,
+  "command": "size",
+  "device": "nmos",
+  "model_name": "gpdk090_nmos1v",
+  "pdk": "GPDK090",
+  "corner": "NN",
+  "gm_target_s": 0.00095,
+  "gm_realized_s": 0.00095,
+  "gm_id": 16.0,
+  "id_a": 5.9375e-05,
+  "l_m": 2.5e-07,
+  "nf": 4,
+  "w_finger_m": 3.6e-06,
+  "w_total_m": 1.44e-05,
+  "vgs": 0.512,
+  "vdsat": 0.078,
+  "vds_min": 0.128,
+  "soa_ok": true,
+  "ro_ohm": 41250.0,
+  "gm_gds": 39.19,
+  "intrinsic_gain_db": 31.86,
+  "ft_hz": 18400000000.0,
+  "cgg_f": 8.22e-15,
+  "cdd_f": 4.95e-15,
+  "spectre_params": {
+    "model": "gpdk090_nmos1v",
+    "w_total": "14.4u",
+    "w_finger": "3.6u",
+    "l": "250n",
     "nf": 4,
-    "w_finger_m": 3.6e-06,
-    "vgs_v": 0.512,
-    "vds_min_v": 0.128,
-    "ro_ohm": 41250.0,
-    "intrinsic_gain_vv": 39.19,
-    "intrinsic_gain_db": 31.86,
-    "ft_hz": 18400000000.0,
-    "cgg_f": 8.22e-15,
-    "cdd_f": 4.95e-15
+    "simM": 4,
+    "netlist_hint": "w=3.6u l=250n simM=4"
   }
 }
 ```

@@ -16,7 +16,7 @@
     },
     {
       "chapter": 5,
-      "section": "5.3.1-5.3.4",
+      "section": "5.3, 5.3.1-5.3.4",
       "pages": "146-160",
       "equations": ["5.22", "5.26", "5.28", "5.33", "5.35", "5.38", "5.41", "5.47", "5.55", "5.57"]
     },
@@ -137,8 +137,8 @@ $$
 \frac{V_{out}}{V_{in}}(s) = \frac{A_{\text{DC}}/2}{1 + s/\omega_{p1}}\left(\frac{1}{1 + s/\omega_{p2}} + 1\right) = \frac{A_{\text{DC}}\left(1 + \dfrac{s}{2\omega_{p2}}\right)}{\left(1 + \dfrac{s}{\omega_{p1}}\right)\left(1 + \dfrac{s}{\omega_{p2}}\right)}
 $$
 
-**Ví dụ số tổng hợp (chuẩn Ví dụ 5.7–5.9 & §6.6.2):** Xét mạch 5T-OTA có $I_{SS} = 200\,\mu\text{A}$ ($I_{D1..4} = 100\,\mu\text{A}$), $g_{m1,2} = 1{,}6\text{ mS}$, $g_{m3,4} = 0{,}8\text{ mS}$, $r_{O1,2} = r_{O3,4} = 50\text{ k}\Omega$, $R_{SS} = 40\text{ k}\Omega$, $C_L = 1\text{ pF}$, $C_E = 80\text{ fF}$.
-- Độ lợi vi sai nhìn nhanh $|A_{v,\text{approx}}| = 1{,}6\text{ mS} \times (50 \parallel 50)\text{ k}\Omega = 40\text{ V/V}$ ($32{,}04\text{ dB}$); nghiệm chính xác (5.38) với $g_{m4} r_{O4} = 40$ cho $40 \times \frac{81}{82} = 39{,}51\text{ V/V}$ ($31{,}93\text{ dB}$). Nếu đọc đơn đầu thụ động (5.26), độ lợi tụt xuống chỉ còn $\frac{0{,}8\text{ mS}}{1} \times (100 \parallel 50)\text{ k}\Omega = 26{,}7\text{ V/V}$ ($28{,}5\text{ dB}$), và nếu lái tải ngoài $R_L = 10\text{ k}\Omega$ thì tụt hẳn một nửa ($7{,}3\text{ V/V}$ so với $11{,}4\text{ V/V}$)!
+**Ví dụ số tổng hợp (chuẩn Ví dụ 5.8–5.10 & §6.6.2):** Xét mạch 5T-OTA có $I_{SS} = 200\,\mu\text{A}$ ($I_{D1..4} = 100\,\mu\text{A}$), $g_{m1,2} = 1{,}6\text{ mS}$, $g_{m3,4} = 0{,}8\text{ mS}$, $r_{O1,2} = r_{O3,4} = 50\text{ k}\Omega$, $R_{SS} = 40\text{ k}\Omega$, $C_L = 1\text{ pF}$, $C_E = 80\text{ fF}$.
+- Độ lợi vi sai nhìn nhanh $|A_{v,\text{approx}}| = 1{,}6\text{ mS} \times (50 \parallel 50)\text{ k}\Omega = 40\text{ V/V}$ ($32{,}04\text{ dB}$); nghiệm chính xác (5.38) với $g_{m4} r_{O4} = 40$ cho $40 \times \frac{81}{82} = 39{,}51\text{ V/V}$ ($31{,}93\text{ dB}$). Nếu đọc đơn đầu thụ động (5.26), độ lợi tụt xuống chỉ còn $\frac{0{,}8\text{ mS}}{1} \times (100 \parallel 50)\text{ k}\Omega = 26{,}7\text{ V/V}$ ($28{,}5\text{ dB}$), và nếu lái tải ngoài $R_L = 10\text{ k}\Omega$ thì tụt gần một nửa ($0{,}8\text{ mS}\times (100\parallel 50\parallel 10)\text{ k}\Omega = 6{,}15\text{ V/V}$ so với $1{,}6\text{ mS}\times (25\parallel 10)\text{ k}\Omega = 11{,}4\text{ V/V}$)!
 - $\text{CMRR}_{\text{sym}}$ khi khớp hoàn hảo: $|A_{\text{CM,sym}}| = \frac{1}{1 + 2(1{,}6\text{ mS})(40\text{ k}\Omega)} \cdot \frac{1{,}6}{0{,}8} = \frac{2}{129} = 0{,}0155 \implies \text{CMRR}_{\text{sym}} = \frac{39{,}51}{0{,}0155} \approx 2\,549$ ($68{,}1\text{ dB}$). Nếu có lệch $g_{m1} - g_{m2} = 2\%\,g_{m1} = 32\,\mu\text{S}$, tử số (5.57) trở thành $(0{,}032\text{ mS}\times 50\text{ k}\Omega) - 2 = 1{,}6 - 2{,}0 = -0{,}4$ (tình cờ ngược dấu bớt một phần, hoặc nếu lệch ngược dấu $-2\%$ thì cộng dồn thành $-3{,}6$ làm $\text{CMRR}$ sụt thêm $5{,}1\text{ dB}$ xuống $63{,}0\text{ dB}$!).
 - Cực trội $\omega_{p1}/(2\pi) = \frac{1}{2\pi \times 25\text{ k}\Omega \times 1\text{ pF}} = 6{,}37\text{ MHz}$ ($\text{GBW} \approx 254\text{ MHz}$), cực gương $\omega_m/(2\pi) = \frac{0{,}8\text{ mS}}{2\pi \times 80\text{ fF}} = 1{,}59\text{ GHz}$ và LHP zero tại $3{,}18\text{ GHz}$.
 
@@ -211,9 +211,9 @@ f_Mirror_Est_Hz  = pv("M3" "gm") / (2*3.14159 * (abs(pv("M3" "cgg")) + abs(pv("M
 | Mục / Trang (Razavi 2nd Ed.) | Phương trình & Hình đối chiếu | Nội dung cốt lõi & Ghi chú Hiệu đính CLB (`NG`) |
 | :--- | :--- | :--- |
 | **§4.3–4.4**, tr. 118–126 (PDF 19–27) | PT (4.58), (4.60); Hình 4.37(a) | Cơ sở CMRR cặp vi sai đối xứng dưới lệch $\Delta g_m$ (PT 4.58) và tải PMOS mắc diode dùng khái niệm mạch nửa $A_v \approx -g_{mN}/g_{mP}$ (PT 4.60). |
-| **§5.3 & §5.3.1**, tr. 146–151 (PDF 13–18) | PT (5.22), (5.26); Hình 5.22–5.30; Ví dụ 5.7–5.8 | Chứng minh đọc đơn đầu trên tải nguồn dòng thụ động mất một nửa hỗ dẫn (PT 5.22, 5.26) và phân tích tín hiệu lớn 5T-OTA. **Lưu ý `NG05-02` (tr. 147):** ngay trước PT (5.20), bản in gốc xuất hiện ký tự in nghiêng $a$ không định nghĩa trong cụm "$r_{O2}\,a$". **Lưu ý `NG05-01` (tr. 150, Ví dụ 5.8):** bản in gốc liệt kê "$M_1, M_2$, and $M_4$ turn off" rồi ngay sau đó viết "$M_2$ and $M_5$ remain on"; đối chiếu mạch cho thấy transistor ngắt cùng $M_1, M_4$ ở danh sách đầu chính là $M_3$! |
-| **§5.3.2**, tr. 151–156 (PDF 18–23) | PT (5.28), (5.33), (5.35), (5.38); Hình 5.31–5.36; Ví dụ 5.9 | Tại sao nút đuôi $P$ mất đất ảo chặt chẽ; phép chồng chập hai bước cho $R_{out} \approx r_{O2}\parallel r_{O4}$ (PT 5.28) và dẫn xuất nghiệm đóng chính xác tuyệt đối (PT 5.33, 5.35, 5.38). |
-| **§5.3.3–5.3.4**, tr. 156–160 (PDF 23–27) | PT (5.41), (5.47), (5.55), (5.57); Hình 5.37–5.40 | Độ lợi chế độ chung khi đối xứng hoàn hảo (PT 5.41), bóc tách lỗi ngụy biện "$A_{\text{CM}}=0$" qua dòng hụt của $r_{O3}$ (PT 5.47), và $A_{\text{CM}}$ tổng hợp dưới lệch $g_{m1} \neq g_{m2}$ (PT 5.55, 5.57). |
+| **§5.3 & §5.3.1**, tr. 146–152 (PDF 13–19) | PT (5.22), (5.26); Hình 5.22–5.30; Ví dụ 5.8–5.10 | Chứng minh đọc đơn đầu trên tải nguồn dòng thụ động mất một nửa hỗ dẫn (PT 5.22, 5.26) và phân tích tín hiệu lớn 5T-OTA. **Lưu ý `NG05-02` (tr. 147):** ngay trước PT (5.20), bản in gốc xuất hiện ký tự in nghiêng $a$ không định nghĩa trong cụm "$r_{O2}\,a$". **Lưu ý `NG05-01` (tr. 150, Ví dụ 5.8):** bản in gốc liệt kê "$M_1, M_2$, and $M_4$ turn off" rồi ngay sau đó viết "$M_2$ and $M_5$ remain on"; đối chiếu mạch cho thấy transistor ngắt cùng $M_1, M_4$ ở danh sách đầu chính là $M_3$! |
+| **§5.3.2**, tr. 152–156 (PDF 19–23) | PT (5.28), (5.33), (5.35), (5.38); Hình 5.31–5.36; Ví dụ 5.11–5.12 | Tại sao nút đuôi $P$ mất đất ảo chặt chẽ; phép chồng chập hai bước cho $R_{out} \approx r_{O2}\parallel r_{O4}$ (PT 5.28) và dẫn xuất nghiệm đóng chính xác tuyệt đối (PT 5.33, 5.35, 5.38). |
+| **§5.3.3–5.3.4**, tr. 156–160 (PDF 23–27) | PT (5.41), (5.47), (5.55), (5.57); Hình 5.37–5.42; Ví dụ 5.13 | Độ lợi chế độ chung khi đối xứng hoàn hảo (PT 5.41), bóc tách lỗi ngụy biện "$A_{\text{CM}}=0$" qua dòng hụt của $r_{O3}$ (PT 5.47), và $A_{\text{CM}}$ tổng hợp dưới lệch $g_{m1} \neq g_{m2}$ (PT 5.55, 5.57). |
 | **§6.6.2**, tr. 201–203 (PDF 29–31) | PT (6.91), (6.94), (6.95), (6.96); Hình 6.40–6.41 | Hàm truyền bậc hai của cặp vi sai tải gương dòng tích cực (PT 6.91), cực gương $\omega_{p2} \approx g_{mP}/C_E$ (PT 6.94) và mô hình cộng hai đường nhanh–chậm sinh LHP zero $2\omega_{p2}$ (PT 6.95–6.96). |
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

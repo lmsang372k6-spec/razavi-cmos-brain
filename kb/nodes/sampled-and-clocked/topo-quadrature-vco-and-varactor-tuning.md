@@ -198,7 +198,7 @@ pss_qvco pss fund=4.0G harms=13 autotstab=yes tstab=80n oscnode=vip oscref=vin \
 
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
-- **Sách gốc Razavi (2nd Ed.)**: Chương 15, Mục `15.4` (*Voltage-Controlled Oscillators*, trang 630–633, Phương trình `15.55`–`15.61`, Ví dụ `15.9`), Mục `15.4.1` (*Tuning in Ring Oscillators*, trang 633–641, Phương trình `15.62`–`15.71`, Ví dụ `15.10`–`15.13`), và trọng tâm Mục `15.4.2` (*Tuning in LC Oscillators*, trang 641–644, Hình `15.53`–`15.59`, Phương trình `15.72`, Ví dụ `15.14`, Bài tập `15.22`–`15.26`).
+- **Sách gốc Razavi (2nd Ed.)**: Chương 15, Mục `15.4` (*Voltage-Controlled Oscillators*, trang 630–633, Phương trình `15.55`–`15.61`, Ví dụ `15.9`), Mục `15.4.1` (*Tuning in Ring Oscillators*, trang 633–641, Phương trình `15.62`–`15.71`, Ví dụ `15.10`–`15.13`), và trọng tâm Mục `15.4.2` (*Tuning in LC Oscillators*, trang 641–644, Hình `15.53`–`15.59`, Phương trình `15.72`, Ví dụ `15.14`, Bài tập `15.14`–`15.15`).
 - **Đối chiếu Thuật ngữ Chuẩn CLB Vi Mạch (`terms-vi-en.json`)**:
   - `T2166` (`voltage-controlled oscillator, VCO`): **bộ dao động điều khiển bằng điện áp**; `T2167` (`VCO gain, KVCO`): **độ lợi VCO (độ nhạy điều chỉnh tần số $K_{VCO}$)**.
   - `T2168` (`MOS varactor / accumulation-mode varactor`): **tụ biến dung MOS (varactor chế độ tích lũy)**; `T414` (`Capacitance-voltage characteristic`): **đặc tuyến điện dung–điện áp (C–V)**.

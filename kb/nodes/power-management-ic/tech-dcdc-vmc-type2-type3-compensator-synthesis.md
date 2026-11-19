@@ -10,20 +10,20 @@
   "razavi_refs": [
     {
       "chapter": 8,
-      "section": "8.2.1, 8.5.2, 8.7",
-      "pages": "284-288, 305-312, 326-336",
+      "section": "8.1.1, 8.2.1, 8.5.2, 8.7",
+      "pages": "275-282, 286-291, 304-308, 331-332",
       "equations": ["8.14", "8.36", "8.73"]
     },
     {
       "chapter": 9,
-      "section": "9.2.4-9.3.1",
+      "section": "9.2.4-9.4.1",
       "pages": "355-366",
       "equations": ["9.17", "9.24"]
     },
     {
       "chapter": 10,
       "section": "10.2-10.6",
-      "pages": "411-435",
+      "pages": "414-435",
       "equations": ["10.5", "10.14", "10.30", "10.38"]
     }
   ],
@@ -167,10 +167,12 @@ $$
 3. **Công thức đóng tính trọn gói 6 linh kiện từ $R_1$ chọn trước** (chọn $R_1 \in [20\text{ k}\Omega, 200\text{ k}\Omega]$ theo dòng phân áp tĩnh; suy ra $R_{\text{bias}} = \dfrac{R_1}{V_{\text{OUT}}/V_{\text{REF}} - 1}$):
 
 $$
-C_2 = \frac{G_p}{2\pi f_c \, K_{\text{III}} \, R_1}, \quad C_1 = C_2 (K_{\text{III}} - 1), \quad R_2 = \frac{\sqrt{K_{\text{III}}}}{2\pi f_c \, C_1}, \quad C_3 = \frac{K_{\text{III}} - 1}{2\pi f_c \sqrt{K_{\text{III}}} \, R_1}, \quad R_3 = \frac{R_1}{K_{\text{III}} - 1}
+C_2 = \frac{G_p}{2\pi f_c \, R_1}, \quad C_1 = C_2 (K_{\text{III}} - 1), \quad R_2 = \frac{\sqrt{K_{\text{III}}}}{2\pi f_c \, C_1}, \quad C_3 = \frac{K_{\text{III}} - 1}{2\pi f_c \sqrt{K_{\text{III}}} \, R_1}, \quad R_3 = \frac{R_1}{K_{\text{III}} - 1}
 $$
 
-*(Mẹo tinh chỉnh thực chiến — Pole-Zero Placement lai K-Factor: Khi $Q$ của bộ lọc $LC$ ở tải nhẹ rất cao $> 8$, thay vì đặt cả hai zero đối xứng tại $f_c/\sqrt{K}$ có thể nằm hơi cao hơn $f_0$ gây võng pha tạm thời dưới $-180^\circ$ tại $f_0$, hãy kẹp cứng $f_{z1} = 0{,}75\,f_0$, $f_{z2} = 1{,}0\,f_0$, đặt $f_{p1} = f_{z,\text{ESR}}$ (hoặc $0{,}5\,f_{\text{sw}}$ nếu MLCC) và $f_{p2} = 0{,}5\,f_{\text{sw}}$!)*
+*(Kiểm chứng đại số tránh bẫy thừa hệ số $K_{\text{III}}$ ở mẫu số $C_2$: tại điểm trung bình nhân đối xứng $\omega_c = 2\pi f_c$ với $\omega_{z1,2} = \omega_c / \sqrt{K_{\text{III}}}$ và $\omega_{p1,2} = \omega_c \sqrt{K_{\text{III}}}$, hai cặp cực–zero nâng biên độ lên đúng $\left|\frac{1 + j\sqrt{K_{\text{III}}}}{1 + j/\sqrt{K_{\text{III}}}}\right|^2 = K_{\text{III}}$, triệt tiêu hoàn hảo hệ số $C_1 + C_2 = K_{\text{III}} C_2$ trong $\left|H_{\text{III}}(j\omega_c)\right| = \frac{1}{\omega_c R_1 (C_1 + C_2)} \cdot K_{\text{III}} = \frac{1}{2\pi f_c R_1 C_2} = \frac{1}{G_p} \implies C_2 = \frac{G_p}{2\pi f_c R_1}$!)*
+
+*(Mẹo tinh chỉnh thực chiến — Pole-Zero Placement bất đối xứng: Khi $Q$ của bộ lọc $LC$ ở tải nhẹ rất cao $> 8$ hoặc muốn ép cứng cực cao tần $f_{p1,2} \le 0{,}5\,f_{\text{sw}}$, thay vì đặt đối xứng $f_c/\sqrt{K_{\text{III}}}$ và $f_c\sqrt{K_{\text{III}}}$, hãy dùng hộp công thức tổng quát TI SLVA662 ở §5.1 để đặt độc lập $f_{z1}, f_{z2}$ quanh $f_0$ và kẹp $f_{p1,2}$ dưới $0{,}5\,f_{\text{sw}}$!)*
 
 ### 2.3. Tổng hợp Bộ Bù Hỗ dẫn $G_m$-OTA Loại II & Loại III Trên Vi mạch Tích hợp
 Trong nhiều chip PMIC tích hợp mật độ cao, các kỹ sư thích thay Op-Amp bằng **OTA hỗ dẫn $G_m$** (như `topo-folded-cascode-ota` hoặc OTA gương dòng đối xứng có trở kháng ra rất cao $R_{o,\text{OTA}}$) vì mạng bù $(R_c + \frac{1}{sC_c}) \parallel \frac{1}{sC_p}$ nối từ ngõ ra `VCOMP` xuống đất tĩnh `AGND` — giúp cô lập hoàn toàn ngõ vào `FB` khỏi dòng điện dung hồi tiếp từ `VCOMP`!
@@ -223,27 +225,37 @@ Trong công thức $G_{\text{stage}}(s) \propto \frac{V_{\text{IN}}}{V_M}$, nế
   $$f_0 = \frac{1}{2\pi\sqrt{1\,\mu\text{H} \times 10\,\mu\text{F}}} = 50{,}33\text{ kHz}, \qquad f_{z,\text{ESR}} = \frac{1}{2\pi \times 5\text{ m}\Omega \times 10\,\mu\text{F}} = 3{,}18\text{ MHz} \gg f_{\text{sw}}$$
 - **Bước 2 — Chọn tần số cắt $f_c$ & Tính độ lợi/pha tầng công suất tại $f_c$:** Chọn $f_c = 250\text{ kHz} = \frac{f_{\text{sw}}}{8} \approx 4{,}97\,f_0$. Tại $f_c = 250\text{ kHz}$:
   $$G_p(f_c) = \left|G_{\text{stage}}(j 2\pi f_c)\right| \approx \frac{V_{\text{IN}}}{V_M} \cdot \frac{1}{(f_c/f_0)^2 - 1} = \frac{3{,}3}{1{,}0} \cdot \frac{1}{4{,}967^2 - 1} = \frac{3{,}3}{23{,}67} = 0{,}1394\text{ V/V}\;\;(-17{,}1\text{ dB}), \qquad \phi_p(f_c) \approx -176^\circ$$
-- **Bước 3 — Đặt Cực-Zero Lai K-Factor Chống Võng Pha Có Điều kiện:**
-  - Đặt mục tiêu $\text{PM}_{\text{target}} = 58^\circ \implies \phi_{\text{boost}} = 58^\circ - (-176^\circ) - 90^\circ = 144^\circ \implies \sqrt{K_{\text{III}}} = \tan(36^\circ + 45^\circ) = \tan(81^\circ) = 6{,}314 \implies K_{\text{III}} = 39{,}86$.
-  - Kiểm tra vị trí zero: $f_z = \frac{250\text{ kHz}}{6{,}314} = 39{,}6\text{ kHz} \approx 0{,}79\,f_0$ (**Nằm ngay dưới $f_0 = 50{,}3\text{ kHz}$ — triệt tiêu hoàn toàn bẫy ổn định có điều kiện `[TRAP-VMC-01]`!**), và cực cao tần $f_p = 250\text{ kHz} \times 6{,}314 = 1{,}58\text{ MHz}$ (ta kẹp nhẹ $f_{p1,2} = 1{,}2\text{ MHz} = 0{,}6\,f_{\text{sw}}$ để nén mạnh gợn chuyển mạch $2\text{ MHz}$).
-- **Bước 4 — Giải giá trị linh kiện chuẩn (chọn $R_1 = 50\text{ k}\Omega \implies R_{\text{bias}} = \frac{50\text{ k}\Omega}{1{,}0/0{,}6 - 1} = 75\text{ k}\Omega$):**
-  - $C_2 = \dfrac{0{,}1394}{2\pi \cdot 250\text{ kHz} \cdot 39{,}86 \cdot 50\text{ k}\Omega} = 44{,}5\text{ pF}$ (chọn **$45\text{ pF}$** tụ MIM trên chip!).
-  - $C_1 = 44{,}5\text{ pF} \times (39{,}86 - 1) = 1{,}73\text{ nF}$ (chọn **$1{,}8\text{ nF}$**).
-  - $R_2 = \dfrac{1}{2\pi \cdot 39{,}6\text{ kHz} \cdot 1{,}8\text{ nF}} = 2{,}23\text{ k}\Omega$ (chọn **$2{,}2\text{ k}\Omega$**).
-  - $C_3 = \dfrac{1}{2\pi \cdot 39{,}6\text{ kHz} \cdot 50\text{ k}\Omega} = 80{,}4\text{ pF}$ (chọn **$82\text{ pF}$** tụ MIM!).
-  - $R_3 = \dfrac{1}{2\pi \cdot 1{,}2\text{ MHz} \cdot 82\text{ pF}} = 1{,}62\text{ k}\Omega$ (chọn **$1{,}6\text{ k}\Omega$**).
-  - Yêu cầu Op-Amp bên trong: $A_{0,\text{EA}} \ge 65\text{ dB}$, $\text{GBW}_{\text{EA}} \ge 10 \times 250\text{ kHz} = 2{,}5\text{ MHz}$ (dư dả chọn $8\text{ MHz}$).
+- **Bước 3 — Tổng hợp K-Factor Đối xứng Chính xác Chống Võng Pha Có Điều kiện:**
+  - Đặt mục tiêu $\text{PM}_{\text{target}} = 58{,}0^\circ \implies \phi_{\text{boost}} = 58^\circ - (-176^\circ) - 90^\circ = 144^\circ \implies \sqrt{K_{\text{III}}} = \tan(36^\circ + 45^\circ) = \tan(81^\circ) = 6{,}314 \implies K_{\text{III}} = 39{,}86$.
+  - Kiểm tra vị trí zero và cực đối xứng: $f_{z1} = f_{z2} = \frac{250\text{ kHz}}{6{,}314} = 39{,}60\text{ kHz} \approx 0{,}79\,f_0$ (**Nằm ngay dưới $f_0 = 50{,}33\text{ kHz}$ — triệt tiêu hoàn toàn bẫy ổn định có điều kiện `[TRAP-VMC-01]`!**), và cặp cực cao tần $f_{p1} = f_{p2} = 250\text{ kHz} \times 6{,}314 = 1{,}578\text{ MHz} < f_{\text{sw}}$.
+- **Bước 4 — Giải giá trị linh kiện chuẩn theo K-Factor đối xứng (chọn $R_1 = 50\text{ k}\Omega \implies R_{\text{bias}} = \frac{50\text{ k}\Omega}{1{,}0/0{,}6 - 1} = 75\text{ k}\Omega$):**
+  - $C_2 = \dfrac{G_p}{2\pi f_c \, R_1} = \dfrac{0{,}1394}{2\pi \cdot 250\text{ kHz} \cdot 50\text{ k}\Omega} = \mathbf{1{,}775\text{ pF}}$ (tích hợp cực gọn bằng tụ MIM trên silicon!).
+  - $C_1 = C_2 (K_{\text{III}} - 1) = 1{,}775\text{ pF} \times (39{,}86 - 1) = \mathbf{68{,}97\text{ pF}}$.
+  - $R_2 = \dfrac{\sqrt{K_{\text{III}}}}{2\pi f_c \, C_1} = \dfrac{6{,}314}{2\pi \cdot 250\text{ kHz} \cdot 68{,}97\text{ pF}} = \mathbf{58{,}27\text{ k}\Omega}$.
+  - $C_3 = \dfrac{K_{\text{III}} - 1}{2\pi f_c \sqrt{K_{\text{III}}} \, R_1} = \dfrac{38{,}86}{2\pi \cdot 250\text{ kHz} \cdot 6{,}314 \cdot 50\text{ k}\Omega} = \mathbf{78{,}37\text{ pF}}$.
+  - $R_3 = \dfrac{R_1}{K_{\text{III}} - 1} = \dfrac{50\text{ k}\Omega}{38{,}86} = 1{,}287\text{ k}\Omega \approx \mathbf{1{,}29\text{ k}\Omega}$.
+  - **Kiểm chứng nghiệm đóng vòng:** Với bộ 6 linh kiện trên và Op-Amp lý tưởng trên hàm truyền thiết kế ($G_p = 0{,}1394, \phi_p = -176^\circ$), tại đúng $f_c = 250\text{ kHz}$ ta đạt chính xác **$\left|T(j 2\pi \cdot 250\text{ kHz})\right| = 0{,}00\text{ dB}$** và **$\text{PM} = 58{,}0^\circ$** (trên mạch lọc $LC$ đầy đủ có $\text{DCR} = 30\text{ m}\Omega, R_{\text{ESR}} = 5\text{ m}\Omega$: đạt $\left|T\right| = +0{,}02\text{ dB}, \text{PM} = 60{,}0^\circ$ ở tải nhẹ $I_{\text{load}} = 50\text{ mA}$ và $\text{PM} = 67{,}3^\circ$ ở đầy tải $2{,}0\text{ A}$!). Yêu cầu Op-Amp bên trong: $A_{0,\text{EA}} \ge 70\text{ dB}$, $\text{GBW}_{\text{EA}} \ge 10 \times f_c = 2{,}5\text{ MHz}$ (chọn $10\text{–}25\text{ MHz}$ để giữ suy giảm pha tại $f_c$ nhỏ hơn $2^\circ$).
+
+> [!NOTE]
+> **Hộp Tham chiếu Thiết kế Tổng quát — Công thức Đặt Cực–Zero Bất đối xứng (Asymmetric Pole-Zero Placement, chuẩn TI `SLVA662`):**
+> Khi nhà thiết kế muốn chủ động kẹp cứng cặp cực cao tần $f_{p1}, f_{p2} \le (0{,}5 \dots 0{,}6)\,f_{\text{sw}}$ (ví dụ kẹp $f_{p1,2} = 1{,}0\text{–}1{,}2\text{ MHz}$) hoặc đặt lệch $f_{z1} \neq f_{z2}$ quanh $f_0$ thay vì đối xứng hình học quanh $f_c$, với $R_1$ chọn trước và $G_p = \left|G_{\text{stage}}(j 2\pi f_c)\right|$:
+> 1. **Hệ công thức giải tích chính xác tuyệt đối** (đảm bảo $\left|G_{\text{stage}}(j 2\pi f_c)\,H_{\text{III}}(j 2\pi f_c)\right| \equiv 1$ tức $0{,}00\text{ dB}$ với mọi bộ $(f_{z1}, f_{z2}, f_{p1}, f_{p2})$ và tự suy biến về K-Factor đối xứng khi $f_{z1,2} = f_c/\sqrt{K_{\text{III}}}, f_{p1,2} = f_c\sqrt{K_{\text{III}}}$):
+>    $$R_3 = \frac{R_1}{f_{p2}/f_{z2} - 1}, \qquad C_3 = \frac{1}{2\pi f_{p2} R_3} = \frac{f_{p2} - f_{z2}}{2\pi f_{p2} f_{z2} R_1}$$
+>    $$C_1 + C_2 = \frac{G_p}{2\pi f_c R_1} \cdot \frac{\sqrt{1 + (f_c/f_{z1})^2}\,\sqrt{1 + (f_c/f_{z2})^2}}{\sqrt{1 + (f_c/f_{p1})^2}\,\sqrt{1 + (f_c/f_{p2})^2}}, \qquad C_2 = (C_1 + C_2)\frac{f_{z1}}{f_{p1}}, \qquad C_1 = C_2\!\left(\frac{f_{p1}}{f_{z1}} - 1\right), \qquad R_2 = \frac{1}{2\pi f_{z1} C_1}$$
+> 2. **Dạng xấp xỉ tiệm cận dải giữa theo TI `SLVA662`** (khi $f_{z1}, f_{z2} \ll f_c \ll f_{p1}, f_{p2}$, $C_1 \gg C_2$ và $R_1 \gg R_3$):
+>    $$R_2 \approx \frac{f_{z2}}{f_c \, G_p}\,R_1, \qquad C_1 = \frac{1}{2\pi f_{z1} R_2}, \qquad C_2 \approx \frac{1}{2\pi f_{p1} R_2}, \qquad C_3 \approx \frac{1}{2\pi f_{z2} R_1}, \qquad R_3 \approx \frac{1}{2\pi f_{p2} C_3}$$
+>    *(Ví dụ áp dụng ngay trên bài toán trên nếu kẹp $f_{p1} = f_{p2} = 1{,}20\text{ MHz}$ giữ $f_{z1} = f_{z2} = 39{,}60\text{ kHz}$: công thức chính xác cho $C_2 = 2{,}293\text{ pF}$, $C_1 = 67{,}21\text{ pF}$, $R_2 = 59{,}80\text{ k}\Omega$, $C_3 = 77{,}73\text{ pF}$, $R_3 = 1{,}71\text{ k}\Omega$, đạt $\left|T(250\text{ kHz})\right| = 0{,}00\text{ dB}$ và $\text{PM} = 52{,}5^\circ$ do hai cực cao tần kéo gần $f_c$ ăn bớt $5{,}5^\circ$ pha).*
 
 ### 5.2. Netlist Spectre 15.1 Kiểm chứng Nhanh Hàm Truyền Vòng Kín Type-III Buck (`tb_vmc_type3_stb.scs`)
 ```scs
-// Spectre 15.1 Averaged VMC Buck + Op-Amp Type-III Compensator Loop Stability Deck
+// Spectre 15.1 Averaged VMC Buck + Op-Amp Type-III Compensator Loop Stability Deck (Symmetric K-Factor)
 simulator lang=spectre
 global 0
 
 parameters vin=3.3 vref=0.6 vm=1.0 fsw=2M
-parameters l_ind=1u dcr=30m c_out=10u r_esr=5m r_load=0.5
-parameters r1=50k r_bias=75k r2=2.2k r3=1.6k c1=1.8n c2=45p c3=82p
-parameters a0_ea=3162 gbw_ea=10M r_out_ea=80
+parameters l_ind=1u dcr=30m c_out=10u r_esr=5m r_load=20
+parameters r1=50k r_bias=75k r2=58.27k r3=1.29k c1=68.97p c2=1.775p c3=78.37p
+parameters a0_ea=10000 gbw_ea=25M r_out_ea=25
 
 VIN_SRC  (vin 0)  vsource dc=vin mag=1
 VREF_SRC (vref 0) vsource dc=vref
@@ -262,7 +274,7 @@ C2_COMP   (vcomp fb)        capacitor c=c2
 R2_COMP   (vcomp n_z1)      resistor r=r2
 C1_COMP   (n_z1 fb)         capacitor c=c1
 
-// Mô hình Op-Amp 1 cực hữu hạn GBW = 10 MHz kèm điện trở ra R_out_ea kiểm tra hiệu ứng Feedthrough!
+// Mô hình Op-Amp 1 cực hữu hạn GBW = 25 MHz kèm điện trở ra R_out_ea kiểm tra hiệu ứng Feedthrough!
 E_EA_INT  (n_ea 0 vref fb)  vcvs gain=a0_ea
 R_EA_POLE (n_ea n_ea_bw)    resistor r=10k
 C_EA_POLE (n_ea_bw 0)       capacitor c=a0_ea/(2*3.14159265*gbw_ea*10k)

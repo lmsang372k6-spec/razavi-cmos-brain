@@ -11,7 +11,7 @@
     {
       "chapter": 16,
       "section": "16.1-16.3, 16.5",
-      "pages": "655-683, 685-690",
+      "pages": "655-683, 685-689",
       "equations": ["16.37", "16.38", "16.40", "16.42", "16.44", "16.45", "16.46", "16.47", "16.51", "16.55"]
     }
   ],
@@ -114,11 +114,11 @@ $$
 \text{PM}_{\max} = \arctan\!\left(\sqrt{\gamma}\right) - \arctan\!\left(\frac{1}{\sqrt{\gamma}}\right) \implies \sqrt{\gamma} = \tan\text{PM}_{\max} + \sec\text{PM}_{\max} = \frac{1 + \sin\text{PM}_{\max}}{\cos\text{PM}_{\max}}
 $$
 
-*(Ví dụ vàng: muốn $\text{PM}_{\max} = 56{,}4^\circ \implies \sqrt{\gamma} = 3{,}0 \implies \gamma = 9 \implies C_1 = 8\,C_2$, đặt $\omega_z = \omega_c / 3$ và $\omega_{p3} = 3\,\omega_c$; muốn $\text{PM}_{\max} = 61{,}9^\circ \implies \sqrt{\gamma} = 3{,}75 \implies \gamma \approx 14 \implies C_1 = 13\,C_2$!)*
+*(Ví dụ vàng: chọn $\sqrt{\gamma} = 3{,}0 \implies \gamma = 9 \implies C_1 = 8\,C_2$, đặt $\omega_z = \omega_c / 3$ và $\omega_{p3} = 3\,\omega_c$ đạt $\text{PM}_{\max} = 53{,}1^\circ$; muốn $\text{PM}_{\max} = 56{,}4^\circ \implies \sqrt{\gamma} = \sqrt{11} \approx 3{,}32 \implies \gamma = 11 \implies C_1 = 10\,C_2$; muốn $\text{PM}_{\max} = 61{,}9^\circ \implies \sqrt{\gamma} = 4{,}0 \implies \gamma = 16 \implies C_1 = 15\,C_2$!)*
 3. **Chốt dòng bơm $I_P$ (thường $50\text{ }\mu\text{A}\text{–}500\text{ }\mu\text{A}$) và giải chính xác $C_2, C_1, R_1$ để $|L(j\omega_c)| = 1$:**
 
 $$
-\omega_z = \frac{\omega_c}{\sqrt{\gamma}}, \qquad \omega_{p3} = \omega_c \sqrt{\gamma}, \qquad C_1 + C_2 = \frac{I_P K_{VCO}}{N \omega_c^2} \sqrt{\gamma} \cdot \frac{\sqrt{1 + \gamma}}{\gamma} = \frac{I_P K_{VCO}}{N \omega_c^2} \quad \text{(xấp xỉ cực gọn!)}
+\omega_z = \frac{\omega_c}{\sqrt{\gamma}}, \qquad \omega_{p3} = \omega_c \sqrt{\gamma}, \qquad C_1 + C_2 = \frac{I_P K_{VCO} \sqrt{\gamma}}{N \omega_c^2}
 $$
 
 Kiểm tra đại số tuyệt đẹp: tại $\omega_c = \sqrt{\omega_z \omega_{p3}}$, tỉ số biên độ $\frac{\sqrt{1 + (\omega_c/\omega_z)^2}}{\sqrt{1 + (\omega_c/\omega_{p3})^2}} = \frac{\sqrt{1 + \gamma}}{\sqrt{1 + 1/\gamma}} = \sqrt{\gamma}$! Thay vào $|L(j\omega_c)| = 1$ cho kết quả **chính xác tuyệt đối không xấp xỉ**:

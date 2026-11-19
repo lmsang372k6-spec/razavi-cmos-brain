@@ -43,7 +43,7 @@
       "method": "structural",
       "invariant": "Mọi phép gán tham số hình học (l, fingers, w, m, segW, segL) phải kích hoạt `PasCdfFormInit(cdfData)` + chuỗi callback + `cdfUpdateInstParam(inst)` với chuỗi nguyên bản (cấm dùng `%L` làm nhân đôi dấu nháy kép `\"\\\"12u\\\"\"`), theo sau bởi `schCheck(cv)` 0 lỗi và `dbSave(cv)`",
       "why_vi": "Nếu bọc thừa dấu nháy kép quanh chuỗi đơn vị hoặc bỏ qua CDF callback, trình xuất netlist Spectre của GPDK090/045 sẽ đọc giá trị mặc định cũ của `fw`, `simM`, `ad`, `as`, `pd`, `ps`, làm sai lệch cả dòng phân cực lẫn điện dung tiếp giáp CDB/CSB.",
-      "cadence_check": "Thực thi `ic617_client.py set-param` + `check-save`, sau đó đối chiếu trường `stored` và `cdf_effective` trong tệp xuất của `saDumpSchematicJson`.",
+      "cadence_check": "Thực thi `ic617_client.py set-param --inst <M> --param l=... --param fingers=... --param w=...` + `check-save`, sau đó đối chiếu hai trường `stored_props` và `effective_cdf` trong tệp JSON xuất từ `saDumpSchematicJson`.",
       "related_nodes": [
         "skill-ic617-live-ipc-bridge-and-schematic-json",
         "skill-ic617-skill-sch-cdf-automation",
@@ -98,7 +98,7 @@
       "method": "semantic",
       "invariant": "Không bao giờ khởi chạy tối ưu hóa hộp đen từ kích thước đoán mò ngẫu nhiên; phải xuất phát từ nghiệm giải tích + `gmid_lut.py`, khóa các tỉ số khớp đối xứng (M1=M2, M3=M4) vào chung biến độc lập và tính ma trận độ nhạy `d(Metric)/d(ln x)` để xác nhận biến điều khiển có hiệu lực vật lý",
       "why_vi": "Tối ưu hóa không ràng buộc đối xứng sẽ phá vỡ cặp vi sai/gương dòng tạo offset hệ thống khổng lồ, còn tối ưu trên không gian chưa cắt tỉa sẽ tiêu tốn hàng trăm lần chạy Spectre vô ích vào vùng cắt/triode.",
-      "cadence_check": "Xem bảng `sensitivity_jacobian` của `sizing_opt.py` ở Giai đoạn 1, xác minh biến có `|S_ij|` lớn nhất khớp với phương trình vật lý Razavi/Erickson trước khi bật vòng lặp vùng tin cậy.",
+      "cadence_check": "Xem bảng `stage1_sensitivity.d_metric_d_lnx` (hoặc `sensitivity_d_metric_d_lnx` khi chạy `--sensitivity-only`) và `constraint_knob_rankings` của `sizing_opt.py` ở Giai đoạn 1, xác minh biến có `|S_ij|` lớn nhất khớp với phương trình vật lý Razavi/Erickson trước khi bật vòng lặp vùng tin cậy.",
       "related_nodes": [
         "skill-closed-loop-sizing-and-pareto-optimization",
         "skill-gpdk-techsweep-and-gmid-lut-interpolator",
@@ -112,7 +112,7 @@
       "method": "semantic",
       "invariant": "Nghiệm tối ưu cuối cùng của `sizing_opt.py` phải được làm tròn về lưới chế tạo PDK (ví dụ 5 nm), số ngón `nf` nguyên chẵn >= 2 cho các cặp khớp nhau, và vượt qua toàn bộ hợp đồng `spec.json` trên các góc cực trị `{TT, SS, FF, FS, SF}` + Monte Carlo mismatch + hậu kiểm ký sinh PEX",
       "why_vi": "Điểm tối ưu Pareto danh định trên góc TT với kích thước số thực lẻ rất dễ vi phạm DRC lưới chế tạo hoặc sụp dự trữ pha / biên bão hòa ở góc chậm nóng (`SS 125 °C`) và sau khi cộng điện dung dây nối layout.",
-      "cadence_check": "Chạy kiểm chứng sign-off Giai đoạn 7 trên bộ kích thước đã khóa lưới qua `cadence_exec.py` + `psf_audit.py --spec spec.json` cho toàn bộ ma trận góc PVT và Monte Carlo.",
+      "cadence_check": "Chạy kiểm chứng sign-off Giai đoạn 7 trên bộ kích thước đã khóa lưới qua `cadence_exec.py spectre` và đóng dấu nghiệm thu bằng `psf_audit.py metrics <run_dir> --spec spec.json --fail-on-spec` cho toàn bộ ma trận góc PVT và Monte Carlo.",
       "related_nodes": [
         "skill-closed-loop-sizing-and-pareto-optimization",
         "skill-cace-spec-driven-characterization-contract",

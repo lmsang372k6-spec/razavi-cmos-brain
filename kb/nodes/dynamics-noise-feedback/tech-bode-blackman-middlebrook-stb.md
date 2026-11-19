@@ -170,7 +170,7 @@ $$
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
-- **Chương 8:** §8.6 *Bode's Analysis of Feedback Circuits* (tr. 315–330, Phương trình 8.107–8.197, bao gồm §8.6.4 *Blackman's Impedance Theorem* tr. 325–330), §8.7 *Middlebrook's Method* (tr. 331–332, Phương trình 8.198–8.205, Hình 8.84), §8.8 *Loop Gain Calculation Issues* (tr. 332–336, Phương trình 8.206–8.208, Hình 8.85–8.91), §8.9 *Alternative Interpretations of Bode's Method* (tr. 336–339, Phương trình 8.209–8.224).
+- **Chương 8:** §8.6 *Bode's Analysis of Feedback Circuits* (tr. 315–330, Phương trình 8.107–8.197, bao gồm §8.6.4 *Blackman's Impedance Theorem* tr. 325–330), §8.7 *Middlebrook's Method* (tr. 331–332, Phương trình 8.198–8.205, Hình 8.84), §8.8 *Loop Gain Calculation Issues* (tr. 332–336, Phương trình 8.206–8.208, Hình 8.85–8.90), §8.9 *Alternative Interpretations of Bode's Method* (tr. 336–339, Phương trình 8.209–8.224, Hình 8.91–8.94).
 - **Chú giải Hiệu đính Học thuật CLB (`NG08`):**
   - **`NG08-05` (tr. 316):** Lời văn nguồn ngay trên Phương trình (8.111) in thiếu dấu chia $(V_{in}-V_1)R_S$ khi diễn tả dòng điện; biểu thức đúng theo định luật Ohm (và đúng như trong chính phương trình 8.111) là $(V_{in}-V_1)/R_S$.
   - **`NG08-06` (tr. 326):** Câu cuối ngay dưới công thức Blackman (8.174) trong sách gốc viết tắt $Z_{in}$ thay cho $A$ ($Z_0$): ý chính xác là trở kháng vòng kín tổng quát $Z_{\text{port}}$ không phải lúc nào cũng viết được thành trở kháng khi tắt transistor $Z_0$ nhân hoặc chia cho một thừa số $(1 + T)$ duy nhất, vì cả $T_{sc}$ lẫn $T_{oc}$ có thể cùng khác 0!

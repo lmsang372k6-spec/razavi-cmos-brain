@@ -152,7 +152,7 @@ foreach(a_val list(1.0 2.0 4.0 8.0)
   desVar("alpha" a_val)
   run('dc 'ac 'tran)
   printf("alpha=%.0f : Power=%.0f uW | A0=%.1f | ts_1pct=%.2f ns\n"
-         a_val abs(IDC("/VDD/PLUS"))*1e6 ymax(abs(deriv(v("/Vout_diff" ?result "dc"))))
+         a_val abs(IDC("/VDD/PLUS"))*VAR("VDD")*1e6 ymax(abs(deriv(v("/Vout_diff" ?result "dc"))))
          settlingTime(VT("/Vout_diff") 0 20n 1.0 "percent"))
 )
 ```

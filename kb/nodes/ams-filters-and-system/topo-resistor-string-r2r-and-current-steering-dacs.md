@@ -11,13 +11,13 @@
     {
       "chapter": 5,
       "section": "5.2",
-      "pages": "143-152",
+      "pages": "139-146",
       "equations": ["5.15", "5.18"]
     },
     {
       "chapter": 13,
       "section": "13.1-13.2.3",
-      "pages": "539-554",
+      "pages": "539-553",
       "equations": ["13.2", "13.18", "13.25"]
     },
     {
@@ -29,7 +29,7 @@
     {
       "chapter": 19,
       "section": "19.2.2, 19.2.6",
-      "pages": "741-745, 749-752",
+      "pages": "739-743, 746-753",
       "equations": ["19.10"]
     }
   ],
@@ -243,8 +243,8 @@ tran_sfdr tran stop=((8 + Nfft)/fs) errpreset=conservative maxstep=(1/(64*fs)) \
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 5 & Chương 13:** §5.2 *Cascode Current Mirrors* (tr. 143–152 — gương dòng cascode điện áp thấp `topo-lvccml-wide-swing-mirror` nuôi mảng nguồn dòng DAC); §13.1–§13.2.3 *MOSFETS as Switches & Charge Injection* (tr. 539–554 — công tắc truyền dẫn trong thang Kelvin/R-2R và cơ chế xuyên xung nhịp `C_GD` trong công tắc lái dòng).
-- **Chương 14 & Chương 19:** §14.2.1 *Pelgrom's Law & Current Mirror Mismatch* (tr. 593–598, Phương trình 14.75 — công thức vàng định cỡ $(W L)_u$ ở $V_{\text{OV}}$ lớn cho mảng nguồn dòng DAC); §19.2.2 & §19.2.6 *Symmetry & Resistors* (tr. 741–752 — ghép tâm chung mảng điện trở/nguồn dòng).
+- **Chương 5 & Chương 13:** §5.2 *Cascode Current Mirrors* (tr. 139–146 — gương dòng cascode điện áp thấp `topo-lvccml-wide-swing-mirror` nuôi mảng nguồn dòng DAC); §13.1–§13.2.3 *MOSFETS as Switches & Charge Injection* (tr. 539–554 — công tắc truyền dẫn trong thang Kelvin/R-2R và cơ chế xuyên xung nhịp `C_GD` trong công tắc lái dòng).
+- **Chương 14 & Chương 19:** §14.2.1 *Pelgrom's Law & Current Mirror Mismatch* (tr. 593–598, Phương trình 14.75 — công thức vàng định cỡ $(W L)_u$ ở $V_{\text{OV}}$ lớn cho mảng nguồn dòng DAC); §19.2.2 & §19.2.6 *Symmetry & Resistors* (tr. 739–743, 746–753 — ghép tâm chung mảng điện trở/nguồn dòng).
 - **Đối chiếu GitHub:** Kho `iic-jku/iic-audiodac-v1` (JKU Linz) và các bài kiểm chuẩn DAC trong `Arcadia-1/analog-design-bench` + `Arcadia-1/ADCToolbox` cung cấp quy trình chuẩn đối chiếu mô phỏng mixed-signal và đo phổ `SFDR/SNDR`.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

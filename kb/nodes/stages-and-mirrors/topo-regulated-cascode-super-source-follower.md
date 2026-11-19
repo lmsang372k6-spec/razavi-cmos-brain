@@ -22,9 +22,9 @@
     },
     {
       "chapter": 9,
-      "section": "9.4.1-9.4.2",
-      "pages": "364-371",
-      "equations": ["9.20", "9.21", "9.23", "9.26", "9.34", "9.35"]
+      "section": "9.4.1-9.4.3",
+      "pages": "364-372",
+      "equations": ["9.20", "9.21", "9.23", "9.26", "9.34", "9.35", "9.38", "9.41", "9.42"]
     }
   ],
   "glossary_codes": ["T051", "T082", "T499", "T503", "T518", "T685", "T698"],
@@ -55,11 +55,11 @@ Trên các tiến trình CMOS nanomet ($90\text{nm}/65\text{nm}/45\text{nm}$) n�
 - **Bài toán Cực đại hóa $R_{\text{out}}$ (Nguồn dòng / Khuếch đại độ lợi siêu cao):** Một tầng cascode thường (`topo-cascode-stage`) chỉ đạt $R_{\text{out}} \approx g_{m2} r_{O2} r_{O1} \sim 100\,\text{k}\Omega$, còn việc chồng thêm transistor thứ ba thành **cascode ba tầng (`T506`, triple cascode)** ăn mất $3\,V_{DS,\min}$ mỗi phía (tổng cộng $6\,V_{DS,\min}$ cho cả nhánh trên và dưới!), làm nghẹt thở hoàn toàn dải dao động ngõ ra!
 - **Bài toán Cực tiểu hóa $R_{\text{out}}$ (Bộ đệm điện áp lái tải nặng):** Một **mạch bám nguồn (`T082`, source follower — SF)** đơn chuẩn (`topo-source-follower`, §3.4) có trở kháng ra $R_{\text{out,SF}} = \frac{1}{g_{m1} + g_{mb1}} \parallel r_{O1} \approx 200\text{–}1000\,\Omega$. Khi phải lái tải điện trở nhỏ $R_L = 50\text{–}200\,\Omega$ (hoặc giữ áp tham chiếu trước xung dòng lấy mẫu SAR ADC), độ lợi sụt thảm hại theo bộ chia áp $\frac{R_L}{R_L + 1/g_{m1}}$ và sinh méo hài nặng; muốn giảm $R_{\text{out,SF}}$ xuống $5\,\Omega$ bằng cách phình $W_1$ và $I_D$ lên $50$ lần sẽ đốt cháy hàng chục mili-ampe công suất và làm nổ tung điện dung cổng $C_{GS1}$!
 
-Chìa khóa vạn năng giải cứu đồng thời cả hai cực đoan mà **không tốn thêm tầng xếp chồng dọc** chính là cài một **vòng hồi tiếp âm cục bộ 1 transistor (hoặc 1 OTA phụ)** ôm quanh linh kiện chính (Razavi Chương 3 §3.4 & §3.6, Chương 8 Ví dụ 8.26 tr. 327, và Chương 9 §9.4 tr. 364–371):
+Chìa khóa vạn năng giải cứu đồng thời cả hai cực đoan mà **không tốn thêm tầng xếp chồng dọc** chính là cài một **vòng hồi tiếp âm cục bộ 1 transistor (hoặc 1 OTA phụ)** ôm quanh linh kiện chính (Razavi Chương 3 §3.4 & §3.6, Chương 8 Ví dụ 8.26 tr. 327, và Chương 9 §9.4 tr. 364–372):
 
 ![Đối ngẫu cấu trúc vòng hồi tiếp cục bộ: Regulated Cascode nhân vọt Rout so với Super Source Follower nén sâu Rout](../../diagrams/regulated-cascode-ssf.svg)
 
-1. **Cascode Điều chỉnh (Regulated Cascode — RGC / Gain-Boosted Cascode, Hình 9.24–9.28 & Hình 8.79):**
+1. **Cascode Điều chỉnh (Regulated Cascode — RGC / Gain-Boosted Cascode, Hình 9.26–9.31 & Hình 8.78):**
    - Trong cascode thường ($M_2$ chồng trên $M_1$), cực cổng $M_2$ buộc vào điện áp tĩnh $V_b$, nên khi $V_{\text{out}}$ biến thiên, cực nguồn $X$ của $M_2$ vẫn nhúc nhích một lượng nhỏ $\Delta V_X \approx \frac{\Delta V_{\text{out}}}{g_{m2} r_{O2}}$.
    - Trong **Regulated Cascode**, ta thêm bộ khuếch đại đảo pha phụ $A_{\text{aux}}$ (dạng tối giản Sackinger 1 transistor CS $M_3$ tải nguồn dòng $I_b$, hoặc 1 cặp vi sai phụ): ngõ vào $A_{\text{aux}}$ dò trực tiếp điện thế nút nội $V_X$ (cực máng $M_1$), còn ngõ ra lái ngược lại cực cổng của **transistor cascode (`T503`)** $M_2$! Hễ $V_{\text{out}}$ kéo $V_X$ nhích lên $\Delta V_X > 0$, $A_{\text{aux}}$ lập tức kéo cổng $M_2$ tụt xuống $-A_{\text{aux}}\Delta V_X$, khóa chặt dòng thoát và **ghim chết $V_{DS1} = V_X$ cứng gấp $(1 + A_{\text{aux}})$ lần**!
 2. **Bộ Theo Nguồn Siêu cấp (Super Source Follower — SSF & Biến thể Flipped Voltage Follower — FVF):**
@@ -81,9 +81,9 @@ Giải tỉ số $R_{\text{out,RGC}} = V_{\text{test}} / I_{\text{test}}$ thu đ
 
 $$R_{\text{out,RGC}} = \Big\{\big[g_{m2}(1 + A_{\text{aux}}) + g_{mb2}\big] r_{O2} + 1\Big\} r_{O1} + r_{O2} \approx (1 + A_{\text{aux}})\,g_{m2} r_{O2} r_{O1}$$
 
-- **Trong mạch RGC 1-transistor tối giản (BJT/MOS RGC cổ điển Sackinger, Hình 9.27a):** Bản thân $A_{\text{aux}} = g_{m3}(r_{O3} \parallel r_{O,Ib})$, nên trở kháng ra đạt bậc **ba lũy thừa độ lợi nội tại**:
+- **Trong mạch RGC 1-transistor tối giản (BJT/MOS RGC cổ điển Sackinger, Hình 9.32a):** Bản thân $A_{\text{aux}} = g_{m3}(r_{O3} \parallel r_{O,Ib})$, nên trở kháng ra đạt bậc **ba lũy thừa độ lợi nội tại**:
   $$R_{\text{out,RGC-1T}} \approx (g_{m3} r_{O3})\,(g_{m2} r_{O2})\,r_{O1} \sim g_m^2 r_O^3$$
-  ngang ngửa một cột **Triple Cascode**, nhưng nếu dùng OTA vi sai dịch mức làm $A_{\text{aux}}$ (Hình 9.28–9.31, Phương trình 9.26), khoảng dự trữ điện áp tối thiểu tại ngõ ra vẫn giữ nguyên chỉ bằng **$V_{\text{out,min}} = V_{DS1,\min} + V_{DS2,\min} = 2\,V_{DS,\min}$**!
+  ngang ngửa một cột **Triple Cascode**, nhưng nếu dùng cascode gập / OTA vi sai đầu vào PMOS làm $A_{\text{aux}}$ (Hình 9.32c & 9.34–9.36, Phương trình 9.26), khoảng dự trữ điện áp tối thiểu tại ngõ ra vẫn giữ nguyên chỉ bằng **$V_{\text{out,min}} = V_{DS1,\min} + V_{DS2,\min} = 2\,V_{DS,\min}$**!
 - **Ứng dụng Ngược của RGC làm Tầng Đầu vào Băng rộng Trở kháng Cực thấp (RGC TIA Front-End):** Nếu đưa dòng tín hiệu $I_{\text{in}}$ vào thẳng **nút nội $X$** (thay vì nhìn từ cực máng $M_2$!), vòng hồi tiếp âm $A_{\text{aux}}$ chia nhỏ trở kháng nhìn vào cực nguồn $M_2$ đi $(1 + A_{\text{aux}})$ lần:
   $$R_{\text{in,RGC-TIA}} \approx \frac{1}{g_{m2}(1 + A_{\text{aux}})}$$
   Nhờ đó một photodiode có điện dung lớn $C_{PD} = 1\,\text{pF}$ vẫn đạt băng thông hàng $\text{GHz}$ chỉ với dòng phân cực nhỏ!
@@ -119,8 +119,8 @@ Xét mạch Super Source Follower chuẩn (PMOS $M_1$ nhận $V_{\text{in}}$, c�
 
 - **[TRAP-RGCSSF-01] Bẫy Dao động Vòng Cục bộ 2 Cực Khi Super Source Follower Lái Tụ Tải $C_L$!**
   Đây là cái bẫy làm cháy hàng loạt bộ đệm tham chiếu ADC trên silicon! Vòng hồi tiếp cục bộ của SSF đi qua **hai nút có tụ**: nút nội trở kháng cao $Y$ ($\omega_{p,Y} = \frac{1}{R_Y C_Y}$) và nút ngõ ra $V_{\text{out}}$ ($\omega_{p,\text{out}} \approx \frac{g_{m1} + 1/R_L}{C_L}$). Với độ lợi vòng $T_0 = g_{m2} R_Y \approx 30\text{–}80$, tần số cắt độ lợi vòng nằm ở $\omega_{GX,\text{SSF}} \approx \frac{g_{m2}}{C_Y}$. Nếu tụ tải $C_L$ rơi vào "vùng tử thần" vài trăm $\text{fF}$ đến vài $\text{pF}$ khiến $\omega_{p,\text{out}} \lesssim \omega_{GX,\text{SSF}}$, hai cực tạo góc lệch pha $-180^\circ$ làm **SSF rung chuông dữ dội hoặc tự dao động hình sin**! *Cách bù chuẩn:* mắc một tụ bù Miller nhỏ $C_c$ (hoặc nối tiếp $R_z + C_c$) giữa nút nội $Y$ và ngõ ra $V_{\text{out}}$ (hoặc đất) để đặt nút $Y$ làm cực trội an toàn!
-- **[TRAP-RGCSSF-02] Bẫy Lãng phí Khoảng Dự trữ $V_{GS3}$ Của RGC 1-Transistor Đơn Giản (§9.4.2, Hình 9.27a):**
-  Nếu dùng một NMOS nguồn chung đơn độc $M_3$ làm bộ khuếch đại phụ cảm nhận nút $X$ của cascode NMOS, cực nguồn $M_3$ nối đất buộc $V_{DS1} = V_X = V_{GS3} = V_{TH3} + V_{OV3} \approx 0{,}5\text{–}0{,}7\,\text{V}$ — tức đánh mất nguyên một ngưỡng $V_{TH}$ y hệt cascode nối diode kiểu cũ! Muốn giữ trọn ưu thế $V_{DS1} = V_{DS1,\min} \approx 120\,\text{mV}$ dưới nguồn thấp, bắt buộc dùng **cặp vi sai đầu vào PMOS** (hoặc cascode gập PMOS-in, Hình 9.29–9.31) làm $A_{\text{aux}}$ cho nhánh cascode NMOS phía đáy (và ngược lại dùng **NMOS-in** làm $A_{\text{aux}}$ cho nhánh cascode PMOS phía đỉnh)!
+- **[TRAP-RGCSSF-02] Bẫy Lãng phí Khoảng Dự trữ $V_{GS3}$ Của RGC 1-Transistor Đơn Giản (§9.4.2, Hình 9.32a):**
+  Nếu dùng một NMOS nguồn chung đơn độc $M_3$ làm bộ khuếch đại phụ cảm nhận nút $X$ của cascode NMOS, cực nguồn $M_3$ nối đất buộc $V_{DS1} = V_X = V_{GS3} = V_{TH3} + V_{OV3} \approx 0{,}5\text{–}0{,}7\,\text{V}$ — tức đánh mất nguyên một ngưỡng $V_{TH}$ y hệt cascode nối diode kiểu cũ! Muốn giữ trọn ưu thế $V_{DS1} = V_{DS1,\min} \approx 120\,\text{mV}$ dưới nguồn thấp, bắt buộc dùng **cặp vi sai đầu vào PMOS** (hoặc cascode gập PMOS-in, Hình 9.32c & 9.34–9.36) làm $A_{\text{aux}}$ cho nhánh cascode NMOS phía đáy (và ngược lại dùng **NMOS-in** làm $A_{\text{aux}}$ cho nhánh cascode PMOS phía đỉnh)!
 
 ---
 
@@ -149,7 +149,7 @@ Hai cấu trúc hồi tiếp cục bộ này là trạm trung chuyển chiến l
 
 ```ocean
 ; Script OCEAN đo đồng thời Dự trữ Pha vòng cục bộ (STB) và Đường cong Zout(f) (XF/AC):
-analysis('stb ?start 1e3 ?stop 50e9 ? dec 30 ?probe "/IPROBE_LOCAL_GATE")
+analysis('stb ?start 1e3 ?stop 50e9 ?dec 30 ?probe "/IPROBE_LOCAL_GATE")
 analysis('ac  ?start 1e3 ?stop 50e9 ?dec 30) ; Nguồn dòng AC Itest = 1A đặt tại nút Vout
 run()
 
@@ -173,8 +173,8 @@ printf("Local Loop PM = %.1f deg @ UGF = %.2f MHz | Zout(DC) = %.2f Ohm | Zout_p
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
 - **Chương 3:** §3.4 *Source Follower* (tr. 68–75, Phương trình 3.88, 3.99 — giới hạn trở kháng ra $\frac{1}{g_{m1}+g_{mb1}}$, suy giảm độ lợi và phi tuyến khi lái tải trở của SF cơ bản); §3.6 *Cascode Stage* (tr. 82–90, Phương trình 3.135–3.136, thuộc tính che chắn *shielding property* Hình 3.72).
-- **Chương 8:** §8.6.4 *Blackman's Impedance Formula — Ví dụ 8.26* (tr. 327, Hình 8.79, Phương trình 8.184–8.185 — tính chính xác trở kháng ra của Regulated Cascode bằng công thức Blackman không cắt vòng, thu được $R_{\text{out}} = r_{O1}[1 + (g_{m2} + g_{mb2} + A_1 g_{m2})r_{O2}] + r_{O2}$); các bài tập phân tích vòng hồi tiếp cục bộ hạ trở kháng ra của bộ đệm theo nguồn có khuếch đại phụ.
-- **Chương 9:** §9.4.1 *Gain Boosting — Basic Idea* (tr. 364–368, Phương trình 9.20–9.26, Hình 9.24–9.26, Ví dụ 9.11–9.12) & §9.4.2 *Circuit Implementation* (tr. 368–371, Phương trình 9.34–9.35, Hình 9.27–9.35, Ví dụ 9.13–9.14 — triển khai RGC 1 transistor, cascode gập phụ trợ giữ dải dao động tối đa).
+- **Chương 8:** §8.6.4 *Blackman's Impedance Theorem — Ví dụ 8.26* (tr. 327, Hình 8.78, Phương trình 8.184–8.185 — tính chính xác trở kháng ra của Regulated Cascode bằng công thức Blackman không cắt vòng cho $\gamma = 0$: $Z_{\text{out}} = r_{O} + R_S + g_m r_{O} R_S A_1$; khi mở rộng kể cả hiệu ứng thân thu được $R_{\text{out}} = r_{O1}[1 + (g_{m2} + g_{mb2} + A_1 g_{m2})r_{O2}] + r_{O2}$); các bài tập phân tích vòng hồi tiếp cục bộ hạ trở kháng ra của bộ đệm theo nguồn có khuếch đại phụ.
+- **Chương 9:** §9.4.1 *Gain Boosting — Basic Idea* (tr. 364–368, Phương trình 9.20–9.26, Hình 9.26–9.31, Ví dụ 9.11–9.12), §9.4.2 *Circuit Implementation* (tr. 368–371, Hình 9.32–9.36, Ví dụ 9.13–9.14 — triển khai RGC 1 transistor và cascode gập phụ trợ giữ dải dao động tối đa) & §9.4.3 *Frequency Response* (tr. 371–372, Phương trình 9.34–9.42, Hình 9.37 — cửa sổ tần số của bộ khuếch đại phụ và cặp cực–zero doublet).
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ
 | Mã CLB | Thuật ngữ Tiếng Anh | Thuật ngữ Tiếng Việt Chuẩn | Ghi chú Ngữ cảnh |

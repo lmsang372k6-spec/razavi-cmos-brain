@@ -23,7 +23,7 @@
     {
       "chapter": 13,
       "section": "13.2.3",
-      "pages": "553",
+      "pages": "549-553",
       "equations": []
     }
   ],

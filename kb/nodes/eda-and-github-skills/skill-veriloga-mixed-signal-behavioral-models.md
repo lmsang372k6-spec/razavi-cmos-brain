@@ -23,7 +23,7 @@
     {
       "chapter": 16,
       "section": "16.2.1-16.2.2",
-      "pages": "666-671",
+      "pages": "666-669",
       "equations": []
     }
   ],
@@ -57,7 +57,8 @@
     "T2130",
     "T2166",
     "T2167",
-    "T2171"
+    "T2171",
+    "T2174"
   ],
   "process_agnostic": true,
   "roles": {
@@ -185,8 +186,8 @@ module vco_pss_clean(vctrl, vout_p, vout_n, vcm_ref, gnd);
     real f_inst, fn_rms_density, phase_norm, v_sig;
 
     analog begin
-        // Mật độ phổ nhiễu tần số S_df(f) tạo đúng sườn nhiễu pha L(df) = S_df / (2 * df^2)
-        fn_rms_density = 2.0 * (1.0e6 * pow(10.0, pn_1mhz_dbc / 20.0));
+        // Mật độ phổ nhiễu tần số một phía S_df(f) tạo đúng L(df) = S_df / (2 * df^2) => sqrt(S_df) = sqrt(2) * df * 10^(L/20)
+        fn_rms_density = `M_SQRT2 * (1.0e6 * pow(10.0, pn_1mhz_dbc / 20.0));
         f_inst = f0_hz + kvco_hz_v * (V(vctrl, gnd) - vctrl_mid)
                  + white_noise(fn_rms_density * fn_rms_density, "vco_thermal_fm");
 

@@ -40,15 +40,16 @@
     },
     {
       "id": "CHK-LDO-03",
-      "name": "Khoảng dự trữ sụt áp Dropout ở tải cực đại và góc chậm nhất (SS)",
+      "name": "Tuân thủ điều chỉnh sụt áp Dropout ở tải cực đại (SS) và tách biệt LDO Nguồn chung với LDO Sạch Analog/RF",
       "severity": "error",
       "method": "estimate",
-      "invariant": "Tại VIN = VOUT_nom + V_DO_spec và I_load = I_max (góc SS, T_max): M_pass vẫn ở vùng bão hòa (|VDS_pass| >= |VDS,min|) và ngõ ra Error Amp chưa chạm biên triode (V_G_pass >= VDS,min_EA_out)",
-      "why_vi": "Nếu W_pass định cỡ thiếu khiến M_pass rơi sâu vào vùng triode hoặc ép ngõ ra Error Amp chạm sàn VSS để đòi thêm V_SG, độ lợi vòng sụp đổ làm mất khả năng điều chỉnh tải và khiến PSRR tụt về 0 dB.",
-      "cadence_check": "Chạy `dc` quét `VIN` giảm dần tại `Iload = Imax` ở góc `SS, 125 °C` và `SS, -40 °C`; đo `OP(\"/M_pass\" \"region\") == 2` và `AC PSRR` ngay tại biên `VIN = VOUT + V_DO`.",
+      "invariant": "Quy tắc chung tại VIN = VOUT_nom + V_DO_spec, I_load = I_max (góc SS, -40 °C / 125 °C): |VOUT - VOUT_nom| nằm trong dung sai điều chỉnh tải/dropout, ngõ ra Error Amp KHÔNG chạm biên kẹp nguồn (V_G_pass >= VDS,min_EA_out), và vòng lặp vẫn đạt PM/GM + PSRR đặc tả (trong LDO cấp nguồn sụt áp siêu thấp, PMOS M_pass rất rộng được phép tiến vào vùng tuyến tính / bán bão hòa `region == 1` với V_DO >= I_max * R_DS,on + Delta_V_IR, kiểm toán bằng `psf_audit.py op-audit <run_dir> --expect-triode M_pass`). Riêng đối với **High-PSRR Analog/RF Clean-Rail LDO** nuôi VCO/PLL/ADC, BẮT BUỘC giữ M_pass nghiêm ngặt trong vùng bão hòa (`region == 2`, |VDS_pass| >= |VDS,sat| + V_margin)",
+      "why_vi": "Ở mọi LDO, nếu ngõ ra Error Amp chạm sàn VSS để đòi thêm V_SG thì vòng hồi tiếp mở toang và mất hoàn toàn khả năng ổn áp. Riêng về vùng làm việc của M_pass: các LDO nguồn số/công suất sụt áp thấp (V_DO = 50-120 mV) chủ đích định cỡ W_pass lớn để chịu tải ở vùng tuyến tính/bán bão hòa (`region == 1`) miễn sao PM/GM và sai số VOUT đạt chuẩn; ngược lại với LDO sạch cho khối Analog/RF nhạy cảm, để M_pass lún vào `region == 1` sẽ làm r_O,pass sụt xuống R_DS,on vài Ohm, phóng thẳng gợn nhiễu từ VIN sang VOUT và đánh sập PSRR về sát 0 dB!",
+      "cadence_check": "Chạy `dc`, `stb` và `ac` (PSRR) tại `VIN = VOUT_nom + V_DO_spec, Iload = Imax` ở góc `SS, 125 °C` và `SS, -40 °C`: kiểm tra `V_G_pass >= VDS,min_EA_out`, `VOUT` và `PM/GM/PSRR` đạt chuẩn; chạy `psf_audit.py op-audit <run_dir>` đòi `region == 2` cho Analog/RF Clean-Rail LDO (hoặc truyền `--expect-triode M_pass` cho Low-Dropout Power LDO).",
       "related_nodes": [
         "topo-cmos-ldo-regulator",
-        "tech-nanometer-vdsmin-gmid-sizing"
+        "tech-nanometer-vdsmin-gmid-sizing",
+        "skill-psf-mos-op-waveform-and-spec-auditor"
       ]
     },
     {

@@ -112,11 +112,11 @@ $$T_D \approx \frac{1}{2} R_u C_u L^2 = \frac{1}{2} R_{\text{total}} C_{\text{to
 - **Bẫy Tán sắc & Lệch Thời điểm Lấy mẫu Mảng ADC (Hình 19.46):** Khi phân phối xung nhịp `CK` và tín hiệu tương tự `Vin` chạy dọc qua $n$ kênh lấy mẫu song song (`Time-Interleaved / Flash ADC`), sự khác biệt hằng số thời gian phân tán làm sườn xung nhịp ở kênh xa bị kéo dài thoai thoải (`dispersion`, tăng nhiễu jitter công tắc!) và trễ lệch so với `Vin`, gây méo hài ghép kênh nghiêm trọng nếu không đi dây theo **cây chữ H đối xứng (`H-tree`)** kèm bộ đệm làm sắc sườn tại chỗ!
 
 ### 2.4. Giới hạn Di cư Điện tử (`Electromigration — EM`) và Phương trình Tuổi thọ Black
-Dưới mật độ dòng điện một chiều lớn $J = I_{DC} / (W \cdot t)$, "cơn gió điện tử" va đập truyền động lượng liên tục vào các ion kim loại tại biên hạt tinh thể, đẩy nguyên tử kim loại trôi về phía cực dương: nơi mất nguyên tử rỗng dần thành **hốc đứt mạch (`void`)**, nơi dồn ứ trồi lên thành **râu kim loại chập mạch (`hillock/whisker`)**. Thời gian trung bình tới khi hỏng hóc (`MTTF`) tuân theo định luật Black:
+Dưới **mật độ dòng điện tiết diện vật lý** $J = \dfrac{I_{DC}}{W \cdot t}$ [$\text{A/cm}^2$] lớn chảy qua dây kim loại bề rộng $W$ và bề dày cố định $t$, "cơn gió điện tử" va đập truyền động lượng liên tục vào các ion kim loại tại biên hạt tinh thể, đẩy nguyên tử kim loại trôi về phía cực dương: nơi mất nguyên tử rỗng dần thành **hốc đứt mạch (`void`)**, nơi dồn ứ trồi lên thành **râu kim loại chập mạch (`hillock/whisker`)**. Thời gian trung bình tới khi hỏng hóc (`MTTF`) tuân theo phương trình vật lý Black theo $J$ [$\text{A/cm}^2$]; còn trong sổ tay luật thiết kế `PDK / DRM` của nhà máy đúc, bề dày $t$ của từng tầng kim loại đã cố định nên người ta quy đổi sang **giới hạn dòng điện tuyến tính chuẩn hóa theo bề rộng** $J_{W,\max}(T_{\max}) \triangleq J_{\max}(T_{\max}) \cdot t$ [$\text{mA}/\mu\text{m}$] (ví dụ $J_{\max} = 10^6\text{ A/cm}^2$ trên lớp kim loại dày $t = 0.2\,\mu\text{m}$ tương đương $J_{W,\max} = 2.0\text{ mA}/\mu\text{m}$):
 
-$$\text{MTTF} = \frac{A_{\text{EM}}}{J^n}\exp\!\left(\frac{E_a}{k T}\right) \implies W_{\min,\text{EM}} = \frac{I_{DC,\text{avg}}}{J_{\max}(T_{\max})}$$
+$$\text{MTTF} = \frac{A_{\text{EM}}}{J^n}\exp\!\left(\frac{E_a}{k T}\right) \implies W_{\min,\text{EM}} = \frac{I_{DC,\text{avg}}}{J_{\max}(T_{\max}) \cdot t} = \frac{I_{DC,\text{avg}}}{J_{W,\max}(T_{\max})}$$
 
-Trong đó mật độ dòng tối đa cho phép ở $105\text{–}125\,^\circ\text{C}$ thường chỉ khoảng $J_{\max,\text{DC}} \approx 0.5\text{–}1.5\text{ mA}/\mu\text{m}$ cho các tầng kim loại mỏng dưới thấp và $2\text{–}5\text{ mA}/\mu\text{m}$ cho tầng kim loại dày trên đỉnh, còn mỗi lỗ `via` đơn chỉ chịu được $I_{\max,\text{via}} \approx 0.1\text{–}0.4\text{ mA}$! *(Lưu ý: dòng xoay chiều đối xứng thuần túy không có thành phần DC trung bình có khả năng tự hồi phục ngược chiều nên chịu được $J_{\text{RMS}}$ cao hơn nhiều lần dòng một chiều!)*
+Trong đó giới hạn dòng tuyến tính tối đa cho phép ở $105\text{–}125\,^\circ\text{C}$ thường chỉ khoảng $J_{W,\max,\text{DC}} \approx 0.5\text{–}1.5\text{ mA}/\mu\text{m}$ cho các tầng kim loại mỏng dưới thấp và $2\text{–}5\text{ mA}/\mu\text{m}$ cho tầng kim loại dày trên đỉnh, còn mỗi lỗ `via` đơn chỉ chịu được $I_{\max,\text{via}} \approx 0.1\text{–}0.4\text{ mA}$! *(Lưu ý: dòng xoay chiều đối xứng thuần túy không có thành phần DC trung bình có khả năng tự hồi phục ngược chiều nên chịu được $J_{W,\text{RMS}}$ cao hơn nhiều lần dòng một chiều!)*
 
 ---
 
@@ -160,12 +160,12 @@ Trong **Bát giác Thiết kế (`concept-analog-design-octagon`)**, thiết k�
 1. **Trích xuất Chọn lọc trong `Hierarchy Editor (config view)`:**
    - Chuyển khối cần kiểm tra sang view `av_extracted` (trích xuất từ `Quantus QRC` hoặc `Calibre xRC` ở chế độ `RCC`: cả điện trở nối tiếp `R`, tụ xuống đất `C` và tụ ghép chéo `CC`).
    - So sánh trực tiếp 3 phép đo giữa `schematic` và `av_extracted`: (a) sụt áp DC trên đường `VDD/VSS` nội bộ (`< 5 mV`), (b) bảng đóng góp nhiễu `Noise Summary` xem các phần tử điện trở ký sinh `r_wire` chiếm bao nhiêu phần trăm tổng nhiễu ngõ vào, và (c) độ lệch thời gian sườn xung nhịp tới các công tắc lấy mẫu.
-2. **Kiểm tra Tự động `Voltush-Fi / Assura EM-IR`:**
+2. **Kiểm tra Tự động `Voltus-Fi / Assura EM-IR`:**
    - Chạy mô phỏng dòng động và dòng DC tại góc dòng lớn nhất (`FF, VDD_max, 125 °C`) nạp vào bộ kiểm tra luật `EM` của PDK để đánh dấu màu đỏ mọi đoạn thắt cổ chai vượt ngưỡng $J_{\max}$ hoặc thiếu `via`.
 
 ```spice
 // Spectre Pre-Layout Wire Budget Model: Mo hinh hoa som duong day dai & chuoi Via truoc khi ve Layout!
-// Khuyen nghi chen subckt mo hinh П-3-doan (3-segment Pi RC) cho moi duong CLK / Bias dai > 150 um:
+// Khuyen nghi chen subckt mo hinh Pi-3-doan (3-segment Pi RC) cho moi duong CLK / Bias dai > 150 um:
 subckt wire_rc_pi3 (in out gnd_ref)
 parameters len=200u wid=0.4u r_sq=0.08 c_um=0.18f r_vias=10
     R_v1 (in  n1) resistor r=r_vias

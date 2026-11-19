@@ -17,13 +17,13 @@
     {
       "chapter": 11,
       "section": "11.5.1-11.5.2",
-      "pages": "472-495",
+      "pages": "473-495",
       "equations": ["11.10", "11.11", "11.12", "11.13"]
     },
     {
       "chapter": 11,
       "section": "11.6.1-11.6.5",
-      "pages": "495-507",
+      "pages": "496-507",
       "equations": ["11.14", "11.15", "11.16", "11.17", "11.18", "11.20", "11.21", "11.23", "11.24"]
     }
   ],
@@ -103,7 +103,7 @@ $$I_D(W) = \alpha\,I_{D,\text{ref}}, \qquad g_m(W) = \alpha\,g_{m,\text{ref}}, \
 
 Từ bộ ba biến thiết kế $\{g_m, I_D, V_{DS,\min}\}$ và biến hình học $W$ (với $L$ cố định theo yêu cầu $r_O$ hoặc $f_T$), Razavi phân loại mọi quyết định định cỡ vào **4 trường hợp chuẩn tắc (§11.4.1–11.4.4)**:
 - **Trường hợp I — Cho trước $(I_D, V_{DS,\min})$** *(điển hình cho nguồn dòng đuôi $M_9$, nguồn dòng tải $M_{7,8}$)*: Tra đường cong $I_{D,\text{ref}}(V_{DS})$ tìm đường có điểm gối nằm đúng tại $V_{DS,\min}$ yêu cầu $\rightarrow$ đọc được $V_{GS}$ và dòng tham chiếu $I_{D,\text{ref}}$ $\rightarrow$ tính ngay bề rộng $W = W_{\text{ref}} \frac{I_D}{I_{D,\text{ref}}}$.
-- **Trường hợp II — Cho trước $(g_m, I_D)$** *(điển hình cho cặp vi sai đầu vào khi ngân sách dòng và GBW/nhiễu đã ấn định)*: Lập tỉ số mục tiêu $g_m / I_D$ $\rightarrow$ tra đồ thị $\left(\frac{g_m}{I_D}\right)_{\text{ref}}$ theo $I_{D,\text{ref}}$ (Hình 11.13):
+- **Trường hợp II — Cho trước $(g_m, I_D)$** *(điển hình cho cặp vi sai đầu vào khi ngân sách dòng và GBW/nhiễu đã ấn định)*: Lập tỉ số mục tiêu $g_m / I_D$ $\rightarrow$ tra đồ thị $g_{m,\text{ref}}$ theo $I_{D,\text{ref}}$ (Hình 11.14–11.15):
   - Nếu tỉ số $g_m / I_D$ yêu cầu vượt quá đỉnh cực đại vùng dưới ngưỡng ($\sim 25 \dots 28\text{ V}^{-1}$ ở nhiệt độ phòng), bài toán **bất khả thi vật lý (`unachievable region`, `T1997`)** — bắt buộc phải tăng ngân sách dòng $I_D$!
   - Nếu khả thi, đọc $I_{D,\text{ref}}$ tương ứng rồi suy ra $W = W_{\text{ref}} \frac{I_D}{I_{D,\text{ref}}}$ và kiểm tra lại xem $V_{DS,\min}$ tạo ra có nằm gọn trong khoảng dự trữ điện áp cho phép hay không.
 - **Trường hợp III — Cho trước $(g_m, V_{DS,\min})$**: Từ $V_{DS,\min}$ xác định $V_{GS}$ tối đa cho phép trên họ đặc tuyến tham chiếu $\rightarrow$ đọc cả $g_{m,\text{ref}}$ lẫn $I_{D,\text{ref}}$ tại $V_{GS}$ đó $\rightarrow$ suy ra đồng thời $W = W_{\text{ref}}\frac{g_m}{g_{m,\text{ref}}}$ và dòng tiêu thụ bắt buộc $I_D = I_{D,\text{ref}}\frac{g_m}{g_{m,\text{ref}}}$.

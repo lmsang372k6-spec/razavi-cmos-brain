@@ -32,7 +32,7 @@
      - `saExportStbMargins(psfDir stbResultName outPathTxt)` *(bí danh trả về danh sách kết hợp: `saMeasureStbMargin`)*.
      - `saExportSchematicPng(libName cellName viewName pngPath [width] [height])`.
 
-4. **Bộ đọc trạng thái PSF ASCII & Kiểm toán Điểm làm việc / Chỉ tiêu Spec (Fail-Closed Sign-off `2026.11.18.6`):**
+4. **Bộ đọc trạng thái PSF ASCII & Kiểm toán Điểm làm việc / Chỉ tiêu Spec (Fail-Closed Sign-off `2026.11.18.7`):**
    - [tools/psf_ascii_reader.py](../tools/psf_ascii_reader.py): máy trạng thái đọc đầy đủ Spectre 15.1 PSF ASCII (`HEADER`, `TYPE` gồm cả `STRUCT(...)` nhiều trường lồng nhau, `SWEEP`, `TRACE` gồm ánh xạ `" 401" GROUP N`, và `VALUE` gồm số thực/phức `(re im)`, bản ghi linh kiện `STRUCT` nhiều dòng cho cả **BSIM3v3 (`"bsim3v3"` trên `GPDK090`)** lẫn **BSIM4 (`"bsim4"` trên `GPDK045`)**, cùng giải nén delta-compression và kiểm tra bắt buộc từ khóa kết thúc `END` để chặn file PSF bị cắt cụt). Từ chối chặt `NaN`/`Inf` và ghi nhận rõ mẫu thiếu đầu dải quét (`backfilled_leading_signals`).
    - [tools/psf_audit.py](../tools/psf_audit.py):
      - `op-audit <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW]`: trích xuất `ids, vgs, vds, vth, vdsat, gm, gds, gmb, cgg, cgd, cgs, region` của mọi MOSFET (tương thích cả **BSIM3v3 `GPDK090`** và **BSIM4 `GPDK045`**), tính `gm_id`, `gm_gds`, `vov`, `sat_margin = abs(vds) - abs(vdsat)`. Chế độ **Fail-Closed**: thiếu `vdsat` hoặc thiếu `region`/`(vgs, vth)` trả về `MISSING_OP_FIELDS` (`status="NOT_VERIFIED"`, `audit_pass=False`); thiết bị có `0 <= sat_margin < vds_margin` đặt `audit_pass=False`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain & v4.0 Runtime (release 2026.11.18.6).
+"""Comprehensive Integrity Validator for Razavi CMOS Knowledge Brain & v4.0 Runtime (release 2026.11.18.7).
 
 Validates all 10 domains (162 cards: 112 Razavi Ch.01-19 cards + 12 PMIC cards + 12 AMS/System cards
 + 26 Closed-Loop Cadence/GitHub Skill cards), 72 vector SVGs, 21 structural checklists, 2,280 CLB
@@ -27,7 +27,7 @@ from collections import defaultdict
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
 RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
-EXPECTED_RELEASE = "2026.11.18.6"
+EXPECTED_RELEASE = "2026.11.18.7"
 
 EXPECTED_DOMAINS = {
     "foundations",
@@ -170,6 +170,7 @@ def validate(
     expected_glossary=2280,
     expected_repos=52,
     min_lines=120,
+    ignore_manifests=False,
 ):
     errors = []
     warnings = []
@@ -481,10 +482,11 @@ def validate(
                 if node_ids and ln not in node_ids:
                     errors.append(f"catalog.json repo {r.get('repo')}: unknown linked_node {ln!r}")
 
-    # 6. Book Coordinates validation (kb/coordinates/book-coordinates.json) + 100% card ref check
+    # 6. Book Coordinates validation (kb/coordinates/book-coordinates.json) + 100% card ref & body citation check
     coords_fp = os.path.join(KB_ROOT, "coordinates", "book-coordinates.json")
     sec_count = 0
     eq_count = 0
+    fig_count = 0
     idx_term_count = 0
     if not os.path.isfile(coords_fp):
         errors.append("Missing kb/coordinates/book-coordinates.json")
@@ -508,14 +510,16 @@ def validate(
             b_sections = bcoords.get("sections") or []
             sec_count = len(b_sections)
             sec_by_id = {}
-            if sec_count < 290:
-                errors.append(f"book-coordinates.json expected >= 290 sections, got {sec_count}")
+            if sec_count < 311:
+                errors.append(f"book-coordinates.json expected >= 311 sections, got {sec_count}")
             for s_obj in b_sections:
                 sid = str(s_obj.get("section_id", ""))
                 if not sid or not s_obj.get("chapter"):
                     errors.append(f"book-coordinates.json section missing section_id/chapter: {s_obj!r}")
                 else:
                     sec_by_id[sid] = s_obj
+                if int(s_obj.get("book_page_start", 0)) > int(s_obj.get("book_page_end", -1)):
+                    errors.append(f"book-coordinates.json section {sid}: invalid book_page range {s_obj.get('book_pages')!r}")
                 for nid in s_obj.get("primary_nodes") or []:
                     if node_ids and nid not in node_ids:
                         errors.append(
@@ -525,8 +529,9 @@ def validate(
             b_eqs = bcoords.get("equations") or []
             eq_count = len(b_eqs)
             eq_nums_present = set()
-            if eq_count < 1400:
-                errors.append(f"book-coordinates.json expected >= 1400 equations, got {eq_count}")
+            eq_by_num = {}
+            if eq_count < 1504:
+                errors.append(f"book-coordinates.json expected >= 1504 equations, got {eq_count}")
             for e_obj in b_eqs:
                 enum_val = str(e_obj.get("eq_num", ""))
                 if not e_obj.get("eq_id") or not enum_val or not e_obj.get("latex"):
@@ -534,6 +539,28 @@ def validate(
                 if enum_val in eq_nums_present:
                     errors.append(f"book-coordinates.json duplicate eq_num: {enum_val!r}")
                 eq_nums_present.add(enum_val)
+                eq_by_num[enum_val] = e_obj
+
+                esec = str(e_obj.get("section", ""))
+                ebp = e_obj.get("book_page")
+                epp = e_obj.get("pdf_page")
+                if esec not in sec_by_id:
+                    errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown section {esec!r}")
+                else:
+                    s_parent = sec_by_id[esec]
+                    if int(s_parent["chapter"]) != int(e_obj.get("chapter", -1)):
+                        errors.append(
+                            f"book-coordinates.json {e_obj.get('eq_id')}: chapter {e_obj.get('chapter')} != section {esec} chapter {s_parent['chapter']}"
+                        )
+                    if not isinstance(ebp, int) or not (s_parent["book_page_start"] <= ebp <= s_parent["book_page_end"]):
+                        errors.append(
+                            f"book-coordinates.json {e_obj.get('eq_id')}: book_page {ebp} outside section {esec} [{s_parent['book_page_start']}, {s_parent['book_page_end']}]"
+                        )
+                    if not isinstance(epp, int) or not (s_parent["pdf_page_start"] <= epp <= s_parent["pdf_page_end"]):
+                        errors.append(
+                            f"book-coordinates.json {e_obj.get('eq_id')}: pdf_page {epp} outside section {esec} [{s_parent['pdf_page_start']}, {s_parent['pdf_page_end']}]"
+                        )
+
                 nid_primary = e_obj.get("node_id")
                 if nid_primary and node_ids and nid_primary not in node_ids:
                     errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown node_id {nid_primary!r}")
@@ -541,15 +568,114 @@ def validate(
                     if node_ids and rn not in node_ids:
                         errors.append(f"book-coordinates.json {e_obj.get('eq_id')}: unknown related_node {rn!r}")
 
-            for s_obj in b_sections:
-                for ke in s_obj.get("key_equations") or []:
-                    ke_clean = str(ke).strip("() ")
-                    if ke_clean not in eq_nums_present:
+            b_figs = bcoords.get("figures") or []
+            fig_count = len(b_figs)
+            fig_nums_present = set()
+            fig_by_num = {}
+            if fig_count < 1163:
+                errors.append(f"book-coordinates.json expected >= 1163 figures, got {fig_count}")
+            for f_obj in b_figs:
+                fnum_val = str(f_obj.get("fig_num", ""))
+                cap_val = str(f_obj.get("caption_en") or f_obj.get("caption") or "").strip()
+                if not f_obj.get("fig_id") or not fnum_val or not cap_val:
+                    errors.append(f"book-coordinates.json figure missing fig_id/fig_num/caption: {f_obj!r}")
+                if fnum_val in fig_nums_present:
+                    errors.append(f"book-coordinates.json duplicate fig_num: {fnum_val!r}")
+                fig_nums_present.add(fnum_val)
+                fig_by_num[fnum_val] = f_obj
+
+                fsec = str(f_obj.get("section", ""))
+                fbp = f_obj.get("book_page")
+                fpp = f_obj.get("pdf_page")
+                if fsec not in sec_by_id:
+                    errors.append(f"book-coordinates.json {f_obj.get('fig_id')}: unknown section {fsec!r}")
+                else:
+                    s_parent = sec_by_id[fsec]
+                    if int(s_parent["chapter"]) != int(f_obj.get("chapter", -1)):
                         errors.append(
-                            f"book-coordinates.json section {s_obj.get('section_id')} key_equation {ke!r} missing from equations[]"
+                            f"book-coordinates.json {f_obj.get('fig_id')}: chapter {f_obj.get('chapter')} != section {fsec} chapter {s_parent['chapter']}"
+                        )
+                    if not isinstance(fbp, int) or not (s_parent["book_page_start"] <= fbp <= s_parent["book_page_end"]):
+                        errors.append(
+                            f"book-coordinates.json {f_obj.get('fig_id')}: book_page {fbp} outside section {fsec} [{s_parent['book_page_start']}, {s_parent['book_page_end']}]"
+                        )
+                    if not isinstance(fpp, int) or not (s_parent["pdf_page_start"] <= fpp <= s_parent["pdf_page_end"]):
+                        errors.append(
+                            f"book-coordinates.json {f_obj.get('fig_id')}: pdf_page {fpp} outside section {fsec} [{s_parent['pdf_page_start']}, {s_parent['pdf_page_end']}]"
+                        )
+                    if f"Fig. {fnum_val}" not in (s_parent.get("key_figures") or []):
+                        errors.append(
+                            f"book-coordinates.json {f_obj.get('fig_id')} missing from section {fsec} key_figures"
                         )
 
-            # Verify 100% of razavi_refs sections, page bounds & equations across all 162 cards
+                fnid_primary = f_obj.get("node_id")
+                if fnid_primary and node_ids and fnid_primary not in node_ids:
+                    errors.append(f"book-coordinates.json {f_obj.get('fig_id')}: unknown node_id {fnid_primary!r}")
+                for rn in f_obj.get("related_nodes") or []:
+                    if node_ids and rn not in node_ids:
+                        errors.append(f"book-coordinates.json {f_obj.get('fig_id')}: unknown related_node {rn!r}")
+
+            for s_obj in b_sections:
+                sid = str(s_obj.get("section_id", ""))
+                for ke in s_obj.get("key_equations") or []:
+                    ke_clean = str(ke).strip("() ")
+                    if ke_clean not in eq_by_num:
+                        errors.append(
+                            f"book-coordinates.json section {sid} key_equation {ke!r} missing from equations[]"
+                        )
+                    else:
+                        ebp = eq_by_num[ke_clean]["book_page"]
+                        if not (s_obj["book_page_start"] <= ebp <= s_obj["book_page_end"]):
+                            errors.append(
+                                f"book-coordinates.json section {sid} key_equation {ke!r} (p.{ebp}) outside [{s_obj['book_page_start']}, {s_obj['book_page_end']}]"
+                            )
+                for kf in s_obj.get("key_figures") or []:
+                    kf_clean = re.sub(r"^Fig(?:ure)?\.?\s*", "", str(kf).strip())
+                    if kf_clean not in fig_by_num:
+                        errors.append(
+                            f"book-coordinates.json section {sid} key_figure {kf!r} missing from figures[]"
+                        )
+                    else:
+                        fbp = fig_by_num[kf_clean]["book_page"]
+                        if not (s_obj["book_page_start"] <= fbp <= s_obj["book_page_end"]):
+                            errors.append(
+                                f"book-coordinates.json section {sid} key_figure {kf!r} (p.{fbp}) outside [{s_obj['book_page_start']}, {s_obj['book_page_end']}]"
+                            )
+
+            # Regexes for scanning all 162 .md cards' body Razavi Eq/Fig citations
+            md_eq_group_re = re.compile(
+                r"(?:\b(?:Eqs?\.?|Equations?)|[Pp]hương\s+trình)\s*"
+                r"(\(?\d{1,2}\.\d+[a-z]?\)?(?:\s*(?:[,;/–—-]|and|và|to|đến)\s*\(?\d{1,2}\.\d+[a-z]?\)?)*)",
+                re.UNICODE,
+            )
+            md_fig_group_re = re.compile(
+                r"(?:\b(?:Figs?\.?|Figures?)|[Hh]ình)\s*"
+                r"(\d{1,2}\.\d+(?:\([a-z]\)|[a-z])?(?:\s*(?:[,;/–—-]|and|và|to|đến)\s*\d{1,2}\.\d+(?:\([a-z]\)|[a-z])?)*)",
+                re.UNICODE,
+            )
+            md_num_tok_re = re.compile(r"(\d{1,2})\.(\d+)([a-z])?(?:\([a-z]\))?")
+
+            def _expand_razavi_cite_tokens(group_text):
+                expanded = []
+                for m_rng in re.finditer(
+                    r"\(?(\d{1,2})\.(\d+)[a-z]?\)?\s*[–—-]\s*\(?(\d{1,2})\.(\d+)[a-z]?\)?",
+                    group_text,
+                ):
+                    c1, n1, c2, n2 = (
+                        int(m_rng.group(1)),
+                        int(m_rng.group(2)),
+                        int(m_rng.group(3)),
+                        int(m_rng.group(4)),
+                    )
+                    if c1 == c2 and n1 <= n2 and (n2 - n1) <= 30:
+                        for k_num in range(n1, n2 + 1):
+                            expanded.append(f"{c1}.{k_num}")
+                for m_tok in md_num_tok_re.finditer(group_text):
+                    ch_t, n_t, sfx_t = int(m_tok.group(1)), int(m_tok.group(2)), m_tok.group(3) or ""
+                    expanded.append(f"{ch_t}.{n_t}{sfx_t}")
+                return expanded
+
+            # Verify 100% of razavi_refs & markdown body Eq/Fig citations across all 162 cards
             for dom in sorted(EXPECTED_DOMAINS):
                 dom_dir = os.path.join(nodes_root, dom)
                 if not os.path.isdir(dom_dir):
@@ -559,7 +685,7 @@ def validate(
                         continue
                     rel = f"kb/nodes/{dom}/{fn}"
                     with open(os.path.join(dom_dir, fn), "r", encoding="utf-8-sig") as nf:
-                        m_card, _, _, _ = split_frontmatter(nf.read())
+                        m_card, body_card, all_card_lines, _ = split_frontmatter(nf.read())
                     if not m_card:
                         continue
                     for r in m_card.get("razavi_refs") or []:
@@ -578,8 +704,41 @@ def validate(
                                     break
                         for eq_r in r.get("equations") or []:
                             eq_clean = re.sub(r"^Eq\.?\s*", "", str(eq_r).strip("() "))
-                            if eq_clean not in eq_nums_present:
+                            eq_base = re.sub(r"[a-z]$", "", eq_clean)
+                            if eq_clean not in eq_nums_present and eq_base not in eq_nums_present:
                                 errors.append(f"{rel}: razavi_refs equation {eq_r!r} missing from book-coordinates.json")
+
+                    # Scan non-fenced markdown body lines for Razavi Eq. X.Y / Phương trình X.Y and Fig. X.Y / Hình X.Y
+                    fm_offset = len(all_card_lines) - len(body_card.splitlines()) + 1
+                    in_fence = False
+                    fence_mk = ""
+                    for b_idx, b_line in enumerate(body_card.splitlines()):
+                        lno = fm_offset + b_idx
+                        stripped_ln = b_line.lstrip()
+                        if stripped_ln.startswith("```") or stripped_ln.startswith("~~~"):
+                            mk = stripped_ln[:3]
+                            if not in_fence:
+                                in_fence = True
+                                fence_mk = mk
+                            elif stripped_ln.startswith(fence_mk):
+                                in_fence = False
+                            continue
+                        if in_fence:
+                            continue
+                        for m_eq_g in md_eq_group_re.finditer(b_line):
+                            for cite_eq in _expand_razavi_cite_tokens(m_eq_g.group(1)):
+                                cite_base = re.sub(r"[a-z]$", "", cite_eq)
+                                if cite_eq not in eq_nums_present and cite_base not in eq_nums_present:
+                                    errors.append(
+                                        f"{rel}:{lno}: cited Razavi equation {cite_eq!r} ({m_eq_g.group(0)!r}) missing from book-coordinates.json"
+                                    )
+                        for m_fig_g in md_fig_group_re.finditer(b_line):
+                            for cite_fig in _expand_razavi_cite_tokens(m_fig_g.group(1)):
+                                cite_base = re.sub(r"[a-z]$", "", cite_fig)
+                                if cite_fig not in fig_nums_present and cite_base not in fig_nums_present:
+                                    errors.append(
+                                        f"{rel}:{lno}: cited Razavi figure {cite_fig!r} ({m_fig_g.group(0)!r}) missing from book-coordinates.json"
+                                    )
 
             b_idx = bcoords.get("index_terms") or []
             idx_term_count = len(b_idx)
@@ -713,9 +872,9 @@ def validate(
                 if not os.path.isfile(abs_p):
                     errors.append(f"manifest.json references missing file: {p}")
                 else:
-                    if os.path.getsize(abs_p) != entry.get("bytes"):
+                    if not ignore_manifests and os.path.getsize(abs_p) != entry.get("bytes"):
                         errors.append(f"manifest.json byte size mismatch: {p}")
-                    if sha256_file(abs_p) != entry.get("sha256"):
+                    if not ignore_manifests and sha256_file(abs_p) != entry.get("sha256"):
                         errors.append(f"manifest.json SHA-256 mismatch: {p}")
             for req_rel in (
                 "kb/coordinates/book-coordinates.json",
@@ -726,7 +885,7 @@ def validate(
                 if req_rel not in recorded:
                     errors.append(f"manifest.json missing required file: {req_rel}")
             bundle_fp = os.path.join(KB_ROOT, "nodes-bundle.json.gz")
-            if os.path.isfile(bundle_fp):
+            if os.path.isfile(bundle_fp) and not ignore_manifests:
                 with gzip.open(bundle_fp, "rb") as gzf:
                     bdata = json.loads(gzf.read().decode("utf-8"))
                 if bdata.get("release") != EXPECTED_RELEASE or bdata.get("node_count") != len(node_ids):
@@ -764,9 +923,9 @@ def validate(
                 if not os.path.isfile(abs_p):
                     errors.append(f"runtime/manifest.json references missing file: {p}")
                 else:
-                    if os.path.getsize(abs_p) != entry.get("bytes"):
+                    if not ignore_manifests and os.path.getsize(abs_p) != entry.get("bytes"):
                         errors.append(f"runtime/manifest.json byte size mismatch: {p}")
-                    if sha256_file(abs_p) != entry.get("sha256"):
+                    if not ignore_manifests and sha256_file(abs_p) != entry.get("sha256"):
                         errors.append(f"runtime/manifest.json SHA-256 mismatch: {p}")
             rt_file_count = len(rt_recorded)
 
@@ -827,6 +986,7 @@ def validate(
             "glossary_terms": len(glossary_ids),
             "book_sections": sec_count,
             "book_equations": eq_count,
+            "book_figures": fig_count,
             "book_index_terms": idx_term_count,
             "github_repos": len(catalog_repos),
         },
@@ -843,6 +1003,7 @@ def main():
     parser.add_argument("--expected-glossary", type=int, default=2280)
     parser.add_argument("--expected-repos", type=int, default=52)
     parser.add_argument("--min-lines", type=int, default=120)
+    parser.add_argument("--ignore-manifests", action="store_true", help="Skip SHA-256/byte checks on kb/manifest.json and runtime/manifest.json prior to rebuild")
     args = parser.parse_args()
 
     result = validate(
@@ -852,6 +1013,7 @@ def main():
         expected_glossary=args.expected_glossary,
         expected_repos=args.expected_repos,
         min_lines=args.min_lines,
+        ignore_manifests=args.ignore_manifests,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     sys.exit(0 if result["ok"] else 1)

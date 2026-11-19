@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.6).
+"""Compiler & Index Builder for Razavi CMOS Knowledge Brain (release 2026.11.18.7).
 
 Pure Python 3 standard library, zero external dependencies, zero bytecode generation.
 Builds across all 10 knowledge & EDA domains under `.build.lock` concurrency guard:
@@ -30,7 +30,7 @@ from collections import defaultdict
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KB_ROOT = os.path.join(REPO_ROOT, "kb")
 RUNTIME_ROOT = os.path.join(REPO_ROOT, "runtime")
-RELEASE_VERSION = "2026.11.18.6"
+RELEASE_VERSION = "2026.11.18.7"
 
 DOMAIN_METADATA = [
     {
@@ -1023,6 +1023,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
     eda_domain_node_count = domain_counts.get("eda-and-github-skills", 0)
     book_section_count = len(coords_data.get("sections", []))
     book_equation_count = len(coords_data.get("equations", []))
+    book_figure_count = len(coords_data.get("figures", []))
     book_index_term_count = len(coords_data.get("index_terms", []))
     github_repo_count = len(catalog_data.get("repositories") or catalog_data.get("repos") or [])
 
@@ -1044,6 +1045,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
             "glossary_count": glossary_count,
             "book_section_count": book_section_count,
             "book_equation_count": book_equation_count,
+            "book_figure_count": book_figure_count,
             "book_index_term_count": book_index_term_count,
             "github_repo_count": github_repo_count,
         },
@@ -1127,6 +1129,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         "glossary_count": glossary_count,
         "book_section_count": book_section_count,
         "book_equation_count": book_equation_count,
+        "book_figure_count": book_figure_count,
         "github_repo_count": github_repo_count,
         "file_count": len(kb_files),
         "files": kb_files,
@@ -1196,6 +1199,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         "glossary_count": glossary_count,
         "book_section_count": book_section_count,
         "book_equation_count": book_equation_count,
+        "book_figure_count": book_figure_count,
         "github_repo_count": github_repo_count,
         "manifest_files": len(kb_files),
         "runtime_manifest_files": runtime_file_count,

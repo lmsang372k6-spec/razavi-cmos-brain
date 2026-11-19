@@ -23,7 +23,7 @@
     {
       "chapter": 14,
       "section": "14.2.1",
-      "pages": "597-598",
+      "pages": "593-598",
       "equations": ["14.87", "14.88"]
     }
   ],
@@ -121,7 +121,8 @@ $$HD_{3,\text{diff}} = \frac{A_{HD3}}{A_F} \approx \frac{V_m^2}{32(V_{GS} - V_{T
 
 **Nhận thức định lượng sắc bén:** Tại $V_m = 0.2 V_{OV}$, tầng CS bị méo $HD_2 = 5\%$ ($-26\text{ dB}$), trong khi cặp vi sai chỉ méo $HD_3 = 0.125\%$ ($-58\text{ dB}$ — nhỏ hơn $40$ lần!). Dù cặp vi sai tiêu thụ công suất gấp đôi ($I_{SS} = 2I$), nếu đem dòng $2I$ đó cấp cho tầng CS đơn cực (giữ nguyên $W/L$, tăng $V_{OV}$ lên $\sqrt{2}$ lần), $HD_2$ của tầng CS chỉ giảm được vỏn vẹn $\sqrt{2}$ lần xuống $3.54\%$! Nếu hai nhánh vi sai bị **sai lệch linh kiện (mismatch — `T052`)** làm $\alpha_2 \neq \beta_2$, đối xứng lẻ vỡ và hài chẵn tái xuất hiện theo độ lệch hệ số (Eq. 14.88):
 
-$$y_1 - y_2 = (\alpha_1 + \beta_1)x_1 + (\alpha_2 - \beta_2)x_1^2 + (\alpha_3 + \beta_3)x_1^3 \implies A_{HD2,\text{mismatch}} = \frac{|\alpha_2 - \beta_2|}{2} A^2$$
+$$y_1 - y_2 = (\alpha_1 + \beta_1)x_1 + (\alpha_2 - \beta_2)x_1^2 + (\alpha_3 + \beta_3)x_1^3 \implies A_{HD2,\text{mismatch}} = \frac{|\alpha_2 - \beta_2|}{2} A^2 = \frac{|\alpha_2 - \beta_2|}{8} V_m^2$$
+*(với $x_1(t) = -x_2(t) = A\cos\omega t$ theo ký hiệu Razavi PT 14.88, tức biên độ vi sai $V_m = 2A$).*
 
 ### 2.3. Định luật Nén Méo Hài bằng Hồi tiếp Âm (So sánh Cùng $V_{in}$ và Cùng $V_{out}$)
 Xét bộ khuếch đại vòng hở $y = \alpha_1 x_e + \alpha_2 x_e^2$ đóng hồi tiếp âm hệ số $\beta$ sao cho tín hiệu sai lệch $x_e = x(t) - \beta y(t)$ (Eq. 14.23–14.36). Giả thiết $x(t) = V_m\cos\omega t$ và $y(t) \approx a\cos\omega t + b\cos(2\omega t)$, cân bằng điều hòa cho $a \approx \frac{\alpha_1}{1 + \beta\alpha_1}V_m$ và $b(1 + \beta\alpha_1) = \frac{\alpha_2}{2}\left(\frac{a}{\alpha_1}\right)^2$, dẫn tới hai góc nhìn bắt buộc phải phân biệt:

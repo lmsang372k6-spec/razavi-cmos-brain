@@ -54,7 +54,7 @@ Cơ chế hình thành và vai trò của 4 transistor trong Hình 5.12(c):
 
 ### 2.1. Trở kháng Ngõ ra & Mức Nén Sai số Sao chép Dòng
 
-- **Trở kháng ngõ ra tín hiệu nhỏ:** Nhìn vào cực máng $P$ của $M_3$, đây chính xác là một tầng cổng chung bị suy biến tại cực nguồn bởi $r_{O2}$ (Chương 3 Phương trình 3.98):
+- **Trở kháng ngõ ra tín hiệu nhỏ:** Nhìn vào cực máng $P$ của $M_3$, đây chính xác là một tầng cổng chung bị suy biến tại cực nguồn bởi $r_{O2}$ (Chương 3 Phương trình 3.66 & 3.128):
 
 $$R_{out} = \bigl[1 + (g_{m3} + g_{mb3})r_{O3}\bigr]r_{O2} + r_{O3} \approx (g_{m3} + g_{mb3})r_{O3}r_{O2}$$
 

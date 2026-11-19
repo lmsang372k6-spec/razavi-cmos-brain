@@ -11,7 +11,7 @@
     {
       "chapter": 4,
       "section": "4.1-4.2",
-      "pages": "100-118",
+      "pages": "100-117",
       "equations": ["4.7", "4.10", "4.15"]
     },
     {
@@ -29,7 +29,7 @@
     {
       "chapter": 15,
       "section": "15.1-15.3.2",
-      "pages": "607-624",
+      "pages": "607-623",
       "equations": ["15.1", "15.19"]
     }
   ],
@@ -238,9 +238,9 @@ V_IN  (vin_clean 0) vsource type=pwl wave=[0 0  100u VDD_val  200u 0]
 V_N   (vin vin_clean) vsource type=sine ampl=V_noise_pk freq=f_noise
 
 // Chạy quá độ chính xác cao và Monte Carlo 200 mẫu kiểm tra độ lệch V_TH+, V_TH-
-tran_hyst tran stop=2*T_ramp/2 errpreset=conservative maxstep=20n
+tran_hyst tran stop=T_ramp errpreset=conservative maxstep=5n
 mc_hyst montecarlo variations=all numruns=200 seed=12345 {
-    tran_mc tran stop=200u errpreset=moderate
+    tran_mc tran stop=T_ramp errpreset=moderate maxstep=10n
 }
 ```
 - **Bước 1 — Đo chính xác $V_{TH+}, V_{TH-}$ và $\Delta V_H$ qua 45 góc PVT**: Dùng hàm `cross(V(vout) - VDD/2, 1)` trên nửa đầu `[0, 100u]` để lấy thời điểm lật lên $t_+ \implies V_{TH+} = V(\text{vin\_clean})(t_+)$, và `cross(V(vout) - VDD/2, -1)` trên nửa sau `[100u, 200u]` để lấy $t_- \implies V_{TH-} = V(\text{vin\_clean})(t_-)$.
@@ -253,8 +253,8 @@ mc_hyst montecarlo variations=all numruns=200 seed=12345 {
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Đặc tuyến truyền đạt lớn của cặp vi sai và dòng bão hòa biên | Chương 4, §4.1–4.2, PT (4.7)–(4.15), tr. 100–118 | `T111` Điện áp ngưỡng; `T245` Điện áp ngưỡng tại $V_{SB}=0$; `T2187` hiệu suất hỗ dẫn $g_m/I_D$ |
+| Đặc tuyến truyền đạt lớn của cặp vi sai và dòng bão hòa biên | Chương 4, §4.1–4.2, PT (4.7)–(4.15), tr. 100–117 | `T111` Điện áp ngưỡng; `T245` Điện áp ngưỡng tại $V_{SB}=0$; `T2187` hiệu suất hỗ dẫn $g_m/I_D$ |
 | Cặp vi sai hoạt động vùng dưới ngưỡng ($\Delta V_{in}$ theo $\zeta V_T \ln\alpha$) | Chương 2, §2.3, PT (2.33)–(2.39) & Chương 4 | `T270` Sự dẫn dưới ngưỡng; `T283` Độ hỗ dẫn trong vùng dưới ngưỡng |
-| Lý thuyết vòng hồi tiếp dương tái sinh ($T_+ > 1$) và cặp tải ghép chéo | Chương 8, §8.1 & Chương 15, §15.3.2, PT (15.19), tr. 619–624 | `T042` Hồi tiếp; `T534` Vòng hồi tiếp; `T1184` hồi tiếp dương; `T1201` hệ số hồi tiếp; `T2163` cặp transistor ghép chéo |
+| Lý thuyết vòng hồi tiếp dương tái sinh ($T_+ > 1$) và cặp tải ghép chéo | Chương 8, §8.1 & Chương 15, §15.1–15.3.2, PT (15.19), tr. 607–623 | `T042` Hồi tiếp; `T534` Vòng hồi tiếp; `T1184` hồi tiếp dương; `T1201` hệ số hồi tiếp; `T2163` cặp transistor ghép chéo |
 | Nhiễu quy về ngõ vào, sai lệch ngưỡng Pelgrom $\Delta V_{TH}$ và PVT | Chương 7, §7.2 & Chương 14, §14.2.1, PT (14.75), tr. 593–598 | `T069` Biến thiên PVT; `T527` Nhiễu; `T569` khả năng chống nhiễu môi trường; `T620` độ lệch; `T688` sai lệch điện áp ngưỡng; `T788` điện áp lệch quy về ngõ vào; `T2153` định luật Pelgrom; `T2155` điện áp lệch không ngẫu nhiên; `T2186` các góc quy trình chế tạo |
 | Thực thi Schmitt 6T cho POR & Testbench quét hai chiều | `efabless/sky130_ef_ip__power_on_reset` & `Arcadia-1/analog-design-bench` | Khối giám sát nguồn khởi động & đặc tính hóa đa góc tự động |

@@ -17,7 +17,7 @@
     {
       "chapter": 9,
       "section": "9.7",
-      "pages": "380-389",
+      "pages": "374-388",
       "equations": []
     }
   ],
@@ -189,7 +189,7 @@ Kiểm tra độ lợi một chiều `Loop Gain >= 35..50 dB`, dự trữ pha `P
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Hạn chế của CMFB điện trở, bám nguồn và linh kiện vùng triode | §9.7, tr. 380–389 & §13.5, tr. 571 | `T022` Chế độ chung; `T076` cảm nhận / thu nhận tín hiệu; `T095` Dải dao động điện áp; `T800` hồi tiếp chế độ chung; `T1526` hồi tiếp chế độ chung dùng linh kiện vùng triode |
+| Hạn chế của CMFB điện trở, bám nguồn và linh kiện vùng triode | §9.7, tr. 374–388 & §13.5, tr. 571 | `T022` Chế độ chung; `T076` cảm nhận / thu nhận tín hiệu; `T095` Dải dao động điện áp; `T800` hồi tiếp chế độ chung; `T1526` hồi tiếp chế độ chung dùng linh kiện vùng triode |
 | Nguyên lý cảm nhận bằng cặp tụ tĩnh $C_1, C_2$ không tải một chiều | §13.5, Hình 13.60, tr. 571 | `T042` Hồi tiếp; `T060` Bộ khuếch đại thuật toán; `T065` Công suất tiêu thụ; `T1522` kỹ thuật hồi tiếp chế độ chung; `T1527` mạng hồi tiếp chế độ chung |
 | Thiết lập và làm tươi điện áp trên tụ cảm nhận & nhánh bản sao $M_6$ | §13.5, Hình 13.61–13.62, Bài tập 13.34–13.37, tr. 571–575 | `T012` Phân cực; `T014` Phun điện tích; `T052` Sai lệch linh kiện; `T087` Mạch tụ chuyển mạch; `T088` Chuyển mạch; `T2079` tần số xung nhịp |
 | Nguồn dòng đuôi chia tách và ảnh hưởng tốc độ vòng CMFB lên xác lập | §13.5, tr. 572 & Bài tập 13.34 (Hình 13.65), tr. 574 | `T063` Dự trữ pha; `T1534` vòng hồi tiếp chế độ chung; `T1905` ổn định vòng hồi tiếp chế độ chung |

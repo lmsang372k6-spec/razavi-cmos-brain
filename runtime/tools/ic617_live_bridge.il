@@ -1,5 +1,5 @@
 ;;; ic617_live_bridge.il — Zero-Python3 Live Virtuoso IC617 CIW Socket Bridge
-;;; Managed by SKILL-ANALOG (release 2026.11.18.6).
+;;; Managed by SKILL-ANALOG (release 2026.11.18.7).
 ;;;
 ;;; PURPOSE:
 ;;; Allows Codex on RHEL 6.5 (`Python 2.6.6`) to inspect, size, check-and-save,

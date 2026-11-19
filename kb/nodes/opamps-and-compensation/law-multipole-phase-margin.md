@@ -84,10 +84,10 @@ $$
 $$
 
 Từ biểu thức tuyệt đẹp này, đọc ngay ý nghĩa vật lý của 3 mốc $\text{PM}$ kinh điển:
-- **$\text{PM} = 5^\circ$ (Phương trình 10.11–10.13):** $\left|Y/X\right| \approx \dfrac{11{,}5}{\beta}$ ($+21\text{ dB}$ vọt đỉnh cộng hưởng, rung hàng chục chu kỳ!).
-- **$\text{PM} = 45^\circ$ (`T1652`, Phương trình 10.15–10.17):** $\left|Y/X\right| \approx \dfrac{1{,}31}{\beta}$ ($+2{,}3\text{ dB}$ peaking trên miền tần số, vọt lố bước nhảy $\approx 23\%$ kèm rung rõ rệt).
-- **$\text{PM} = 60^\circ$ (`T1684`, Phương trình 10.18, xem `NG10-02`):** $2\sin(30^\circ) = 1 \implies \left|\dfrac{Y}{X}(j\omega_{GX})\right| = \dfrac{1}{\beta}$ (**không bị vọt đỉnh tại $\omega_{GX}$**, hệ số tắt dần tương đương $\zeta \approx 0{,}61$, vọt lố bước nhảy chỉ $\approx 8{,}7\%$ và xác lập cực nhanh!).
-- **$\text{PM} \approx 76^\circ$:** Tương ứng tắt dần tới hạn $\zeta = 1{,}0$ ($\omega_{p2} \approx 4\,\beta\,\text{GBW}$), $0\%$ vọt lố hoàn toàn không rung nhưng tốc độ sườn lên bắt đầu chậm hơn $\text{PM} = 60^\circ\text{–}65^\circ$. Do đó **$\text{PM} = 60^\circ \text{ đến } 65^\circ$ là điểm ngọt tối ưu vàng trong thiết kế vi mạch CMOS**!
+- **$\text{PM} = 5^\circ$ (Phương trình 10.11–10.13):** $\left|Y/X\right| \approx \dfrac{11{,}5}{\beta}$ ($+21{,}2\text{ dB}$ vọt đỉnh cộng hưởng, rung hàng chục chu kỳ!).
+- **$\text{PM} = 45^\circ$ (`T1652`, Phương trình 10.15–10.17):** $\left|Y/X(j\omega_{GX})\right| \approx \dfrac{1{,}307}{\beta}$ ($+2{,}32\text{ dB}$ ngay tại $\omega_{GX}$ và đỉnh toàn dải $+2{,}35\text{ dB}$, vọt lố bước nhảy $\approx 23{,}3\%$ kèm rung rõ rệt).
+- **$\text{PM} = 60^\circ$ (`T1684`, Phương trình 10.18, xem `NG10-02`):** $2\sin(30^\circ) = 1 \implies \left|\dfrac{Y}{X}(j\omega_{GX})\right| = \dfrac{1}{\beta}$ (**$0\text{ dB}$ tại $\omega_{GX}$**, đỉnh toàn dải chỉ $+0{,}28\text{ dB}$, hệ số tắt dần $\zeta \approx 0{,}612$, vọt lố bước nhảy chỉ $\approx 8{,}77\%$ và xác lập cực nhanh!).
+- **$\text{PM} \approx 76{,}3^\circ$:** Tương ứng tắt dần tới hạn $\zeta = 1{,}0$ ($\omega_{p2} = 4\,\beta\,\text{GBW}$), $0\%$ vọt lố hoàn toàn không rung nhưng tốc độ sườn lên bắt đầu chậm hơn $\text{PM} = 60^\circ\text{–}65{,}5^\circ$. Do đó **$\text{PM} = 60^\circ \text{ đến } 65{,}5^\circ$ là điểm ngọt tối ưu vàng trong thiết kế vi mạch CMOS**!
 
 ### 2.2. Bất đẳng thức Vị trí Cực Không Trội $\omega_{p2}$ Để Đạt $\text{PM} \ge 60^\circ$
 Xét hệ hai cực có cực trội $\omega_{p1} \ll \omega_{GX}$ (nên tại $\omega_{GX}$, cực trội đã đóng góp đủ $-90^\circ$ góc pha). Để tổng góc pha tại $\omega_{GX}$ lớn hơn hoặc bằng $-120^\circ$ (tức $\text{PM} \ge 60^\circ$), cực không trội thứ nhất $\omega_{p2}$ chỉ được phép đóng góp tối đa **$-30^\circ$**:
@@ -96,8 +96,8 @@ $$
 -\arctan\left(\frac{\omega_{GX}}{\omega_{p2}}\right) \ge -30^\circ \implies \frac{\omega_{GX}}{\omega_{p2}} \le \tan(30^\circ) = \frac{1}{\sqrt{3}} \implies \omega_{p2} \ge \sqrt{3}\,\omega_{GX} \approx 1{,}732\,\omega_{GX}
 $$
 
-Nếu tính chính xác cả sự sụt biên độ nhẹ $-\frac{1}{2}\log_{10}(1 + 1/3) = -0{,}62\text{ dB}$ của chính cực $\omega_{p2}$ tại $\omega_{GX}$ so với tích xấp xỉ một cực $\beta\,\text{GBW} = \beta A_0 \omega_{p1}$:
-- Với hệ **thuần 2 cực**: $\omega_{p2} \ge \frac{\sqrt{3}}{\sqrt[4]{4/3}}\,\beta\,\text{GBW} \approx 1{,}61\,\beta\,\text{GBW}$ (hoặc lấy chẵn an toàn $\omega_{p2} \ge 2\,\beta\,\text{GBW}$).
+Nếu tính chính xác cả sự sụt biên độ $-20\log_{10}\sqrt{1 + 1/3} = -10\log_{10}(4/3) \approx -1{,}25\text{ dB}$ của chính cực $\omega_{p2}$ tại $\omega_{GX}$ (khiến $\omega_{GX} = \frac{\beta\,\text{GBW}}{\sqrt{1 + (\omega_{GX}/\omega_{p2})^2}} = \frac{\sqrt{3}}{2}\,\beta\,\text{GBW}$ thấp hơn tích xấp xỉ một cực $\beta\,\text{GBW} = \beta A_0 \omega_{p1}$):
+- Với hệ **thuần 2 cực**: $\omega_{p2} \ge \sqrt{3}\,\omega_{GX} = \frac{\sqrt{3}}{\sqrt{4/3}}\,\beta\,\text{GBW} = \sin(60^\circ)\tan(60^\circ)\,\beta\,\text{GBW} = \mathbf{1{,}50\,\beta\,\text{GBW}}$ (và đạt đáp ứng phẳng tối đa Butterworth $\text{PM} = 65{,}5^\circ, \zeta = 1/\sqrt{2}$ tại đúng **$\omega_{p2} = 2{,}00\,\beta\,\text{GBW}$**).
 - Khi thực tế có thêm các cực ký sinh cao hơn ($\omega_{p3}, \omega_{p4}$ đóng góp thêm $-5^\circ \text{ đến } -10^\circ$) hoặc doublet/zero phụ: để giữ chắc chắn $\text{PM} \ge 60^\circ$ qua mọi góc PVT, quy tắc vàng thiết kế thực chiến là:
 
 $$
@@ -147,13 +147,13 @@ $\implies$ Bắt buộc phải chuyển sang **Bù Miller tạo Tách Cực (`te
 ### 5.3. Bảng Tra Nhanh Tương Quan Giữa Dự trữ Pha (`PM`), Tỉ số Cực $\omega_{p2}/(\beta\,\text{GBW})$, Hệ số Tắt dần $\zeta$ & Vọt lố Bước nhảy
 Đối với hệ chuẩn 2 cực LHP không có điểm không gần dải cắt ($H(s) = \frac{A_0}{(1 + s/\omega_{p1})(1 + s/\omega_{p2})}$, $\beta A_0 \gg 1$), mối quan hệ giải tích chính xác dùng để tra nhanh khi thiết kế tay và kiểm định mô phỏng là:
 
-| Dự trữ Pha ($\text{PM}$) | Tỉ số $\dfrac{\omega_{p2}}{\beta\,\text{GBW}}$ | Hệ số Tắt dần Vòng kín ($\zeta$) | Độ Vọt đỉnh Miền Tần số (AC Peaking) | Độ Vọt lố Bước nhảy Miền Thời gian (Step Overshoot) | Đánh giá Thiết kế Thực tế |
+| Dự trữ Pha ($\text{PM}$) | Tỉ số $\dfrac{\omega_{p2}}{\beta\,\text{GBW}} = \sin\text{PM}\tan\text{PM}$ | Hệ số Tắt dần Vòng kín ($\zeta$) | Độ Vọt đỉnh Miền Tần số (AC Peaking) | Độ Vọt lố Bước nhảy Miền Thời gian (Step Overshoot) | Đánh giá Thiết kế Thực tế |
 |---|---|---|---|---|---|
-| $30^\circ$ | $\approx 0{,}54$ | $0{,}27$ | $+6{,}0\text{ dB}$ | $\approx 41\%$ | **Không đạt** — rung mạnh nhiều chu kỳ, dễ dao động theo PVT |
-| $45^\circ$ | $\approx 0{,}90$ ($\sim 1{,}0$) | $0{,}42$ | $+2{,}4\text{ dB}$ | $\approx 23\%$ | **Biên dưới tối thiểu** — chỉ chấp nhận cho vòng phụ không khắt khe |
-| **$60^\circ$** | **$\approx 1{,}61$ ($\sim \sqrt{3}$)** | **$0{,}61$** | **$0{,}0\text{ dB}$ tại $\omega_{GX}$** ($\le 0{,}2\text{ dB}$ đỉnh) | **$\approx 8{,}7\%$** | **Điểm ngọt Chuẩn Vàng** — cân bằng tối ưu tốc độ xác lập & độ êm |
-| **$65^\circ$** | **$\approx 2{,}05$** | **$0{,}69 \approx \frac{1}{\sqrt{2}}$** | **$0{,}0\text{ dB}$ phẳng tuyệt đối** (Butterworth!) | **$\approx 4{,}7\%$** | **Mục tiêu Thiết kế Nominal Lý tưởng** (để giữ $\ge 55^\circ$ qua PVT!) |
-| $76^\circ$ | $\approx 3{,}90$ ($\sim 4{,}0$) | $1{,}00$ | $0{,}0\text{ dB}$ (Cực thực kép) | $0{,}0\%$ | Tắt dần tới hạn — không vọt lố nhưng tốn công suất $g_{m2}$ hoặc giảm băng thông |
+| $30{,}0^\circ$ | $0{,}289$ ($\omega_{p2}/\omega_{GX} = 0{,}577$) | $0{,}269$ | $+5{,}72\text{ dB}$ | $41{,}6\%$ | **Không đạt** — rung mạnh nhiều chu kỳ, dễ dao động theo PVT |
+| $45{,}0^\circ$ | $0{,}707$ ($\omega_{p2}/\omega_{GX} = 1{,}000$) | $0{,}420$ | $+2{,}35\text{ dB}$ | $23{,}3\%$ | **Biên dưới tối thiểu** — chỉ chấp nhận cho vòng phụ không khắt khe |
+| **$60{,}0^\circ$** | **$1{,}500$ ($\omega_{p2}/\omega_{GX} = \sqrt{3} \approx 1{,}732$)** | **$0{,}612$** | **$0{,}0\text{ dB}$ tại $\omega_{GX}$** ($+0{,}28\text{ dB}$ đỉnh) | **$8{,}77\%$** | **Điểm ngọt Chuẩn Vàng** — cân bằng tối ưu tốc độ xác lập & độ êm |
+| **$65{,}5^\circ$** | **$2{,}000$ ($\omega_{p2}/\omega_{GX} = 2{,}197$)** | **$0{,}707 = \frac{1}{\sqrt{2}}$** | **$0{,}00\text{ dB}$ phẳng tuyệt đối** (Butterworth!) | **$4{,}32\%$** | **Mục tiêu Thiết kế Nominal Lý tưởng** (để giữ $\ge 55^\circ$ qua PVT!) |
+| $76{,}3^\circ$ | $4{,}000$ ($\omega_{p2}/\omega_{GX} = 4{,}116$) | $1{,}000$ | $0{,}00\text{ dB}$ (Cực thực kép) | $0{,}00\%$ | Tắt dần tới hạn — không vọt lố nhưng tốn công suất $g_{m2}$ hoặc giảm băng thông |
 
 ---
 

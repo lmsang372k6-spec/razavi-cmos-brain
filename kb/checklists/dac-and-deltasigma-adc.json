@@ -29,8 +29,8 @@
       "name": "Trở kháng ra phức của ô dòng đơn vị Z_unit(f) duy trì trên ngưỡng trần SFDR tới tận tần số Nyquist",
       "severity": "error",
       "method": "estimate",
-      "invariant": "|Z_unit(f_out)| >= (2^N * R_load / 4) * 10^(SFDR_target_dB / 20) cho ngõ ra vi sai (hoặc nhân đôi ngưỡng này cho ngõ ra đơn đầu) tại f_out = f_s / 2 trên mọi góc PVT",
-      "why_vi": "Khi K ô nguồn dòng cùng đổ vào tải R_load, trở kháng hữu hạn Z_unit(f) song song với R_load làm tổng trở nút ra phụ thuộc trực tiếp vào mã số D[n], gây méo hài bậc hai (đơn đầu) và bậc ba (vi sai). Ở tần số cao, tụ ký sinh C_X tại nút giữa nguồn dòng và cascode nối tắt r_o làm |Z_unit(f)| sụt dốc -20 dB/dec, đánh sập SFDR dù INL tĩnh ở DC hoàn hảo!",
+      "invariant": "Ngõ ra vi sai cân bằng lý tưởng (giới hạn bởi HD3_diff ≈ (2^N * R_load / (4 * |Z_unit(f)|))^2): |Z_unit(f_out)| >= (2^N * R_load / 4) * 10^(SFDR_target_dB / 40); Ngõ ra đơn đầu (giới hạn bởi HD2_SE ≈ 2^N * R_load / (4 * |Z_unit(f)|)) hoặc vi sai có bất đối xứng pha đường truyền: |Z_unit(f_out)| >= (2^N * R_load / 4) * 10^(SFDR_target_dB / 20) tại f_out = f_s / 2 trên mọi góc PVT",
+      "why_vi": "Khi K ô nguồn dòng cùng đổ vào tải R_load, trở kháng hữu hạn Z_unit(f) song song với R_load làm tổng trở nút ra phụ thuộc trực tiếp vào mã số D[n]: ở ngõ ra đơn đầu méo hài bậc hai HD2 giảm bậc nhất theo 1/|Z_unit(f)| (số mũ /20), trong khi cấu trúc vi sai đối xứng triệt tiêu hài chẵn nên giới hạn lý thuyết chuyển sang HD3 giảm bậc hai theo 1/|Z_unit(f)|^2 (số mũ /40). Tuy nhiên ở tần số cao, tụ ký sinh C_X tại nút cascode nối tắt r_o làm |Z_unit(f)| sụt dốc -20 dB/dec kèm lệch pha gây hồi sinh HD2 đánh sập SFDR dù INL tĩnh ở DC hoàn hảo!",
       "cadence_check": "Dùng phân tích Spectre `xf` hoặc `ac` bơm áp thử vào ngõ ra của 1 ô nguồn dòng đơn vị (gồm cả cặp công tắc chuyển hướng dòng và transistor cascode che chắn luôn bật), vẽ `|Z_unit(f)|` từ DC tới `f_s/2` sau trích xuất `PEX` để xác nhận dự trữ >= 6 dB.",
       "related_nodes": [
         "topo-resistor-string-r2r-and-current-steering-dacs",
@@ -85,9 +85,9 @@
       "name": "Bù trễ vòng dư (Excess Loop Delay - ELD) bằng nhánh phản hồi trực tiếp k_0 và ngân sách jitter xung nhịp DAC trong CT-ΔΣ",
       "severity": "error",
       "method": "estimate",
-      "invariant": "Nhánh hồi tiếp nhanh k_0 quanh bộ lượng tử khôi phục tương đương bất biến xung L^-1{L_CT(s)*H_DAC(s)*exp(-s*tau_d)} == Z^-1{L_DT(z)} tại trễ cố định tau_d = (0.5..1.0)*T_s, VÀ sigma_t_clk <= V_FS_rms / (2*pi*f_B * 10^(SNR_jitter/20)) * sqrt(OSR) * K_DAC_step",
-      "why_vi": "Trong CT-ΔΣ, thời gian tái sinh hữu hạn của bộ so sánh + logic DWA đẩy sườn xung dòng DAC hồi tiếp trễ quá mốc lấy mẫu, làm tăng bậc hệ thống và đánh mất dự trữ pha. Hơn nữa, nhiễu pha xung nhịp (clock jitter) làm dao động độ rộng xung dòng DAC hồi tiếp cuối cùng, biến nhiễu thời gian ngoài dải gấp thẳng thành sàn nhiễu trắng trong dải tín hiệu!",
-      "cadence_check": "Cố định thời điểm chốt DAC bằng thanh ghi đồng bộ ở `t = 0.5 * T_s` (`tau_d = 0.5 * T_s`), kiểm tra phổ FFT của CT-ΔΣ khi quét trễ comparator `+-20%` qua PVT và bơm jitter Gaussian `sigma_t` vào nguồn xung nhịp testbench.",
+      "invariant": "Nhánh hồi tiếp nhanh k_0 quanh bộ lượng tử khôi phục tương đương bất biến xung lấy mẫu (1 / T_s) * Z^-1{L_DT(z)} == L^-1{L_CT(s) * H_DAC(s) * exp(-s * tau_d)}|_{t = n * T_s} tại trễ cố định tau_d = (0.5..1.0) * T_s, VÀ jitter RMS xung nhịp của NRZ DAC thỏa mãn sigma_t_clk <= (2^N_q - 1) / (sigma_DeltaD * f_B * sqrt(32 * OSR) * 10^(SNR_jitter_dB / 20)) (với sigma_DeltaD là độ lệch chuẩn bước nhảy mã liền kề |D[n] - D[n-1]| tính theo LSB, điển hình ~ 0.7..1.4)",
+      "why_vi": "Trong CT-ΔΣ, thời gian tái sinh hữu hạn của bộ so sánh + logic DWA đẩy sườn xung dòng DAC hồi tiếp trễ quá mốc lấy mẫu, làm tăng bậc hệ thống và đánh mất dự trữ pha. Hơn nữa, nhiễu pha xung nhịp (clock jitter) làm dao động độ rộng xung dòng DAC hồi tiếp cuối cùng (SNR_jitter,NRZ = 10*log10((2^N_q - 1)^2 / (32 * OSR * f_B^2 * sigma_t_clk^2 * sigma_DeltaD^2))), biến nhiễu thời gian ngoài dải gấp thẳng thành sàn nhiễu trắng trong dải tín hiệu!",
+      "cadence_check": "Cố định thời điểm chốt DAC bằng thanh ghi đồng bộ ở `t = 0.5 * T_s` (`tau_d = 0.5 * T_s`), kiểm tra phổ FFT của CT-ΔΣ khi quét trễ comparator `+-20%` qua PVT và bơm jitter Gaussian `sigma_t_clk` vào nguồn xung nhịp testbench.",
       "related_nodes": [
         "topo-deltasigma-modulator-sc-and-ct-architectures",
         "law-oscillator-phase-noise-leeson-and-isf",

@@ -109,8 +109,8 @@ $$I_D = I_0 \exp\!\left(\frac{V_{GS}}{\zeta V_T}\right) \quad \text{với } V_T 
    Cho NMOS $M_1$ có cổng nối $V_{DD}$, cực nguồn nối xuống đất qua nguồn dòng điều chỉnh được $I_1$ (nút nguồn $X$ có thế $V_X = V_{DD} - V_{GS1}$). Khi tăng dòng $I_1$:
    - Độ hỗ dẫn chính $g_m = \sqrt{2\mu_n C_{ox}(W/L)I_1}$ tăng theo $\sqrt{I_1}$.
    - Đồng thời do $V_{GS1}$ tăng nên điện thế nút nguồn $V_X = V_{SB1}$ **giảm xuống**, làm mẫu số $\sqrt{2\Phi_F + V_{SB1}}$ trong $g_{mb} = g_m \frac{\gamma}{2\sqrt{2\Phi_F + V_{SB1}}}$ nhỏ lại $\Rightarrow$ **$g_{mb}$ tăng nhanh hơn cả $\sqrt{I_1}$**!
-3. **Quy tắc chọn công thức $V_{GS}$ theo Mật độ dòng $I_D/W$ (Ví dụ 2.8, Phương trình 2.38–2.39, tr. 25–26):**
-   Khi giảm dần $I_D$ ở $W/L$ cố định, phương trình luật bình phương tiên đoán sai rằng $V_{GS}$ không bao giờ xuống dưới $V_{TH}$. Trên thực tế, tại giao vùng quanh $V_{OV} \approx 2\zeta V_T \approx 80\,\text{mV}$, đường cong nối trơn sang miền logarit $V_{GS} = \zeta V_T \ln\!\left(\frac{I_D}{\alpha W/L}\right)$, cho phép $V_{GS}$ giảm xuống dưới $V_{TH}$ khi mật độ dòng $I_D/W$ cực nhỏ!
+3. **Quy tắc chọn công thức $V_{GS}$ theo Mật độ dòng $I_D/W$ (Ví dụ 2.8, Phương trình 2.36–2.39, tr. 25–26):**
+   Khi giảm dần $I_D$ ở $W/L$ cố định, phương trình luật bình phương tiên đoán sai rằng $V_{GS}$ không bao giờ xuống dưới $V_{TH}$. Trên thực tế, tại giao vùng quanh $V_{OV} \approx 2\zeta V_T \approx 80\,\text{mV}$, đường cong nối trơn sang miền logarit $V_{GS} = \zeta V_T \ln\!\left(\frac{I_D}{\alpha W/L}\right)$ (với hằng số dòng dưới ngưỡng $\alpha$ có thứ nguyên $\text{A}$, sao cho $I_0 = \alpha W/L$ cùng đơn vị dòng điện với $I_D$), cho phép $V_{GS}$ giảm xuống dưới $V_{TH}$ khi mật độ dòng $I_D/W$ cực nhỏ!
 
 ---
 

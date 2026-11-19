@@ -11,7 +11,7 @@
     {
       "chapter": 18,
       "section": "18.1-18.7.1",
-      "pages": "712-722",
+      "pages": "712-721",
       "equations": []
     }
   ],

@@ -67,7 +67,7 @@ $$
 I_{n,in}(s) = \frac{\left.V_{n,\text{out}}\right|_{Z_S=\infty}}{Z_{in}(s) A_v(s)} \implies \overline{I_{n,in}^2} = \frac{\left.\overline{V_{n,\text{out}}^2}\right|_{Z_S=\infty}}{\left|Z_{in}(j\omega)\right|^2 \left|A_v(j\omega)\right|^2}
 $$
 
-**Trường hợp đặc biệt cực kỳ tiện lợi của MOSFET tần số thấp–trung bình:** Khi cửa vào nhìn thẳng vào cực cổng cách điện của MOSFET có $Z_{in}(s) = \frac{1}{s C_{in}}$ rất lớn sao cho $\left|Z_S(j\omega) \cdot \omega C_{in}\right| \ll 1$ trên toàn bộ dải tần quan tâm, đóng góp của $I_{n,in}$ qua $Z_S$ nhỏ không đáng kể và ta **chỉ cần tính duy nhất $\overline{V_{n,in}^2}$**! Ngược lại, với mạch hồi tiếp song song ở ngõ vào (như TIA dùng $R_F$ ở Ví dụ 7.11, Phương trình 7.63–7.72) hoặc tầng cổng chung CG / LNA RF ở tần số GHz, **bắt buộc phải tính đủ cả $V_{n,in}$ và $I_{n,in}$**!
+**Trường hợp đặc biệt cực kỳ tiện lợi của MOSFET tần số thấp–trung bình:** Khi cửa vào nhìn thẳng vào cực cổng cách điện của MOSFET có $Z_{in}(s) = \frac{1}{s C_{in}}$ rất lớn sao cho $\left|Z_S(j\omega) \cdot \omega C_{in}\right| \ll 1$ trên toàn bộ dải tần quan tâm, đóng góp của $I_{n,in}$ qua $Z_S$ nhỏ không đáng kể và ta **chỉ cần tính duy nhất $\overline{V_{n,in}^2}$**! Ngược lại, với mạch hồi tiếp song song ở ngõ vào (như TIA dùng $R_F$ ở Ví dụ 7.13, Phương trình 7.63–7.72) hoặc tầng cổng chung CG / LNA RF ở tần số GHz, **bắt buộc phải tính đủ cả $V_{n,in}$ và $I_{n,in}$**!
 
 ### 2.2. Bài toán Tương quan giữa $V_{n,in}$ và $I_{n,in}$ (§7.3 & §7.10, Phương trình 7.55, 7.152)
 Khi gắn nguồn tín hiệu thực tế có trở kháng $Z_S$ (tự thân $Z_S$ có nhiễu $\overline{V_{n,ZS}^2} = 4 k T \,\text{Re}\{Z_S\}$), tổng điện áp nhiễu hiệu dụng quy về nối tiếp với nguồn tín hiệu là (Phương trình 7.55, 7.152):
@@ -99,7 +99,7 @@ $$
 
 - **Đối với hệ bậc hai trùng cực hoặc Butterworth bậc cao:** Đuôi bộ lọc cắt dốc hơn nên tỉ số $B_n / f_{-3\text{dB}}$ tiến dần về $1{,}0$ (bậc 2 Butterworth có $B_n \approx 1{,}11\,f_{-3\text{dB}}$; bậc 3 có $B_n \approx 1{,}05\,f_{-3\text{dB}}$).
 
-### 2.4. Ví dụ Định lượng Đầy Đủ Cả $V_{n,in}$ và $I_{n,in}$: Bộ Khuếch đại Hỗ trở TIA Có Điện trở Hồi tiếp $R_F$ (Ví dụ 7.11, tr. 242–243)
+### 2.4. Ví dụ Định lượng Đầy Đủ Cả $V_{n,in}$ và $I_{n,in}$: Bộ Khuếch đại Hỗ trở TIA Có Điện trở Hồi tiếp $R_F$ (Ví dụ 7.13, tr. 242–243)
 Xét tầng nguồn chung ($g_m$, bỏ qua $r_O$ để minh họa gọn như Hình 7.38) có điện trở hồi tiếp $R_F$ nối từ máng về cổng:
 1. **Tìm $\overline{V_{n,in}^2}$ (Ngắn mạch cửa vào xuống đất):** Khi cổng nối đất AC, nguồn nhiễu của $R_F$ ($\overline{I_{n,RF}^2} = \frac{4kT}{R_F}$) và dòng nhiễu kênh MOSFET ($\overline{I_{n,M1}^2} = 4kT\gamma g_m$) cùng đổ vào nút máng tạo áp nhiễu ngõ ra $\overline{V_{n,\text{out}}^2}\big|_{Z_S=0} = \left(\frac{4kT}{R_F} + 4kT\gamma g_m\right) R_F^2$. Chia cho bình phương độ lợi áp của mạch không nhiễu $A_v = (1 - g_m R_F)$ (Phương trình 7.66–7.67):
 
@@ -133,7 +133,7 @@ $$
 
 **Quy tắc Bắt buộc (§7.9):** Luôn luôn **tích phân phổ nhiễu tại NGÕ RA** $\overline{V_{n,\text{out,tot}}^2} = \int_0^\infty \overline{V_{n,\text{out}}^2}(f)\,df$ (hoặc tích phân trên đúng băng thông tín hiệu hữu ích $[f_1, f_2]$ của hệ thống), sau đó mới chia tổng bình phương nhiễu ngõ ra đó cho bình phương độ lợi băng thông giữa $A_0^2$ để thu được điện áp nhiễu hiệu dụng tương đương ngõ vào $V_{n,\text{in,rms}} = \dfrac{V_{n,\text{out,rms}}}{|A_0|}$!
 - **[TRAP-IRN-02] Nhầm lẫn $2\pi$ khi Đổi Trục $\omega$ sang $f$ trong Băng thông Nhiễu (`NG07-10`):** Công thức $B_n = \frac{\pi}{2} f_p$ tính bằng **Hz**! Nếu bạn đã có cực tính bằng rad/s ($\omega_p = \frac{1}{RC}$), thì $B_n = \frac{\pi}{2} \cdot \frac{\omega_p}{2\pi} = \frac{\omega_p}{4} = \frac{1}{4RC}\text{ [Hz]}$ (kiểm chứng ngay: $4kTR \times \frac{1}{4RC} = \frac{kT}{C}$, khớp tuyệt đối!). Viết nhầm $B_n = \frac{\pi}{2}\omega_p$ sẽ làm vọt nhiễu tính tay lên gấp $2\pi \approx 6{,}28$ lần công suất!
-- **[TRAP-IRN-03] Chia Sai Độ lợi khi Mạch được Lái bằng Nguồn Dòng (Ví dụ 7.11 & `NG07-03`):** Khi nguồn tín hiệu là nguồn dòng $I_{in}$ (như TIA thu quang có trở kháng hồi tiếp $R_F$), để tìm $\overline{I_{n,in}^2}$ phải chia dòng nhiễu ngắn mạch ngõ ra cho bình phương độ lợi dòng ngắn mạch $(g_m R_F - 1)^2$ (hoặc chia áp nhiễu ngõ ra cho bình phương hỗ trở $R_T^2$), tuyệt đối không chia cho độ lợi áp!
+- **[TRAP-IRN-03] Chia Sai Độ lợi khi Mạch được Lái bằng Nguồn Dòng (Ví dụ 7.13 & `NG07-03`):** Khi nguồn tín hiệu là nguồn dòng $I_{in}$ (như TIA thu quang có trở kháng hồi tiếp $R_F$), để tìm $\overline{I_{n,in}^2}$ phải chia dòng nhiễu ngắn mạch ngõ ra cho bình phương độ lợi dòng ngắn mạch $(g_m R_F - 1)^2$ (hoặc chia áp nhiễu ngõ ra cho bình phương hỗ trở $R_T^2$), tuyệt đối không chia cho độ lợi áp!
 
 ---
 
@@ -166,7 +166,7 @@ $$
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
 - **Chương 7:** §7.3 *Representation of Noise in Circuits* (tr. 236–243, Phương trình 7.44–7.72, Hình 7.29–7.38), §7.8 *Noise Bandwidth* (tr. 264–265, Phương trình 7.145–7.146, Hình 7.65), §7.9 *Problem of Input Noise Integration* (tr. 265, Phương trình 7.147–7.148, Hình 7.66), §7.10 *Appendix A: Problem of Noise Correlation* (tr. 265–267, Phương trình 7.149–7.153, Hình 7.67–7.68).
 - **Chú giải Hiệu đính Học thuật CLB (`NG07`):**
-  - **`NG07-03` (tr. 243, Ví dụ 7.11):** Khi tính độ lợi dòng điện cho bộ khuếch đại có điện trở hồi tiếp $R_F$ ở Phương trình (7.69)–(7.71), lời văn nguồn dẫn nhầm sang Hình 7.38(c) (vốn dùng nguồn áp $V_{in}$); sơ đồ thực tế được kích bằng nguồn dòng $I_{in}$ tương ứng với phép tính phải là **Hình 7.38(e)**.
+  - **`NG07-03` (tr. 243, Ví dụ 7.13):** Khi tính độ lợi dòng điện cho bộ khuếch đại có điện trở hồi tiếp $R_F$ ở Phương trình (7.69)–(7.71), lời văn nguồn dẫn nhầm sang Hình 7.38(c) (vốn dùng nguồn áp $V_{in}$); sơ đồ thực tế được kích bằng nguồn dòng $I_{in}$ tương ứng với phép tính phải là **Hình 7.38(e)**.
   - **`NG07-10` (tr. 264, Hình 7.65):** Các tích phân định nghĩa $B_n$ ở (7.145)–(7.146) lấy theo vi phân $df$ (Hz), trong khi trục hoành Hình 7.65 vẽ theo $\omega$ (rad/s). Luôn nhớ đổi $df = d\omega / (2\pi)$ để có $B_n = \frac{\pi}{2} f_p = \frac{\omega_p}{4}\text{ [Hz]}$.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

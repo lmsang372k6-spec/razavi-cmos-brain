@@ -88,9 +88,9 @@ $$V_{OS,\text{res,OOS}} = \frac{\Delta V_{\text{inj},S3,4}}{A_v} = \frac{\Delta 
 
 $$V_{C1,2} = V_{XY} = \frac{A_v}{1 + A_v} V_{OS} \approx V_{OS}$$
 
-Khi mở $S_3, S_4$ để khuếch đại tín hiệu (kể cả ảnh hưởng chia áp với điện dung ngõ vào $C_{in}$ của bộ khuếch đại theo Problem 14.18 và sai lệch phun điện tích $\Delta V_{\text{inj},S3,4}$ bơm thẳng vào nút cổng $X, Y$):
+Khi mở $S_3, S_4$ để khuếch đại tín hiệu (kể cả ảnh hưởng chia áp với điện dung ngõ vào vi sai $C_{in}$ giữa $X$ và $Y$ của bộ khuếch đại theo Problem 14.18 với $C_1 = C_2$, cùng sai lệch phun điện tích $\Delta V_{\text{inj},S3,4}$ tại nút cổng $X, Y$):
 
-$$V_{OS,\text{res,IOS}} = \frac{V_{OS}}{1 + A_v}\left(1 + \frac{C_{in}}{C_1}\right) + \Delta V_{\text{inj},S3,4}$$
+$$V_{OS,\text{res,IOS}} = \left(1 + \frac{2 C_{in}}{C_1}\right)\left(\frac{V_{OS}}{1 + A_v} + \Delta V_{\text{inj},S3,4}\right)$$
 
 **Đọc nhanh ưu – nhược điểm:** `IOS` cho phép dùng op-amp độ lợi rất lớn ($A_v = 10^3\text{–}10^4$) mà không lo kịch trần nguồn khi đo lệch, nhưng bất đối xứng phun điện tích $\Delta V_{\text{inj},S3,4}$ rơi **nguyên vẹn $1:1$ ngay tại nút ngõ vào nhạy cảm nhất** (nếu hở mạch ở pha so sánh với $A_v$ cực lớn, chính xung phun điện tích này có thể làm bão hòa bộ so sánh!). Đồng thời cả `OOS` và `IOS` đều chèn tụ $C_1, C_2$ kèm **điện dung đáy tiếp giáp (`bottom-plate capacitance` — `T319`)** trực tiếp lên đường tín hiệu chính, làm tụt cực tần số và xấu đi dự trữ pha.
 
@@ -99,9 +99,9 @@ Xét lõi khuếch đại một tầng gồm tầng hỗ dẫn chính $G_{m1}$ (
 
 $$\left[G_{m1} V_{OS1} - G_{m2}(V_{out} - V_{OS2})\right] R = V_{out} \implies V_{C1,2} = V_{out}\big|_{\text{AZ}} = \frac{G_{m1} R\, V_{OS1} + G_{m2} R\, V_{OS2}}{1 + G_{m2} R}$$
 
-Khi ngắt công tắc $S_3, S_4$, tụ $C_1, C_2$ giữ nguyên áp sửa sai này đồng thời nhận thêm sai lệch phun điện tích vi sai $\Delta V_{\text{inj}} = \Delta Q_{\text{inj}} / C_{1,2}$. Quy toàn bộ sai số ngõ ra về cổng ngõ vào chính (chia cho $A_{\text{main}} = G_{m1} R$, với $A_{\text{aux}} = G_{m2} R \gg 1$):
+Khi ngắt công tắc $S_3, S_4$, tụ $C_1, C_2$ giữ nguyên áp sửa sai này (phần dư tại ngõ ra lúc $V_{in}=0$ còn lại đúng bằng $V_{out}\big|_{\text{AZ}}$) đồng thời nhận thêm sai lệch phun điện tích vi sai $\Delta V_{\text{inj}} = \Delta Q_{\text{inj}} / (C_{1,2}/2)$. Quy toàn bộ sai số ngõ ra về cổng ngõ vào chính (chia cho $A_{\text{main}} = G_{m1} R$, với $A_{\text{aux}} = G_{m2} R \gg 1$, theo đúng Razavi tr. 601 PT 14.94–14.95):
 
-$$V_{OS,\text{tot,in}} = \frac{V_{OS1}}{1 + G_{m2} R} + \frac{G_{m2}}{G_{m1}}\frac{G_{m2} R}{1 + G_{m2} R} V_{OS2} + \left(\frac{G_{m2}}{G_{m1}}\right)\Delta V_{\text{inj}} \approx \frac{V_{OS1}}{G_{m2} R} + \frac{V_{OS2}}{G_{m1} R} + \left(\frac{A_{\text{aux}}}{A_{\text{main}}}\right)\Delta V_{\text{inj}}$$
+$$V_{OS,\text{tot,in}} = \frac{V_{OS1}}{1 + G_{m2} R} + \frac{G_{m2}}{G_{m1}}\frac{V_{OS2}}{1 + G_{m2} R} + \left(\frac{G_{m2}}{G_{m1}}\right)\Delta V_{\text{inj}} \approx \frac{V_{OS1}}{G_{m2} R} + \frac{V_{OS2}}{G_{m1} R} + \left(\frac{A_{\text{aux}}}{A_{\text{main}}}\right)\Delta V_{\text{inj}}$$
 
 **Quy tắc thiết kế vàng:** Chọn $G_{m2} \approx 0.1\, G_{m1}$ (tức $A_{\text{aux}} / A_{\text{main}} \approx 0.1$). Khi đó: (1) đường truyền tín hiệu chính $V_{in} \to G_{m1} \to V_{out}$ hoàn toàn sạch bóng tụ nối tiếp; (2) đóng góp offset $V_{OS2}$ của bản thân cổng phụ bị nén đi $G_{m1} R$ lần (nên $G_{m2}$ có thể dùng transistor nhỏ!); và (3) sai số bệ đỡ phun điện tích $\Delta V_{\text{inj}}$ bị **chia nhỏ đi $10$ lần**! Vì dòng rò tiếp giáp p–n và dòng rò dưới ngưỡng của $S_3, S_4$ làm trôi áp trên $C_1, C_2$ theo tốc độ $dV/dt = I_{\text{leak}} / C_{1,2}$, mạch bắt buộc phải được **làm tươi định kỳ (`periodic refresh`)** ở tần số tối thiểu vài kilohertz.
 

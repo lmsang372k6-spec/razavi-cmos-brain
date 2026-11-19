@@ -4,7 +4,7 @@
 // ============================================================================
 // Vorperian 3-Terminal Averaged PWM Switch Model (Automatic Smooth CCM / DCM)
 // File: models/veriloga/pwm_switch_avg_ccm_dcm.va
-// Managed by SKILL-ANALOG (release 2026.11.18.6)
+// Managed by SKILL-ANALOG (release 2026.11.18.7)
 // Target Simulator: Cadence Spectre 15.1 (MMSIM151) -- 100% Hidden-State-Free
 //
 // Physics & Capabilities:

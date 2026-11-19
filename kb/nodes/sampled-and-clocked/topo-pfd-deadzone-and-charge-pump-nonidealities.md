@@ -10,9 +10,15 @@
   "razavi_refs": [
     {
       "chapter": 16,
-      "section": "16.2.1-16.2.3, 16.3.1-16.3.2",
-      "pages": "666-671, 677-683",
-      "equations": ["16.47", "16.48"]
+      "section": "16.2.1-16.2.4",
+      "pages": "666-677",
+      "equations": ["16.47"]
+    },
+    {
+      "chapter": 16,
+      "section": "16.3.1-16.3.2",
+      "pages": "677-683",
+      "equations": ["16.48"]
     }
   ],
   "glossary_codes": [
@@ -160,7 +166,7 @@ Xét bộ tổng hợp tần số Wi-Fi/BLE $f_{\text{out}} = 2.4\text{ GHz}$, $
    - Nhưng nếu dùng kiến trúc Integer-N bước kênh hẹp $f_{\text{REF}} = 1\text{ MHz}$ ($< f_{p3} = 4.377\text{ MHz}$, nơi tiệm cận $1/(\omega_{\text{REF}} C_2) = 19.89\text{ k}\Omega$ **không còn hợp lệ**!): trở kháng lọc chính xác là $\left|Z_{\text{LF}}(j 2\pi\cdot 1\text{ MHz})\right| = \mathbf{4.769\text{ k}\Omega}$, cho $V_{m,1} = 40\text{ nA} \times 4.769\text{ k}\Omega = \mathbf{190.8\,\mu\text{V}}$ và $\text{Spur}_{\text{leak}}(\pm 1\text{ MHz}) = 20\log_{10}\!\left(\frac{50\text{ MHz/V} \times 190.77\,\mu\text{V}}{2 \times 1\text{ MHz}}\right) \approx \mathbf{-46.43\text{ dBc}}$ — vi phạm nặng chuẩn phổ RF và chứng minh vì sao Integer-N $f_{\text{REF}}$ thấp tuyệt đối cấm rò điện tích trên $V_{cont}$!
 2. **Kiểm tra Spur do sai lệch dòng ($|\Delta I_{\text{mis}}| = 1\%\,I_P = 4\,\mu\text{A}$) và lệch trễ công tắc ($\Delta t_{\text{arr}} = 3\text{ ps}$)**:
    - *Sai lệch dòng $|\Delta I_{\text{mis}}| = 4\,\mu\text{A}$ trong $T_P = 200\text{ ps}$* ($|\Delta Q_{\text{mis}}| = 0.80\text{ fC}$, xung bù tĩnh $\Delta t_{\text{skew}} = \frac{4}{400}\times 200\text{ ps} = 2.0\text{ ps}$): nếu tính cận trên một gói xung chưa khử lưỡng cực thì $\text{Spur}_{\text{imp}} = 20\log_{10}(0.80\text{ fC} \times 494.43\;\Omega \times 50\text{ MHz/V}) = \mathbf{-94.08\text{ dBc}}$; nhờ khử lưỡng cực trung bình không liền kề hệ số $\pi f_{\text{REF}}(T_P + \Delta t_{\text{skew}}) = 0.02538$ ($-31.91\text{ dB}$), tích phân Fourier chính xác cho $Q_{1,\text{eq,mis}} = 0.02031\text{ fC}$, $I_{m,1} = 1.624\text{ nA}$, $V_{m,1} = 0.803\,\mu\text{V} \implies \text{Spur}_{\text{mismatch}} \approx \mathbf{-125.99\text{ dBc}}$.
-   - *Lệch trễ đường điều khiển $\Delta t_{\text{arr}} = 3\text{ ps}$* (cặp xung lưỡng cực $\pm 400\,\mu\text{A}$ mang $|\Delta Q_{\text{arr}}| = 1.20\text{ fC}$ tách nhau đúng $T_P = 200\text{ ps}$): cho $Q_{1,\text{eq,arr}} = 0.06031\text{ fC}$, $I_{m,1} = 4.825\text{ nA}$, $V_{m,1} = 2.386\,\mu\text{V} \implies \text{Spur}_{\text{arr}} \approx \mathbf{-116.53\text{ dBc}}$; tổ hợp đồng thời xấu nhất ($\Delta t_{\text{arr}} = 3\text{ ps}$ cộng hưởng cùng chiều với $\Delta I_{\text{mis}} = +4\,\mu\text{A}$) cho $Q_{1,\text{eq,tot}} = 0.08122\text{ fC} \implies \mathbf{-113.95\text{ dBc}}$ (trong khi nếu phun điện tích/chia sẻ điện tích nút $X, Y$ để lọt gói lỗi bất đối xứng $1.20\text{ fC}$ không có xung đối cực kề sát thì cận trên spur tăng vọt lên $20\log_{10}(1.20\text{ fC} \times 494.43\;\Omega \times 50\text{ MHz/V}) = \mathbf{-90.55\text{ dBc}}$!).
+   - *Lệch trễ đường điều khiển $\Delta t_{\text{arr}} = 3\text{ ps}$* (cặp xung lưỡng cực $\pm 400\,\mu\text{A}$ mang $|\Delta Q_{\text{arr}}| = 1.20\text{ fC}$ tách nhau đúng $T_P = 200\text{ ps}$): cho $Q_{1,\text{eq,arr}} = 0.06031\text{ fC}$, $I_{m,1} = 4.825\text{ nA}$, $V_{m,1} = 2.386\,\mu\text{V} \implies \text{Spur}_{\text{arr}} \approx \mathbf{-116.53\text{ dBc}}$. Khi xét tổ hợp đồng thời xấu nhất cùng pha ($I_{DN} = 404\,\mu\text{A}$ bị trễ $+\Delta t_{\text{arr}} = +3\text{ ps}$ so với $I_{UP} = 400\,\mu\text{A}$ đang mở sớm tĩnh $\Delta t_{\text{skew}} = 2.0\text{ ps}$): phép **chồng chập tuyến tính** hai biên độ hài lưỡng cực riêng lẻ cho $Q_{1,\text{eq,lin}} = 0.02031\text{ fC} + 0.06031\text{ fC} = \mathbf{0.08062\text{ fC}}$ ($\implies \mathbf{-114.01\text{ dBc}}$), còn **tích phân Fourier từng khúc hợp nhất chính xác** bao gồm thêm số hạng chéo song tuyến $2\pi f_{\text{REF}} |\Delta Q_{\text{mis}}| \Delta t_{\text{arr}} = +0.00060\text{ fC}$, cho $Q_{1,\text{eq,tot}} = 0.08062\text{ fC} + 0.00060\text{ fC} = \mathbf{0.08122\text{ fC}}$ ($\implies \mathbf{-113.95\text{ dBc}}$) — trong khi nếu phun điện tích/chia sẻ điện tích nút $X, Y$ để lọt gói lỗi bất đối xứng $1.20\text{ fC}$ không có xung đối cực kề sát thì cận trên spur tăng vọt lên $20\log_{10}(1.20\text{ fC} \times 494.43\;\Omega \times 50\text{ MHz/V}) = \mathbf{-90.55\text{ dBc}}$!
 3. **Sàn nhiễu nhiệt nội dải do bơm điện tích (chọn $V_{\text{OV,CP}} = 0.25\text{ V} \implies g_{m,\text{CP}} = \frac{2 I_P}{V_{\text{OV,CP}}} = 3.2\text{ mS}$, $\gamma = 1.2$, $T = 300\text{ K}$)**:
    - $S_{i,\text{CP,th}} = 2 \times 4 \times (4.14\times 10^{-21}\text{ J}) \times 1.2 \times 3.2\times 10^{-3}\text{ S} \times 0.008 = \mathbf{1.017 \times 10^{-24}\;\text{A}^2/\text{Hz}}$.
    - $\mathcal{L}_{\text{in-band,CP}} = 10\log_{10}\!\left[ 0.5 \times \left(\frac{2\pi \times 60}{4\times 10^{-4}\text{ A}}\right)^2 \times 1.017\times 10^{-24}\;\text{A}^2/\text{Hz} \right] = 10\log_{10}(4.519 \times 10^{-13}) = \mathbf{-123.45\text{ dBc/Hz}}$ tại $2.4\text{ GHz}$!
@@ -229,7 +235,7 @@ pnoise_cp (vcont 0) pnoise sweeptype=absolute start=100 stop=20M dec=10 maxsideb
 
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
-- **Sách gốc Razavi (2nd Ed.)**: Chương 16, Mục `16.2.1`–`16.2.3` (*Problem of Lock Acquisition, Phase/Frequency Detector, Charge Pump*, trang 666–671, Hình `16.21`–`16.29`, Ví dụ `16.7`–`16.9`) và trọng tâm Mục `16.3.1`–`16.3.2` (*PFD/CP Nonidealities & Jitter in PLLs*, trang 677–683, Hình `16.39`–`16.49`, Phương trình `16.47`–`16.48`, Bài tập `16.12`–`16.13`).
+- **Sách gốc Razavi (2nd Ed.)**: Chương 16, Mục `16.2.1`–`16.2.4` (*Problem of Lock Acquisition, Phase/Frequency Detector, Charge Pump, Basic Charge-Pump PLL*, trang 666–677, Hình `16.21`–`16.38`, Ví dụ `16.7`–`16.9`, Phương trình `16.47`) và trọng tâm Mục `16.3.1`–`16.3.2` (*PFD/CP Nonidealities & Jitter in PLLs*, trang 677–683, Hình `16.39`–`16.51`, Phương trình `16.48`, Bài tập `16.12`–`16.13`).
 - **Đối chiếu Thuật ngữ Chuẩn CLB Vi Mạch (`terms-vi-en.json`)**:
   - `T2171` (`phase/frequency detector, PFD`): **bộ tách pha–tần số**; `T2172` (`dead zone`): **vùng chết (trong PFD/CP)**.
   - `T016` (`charge pump`): **bơm điện tích** — phân biệt rạch ròi với `T014` (`charge injection`): **phun điện tích** và `T2136` (`clock feedthrough`): **xuyên nhiễu xung nhịp**.

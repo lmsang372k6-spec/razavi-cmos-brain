@@ -27,7 +27,7 @@
     {
       "chapter": 10,
       "section": "10.5-10.6",
-      "pages": "426-446",
+      "pages": "426-435",
       "equations": [
         "10.29",
         "10.36",
@@ -47,7 +47,7 @@
     {
       "chapter": 14,
       "section": "14.2.1",
-      "pages": "597-605",
+      "pages": "593-598",
       "equations": [
         "14.78",
         "14.82"
@@ -134,7 +134,7 @@ Lấy cảm hứng từ triết lý cắt tỉa không gian bằng vật lý k�
 2. **Giai đoạn 2 — Phân bổ Ngân sách Phân cấp RSS & Hợp đồng Giao tiếp Khối (`2_hierarchical_budget`):** Với hệ thống đa khối (như Buck Converter, PLL, Chuỗi AFE + ADC), chia ngân sách nhiễu nhiệt, điện áp lệch và méo hài theo căn tổng bình phương (`T2274`), khóa chặt cửa sổ $V_{CM}$, cực tính dòng phân cực và bất đẳng thức phân tách trở kháng $|Z_{\text{out},k}| \le \frac{1}{10}|Z_{\text{in},k+1}|$ trong `project.json` (`blocks[]`, `interfaces[]`).
 3. **Giai đoạn 3 — Định cỡ Khởi tạo Ấm Vật lý Bằng `gmid_lut.py` (`3_gmid_warm_start`):** Giải các phương trình thiết kế Razavi/Erickson và gọi `gmid_lut.py size` (`T2278`) để tìm điểm khởi tạo ấm $\mathbf{x}^{(0)}$ thỏa mãn vùng nghịch đảo đối ngẫu Pelgrom ngay trên bàn giấy.
 4. **Giai đoạn 4 — Dựng Mô hình Hành vi Hỗn hợp & Sơ đồ Nguyên lý (`4_build_and_wire`):** Kiểm chứng khung hệ thống bằng Verilog-A không trạng thái ẩn (như `pwm_switch_avg_ccm_dcm.va`), sau đó dựng/cập nhật schematic OpenAccess qua `ic617_client.py` + `saPlaceAndWireFromPlan` với đầy đủ CDF callbacks và `schCheck` $0$ lỗi.
-5. **Giai đoạn 5 — Chạy Mô phỏng & Kiểm toán Điểm làm việc / Độ ổn định (`5_op_and_stb_audit`):** Điều phối qua `cadence_exec.py` và chạy `psf_audit.py op-audit` + `metrics --spec spec.json` để xác nhận $100\%$ transistor khuếch đại đạt `region == 2` và vòng hồi tiếp có pha đúng chiều.
+5. **Giai đoạn 5 — Chạy Mô phỏng & Kiểm toán Điểm làm việc / Độ ổn định (`5_op_and_stb_audit`):** Điều phối mô phỏng qua `cadence_exec.py spectre` và chạy `psf_audit.py op-audit <run_dir>` cùng `psf_audit.py metrics <run_dir> --spec spec.json` để xác nhận $100\%$ transistor khuếch đại đạt `region == 2` và vòng hồi tiếp có pha đúng chiều.
 6. **Giai đoạn 6 — Phân tích Độ nhạy Jacobian & Tối ưu hóa Vùng tin cậy / Pareto (`6_sensitivity_pareto_opt`):** Kích hoạt `tools/sizing_opt.py` để đạt $100\%$ chỉ tiêu kèm công suất/diện tích tối thiểu (hoặc FoM cực đại) và làm tròn chuẩn lưới chế tạo PDK (`5 nm`, `nf` chẵn).
 7. **Giai đoạn 7 — Nghiệm thu Đa Góc PVT, Monte Carlo 200 Mẫu & Hậu kiểm PEX (`7_pvt_mc_pex_signoff`):** Quét toàn bộ ma trận `{TT, SS, FF, FS, SF}` $\times \{V_{\min}, V_{\max}\} \times \{-40, 27, 125\,^\circ\text{C}\}$, kiểm chứng $C_{pk} \ge 1{,}33$ trên Monte Carlo mismatch và đối chiếu hồi quy sau trích xuất ký sinh RC (`PEX`).
 
@@ -162,8 +162,8 @@ $$
 
 trong đó $g_i^+(\mathbf{u}) = \max\!\left(0, \frac{M_{i,\min} - M_i(\mathbf{u})}{|M_{i,\min}|}\right)$ (hoặc chiều ngược lại cho cận trên `max`) là độ vi phạm chuẩn hóa không thứ nguyên của chỉ tiêu thứ $i$, với trọng số rào phạt $\lambda_{\text{op}}, \lambda_{\text{spec}} \gg w_{\text{obj}}$ đảm bảo **tính khả thi cứng ($100\%$ đạt đặc tả và dự trữ bão hòa) luôn có độ ưu tiên tuyệt đối trên việc ép giảm công suất**!
 Bộ giải kết hợp hai pha bổ trợ ngay trên hộp $[0, 1]^d$:
-1. **Pha Vùng tin cậy Tọa độ Có Hướng Độ nhạy (`Sensitivity-Ordered Coordinate Trust-Region`):** Sắp xếp thứ tự trục theo độ lớn gradient/Jacobian, dò bước thích ứng $\rho \in [0{,}02,\; 0{,}25]$ có kẹp biên chiếu trực giao lên $[0, 1]^d$, mở rộng bán kính $\rho \leftarrow 1{,}5\rho$ khi giảm mạnh hàm mục tiêu và co bán kính $\rho \leftarrow 0{,}5\rho$ khi vấp biên phi tuyến.
-2. **Pha Tinh chỉnh Đơn hình Nelder-Mead Cục bộ & Khóa Lưới + Kiểm tra Đa Góc (`Multi-Corner Polish & Grid Snap`):** Khởi tạo đơn hình nhỏ quanh điểm tốt nhất để vượt qua các thung lũng chéo tương quan biến (như cặp tương quan mạnh $(I_{\text{bias}}, C_c)$ hoặc $(W_{\text{pass}}, R_z)$), ép tròn nghiệm cuối về lưới chế tạo `5 nm` / `nf` chẵn, rồi chạy xác nhận trực tiếp trên tập góc cực trị `{"NN", "SS_125C", "FF_m40C"}`!
+1. **Pha Vùng tin cậy Rào phạt Cập nhật Broyden (`Penalty-Barrier Constrained Trust-Region with Broyden Rank-1 Updates`):** Khởi tạo từ ma trận độ nhạy logarit `d_metric_d_lnx`, cập nhật xấp xỉ Jacobian hạng-1 Broyden sau mỗi bước thử thực tế, tự động cắt tỉa các biến không nhạy (`pruned_variables`) và co/giãn bán kính vùng tin cậy có kẹp biên chiếu trực giao lên $[0, 1]^d$.
+2. **Pha Tinh chỉnh Đơn hình Nelder-Mead Không gian con & Khóa Lưới + Kiểm tra Đa Góc (`Subspace Simplex Polish, Grid Snap & PVT Verification`):** Chạy đơn hình Nelder-Mead trên tập biến chủ lực để vượt qua các thung lũng chéo tương quan biến (như cặp $(I_{\text{bias}}, C_c)$ hoặc $(W_{\text{cs}}, R_z)$), ép tròn nghiệm cuối về lưới chế tạo `step_grid` (`5 nm` / `nf` chẵn), rồi chạy kiểm chứng trực tiếp trên danh sách góc `"corners"` (`["NN_27C", "SS_125C", "FF_m40C"]`) để đóng dấu `all_specs_pass_pvt`!
 
 ---
 
@@ -190,36 +190,41 @@ Bộ giải kết hợp hai pha bổ trợ ngay trên hộp $[0, 1]^d$:
 ## 5. Mẫu Cấu hình Tối ưu `opt_problem.json` & Thực thi Khép kín Với `sizing_opt.py`
 
 ### 5.1. Khai báo Bài toán Tối ưu Hóa Cho Op-Amp Hai Tầng Bù Miller (`opt_two_stage_ota.json`)
-Lưu ý cách biến độc lập được chọn ở mức vật lý tinh gọn ($6$ biến điều khiển trọn vẹn mạch $8$ transistor + mạng bù mà vẫn giữ nguyên đối xứng cặp vi sai và tỷ lệ mật độ dòng triệt offset hệ thống):
+Lưu ý cách cấu trúc chuẩn `skill-analog.sizing-problem.v1` của `sizing_opt.py` khai báo trình đánh giá ngoại vi `"evaluator": {"type": "command", "cmd": [...]}` và danh sách `"hard_constraints"` dạng mảng đối tượng có thang chuẩn hóa `"scale"`, dùng $6$ biến vật lý tinh gọn điều khiển trọn vẹn mạch $8$ transistor + mạng bù mà vẫn giữ nguyên đối xứng cặp vi sai và tỷ lệ mật độ dòng triệt offset hệ thống:
 
 ```json
 {
-  "problem_id": "two_stage_miller_ota_gpdk090_pareto",
+  "schema": "skill-analog.sizing-problem.v1",
+  "name": "two_stage_miller_ota_gpdk090_pareto",
+  "mos_sat_margin_min": 0.055,
+  "max_evaluations": 32,
+  "corners": ["NN_27C", "SS_125C", "FF_m40C"],
+  "evaluator": {
+    "type": "command",
+    "cmd": ["python", "-B", "./sim/eval_spectre_point.py", "{params_json}", "{out_json}", "{corner}"]
+  },
   "objective": {
     "metric": "power_w",
-    "sense": "minimize",
-    "fom_expression": "(stb_ugf_hz * 1e-6 * 2.0) / (power_w * 1e3)"
+    "goal": "minimize"
   },
   "variables": [
-    {"name": "ibias_u",   "init": 18.0,  "min": 8.0,   "max": 40.0,  "scale": "log", "step_grid": 0.1},
-    {"name": "w_in_u",    "init": 14.4,  "min": 6.0,   "max": 36.0,  "scale": "log", "step_grid": 0.02},
-    {"name": "l_in_n",    "init": 250.0, "min": 150.0, "max": 500.0, "scale": "lin", "step_grid": 5.0},
-    {"name": "w_stage2_u","init": 32.0,  "min": 12.0,  "max": 80.0,  "scale": "log", "step_grid": 0.04},
-    {"name": "cc_pf",     "init": 0.85,  "min": 0.35,  "max": 2.20,  "scale": "log", "step_grid": 0.01},
-    {"name": "rz_ohm",    "init": 1400.0,"min": 400.0, "max": 4500.0,"scale": "log", "step_grid": 10.0}
+    {"name": "I_tail",   "init": 36.0e-6, "min": 16.0e-6, "max": 80.0e-6, "scale": "log", "step_grid": 1.0e-7, "role": "stage1_bias"},
+    {"name": "W_in",     "init": 14.4e-6, "min": 6.0e-6,  "max": 36.0e-6, "scale": "log", "step_grid": 5.0e-9, "role": "input_diff_pair"},
+    {"name": "L_ch",     "init": 250.0e-9,"min": 150.0e-9,"max": 500.0e-9,"scale": "log", "step_grid": 5.0e-9, "role": "channel_length"},
+    {"name": "W_cs",     "init": 32.0e-6, "min": 12.0e-6, "max": 80.0e-6, "scale": "log", "step_grid": 5.0e-9, "role": "stage2_driver"},
+    {"name": "C_c",      "init": 0.85e-12,"min": 0.35e-12,"max": 2.20e-12,"scale": "log", "step_grid": 1.0e-15,"role": "miller_cap"},
+    {"name": "R_z",      "init": 1400.0,  "min": 400.0,   "max": 4500.0,  "scale": "log", "step_grid": 10.0,   "role": "nulling_resistor"}
   ],
-  "hard_constraints": {
-    "min_sat_margin_v": 0.055,
-    "loop_dc_gain_db":  {"min": 70.0},
-    "stb_ugf_hz":       {"min": 60.0e6},
-    "phase_margin_deg": {"min": 62.0, "max": 84.0},
-    "gain_margin_db":   {"min": 12.0},
-    "slew_rate_neg":    {"min": 35.0e6},
-    "settling_time_s":  {"max": 30.0e-9},
-    "overshoot_pct":    {"max": 7.5}
-  },
-  "corners_verify": ["NN_27C", "SS_125C", "FF_m40C"],
-  "max_evaluations": 32
+  "hard_constraints": [
+    {"id": "dc_gain",      "metric": "loop_dc_gain_db",  "op": ">=", "target": 70.0,    "unit": "dB",  "scale": 8.0},
+    {"id": "ugf",          "metric": "stb_ugf_hz",       "op": ">=", "target": 60.0e6,  "unit": "Hz",  "scale": 10.0e6},
+    {"id": "pm_min",       "metric": "phase_margin_deg", "op": ">=", "target": 62.0,    "unit": "deg", "scale": 8.0},
+    {"id": "pm_max",       "metric": "phase_margin_deg", "op": "<=", "target": 84.0,    "unit": "deg", "scale": 8.0},
+    {"id": "gain_margin",  "metric": "gain_margin_db",   "op": ">=", "target": 12.0,    "unit": "dB",  "scale": 4.0},
+    {"id": "slew_neg",     "metric": "slew_rate_neg",    "op": ">=", "target": 35.0e6,  "unit": "V/s", "scale": 8.0e6},
+    {"id": "settling",     "metric": "settling_time_s",  "op": "<=", "target": 30.0e-9, "unit": "s",   "scale": 5.0e-9},
+    {"id": "overshoot",    "metric": "overshoot_pct",    "op": "<=", "target": 7.5,     "unit": "%",   "scale": 2.0}
+  ]
 }
 ```
 
@@ -227,19 +232,18 @@ Lưu ý cách biến độc lập được chọn ở mức vật lý tinh gọn
 
 ```bash
 # 1. Chạy bài tự kiểm chứng chuẩn (< 1 giây): tối ưu hóa mô hình Op-Amp 2 tầng từ trạng thái trượt PM
-#    sang đạt 100% chỉ tiêu đồng thời cắt giảm ~38% công suất tĩnh dưới 35 lần đánh giá!
+#    sang đạt 100% chỉ tiêu đồng thời cắt giảm > 38% công suất tĩnh dưới 35 lần đánh giá!
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/sizing_opt.py --self-test
 
-# 2. Chạy Giai đoạn 6 thực tế ghép nối cadence_exec.py + psf_audit.py trên dự án Cadence hiện hành
+# 2. Chạy Giai đoạn 6 thực tế ghép nối cadence_exec.py + psf_audit.py qua trình đánh giá trong opt_two_stage_ota.json
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/sizing_opt.py \
   --problem ./sim/opt_two_stage_ota.json \
-  --evaluator "python -B ./sim/eval_spectre_point.py" \
   --out ./sim/runs/opt_pareto_result.json
 ```
 
-Sau khi `sizing_opt.py` xuất tệp `opt_pareto_result.json` với cờ `"all_constraints_met": true` trên cả 3 góc kiểm định nhanh `NN_27C`, `SS_125C`, `FF_m40C`:
-1. Đẩy bộ kích thước tối ưu đã khóa lưới vào schematic chính thức qua `ic617_client.py set-param` + `check-save`.
-2. Chạy trọn vẹn Giai đoạn 7 (ma trận 15–45 góc PVT + 200 mẫu Monte Carlo + hậu kiểm PEX) bằng `cadence_exec.py` và đóng dấu nghiệm thu bằng `psf_audit.py --spec spec.json`!
+Sau khi `sizing_opt.py` xuất tệp `opt_pareto_result.json` với cờ `"all_specs_pass_pvt": true` (kèm `pvt_corner_status == "PASS"`) trên cả 3 góc kiểm định nhanh `NN_27C`, `SS_125C`, `FF_m40C`:
+1. Đẩy bộ kích thước tối ưu đã khóa lưới (`optimized_variables_grid_snapped`) vào schematic chính thức qua `ic617_client.py set-param` + `check-save`.
+2. Chạy trọn vẹn Giai đoạn 7 (ma trận 15–45 góc PVT + 200 mẫu Monte Carlo + hậu kiểm PEX) bằng `cadence_exec.py spectre` và đóng dấu nghiệm thu bằng `psf_audit.py metrics ./sim/runs/signoff_pvt --spec ./spec.json --fail-on-spec`!
 
 ---
 

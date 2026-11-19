@@ -338,14 +338,14 @@
     if (el.statChecklists) el.statChecklists.textContent = st.checklist_count ?? (state.router.checklists || []).length;
     if (el.statGlossary) el.statGlossary.textContent = st.glossary_count ?? 2280;
     if (el.statSections) {
-      const secCnt = state.coords?.sections?.length ?? st.book_section_count ?? 293;
+      const secCnt = state.coords?.sections?.length ?? st.book_section_count ?? 311;
       el.statSections.textContent = secCnt;
     }
     if (el.statRepos) {
       const repoCnt = state.catalog?.repos?.length ?? st.github_repo_count ?? 52;
       el.statRepos.textContent = repoCnt;
     }
-    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.6";
+    if (el.releaseVer) el.releaseVer.textContent = state.router.release || "2026.11.18.7";
   }
 
   function normalizeCoordsPayload(raw) {

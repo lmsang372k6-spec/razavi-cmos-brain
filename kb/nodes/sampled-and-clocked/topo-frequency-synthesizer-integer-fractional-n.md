@@ -11,7 +11,7 @@
     {
       "chapter": 16,
       "section": "16.5.1-16.5.3",
-      "pages": "685-690",
+      "pages": "685-689",
       "equations": ["16.49", "16.50", "16.51", "16.52", "16.53", "16.54", "16.55", "16.56"]
     }
   ],
@@ -107,13 +107,13 @@ trong đó $H_{\text{u}}(s)$ có độ lợi một chiều bằng $1$ ($H_{\text
 
 $$\mathcal{L}_{\text{in-band,tot}}(f) = \mathcal{L}_{\text{in,eq}}(f) + 20\log_{10}(N) \;\; [\text{dBc/Hz}]$$
 
-Đồng thời trong **Mục 16.5.3 (Ví dụ 16.13, PT 16.55–16.56)** về khử jitter: nếu một tín hiệu đồng hồ đầu vào mang điều chế pha nhiễu tần số $\omega_m \gg \omega_n$ (nằm ngoài băng thông vòng của một PLL băng hẹp có $N = 1$), biên độ jitter truyền ra ngõ ra bị nén đi theo tỉ số xấp xỉ $\left|\frac{\Phi_{\text{out}}}{\Phi_{\text{in}}}(j\omega_m)\right| \approx \frac{2\zeta\omega_n}{\omega_m}$ (dốc $-20\text{ dB/dec}$ do zero trong tử số $H(s)$, hoặc $-40\text{ dB/dec}$ sau cực $\omega_{p3}$!).
+Đồng thời trong **Mục 16.5.2 (Ví dụ 16.13, Hình 16.59–16.60, PT 16.55–16.56)** độ lợi vòng vô hạn triệt tiêu độ lệch trễ tĩnh của bộ đệm xung nhịp, còn trong **Mục 16.5.3 (Hình 16.61)** về khử jitter: nếu một tín hiệu đồng hồ đầu vào mang điều chế pha nhiễu tần số $\omega_m \gg \omega_n$ (nằm ngoài băng thông vòng của một PLL băng hẹp có $N = 1$, PT 16.45), biên độ jitter truyền ra ngõ ra bị nén đi theo tỉ số xấp xỉ $\left|\frac{\Phi_{\text{out}}}{\Phi_{\text{in}}}(j\omega_m)\right| \approx \frac{2\zeta\omega_n}{\omega_m}$ (dốc $-20\text{ dB/dec}$ do zero trong tử số $H(s)$, hoặc $-40\text{ dB/dec}$ sau cực $\omega_{p3}$!).
 
 ### 2.3. Phổ Nhiễu Lượng tử hóa Pha của Bộ Điều chế $\Delta\Sigma$ Bậc $L$ (`MASH-L Phase Noise Shaping`)
 Tại sao trong Fractional-$N$ không dùng một bộ tích lũy bậc 1 đơn giản (cứ $Q$ chu kỳ lại chia $N+1$ một lần để đạt $N + 1/Q$)? Bởi vì chuỗi tràn của bộ tích lũy bậc 1 tuần hoàn cứng theo chu kỳ $Q \cdot T_{\text{REF}}$, tạo ra sóng răng cưa lỗi pha lớn trên $V_{cont}$ và đẻ ra **vạch phổ giả phân số khổng lồ (`Fractional Spurs`)** ngay tại độ lệch $\frac{f_{\text{REF}}}{Q}$ nằm lọt thỏm bên trong băng thông vòng!
 
 Khi thay bằng bộ điều chế $\Delta\Sigma$ bậc $L$ (điển hình **MASH 1-1-1 bậc $L = 3$**) có nhiễu lượng tử hóa tần số chuẩn hóa trải đều trắng trên $[-f_{\text{REF}}/2, +f_{\text{REF}}/2]$ với phương sai bước chia $\frac{1}{12}$ và hàm định dạng nhiễu tần số $(1 - z^{-1})^L$:
-- Vì pha là **tích phân rời rạc** của tần số chia (nhân thêm thừa số $\frac{1}{1 - z^{-1}}$ làm giảm 1 bậc đạo hàm!), mật độ phổ nhiễu pha lượng tử hóa một phía quy về ngõ vào PFD (đã tính đến tích phân tần số sang pha và nhân $N$ ra ngõ ra VCO, rút gọn $N$ nên **hoàn toàn độc lập với $N$!**) tuân theo công thức kinh điển của Miller & Perrott:
+- Vì pha là **tích phân rời rạc** của tần số chia (nhân thêm thừa số $\frac{1}{1 - z^{-1}}$ làm giảm 1 bậc đạo hàm!), mật độ phổ nhiễu pha đơn biên SSB ($\mathcal{L}(f) = \frac{1}{2} S_{\phi,\text{1-sided}}(f)$) quy về ngõ ra VCO trước lọc vòng (đã tính tích phân tần số sang pha tại PFD tỉ lệ $1/N^2$ và nhân $N^2$ lên ngõ ra VCO nên **hoàn toàn độc lập với $N$!**) tuân theo công thức kinh điển của Miller & Perrott:
 
 $$\mathcal{L}_{\Delta\Sigma,\text{open}}(f) = 10\log_{10}\left\{ \frac{(2\pi)^2}{12 \, f_{\text{REF}}} \cdot \left[ 2 \sin\left(\frac{\pi f}{f_{\text{REF}}}\right) \right]^{2(L - 1)} \right\} \;\; [\text{dBc/Hz}]$$
 
@@ -122,13 +122,13 @@ Sau khi đi qua hàm truyền đóng vòng thông thấp bậc $K_{\text{PLL}}$ 
 - Để dập tắt cái dốc $+40\text{ dB/dec}$ này ở ngoài băng thông vòng ($f_c < f < f_{\text{REF}}/2$), hàm truyền đóng vòng $\left|H_{\text{cl}}(jf)/N\right|$ bắt buộc phải lăn dốc ít nhất **$-60\text{ dB/dec}$** (net roll-off $-20\text{ dB/dec}$), tức **MASH bậc $L$ đòi hỏi bậc lọc vòng PLL tối thiểu là $(L + 1)$** (MASH 1-1-1 bậc $3 \implies$ bắt buộc dùng PLL bậc $4$ có cả $C_2$ và mắt lọc $R_3 C_3$!).
 
 ### 2.4. Ví dụ Định lượng Đối chiếu Trực diện Integer-$N$ vs MASH 1-1-1 Fractional-$N$ cho GSM/BLE ($2.4\text{ GHz}$)
-Yêu cầu tổng hợp sóng mang quanh $f_{\text{out}} = 2.4\text{ GHz}$ với độ phân giải kênh $\Delta f_{\text{ch}} \le 250\text{ kHz}$, giả sử bộ PFD+CP chuẩn hóa có sàn nhiễu quy đổi về $1\text{ Hz}$ là $\text{PN}_{\text{norm}} = -222\text{ dBc/Hz}$ (tức $\mathcal{L}_{\text{in-band}} = -222 + 10\log_{10}(f_{\text{REF}}) + 20\log_{10}(N)$):
+Yêu cầu tổng hợp sóng mang quanh $f_{\text{out}} = 2.4\text{ GHz}$ với độ phân giải kênh $\Delta f_{\text{ch}} \le 250\text{ kHz}$, giả sử bộ PFD+CP chuẩn hóa có sàn nhiễu quy đổi về $1\text{ Hz}$ là $\text{PN}_{\text{norm}} = -222\text{ dBc/Hz}$ (tức $\mathcal{L}_{\text{in-band}} = -222 + 10\log_{10}\!\left(\frac{f_{\text{REF}}}{1\text{ Hz}}\right) + 20\log_{10}(N)$):
 1. **Thiết kế Integer-$N$ ($f_{\text{REF}} = 250\text{ kHz}$, $N = 9600$)**:
    - Sàn nhiễu nội dải: $-222 + 10\log_{10}(2.5\times 10^5) + 20\log_{10}(9600) = -222 + 54.0 + 79.6 = \mathbf{-88.4\text{ dBc/Hz}}$ (quá ồn!).
    - Băng thông vòng tối đa: $f_c \le 25\text{ kHz} \implies$ thời gian khóa kênh $> 150\,\mu\text{s}$; không nén được nhiễu VCO ở $100\text{ kHz}$.
 2. **Thiết kế MASH 1-1-1 Fractional-$N$ ($f_{\text{REF}} = 50\text{ MHz}$ kèm bộ tích lũy 20-bit cho bước kênh $47.7\text{ Hz}$, $N = 48$)**:
    - Sàn nhiễu nội dải: $-222 + 10\log_{10}(5\times 10^7) + 20\log_{10}(48) = -222 + 77.0 + 33.6 = \mathbf{-111.4\text{ dBc/Hz}}$ (**sạch hơn $23.0\text{ dB}$**!).
-   - Chọn băng thông vòng $f_c = 800\text{ kHz}$ ($\ll 50\text{ MHz} / 10$, khóa kênh siêu tốc trong $< 5\,\mu\text{s}$!): tại $f = 800\text{ kHz}$, nhiễu lượng tử mở của MASH 1-1-1 là $10\log_{10}\!\left[\frac{4\pi^2}{12 \times 50\times 10^6} \left(2\sin\frac{0.8\pi}{50}\right)^4\right] \approx \mathbf{-111.7\text{ dBc/Hz}}$, sau khi trừ $3\text{ dB}$ cắt vòng và lọc bậc 4 ($f_{p3} = 2.8\text{ MHz}, f_{p4} = 4.5\text{ MHz}$) nằm hoàn toàn dưới mặt nạ phổ của VCO!
+   - Chọn băng thông vòng $f_c = 800\text{ kHz}$ ($\ll 50\text{ MHz} / 10$, khóa kênh siêu tốc trong $< 5\,\mu\text{s}$!): tại $f = f_c = 800\text{ kHz}$ (nơi $|H_{\text{cl}}(jf_c)/N| \approx 0\text{ dB}$ với $\text{PM} = 60^\circ$), nhiễu lượng tử mở của MASH 1-1-1 là $10\log_{10}\!\left[\frac{4\pi^2}{12 \times 50\times 10^6} \left(2\sin\frac{0.8\pi}{50}\right)^4\right] \approx \mathbf{-111.7\text{ dBc/Hz}}$, và ở miền ngoại dải $f > f_c$ bị bộ lọc bậc 4 ($f_{p3} = 2.8\text{ MHz}, f_{p4} = 4.5\text{ MHz}$, dốc đóng vòng $-60\text{ dB/dec}$) dập xuống theo độ dốc ròng $-20\text{ dB/dec}$ nằm hoàn toàn dưới mặt nạ phổ của VCO!
 
 ---
 
@@ -190,7 +190,7 @@ pnoise_div (div_retimed_out 0) pnoise sweeptype=relative relharmnum=1 start=1k s
 
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
-- **Sách gốc Razavi (2nd Ed.)**: Chương 16, Mục `16.5.1` (*Frequency Multiplication and Synthesis*, trang 685–687, Hình `16.55`–`16.56`, Phương trình `16.49`–`16.54`), Mục `16.5.2` (*Skew Reduction*, trang 687–688, Hình `16.57`–`16.59`), và Mục `16.5.3` (*Jitter Reduction*, trang 688–690, Hình `16.60`–`16.61`, Ví dụ `16.13`, Phương trình `16.55`–`16.56`, Bài tập `16.15`–`16.16`).
+- **Sách gốc Razavi (2nd Ed.)**: Chương 16, Mục `16.5.1` (*Frequency Multiplication and Synthesis*, trang 685–687, Hình `16.55`–`16.56`, Phương trình `16.49`–`16.54`), Mục `16.5.2` (*Skew Reduction*, trang 687–688, Hình `16.57`–`16.60`, Ví dụ `16.13`, Phương trình `16.55`–`16.56`), và Mục `16.5.3` (*Jitter Reduction*, trang 688–689, Hình `16.61`, Bài tập `16.15`–`16.16`).
 - **Đối chiếu Thuật ngữ Chuẩn CLB Vi Mạch (`terms-vi-en.json`)**:
   - `T2178` (`frequency synthesizer / feedback divider`): **bộ tổng hợp tần số (kèm bộ chia tần hồi tiếp)**; `T2179` (`PLL noise transfer bandwidth trade-off`): **đối ngẫu băng thông truyền nhiễu trong PLL**.
   - `T072` (`RF transmitter`): **bộ phát RF**; `T2079` (`clock frequency`): **tần số xung nhịp**.

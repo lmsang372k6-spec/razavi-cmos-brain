@@ -17,7 +17,7 @@
     {
       "chapter": 15,
       "section": "15.1-15.3.4",
-      "pages": "607-631",
+      "pages": "607-630",
       "equations": ["15.1", "15.2", "15.19", "15.26"]
     },
     {
@@ -148,7 +148,7 @@ Trên thực tế, ngay thời điểm $V_C(t)$ chạm ngưỡng $V_H$, bộ so 
 $$
 T_{\text{actual}} = 2\left(k R_{\text{ZTC}} C + t_d\right) \implies f_{\text{actual}} = \frac{f_{\text{osc},0}}{1 + 2 f_{\text{osc},0}\, t_d} \approx f_{\text{osc},0}\left(1 - 2 f_{\text{osc},0}\, t_d\right)
 $$
-**Ví dụ cảnh tỉnh**: Thiết kế bộ dao động $f_{\text{osc},0} = 4\text{ MHz}$ ($T_0/2 = 125\text{ ns}$) dùng bộ so sánh công suất nhỏ có $t_d = 18\text{ ns}$ ở $27\,^\circ\text{C}$ nhưng tăng lên $t_d = 31\text{ ns}$ ở $125\,^\circ\text{C}, V_{DD,\min}$: riêng sự trôi của $t_d$ làm tần số sụt mất **$-9.2\%$**, phá nát hoàn toàn công sức bù nhiệt Zero-TCR của điện trở!
+**Ví dụ cảnh tỉnh**: Thiết kế bộ dao động $f_{\text{osc},0} = 4\text{ MHz}$ ($T_0/2 = 125\text{ ns}$) dùng bộ so sánh công suất nhỏ có $t_d = 18\text{ ns}$ ở $27\,^\circ\text{C}$ ($f_{\text{actual}} = 3.50\text{ MHz}$) nhưng tăng lên $t_d = 31\text{ ns}$ ở $125\,^\circ\text{C}, V_{DD,\min}$ ($f_{\text{actual}} = 3.21\text{ MHz}$): riêng sự trôi của $t_d$ làm tần số sụt mất **$-8.33\%$**, phá nát hoàn toàn công sức bù nhiệt Zero-TCR của điện trở!
 - **Ba Kỹ thuật Khử Trễ $t_d$ Thực chiến**:
   1. **Tích phân Trung bình Khóa Tụ Chuyển mạch (`Switched-Capacitor Averaging Loop` — Tokunaga / Paidimarri)**: Bỏ hẳn bộ so sánh ngưỡng tức thời; dùng chính xung nhịp đầu ra $f_{\text{osc}}$ đóng ngắt tụ $C_{\text{sw}}$ tạo điện trở tương đương $R_{\text{eq}} = \frac{1}{C_{\text{sw}} f_{\text{osc}}}$, so sánh áp rơi trên $R_{\text{eq}}$ với áp rơi trên $R_{\text{ZTC}}$ qua một bộ tích phân OTA chậm có băm Chopper để điều khiển VCO vòng! Khi khóa xác lập, $f_{\text{osc}} = \frac{1}{R_{\text{ZTC}} C_{\text{sw}}}$ miễn nhiễm $100\%$ với trễ bộ so sánh lẫn offset!
   2. **Hạ Ngưỡng Động Bù Trước (`Feedforward Threshold Lowering`, $\Delta V_{\text{comp}} = -I_{\text{ZTC}} R_{\text{rep}}$)**: Chèn một điện trở nhỏ $R_{\text{lead}}$ nối tiếp với tụ định thời $C$! Điện áp đưa vào bộ so sánh lúc đang nạp là $V_{\text{sense}}(t) = V_C(t) + I_{\text{ZTC}} R_{\text{lead}}$, giúp bộ so sánh **nhìn thấy ngưỡng sớm hơn một khoảng thời gian đúng bằng $\tau_{\text{lead}} = R_{\text{lead}} C$**! Nếu chọn $R_{\text{lead}} C \approx t_d$ (với $R_{\text{lead}}$ làm bằng transistor triode phân cực theo cùng hằng số trễ của bộ so sánh!), điểm cắt thực tế trên tụ $V_C$ hạ cánh trúng phóc $V_H$ tại cuối khoảng $t_d$, khử bậc nhất sai số $t_d$!
@@ -241,7 +241,7 @@ ac_neg  ac  start=23.9M  stop=24.1M  lin=200
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Tiêu chuẩn Barkhausen, khởi động dao động và quan điểm điện trở âm một cửa | Chương 15, §15.1–15.3.4, PT (15.1)–(15.26), tr. 607–631 | `T951` mạch dao động; `T1004` độ dịch pha; `T1184` hồi tiếp dương; `T2160` tiêu chuẩn dao động Barkhausen; `T2161` bộ dao động vòng; `T2164` bộ dao động điện trở âm một cửa |
+| Tiêu chuẩn Barkhausen, khởi động dao động và quan điểm điện trở âm một cửa | Chương 15, §15.1–15.3.4, PT (15.1)–(15.26), tr. 607–630 | `T951` mạch dao động; `T1004` độ dịch pha; `T1184` hồi tiếp dương; `T2160` tiêu chuẩn dao động Barkhausen; `T2161` bộ dao động vòng; `T2164` bộ dao động điện trở âm một cửa |
 | Tạo dòng chuẩn theo điện trở, điểm bù nhiệt ZTC và thay thế bằng tụ chuyển mạch | Chương 12, §12.4–12.5, PT (12.51)–(12.54), tr. 523–525 & §17.3.7 | `T069` Biến thiên PVT; `T2147` xung nhịp hai pha không chồng lấp; `T2185` điểm phân cực có hệ số nhiệt bằng không (ZTC); `T2186` các góc quy trình chế tạo; `T2187` hiệu suất hỗ dẫn $g_m/I_D$ |
 | Hệ số nhiệt điện trở tích hợp (TCR) và ghép điện trở/tụ trên layout CMOS | Chương 18, §18.7.2, PT (18.1)–(18.2) & Chương 19, §19.2.6, tr. 721–753 | `T476` Tinh thể; `T620` độ lệch; `T1009` nhiễu nhiệt; `T2169` nhiễu pha |
 | Sơ đồ khối thực tế RC Osc 500 kHz / 2 MHz & Sawtooth Ramp cho Buck PMIC | `Arcadia-1/analog-design-bench`, `westonb/open-pmic`, `sky130_ef_ip__rc_osc_500k` | Thiết kế dao động tích thoát có chân kích hoạt `ena` và sườn bù độ dốc PWM |

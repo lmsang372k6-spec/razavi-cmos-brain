@@ -10,14 +10,14 @@
   "razavi_refs": [
     {
       "chapter": 2,
-      "section": "2.1.2, 2.3",
+      "section": "2.1.2, 2.2.3, 2.3",
       "pages": "8-9, 20-26",
-      "equations": ["2.1", "2.23"]
+      "equations": ["2.21", "2.23"]
     },
     {
       "chapter": 5,
       "section": "5.1-5.2",
-      "pages": "135-146",
+      "pages": "134-146",
       "equations": ["5.8"]
     },
     {

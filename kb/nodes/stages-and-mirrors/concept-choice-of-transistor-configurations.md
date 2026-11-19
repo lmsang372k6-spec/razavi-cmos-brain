@@ -12,7 +12,7 @@
       "chapter": 3,
       "section": "3.3.6, 3.4, 3.5, 3.6, 3.7",
       "pages": "66-93, 99",
-      "equations": ["3.74", "3.88", "3.100", "3.106", "3.116", "3.123", "3.135", "3.143", "3.149", "3.150"]
+      "equations": ["3.78", "3.79", "3.88", "3.100", "3.106", "3.116", "3.123", "3.135", "3.143", "3.149", "3.150"]
     }
   ],
   "glossary_codes": ["T021", "T023", "T082", "T499", "T500", "T501", "T517", "T518"],
@@ -54,7 +54,7 @@ Một transistor MOSFET chỉ có ba cực mang tín hiệu chính (**Gate — G
 ## 2. Hệ Phương trình Cốt lõi & Tư duy "Nhìn Mạch Đọc Nhanh" (Analysis by Inspection)
 
 ### 2.1. Bổ đề Vạn Năng $A_v = -G_m R_{\text{out}}$ & Ma trận Đặc tính Chuẩn Của 5 Cấu hình Hạt nhân
-Cuối §3.3.6 (Hình 3.32, Phương trình 3.74, tr. 66–67; xem thêm ghi chú `NG03-03`), Razavi chứng minh **Bổ đề Tuyến tính Norton–Thevenin** áp dụng được cho **mọi mạch hai cửa tuyến tính bất kỳ** (dù bên trong có hàng chục transistor!):
+Cuối §3.3.6 (Phương trình 3.78–3.79 & Bổ đề Hình 3.32, tr. 66–67; xem thêm ghi chú `NG03-03`), Razavi chứng minh **Bổ đề Tuyến tính Norton–Thevenin** áp dụng được cho **mọi mạch hai cửa tuyến tính bất kỳ** (dù bên trong có hàng chục transistor!):
 $$A_v = -G_m R_{\text{out}}, \qquad G_m \triangleq \left.\frac{I_{\text{out,short}}}{V_{\text{in}}}\right|_{V_{\text{out}}=0}, \qquad R_{\text{out}} \triangleq \left.\frac{V_{\text{test}}}{I_{\text{test}}}\right|_{V_{\text{in}}=0}$$
 (Chú ý quy ước chiều dòng $I_{\text{out}}$ chảy *từ ngõ ra xuống đất* khi nối tắt ngõ ra nên có dấu trừ; nếu định nghĩa $I_{\text{sc}}$ chảy từ trong mạch *ra ngoài tải* thì $A_v = +G_{m,\text{out}} R_{\text{out}}$). Nhờ bổ đề này, bài toán phức tạp có cả $\lambda > 0, \gamma > 0$ (như Bài tập 3.34 cho SF và Bài tập 3.35 cho CG, tr. 99) tách đôi thành hai phép nhìn mạch nhẩm miệng độc lập!
 
@@ -63,7 +63,7 @@ $$A_v = -G_m R_{\text{out}}, \qquad G_m \triangleq \left.\frac{I_{\text{out,shor
 | **1. Common-Source (CS)** | $\infty$ *(tụ vào bị nhân Miller $(1+|A_v|)C_{GD}$)* | $R_D \parallel r_{O1}$ | $+g_{m1}$ | $-g_{m1}(R_D \parallel r_{O1})$ | Nhiễu quy cổng nhỏ nhất; BW hẹp nếu $R_S$ và $R_D$ cùng lớn. |
 | **2. CS Suy biến Nguồn ($R_{\text{deg}}$)** | $\infty$ | $R_D \parallel \big[r_{O1} + (1 + (g_{m1}+g_{mb1})r_{O1})R_{\text{deg}}\big]$ | $\dfrac{g_{m1}}{1 + (g_{m1}+g_{mb1})R_{\text{deg}}+\dfrac{R_{\text{deg}}}{r_{O1}}}$ | $\approx \dfrac{-g_{m1} R_D}{1 + (g_{m1}+g_{mb1})R_{\text{deg}}}$ *(khi $R_D \ll R_{\text{out,up}}$)* | Mở rộng dải tuyến tính $(1+g_m R_{\text{deg}})$; tăng nhiễu do $4kT R_{\text{deg}}$. |
 | **3. Source Follower (SF)** | $\infty$ *(tụ $C_{GS}$ được bootstrap giảm còn $(1-A_v)C_{GS}$!)* | $\dfrac{1}{g_{m1} + g_{mb1}} \parallel r_{O1} \parallel R_L$ | $-g_{m1}$ *(dòng chảy ra cực nguồn)* | $\dfrac{g_{m1}}{g_{m1} + g_{mb1} + \dfrac{1}{r_{O1}\parallel R_L}} < 1$ | BW rộng nhưng dễ sinh $Z_{\text{out}}$ cảm kháng nếu $R_S > 1/g_{m1}$. |
-| **4. Common-Gate (CG — PT 3.116, 3.123)** | **$\dfrac{R_D + r_{O1}}{1 + (g_{m1}+g_{mb1})r_{O1}}$** *(chỉ $\approx \frac{1}{g_{m1}+g_{mb1}}$ khi $R_D \ll g_m r_O$!)* | $R_D \parallel \big[r_{O1} + (1 + (g_{m1}+g_{mb1})r_{O1})R_S\big]$ | $-\dfrac{g_{m1} + g_{mb1} + 1/r_{O1}}{1 + (g_{m1}+g_{mb1})R_S + R_S/r_{O1}}$ | $\dfrac{\big[(g_{m1}+g_{mb1})r_{O1} + 1\big] R_D}{r_{O1} + \big[(g_{m1}+g_{mb1})r_{O1} + 1\big] R_S + R_D}$ | Không chịu Miller cổng–máng; chịu nhiễu nặng từ nguồn dòng phân cực dưới nguồn! |
+| **4. Common-Gate (CG — PT 3.116, 3.123)** | **$\dfrac{R_D + r_{O1}}{1 + (g_{m1}+g_{mb1})r_{O1}}$** *(chỉ $\approx \frac{1}{g_{m1}+g_{mb1}}$ khi $R_D \ll r_{O1}$!)* | $R_D \parallel \big[r_{O1} + (1 + (g_{m1}+g_{mb1})r_{O1})R_S\big]$ | $-\dfrac{g_{m1} + g_{mb1} + 1/r_{O1}}{1 + (g_{m1}+g_{mb1})R_S + R_S/r_{O1}}$ | $\dfrac{\big[(g_{m1}+g_{mb1})r_{O1} + 1\big] R_D}{r_{O1} + \big[(g_{m1}+g_{mb1})r_{O1} + 1\big] R_S + R_D}$ | Không chịu Miller cổng–máng; chịu nhiễu nặng từ nguồn dòng phân cực dưới nguồn! |
 | **5. Cascode (Telescopic / Folded)** | $\infty$ *(tụ Miller bị kẹp chỉ còn $\approx 2 C_{GD1}$!)* | $\approx (g_{m2}+g_{mb2}) r_{O2} r_{O1}$ *(Folded: thay $r_{O1}$ bằng $r_{O1}\parallel r_{O,\text{fold}}$)* | $+g_{m1}$ | $-g_{m1} R_{\text{out}} \sim -(g_m r_O)^2$ | Vừa đạt độ lợi bậc hai, vừa giữ BW rộng và nhiễu thấp của CS! |
 
 ### 2.2. Hai Hệ quả "Phản Trực giác" Cực Quan trọng Trong Bảng Trên!
@@ -99,7 +99,7 @@ Trước một sơ đồ lạ gồm 8–15 MOSFET (như Hình 3.76–3.77 & Hìn
 - **[INV-CONF-02] Bất biến Phân cực Dòng Của CG so với CS/SF (`tech-stage-biasing-rules`, §5.4):** Cực cổng của CS và SF cách điện một chiều nên nguồn tín hiệu chỉ cần cấp thế DC mà không tốn dòng; ngược lại, ngõ vào của CG là **cực nguồn mang toàn bộ dòng phân cực $I_D$**, nên bắt buộc phải có đường thoát dòng DC (cuộn cảm Choke, điện trở hoặc nguồn dòng phân cực $I_{\text{bias}}$ nối tiếp tụ ghép AC)!
 
 - **[TRAP-CONF-01] Bẫy Vứt Nhầm $r_O$ Làm Xuất hiện Phép Chia Cho $0$ (Ví dụ Hình 3.77, tr. 92):** Nếu ở tầng CS tải nguồn dòng hoặc tầng Cascode tải nguồn dòng bạn bỏ qua $\lambda = 0$ cho tất cả transistor, trở kháng ra sẽ bằng $\infty$ không xác định! Ngược lại, nếu ở tầng cascode $M_2$ chồng trên $M_1$ tải điện trở $R_D = 2\,\text{k}\Omega$ ($R_D \ll r_{O2}$) bạn mất công giữ $r_{O1}, r_{O2}$, bạn tốn 1 trang giấy chỉ để thấy độ lợi vẫn xấp xỉ $-g_{m1} R_D$ sai khác chưa tới $2\%$!
-- **[TRAP-CONF-02] Bẫy Dùng Source Follower Để Lái Tải Có Biên Độ Gần Chạm Nguồn:** Một NMOS Source Follower có cổng tối đa tới $V_{DD}$ chỉ đẩy được cực nguồn lên cao nhất $V_{\text{out,max}} = V_{DD} - V_{THN}(V_{\text{out}}) - V_{OV1}$ — mất đứt $0{,}5\text{–}0{,}7\,\text{V}$ phía trên (cộng thêm hiệu ứng thân làm $V_{THN}$ phình to!). Под nguồn $1{,}0\,\text{V}$, một bộ đệm SF làm rơi mất quá nửa dải điện áp toàn thang; khi cần đệm biên độ rộng ở nguồn thấp, bắt buộc phải chuyển sang tầng ra **Common-Source Class-A/AB có hồi tiếp âm toàn cục** (`topo-two-stage-opamp`, `tech-slew-rate-and-class-ab-opamps`)!
+- **[TRAP-CONF-02] Bẫy Dùng Source Follower Để Lái Tải Có Biên Độ Gần Chạm Nguồn:** Một NMOS Source Follower có cổng tối đa tới $V_{DD}$ chỉ đẩy được cực nguồn lên cao nhất $V_{\text{out,max}} = V_{DD} - V_{THN}(V_{\text{out}}) - V_{OV1}$ — mất đứt $0{,}5\text{–}0{,}7\,\text{V}$ phía trên (cộng thêm hiệu ứng thân làm $V_{THN}$ phình to!). Dưới nguồn $1{,}0\,\text{V}$, một bộ đệm SF làm rơi mất quá nửa dải điện áp toàn thang; khi cần đệm biên độ rộng ở nguồn thấp, bắt buộc phải chuyển sang tầng ra **Common-Source Class-A/AB có hồi tiếp âm toàn cục** (`topo-two-stage-opamp`, `tech-slew-rate-and-class-ab-opamps`)!
 
 ---
 
@@ -119,7 +119,7 @@ Bản đồ định hướng chọn cấu trúc từ các hạt nhân đơn tầ
 ## 5. Thích ứng Đa Tiến trình (90nm / 65nm / 45nm) & Cách Kiểm chứng trong Cadence / Spectre
 
 ### 5.1. Sự Thay đổi Trọng số Lựa chọn Ở 90nm / 65nm / 45nm
-1. **Hiệu ứng $r_O$ giảm thấp làm CG mất hẳn tính cô lập một chiều:** Ở tiến trình $0{,}5\,\mu\text{m}$ ($g_m r_O \approx 80$), tầng CG cách ly khá tốt tải cực máng khỏi cực nguồn. Nhưng ở $65\,\text{nm}/45\,\text{nm}$ với $L = L_{\min}$ ($g_m r_O \approx 6\text{–}8$), công thức $R_{\text{in,CG}} = \frac{R_D + r_O}{1 + (g_m+g_{mb})r_O}$ cho thấy nếu $R_D = 3 r_O$, trở kháng vào bị đẩy vọt từ $\frac{1}{g_m}$ lên tới $\frac{4}{9 g_m} \times (g_m r_O) \approx \frac{4}{g_m}$ (**tăng gấp $4$ lần**!), phá hỏng hoàn toàn phối hợp trở kháng $S_{11}$ nếu thiết kế chủ quan dùng công thức kênh dài $1/g_m$!
+1. **Hiệu ứng $r_O$ giảm thấp làm CG mất hẳn tính cô lập một chiều:** Ở tiến trình $0{,}5\,\mu\text{m}$ ($g_m r_O \approx 80$), tầng CG cách ly khá tốt tải cực máng khỏi cực nguồn. Nhưng ở $65\,\text{nm}/45\,\text{nm}$ với $L = L_{\min}$ ($(g_m + g_{mb}) r_O \approx 8$), công thức $R_{\text{in,CG}} = \frac{R_D + r_O}{1 + (g_m+g_{mb})r_O}$ cho thấy nếu $R_D = 3 r_O$, trở kháng vào bị đẩy vọt từ $\frac{r_O}{9}$ (khi $R_D = 0$) lên $\frac{4 r_O}{9} = \frac{32}{9(g_m+g_{mb})} \approx \frac{3{,}6}{g_m+g_{mb}}$ (**tăng đúng gấp $4$ lần** so với khi $R_D = 0$!), phá hỏng hoàn toàn phối hợp trở kháng $S_{11}$ nếu thiết kế chủ quan dùng công thức kênh dài $\frac{1}{g_m+g_{mb}}$!
 2. **Tận dụng Giếng Ba Lớp (Deep N-Well / Triple-Well) Cho NMOS SF & CG:** Mọi PDK RF/Mixed-Signal 90nm/65nm/45nm đều cung cấp transistor NMOS đặt trong giếng $p$-well cô lập bởi **Deep N-Well**. Với NMOS Source Follower, việc đặt linh kiện trong Deep N-Well để nối thân–nguồn ($B\text{–}S$) giúp **xóa sổ hoàn toàn $g_{mb1} = 0$**, đưa độ lợi SF vọt từ $0{,}78$ lên $0{,}94$, khử méo hài phi tuyến do $V_{TH}(V_{\text{out}})$ và tăng thêm $\sim 150\,\text{mV}$ trần điện áp ngõ ra (đổi lại xuất hiện tụ ký sinh lớn từ $p$-well sang Deep N-Well nối vào nút ngõ ra nên phải kiểm tra băng thông!).
 
 ### 5.2. Quy trình Đo Đầy đủ Bộ 4 Tham số Hai Cửa ($Z_{\text{in}}, Z_{\text{out}}, G_m, A_v$) Trong Spectre
@@ -150,11 +150,11 @@ printf("BSIM4 Exact: Zin = %.1f Ohm | Av = %.3f V/V || Hand Pass-1 Check: gm1 = 
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
 - **Chương 3:**
-  - §3.3.6 *CS Stage with Source Degeneration — Lemma $A_v = -G_m R_{\text{out}}$* (tr. 66–67, Hình 3.32, Phương trình 3.74).
-  - §3.4 *Source Follower* (tr. 68–75, Phương trình 3.82–3.100, Hình 3.33–3.49 — tính chất đệm áp, nhược điểm dịch mức và phi tuyến hiệu ứng thân).
-  - §3.5 *Common-Gate Stage* (tr. 75–82, Phương trình 3.101–3.123, Hình 3.50–3.57 — chứng minh $R_{\text{in}}$, $R_{\text{out}}$ phụ thuộc hai chiều khi $\lambda > 0$, Ví dụ 3.19–3.20).
-  - §3.6 & §3.6.1 *Cascode Stage & Folded Cascode* (tr. 82–92, Phương trình 3.124–3.146, Hình 3.58–3.75).
-  - §3.7 *Choice of Device Models* (tr. 92–93, Hình 3.76–3.77 — nguyên tắc chọn mô hình lặp từng bước và châm ngôn *"Don't let the computer think for you / Don't be a SPICE monkey"*).
+  - §3.3.6 *CS Stage with Source Degeneration — Lemma $A_v = -G_m R_{\text{out}}$* (tr. 66–67, Phương trình 3.78–3.79, Hình 3.32).
+  - §3.4 *Source Follower* (tr. 68–75, Phương trình 3.82–3.101, Hình 3.34–3.47 — tính chất đệm áp, nhược điểm dịch mức và phi tuyến hiệu ứng thân).
+  - §3.5 *Common-Gate Stage* (tr. 75–82, Phương trình 3.102–3.123, Hình 3.48–3.58 — chứng minh $R_{\text{in}}$, $R_{\text{out}}$ phụ thuộc hai chiều khi $\lambda > 0$, Ví dụ 3.19–3.20).
+  - §3.6 & §3.6.1 *Cascode Stage & Folded Cascode* (tr. 82–92, Phương trình 3.124–3.146, Hình 3.59–3.77).
+  - §3.7 *Choice of Device Models* (tr. 92–93 — nguyên tắc chọn mô hình lặp từng bước và châm ngôn *"Don't let the computer think for you / Don't be a SPICE monkey"*).
   - **Bài tập 3.33–3.36** (tr. 99, Phương trình 3.149–3.150, Hình 3.86–3.87 — phối hợp trở kháng CG, áp dụng bổ đề $-G_m R_{\text{out}}$ và tổng hợp mọi cấu trúc khuếch đại từ cặp 2 MOSFET).
 - **Chú giải Hiệu đính Học thuật CLB (`NG03`):**
   - **`NG03-03` (tr. 86):** Đoạn trước Ví dụ 3.22 trong sách gốc dẫn nhầm bổ đề $A_v = -G_m R_{\text{out}}$ về §3.3.3; vị trí thực tế của bổ đề nằm ở cuối §3.3.6 (tr. 66–67, Hình 3.32).

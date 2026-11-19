@@ -31,7 +31,7 @@
     },
     {
       "chapter": 17,
-      "section": "17.3.7-17.4",
+      "section": "17.3.7-17.4, 17.Problems",
       "pages": "707-710",
       "equations": [
         "17.52",

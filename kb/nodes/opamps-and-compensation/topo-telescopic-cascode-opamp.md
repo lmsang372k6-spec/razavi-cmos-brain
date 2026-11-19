@@ -165,7 +165,7 @@ Toàn bộ biên độ tín hiệu bị nhốt trong một khe hẹp chỉ bằn
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
-- **Chương 9:** §9.2.1 *Basic Topologies* (tr. 349–353, Hình 9.7–9.12), §9.2.2 *Design Procedure* (tr. 353–354, Ví dụ 9.5–9.7), §9.2.3 *Linear Scaling* (tr. 354–355, Phương trình 9.15–9.16, Hình 9.13), §9.3 đầu mục (tr. 360–361, Hình 9.21 chuyển đổi đơn đầu dùng LVCCML).
+- **Chương 9:** §9.2.1 *Basic Topologies* (tr. 349–352, Hình 9.7–9.11, Ví dụ 9.5–9.6), §9.2.2 *Design Procedure* (tr. 353–354, Hình 9.12, Ví dụ 9.7), §9.2.3 *Linear Scaling* (tr. 354–355, Phương trình 9.15–9.16, Hình 9.13), §9.2.6 cuối mục (tr. 360–361, Hình 9.21 chuyển đổi đơn đầu dùng LVCCML).
 - **Chương 11:** §11.5.1 *Telescopic Op Amp* (tr. 473–487, Phương trình 11.10–11.13, Hình 11.19–11.37 — thiết kế đầy đủ từ định cỡ, phân cực LVCCML đến CMFB).
 - **Chú giải Hiệu đính Học thuật CLB (`NG09` & `NG11`):**
   - **`NG09-01` (tr. 354, Ví dụ 9.7):** Khi hướng dẫn tăng gấp đôi cả $W$ và $L$ cho các PMOS $M_5\text{–}M_8$ từ tỉ số cũ $(W/L) = 1111$ với $L = 0{,}5\,\mu\text{m}$ ($W = 555{,}5\,\mu\text{m}$), sách in nhầm tử số thành $2222\,\mu\text{m}/1{,}0\,\mu\text{m}$; phép nhân đôi đúng cả tử lẫn mẫu giữ nguyên tỉ số $W/L = 1111$ phải là **$1111\,\mu\text{m}/1{,}0\,\mu\text{m}$** (khớp với kết quả độ lợi $A_v \approx 4000$ trong sách!).

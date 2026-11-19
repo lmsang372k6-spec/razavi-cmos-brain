@@ -10,8 +10,8 @@
   "razavi_refs": [
     {
       "chapter": 9,
-      "section": "9.2.2-9.2.3, 9.2.6, 9.3.1, 9.5-9.6",
-      "pages": "353-355, 359-361, 363-364, 373-374",
+      "section": "9.2.2-9.6",
+      "pages": "353-374",
       "equations": ["9.15", "9.16", "9.17", "9.18", "9.19", "9.44", "9.46"]
     },
     {
@@ -115,8 +115,8 @@ $$
 3. **Ví dụ 9.9 — Định cỡ Folded-Cascode NMOS-In (§9.2.6, tr. 359–361, Phương trình 9.17 + `NG09-04`, `NG09-05`):**
    Cùng chỉ tiêu $V_{DD} = 3\text{ V}, P = 10\text{ mW}, \Delta V_{\text{out,diff}} = 3\text{ V}_{pp}, A_0 = 2000$: phải chia tổng dòng $3\text{ mA}$ cho cả cặp đầu vào ($I_{SS} = 1{,}5\text{ mA} \Rightarrow I_{D1,2} = 0{,}75\text{ mA}$) lẫn nhánh cascode ($I_{D3,4} = 0{,}75\text{ mA}$, nên nguồn dòng gập PMOS $M_{5,6}$ mang $I_{D5,6} = 1{,}5\text{ mA}$!). Do cột ra chỉ có 4 tầng ($|V_{OV5}| + |V_{OV3}| + V_{OV7} + V_{OV9} = 1{,}5\text{ V}$), áp dự trữ rộng rãi hơn, nhưng theo Phương trình (9.17) độ lợi bị kìm hãm bởi $(r_{O1} \parallel r_{O5})$ và cascode PMOS $M_{3,4}$, buộc phải tăng chiều dài kênh hoặc ghép bộ khuếch đại phụ tăng cường độ lợi (Phương trình 9.19, 9.44, 9.46 — nâng $R_{\text{out}}$ thêm $(A_{\text{aux}} + 1)$ lần trong khi cực phụ dịch theo $\omega_{p2,\text{GB}} \approx (A_{\text{aux}}+1)\omega_0 + \frac{1}{g_{m2}r_{O2}r_{O1}C_L}$).
 
-4. **Ví dụ 9.10 — Định cỡ Op-Amp Hai Tầng Nguồn Thấp $1\text{ V}$ (§9.3.1, tr. 363–364, Phương trình 9.18 + `NG09-06`):**
-   Với $V_{DD} = 1\text{ V}$, $\Delta V_{\text{out,diff}} = 1\text{ V}_{pp}$ ($\Delta V_{\text{out,se}} = 0{,}5\text{ V}_{pp}$), $P = 1\text{ mW}$ ($960\,\mu\text{A}$ cho lõi chia đều $480\,\mu\text{A}$ Tầng 1 và $480\,\mu\text{A}$ Tầng 2): chỉ còn $1\text{ V} - 0{,}5\text{ V} = 0{,}5\text{ V}$ ở ngõ ra chia cho 2 transistor Tầng 2 ($|V_{OV5,6}| = V_{OV7,8} = 250\text{ mV}$). Tầng 1 đạt $|A_{v1}| = g_{m1}(r_{O1} \parallel r_{O3}) \approx 2{,}4\text{ mA/V} \times (83{,}3\text{ k}\Omega \parallel 41{,}7\text{ k}\Omega) \approx 66{,}7$ (`NG09-06`), nhân với Tầng 2 $|A_{v2}| \approx 13{,}3$ vượt xa mục tiêu $A_0 = 100$ (và nếu cần $A_0 > 1000$, nâng Tầng 1 lên cascode theo Phương trình 9.18: $A_v \approx g_{m1}[(g_{m3}r_{O3}r_{O1})\parallel(g_{m5}r_{O5}r_{O7})]\cdot g_{m9}(r_{O9}\parallel r_{O11})$!).
+4. **Ví dụ 9.10 — Định cỡ Op-Amp Hai Tầng Nguồn Thấp $1\text{ V}$ (§9.3.1, tr. 363, Phương trình 9.18 + `NG09-06`):**
+   Với $V_{DD} = 1\text{ V}$, $\Delta V_{\text{out,diff}} = 1\text{ V}_{pp}$ ($\Delta V_{\text{out,se}} = 0{,}5\text{ V}_{pp}$), $P = 1\text{ mW}$ (ngân sách $960\,\mu\text{A}$ cho lõi gồm $4$ nhánh dọc $M_1/M_3, M_2/M_4, M_5/M_7, M_6/M_8$ lẽ ra tương ứng $240\,\mu\text{A}$/nhánh hay $480\,\mu\text{A}$/tầng; *lưu ý lỗi chia trong sách gốc tr. 363*: Razavi chia nhầm $960\,\mu\text{A}$ cho $8$ transistor thay vì $4$ nhánh để lấy $I_{D1\text{–}8} = 120\,\mu\text{A}$/nhánh — thực tế chỉ tiêu thụ $240\,\mu\text{A}$/tầng = $480\,\mu\text{A}$ cho cả lõi): chỉ còn $1\text{ V} - 0{,}5\text{ V} = 0{,}5\text{ V}$ dự trữ ở ngõ ra chia bất đối xứng cho 2 transistor Tầng 2 ($|V_{OV5,6}| = 200\text{ mV}$ cho PMOS khuếch đại để giữ $g_{m5,6} = 1{,}2\text{ mA/V}$ lớn và $V_{OV7,8} = 300\text{ mV}$ cho nguồn dòng tải NMOS để giảm nhiễu!). Với $I_D = 120\,\mu\text{A}$/nhánh của sách, Tầng 1 ($V_{OV1,2} = 100\text{ mV}, |V_{OV3,4}| = 400\text{ mV}$) đạt $|A_{v1}| = g_{m1}(r_{O1} \parallel r_{O3}) \approx 2{,}4\text{ mA/V} \times (83{,}3\text{ k}\Omega \parallel 41{,}7\text{ k}\Omega) \approx 66{,}7$ (`NG09-06`), nhân với Tầng 2 $|A_{v2}| = g_{m5,6}(r_{O5,6} \parallel r_{O7,8}) \approx 1{,}2\text{ mA/V} \times (41{,}7\text{ k}\Omega \parallel 83{,}3\text{ k}\Omega) \approx 33{,}3$ cho tổng độ lợi $|A_v| \approx 2200$, vượt xa mục tiêu $A_0 = 100$ (và ở tiến trình kênh ngắn nếu $g_m r_O$ nhỏ cần nâng Tầng 1 lên cascode theo Phương trình 9.18: $A_v \approx g_{m1}[(g_{m3}r_{O3}r_{O1})\parallel(g_{m5}r_{O5}r_{O7})]\cdot g_{m9}(r_{O9}\parallel r_{O11})$!).
 
 ---
 

@@ -16,8 +16,8 @@
     },
     {
       "chapter": 14,
-      "section": "14.1.5, 14.2.2-14.2.3",
-      "pages": "584-585, 598-603",
+      "section": "14.1.5, 14.2.1-14.2.3",
+      "pages": "584-585, 593-603",
       "equations": ["14.49", "14.88", "14.94"]
     }
   ],
@@ -139,7 +139,7 @@ $$
 Khác với mạch giữ mẫu đơn giản chỉ chịu $\frac{kT}{C_S}$ (hoặc $\frac{2kT}{C_S}$ vi sai), trong pha $\phi_2$ nhiễu nhiệt của công tắc và của chính OTA (hệ số nhiễu dư $\gamma_{\text{eff}}$ phản ánh cả cặp vi sai lẫn tải nguồn dòng) tiếp tục được tích phân trên băng thông nhiễu vòng kín $\Delta f_n = \frac{1}{4\tau_{\text{lin}}} = \frac{\beta G_m}{4 C_{L,\text{eff}}}$ rồi bị lấy mẫu ở cuối pha $\phi_2$. Do băng thông vòng kín lớn gấp nhiều lần $f_s/2$, toàn bộ phổ nhiễu rộng này **gấp chồng (fold/alias)** trọn vẹn vào dải Nyquist thứ nhất $[0, f_s/2]$:
 
 $$
-\overline{V_{n,\text{out,diff}}^2} = \underbrace{\frac{2 k T}{C_S}\left(\frac{C_1}{C_2}\right)^{\!2}}_{\text{Nhiễu lấy mẫu pha }\phi_1\text{ truyền sang }\phi_2} + \underbrace{\frac{2 k T \gamma_{\text{eff}}}{\beta C_{L,\text{eff}}}}_{\text{Nhiễu rộng dải của OTA gấp phổ ở cuối }\phi_2}
+\overline{V_{n,\text{out,diff}}^2} = \underbrace{\frac{2 k T}{C_1}\left(\frac{C_1}{C_2}\right)^{\!2}}_{\text{Nhiễu lấy mẫu pha }\phi_1\text{ truyền sang }\phi_2\;\left(=\frac{2kT C_1}{C_2^2},\; C_1 \equiv C_S,\; C_2 \equiv C_F\right)} + \underbrace{\frac{2 k T \gamma_{\text{eff}}}{\beta C_{L,\text{eff}}}}_{\text{Nhiễu rộng dải của OTA gấp phổ ở cuối }\phi_2}
 $$
 
 Trong Spectre 15.1, chỉ có phân tích **`pss` + `pnoise` (`noisetype=timedomain` / `sampled` chốt tại thời điểm strobe cuối $\phi_2$, với `maxsideband >= 15..30`)** mới tính chính xác đồng thời cả hai số hạng này cùng phần nhiễu $1/f$ chưa bị CDS khử hết!

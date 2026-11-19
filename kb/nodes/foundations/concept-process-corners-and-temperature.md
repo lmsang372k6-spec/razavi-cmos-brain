@@ -60,7 +60,7 @@ Một thiết kế tương tự chạy hoàn hảo tại điểm danh định (`
 Trong các mô hình SPICE/BSIM (§17.3.7, Phương trình 17.51–17.52, tr. 708 & §17.2.1 tr. 695–696):
 1. **Năng lượng vùng cấm của Silic giảm khi tăng $T$:**
    $$E_g(T) = 1.16 - \frac{7.02 \times 10^{-4}\,T^2}{T + 1108}\;(\text{eV})$$
-   *(Tại $T = 300\,\text{K}$, $E_g \approx 1.115\,\text{eV}$ và $\partial E_g / \partial T \approx -0.24\,\text{meV/K}$ — thông số gốc quyết định độ cong bậc hai của mạch tham chiếu vùng cấm Bandgap ở Chương 12, xem Bài tập 17.14!).*
+   *(Tại $T = 300\,\text{K}$, $E_g \approx 1.115\,\text{eV}$ và $\partial E_g / \partial T \approx -0.267\,\text{meV/K} \approx -0.27\,\text{meV/K}$ — thông số gốc quyết định độ cong bậc hai của mạch tham chiếu vùng cấm Bandgap ở Chương 12, xem Bài tập 17.14!).*
 2. **Độ linh động hạt tải giảm theo lũy thừa âm của nhiệt độ:**
    $$\mu(T) = \mu(T_0)\left(\frac{T_0}{T}\right)^{k_\mu}, \qquad T_0 = 300\,\text{K}, \quad k_\mu \approx 1.5\;(\text{thực tế } 1.2\text{–}2.0)$$
 3. **Điện áp ngưỡng giảm gần tuyến tính theo nhiệt độ:**
@@ -152,7 +152,7 @@ foreach(cor corners
   modelFile(list("toplevel_models.scs" cor))
   foreach(tmp temps
     temp(tmp)
-    desVar("VDD" (if cor == "ss" 0.9*VDD_nom (if cor == "ff" 1.1*VDD_nom VDD_nom)))
+    desVar("VDD" if(cor == "ss" then 0.9*VDD_nom else if(cor == "ff" then 1.1*VDD_nom else VDD_nom)))
     analysis('dc ?saveOppoint t)
     analysis('stb ?start 1 ?stop 10G ?probe "/IPRB0")
     run()
@@ -176,7 +176,7 @@ foreach(cor corners
 
 - **Sách gốc Razavi (2nd Ed.):**
   - Chương 17: §17.2.1 (tr. 695–696: hệ số nhiệt của $V_{TH} \approx -1\,\text{mV/K}$ và độ dốc dưới ngưỡng $S(T)$), §17.3.7 *Temperature Dependence* (tr. 708, Phương trình 17.51–17.52), §17.4 *Process Corners* (tr. 708–709, Hình 17.17–17.18), Bài tập 17.14–17.16 (tr. 710: phân tích độ lợi và nhiễu nhiệt qua 4 góc công nghệ khi phân cực dòng hằng định so với giữ $V_{GS}$ cố định).
-  - Chương 1: §1.1.4 *PVT Variations* (tr. 4); Chương 11: §11.5.2 (tr. 493: lưu ý bảo toàn biên thiết kế từ góc TT sang SS/FF, dải nhiệt và $\pm 5\%\,V_{DD}$).
+  - Chương 1: §1.1.4 *Analog Design Challenges* (mục *PVT Variations*, tr. 4); Chương 11: §11.5.2 (tr. 493: lưu ý bảo toàn biên thiết kế từ góc TT sang SS/FF, dải nhiệt và $\pm 5\%\,V_{DD}$).
 - **Thuật ngữ chuẩn CLB Vi Mạch (`THUẬT NGỮ CHUẨN.md`):**
   - `T069` / `T073` / `T1211`: *PVT variations* $\rightarrow$ **Biến thiên PVT** (lưu ý `T069`: *process* trong PVT là **quy trình công nghệ chế tạo**, không phải nút công nghệ hay xử lý tín hiệu).
   - `T1944`: *corner of the process* $\rightarrow$ **Góc công nghệ chế tạo** (`TT`, `FF`, `SS`, `FS`, `SF`).

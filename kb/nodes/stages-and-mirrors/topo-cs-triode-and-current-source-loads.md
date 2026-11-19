@@ -12,7 +12,7 @@
       "chapter": 3,
       "section": "3.3.1-3.3.5",
       "pages": "47-61, 98",
-      "equations": ["3.4", "3.6", "3.21", "3.25", "3.30", "3.46", "3.47", "3.48", "3.49", "3.50", "3.51"]
+      "equations": ["3.4", "3.6", "3.10", "3.12", "3.13", "3.21", "3.25", "3.30", "3.35", "3.43", "3.46", "3.47", "3.48", "3.49", "3.50", "3.51"]
     }
   ],
   "glossary_codes": ["T023", "T095", "T208", "T495", "T508", "T509", "T511", "T512", "T513", "T608"],
@@ -56,7 +56,7 @@ Hãy hình dung giao điểm làm việc tĩnh $Q(I_{D0}, V_{\text{out,DC}})$ tr
 ## 2. Hệ Phương trình Cốt lõi & Tư duy "Nhìn Mạch Đọc Nhanh" (Analysis by Inspection)
 
 ### 2.1. Định lý Trần Độ lợi Ohm của Tải Điện trở vs. Tải Nguồn Dòng
-Xét tầng CS tải điện trở $R_D$ (Phương trình 3.4 & 3.6, tr. 48): viết $g_{m1} = \frac{2 I_D}{V_{OV1}}$ (hoặc tổng quát $I_D \cdot (g_m/I_D)_1$), độ lợi tín hiệu nhỏ gắn liền trực tiếp với độ sụt áp một chiều $\Delta V_{RD} \triangleq V_{DD} - V_{\text{out,DC}} = I_D R_D$:
+Xét tầng CS tải điện trở $R_D$ (Phương trình 3.10, 3.12 & 3.13, tr. 48–50): viết $g_{m1} = \frac{2 I_D}{V_{OV1}}$ (hoặc tổng quát $I_D \cdot (g_m/I_D)_1$), độ lợi tín hiệu nhỏ gắn liền trực tiếp với độ sụt áp một chiều $\Delta V_{RD} \triangleq V_{DD} - V_{\text{out,DC}} = I_D R_D$:
 
 $$|A_{v,\text{res}}| = g_{m1} R_D = \frac{2 I_D}{V_{OV1}} R_D = \frac{2(V_{DD} - V_{\text{out,DC}})}{V_{OV1}} = \left(\frac{g_m}{I_D}\right)_1 (V_{DD} - V_{\text{out,DC}})$$
 
@@ -94,11 +94,11 @@ Giả sử dòng phân cực nhánh $I_{D1}$ hoặc tham số tải bị lệch 
 ## 3. Bất biến Cấu trúc & Các Bẫy Lỗi Kinh điển (Structural Invariants & Traps)
 
 - **[INV-CSLOAD-01] Định lý Đối ngẫu Giữa Độ lợi DC Vòng hở và Độ bất định Điểm Tĩnh:** Trong mọi tầng khuếch đại không có tụ chặn DC, tích giữa độ nhạy điểm tĩnh đối với sai lệch ngưỡng $\frac{\partial V_{\text{out,DC}}}{\partial V_{TH1}}$ và nghịch đảo độ lợi $|A_v|^{-1}$ luôn xấp xỉ hằng số $1$: tức là **$\Delta V_{\text{out,DC}} \approx -|A_v|\,\Delta V_{TH1}$**! Mạch có độ lợi một chiều $|A_v| = 40$ sẽ khuếch đại một sai lệch $\Delta V_{TH} = 10\,\text{mV}$ thành độ trôi ngõ ra $400\,\text{mV}$ — chứng minh toán học vì sao không thể tách rời bài toán độ lợi cao khỏi bài toán vòng hồi tiếp ổn định DC!
-- **[INV-CSLOAD-02] Kỹ thuật Bơm Dòng Phụ (Current-Bleeding / Helper Current Source — Hình 3.16, Phương trình 3.30, tr. 55):** Với tầng CS tải mắc diode $M_2$ bị kẹt độ lợi thấp do $g_{m2} \propto \sqrt{I_{D2}}$, nếu ta treo thêm một nguồn dòng tĩnh phụ $I_S = \alpha I_{D1}$ (ví dụ $\alpha = 0{,}8$) cấp thẳng $80\%$ dòng cho $M_1$ để chỉ chừa lại $I_{D2} = 0{,}2 I_{D1}$ chảy qua diode $M_2$, thì $g_{m2}$ giảm đi $\sqrt{5}$ lần ở cùng $(W/L)_2$ (hoặc giảm $5$ lần ở cùng $V_{OV2}$), **nhân vọt độ lợi của tải diode lên $2{,}2\text{–}5$ lần** mà vẫn giữ điểm làm việc tự neo ổn định!
+- **[INV-CSLOAD-02] Kỹ thuật Bơm Dòng Phụ (Current-Bleeding / Helper Current Source — Ví dụ 3.6, Hình 3.17, Phương trình 3.40–3.43, tr. 57):** Với tầng CS tải mắc diode $M_2$ bị kẹt độ lợi thấp do $g_{m2} \propto \sqrt{I_{D2}}$, nếu ta treo thêm một nguồn dòng tĩnh phụ $I_S = \alpha I_{D1}$ (ví dụ $\alpha = 0{,}75$ trong Ví dụ 3.6 hoặc $\alpha = 0{,}8$) cấp thẳng $75\text{–}80\%$ dòng cho $M_1$ để chỉ chừa lại $I_{D2} = (1-\alpha) I_{D1}$ chảy qua diode $M_2$, thì $g_{m2}$ giảm đi $\sqrt{5}$ lần ở cùng $(W/L)_2$ (hoặc giảm $5$ lần ở cùng $V_{OV2}$ khi $\alpha = 0{,}8$), **nhân vọt độ lợi của tải diode lên $2\text{–}5$ lần** mà vẫn giữ điểm làm việc tự neo ổn định!
 
 - **[TRAP-CSLOAD-01] Bẫy Góc Tiến trình Chéo (`FS` / `SF`) Giết Chết Tải PMOS Triode Có $V_b$ Cố định:**
   Nếu bạn buộc cổng PMOS tải triode $M_2$ xuống đất ($V_b = 0\,\text{V}$) như bài tập sách giáo khoa, ở góc `SF` (NMOS chậm, PMOS nhanh: $|V_{THP}|$ thấp, $\mu_p$ cao), $R_{on2}$ sụt giảm $35\%$, kéo tụt độ lợi $|A_v|$; ngược lại ở góc `FS` (NMOS nhanh, PMOS chậm: $|V_{THP}|$ cao, $\mu_p$ thấp) kết hợp $V_{DD} - 10\%$, lượng $(V_{DD} - |V_{THP}|)$ bị bóp nghẹt làm $R_{on2}$ tăng vọt gấp đôi và đẩy $M_2$ lao thẳng vào vùng bão hòa hoặc đẩy $M_1$ sập vào triode! **Cách giải duy nhất trên silicon:** tạo $V_b$ từ một nhánh gương bản sao (*replica biasing*) ép $R_{on2}$ bám theo một điện trở chuẩn hoặc theo $1/g_{m1}$.
-- **[TRAP-CSLOAD-02] Bẫy Hiệu ứng Thân $\eta = g_{mb2}/g_{m2}$ Của Tải NMOS Mắc Diode Chung Đế (Phương trình 3.21–3.25):** Khi dùng NMOS $M_2$ mắc diode làm tải phía trên trên công nghệ một giếng $p$-substrate chung, cực nguồn của $M_2$ nối vào chính nút $V_{\text{out}} > 0$, nên $V_{SB2} = V_{\text{out}}$ vừa tạo $g_{mb2}$ làm sụt độ lợi đi $(1+\eta) \approx 1{,}25$ lần, vừa làm tăng vọt $V_{TH2}(V_{\text{out}})$ ăn mất thêm $150\text{–}250\,\text{mV}$ trần dao động ngõ ra! Nếu bắt buộc dùng tải mắc diode ở phía trên, hãy ưu tiên dùng **PMOS mắc diode trong giếng $n$-well nối nguồn lên $V_{DD}$** ($V_{SB2} = 0 \Rightarrow g_{mb2} = 0$, Phương trình 3.26) và dùng cặp tỉ số dòng/kích thước phù hợp!
+- **[TRAP-CSLOAD-02] Bẫy Hiệu ứng Thân $\eta = g_{mb2}/g_{m2}$ Của Tải NMOS Mắc Diode Chung Đế (Phương trình 3.21–3.30):** Khi dùng NMOS $M_2$ mắc diode làm tải phía trên trên công nghệ một giếng $p$-substrate chung (Hình 3.13), cực nguồn của $M_2$ nối vào chính nút $V_{\text{out}} > 0$, nên $V_{SB2} = V_{\text{out}}$ vừa tạo $g_{mb2}$ làm sụt độ lợi đi $(1+\eta) \approx 1{,}25$ lần, vừa làm tăng vọt $V_{TH2}(V_{\text{out}})$ ăn mất thêm $150\text{–}250\,\text{mV}$ trần dao động ngõ ra! Nếu bắt buộc dùng tải mắc diode ở phía trên, hãy ưu tiên dùng **PMOS mắc diode trong giếng $n$-well nối nguồn lên $V_{DD}$** ($V_{SB2} = 0 \Rightarrow g_{mb2} = 0$, Hình 3.16, Phương trình 3.35, tr. 56) và dùng cặp tỉ số dòng/kích thước phù hợp!
 
 ---
 
@@ -147,8 +147,8 @@ printf("Vin_mid = %.3f V | |Av_mid| = %.2f V/V (%.1f dB)\n" vin_mid av_mid 20*lo
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
 - **Chương 3:**
-  - §3.3.1 *Common-Source Stage with Resistive Load* (tr. 47–52, Phương trình 3.3–3.20, Ví dụ 3.1–3.3, Hình 3.5–3.8).
-  - §3.3.2 *CS Stage with Diode-Connected Load* (tr. 52–57, Phương trình 3.21–3.45, Ví dụ 3.4–3.7, Hình 3.13–3.17 — bao gồm kỹ thuật nguồn dòng phụ trợ *current bleeding* Hình 3.16, Phương trình 3.30).
+  - §3.3.1 *Common-Source Stage with Resistive Load* (tr. 47–52, Phương trình 3.3–3.20, Ví dụ 3.1–3.4, Hình 3.4–3.9).
+  - §3.3.2 *CS Stage with Diode-Connected Load* (tr. 52–58, Phương trình 3.21–3.45, Ví dụ 3.5–3.7, Hình 3.10–3.17 — bao gồm tải PMOS diode Hình 3.16 Phương trình 3.35 và kỹ thuật nguồn dòng phụ trợ *current bleeding* Ví dụ 3.6, Hình 3.17, Phương trình 3.40–3.43).
   - §3.3.3 *CS Stage with Current-Source Load* (tr. 58–59, Phương trình 3.46–3.47, Ví dụ 3.8, Hình 3.18–3.19).
   - §3.3.4 *CS Stage with Active Load* (tr. 59–60, Phương trình 3.48–3.50, Hình 3.20–3.21).
   - §3.3.5 *CS Stage with Triode Load* (tr. 60–61, Phương trình 3.51, Hình 3.22, *Nanometer Design Note 4*).

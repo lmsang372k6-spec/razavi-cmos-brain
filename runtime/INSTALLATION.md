@@ -1,6 +1,6 @@
-# Trạng thái phát hành 2026.11.18.6
+# Trạng thái phát hành 2026.11.18.7
 
-Bản phát hành **2026.11.18.6** kế thừa toàn bộ nền tảng guest `2026.11.06.2` & `2026.11.18.6`, mở rộng **Bộ não Tri thức CMOS Razavi + Quản lý Nguồn PMIC + Hệ thống Tín hiệu Hỗn hợp AMS + Kỹ năng Thực chiến GitHub (`library/kb/`)** từ `134 -> 162` thẻ 6 khối xuyên suốt **10 tầng tri thức**, đồng thời trang bị trọn bộ **Chu trình Thiết kế Tối ưu Khép kín 7 Bước (`Python 2.6.6` + Pure IC617 SKILL)** cho Cadence Virtuoso IC617 & Spectre 15.1 trên RHEL 6.5:
+Bản phát hành **2026.11.18.7** kế thừa toàn bộ nền tảng guest `2026.11.06.2` & `2026.11.18.6`, hoàn tất kiểm toán toán học toàn diện cả 162 thẻ tri thức 6 khối, chuẩn hóa 21 bảng kiểm cấu trúc và đối chiếu tọa độ gốc sách Razavi 2nd Ed. (**311 mục**, **1.504 phương trình**, **1.163 hình vẽ**, **423 mục từ `20_Index`**), đồng thời duy trì trọn bộ **Chu trình Thiết kế Tối ưu Khép kín 7 Bước (`Python 2.6.6` + Pure IC617 SKILL)** cho Cadence Virtuoso IC617 & Spectre 15.1 trên RHEL 6.5:
 
 - **Bộ não Tri thức 162 Thẻ / 10 Tầng / 72 SVG / 21 Checklists / 52 GitHub Repos (`kb_lookup.py` + `kb_fetch.py`):**
   - **162 thẻ 6 khối** = **112 thẻ nguyên lý Razavi** (Ch.01–Ch.19) + **12 thẻ Quản lý Nguồn PMIC** (`Buck`, `Boost`, `4-Switch Buck-Boost`, `SC Charge-Pump`, `HS Bootstrap Driver & Dead-Time`, `VMC Type-II/III`, `Peak/Valley CMC & Slope-Comp`, `SenseFET/DCR/ZCD`, `Capless FVF/Ahuja/DFC/SRE LDO`, `POR/UVLO/Soft-Start/Foldback OCP/TSD`, `SpectreRF pss+pstb`) + **12 thẻ Tín hiệu Hỗn hợp & Hệ thống AMS** (`6T Schmitt & Hysteresis`, `RC Sawtooth & Pierce XO`, `3-Op-Amp INA & Chopper CFIA`, `Active-RC Sallen-Key & Tow-Thomas`, `Gm-C & Automatic PVT Tuning`, `AMUX & ADC T/H Driver`, `Kelvin/R-2R/Segmented Current-Steering DAC`, `SC/CT Delta-Sigma`, `Flash & 1.5-bit/stage Pipelined MDAC`, `LVDS/CML/CTLE/CDR`, `Hierarchical Spec Budgeting`, `Central I_PTAT/I_ZTC Bias Hub`) + **26 thẻ tầng EDA** (tổng cộng **27 thẻ `skill-*`**).
@@ -13,7 +13,7 @@ Bản phát hành **2026.11.18.6** kế thừa toàn bộ nền tảng guest `20
   - `tools/psf_ascii_reader.py` + `tools/psf_audit.py`: máy trạng thái phân tích đầy đủ Spectre 15.1 PSF ASCII (`STRUCT` BSIM4 `dcOpInfo.info`, `TRACE GROUP`, delta-compressed `tran.tran`, biến phức `loopGain` trong `stb.stb`), kiểm toán vùng hoạt động MOSFET (`op-audit`) và chấm điểm tự động đa góc PVT (`metrics --spec spec.json`).
   - `tools/sizing_opt.py`: bộ tối ưu 2 giai đoạn **Sensitivity Jacobian + Penalty-Barrier Log Trust-Region / Subspace Nelder-Mead** đạt chuẩn 100% ràng buộc cứng + dự trữ thế bão hòa $\ge 50\text{ mV}$ và tối ưu hóa công suất/FoM trên lưới `5nm`.
   - `models/veriloga/pwm_switch_avg_ccm_dcm.va`: mô hình công tắc trung bình 3 cực Vorperian không trạng thái ẩn, tự động chuyển tiếp trơn $C^\infty$ giữa CCM và DCM cho Buck, Boost và Buck-Boost (`.dc/.ac/.stb` hội tụ trong `< 0.3s`).
-- **Đóng gói sẵn sàng triển khai trên RHEL 6.5 (Staging trước khi đẩy GitHub):** `install/SKILL-ANALOG.tar.gz`, `install/SKILL-ANALOG.tar.gz.sha256`, `install/install.sh`, `install/update-guest.sh` và ảnh đĩa `SKILL-ANALOG.iso` (`2026.11.18.6`, nhãn đĩa `SKILL_ANALOG`). Ổ `F:\CadenceVM` được giữ nguyên chỉ đọc 100%.
+- **Đóng gói sẵn sàng triển khai trên RHEL 6.5 (Staging trước khi đẩy GitHub):** `install/SKILL-ANALOG.tar.gz`, `install/SKILL-ANALOG.tar.gz.sha256`, `install/install.sh`, `install/update-guest.sh` và ảnh đĩa `SKILL-ANALOG.iso` (`2026.11.18.7`, nhãn đĩa `SKILL_ANALOG`). Ổ `F:\CadenceVM` được giữ nguyên chỉ đọc 100%.
 
 ---
 

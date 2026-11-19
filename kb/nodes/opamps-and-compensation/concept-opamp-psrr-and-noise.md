@@ -89,7 +89,7 @@ $$
 \overline{V_{n,in,\text{FC}}^2} = 8 k T \gamma \left( \frac{1}{g_{m1,2}} + \frac{g_{m7,8}}{g_{m1,2}^2} + \frac{g_{m9,10}}{g_{m1,2}^2} \right) + \frac{2 K_N}{C_{ox}(WL)_{1,2} f} + \frac{2 K_P}{C_{ox}(WL)_{7,8} f}\frac{g_{m7,8}^2}{g_{m1,2}^2} + \frac{2 K_N}{C_{ox}(WL)_{9,10} f}\frac{g_{m9,10}^2}{g_{m1,2}^2}
 $$
 
-3. **Two-Stage Op-Amp (Hình 9.23, Phương trình 9.92–9.95):** Tầng 1 ($M_1\text{–}M_4$, độ lợi $A_{v1} = g_{m1,2}(r_{O1,2} \parallel r_{O3,4})$) ghép nối tiếp Tầng 2 ($M_5\text{–}M_8$):
+3. **Two-Stage Op-Amp (Hình 9.23 & Hình 9.86, Phương trình 9.92–9.95):** Tầng 1 ($M_1\text{–}M_4$, độ lợi $A_{v1} = g_{m1,2}(r_{O1,2} \parallel r_{O3,4})$) ghép nối tiếp Tầng 2 ($M_5\text{–}M_8$):
 
 $$
 \overline{V_{n,in,\text{2stg}}^2} = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{g_{m1,2}^2 g_{m5,6}^2 (r_{O1,2} \parallel r_{O3,4})^2} \cdot g_{m5,6}^2 \right] = 8 k T \gamma \left[ \frac{1}{g_{m1,2}} + \frac{g_{m3,4}}{g_{m1,2}^2} + \frac{g_{m5,6} + g_{m7,8}}{A_{v1}^2 \cdot g_{m5,6}^2} \cdot g_{m5,6}^2 \right]
@@ -140,9 +140,9 @@ $$
      - `PSRR- (dB) = db20(mag(getData("/Vin_diff" ?result "xf")) / mag(getData("/VSS" ?result "xf")))`
    - Kết hợp chạy `xf` bên trong vòng **Monte Carlo Mismatch** để xuất phân bố thống kê `PSRR+` và `PSRR-` thực tế tại `1 kHz`, `1 MHz`, và `f_GBW`!
 
-### 5.3. Ví dụ Định lượng Ngân sách Nhiễu Op-Amp (Đối chiếu Ví dụ 9.26 Razavi, tr. 404–405)
-Xét thiết kế Op-Amp Folded-Cascode ở $T = 300\text{ K}$ ($4kT = 1{,}656 \times 10^{-20}\text{ J}$, $\gamma = 1$ cho kênh ngắn) yêu cầu mật độ biên độ nhiễu nhiệt quy về ngõ vào $\sqrt{\overline{V_{n,in}^2}} \le 5\text{ nV}/\sqrt{\text{Hz}}$ (tức $\overline{V_{n,in}^2} \le 2{,}5 \times 10^{-17}\text{ V}^2/\text{Hz}$):
-1. Nếu chỉ tính riêng cặp đầu vào $M_{1,2}$ (giả sử tạm bỏ qua tải): $\frac{8 k T \gamma}{g_{m1,2}} \le 2{,}5 \times 10^{-17} \implies g_{m1,2} \ge 0{,}53\text{ mS}$ (quá lạc quan!).
+### 5.3. Ví dụ Định lượng Ngân sách Nhiễu Op-Amp (Đối chiếu §9.12 & Ví dụ 9.26 Razavi, tr. 402–405)
+Xét thiết kế Op-Amp Folded-Cascode ở $T = 300\text{ K}$ ($4kT = 1{,}656 \times 10^{-20}\text{ J} \implies 8kT\gamma = 3{,}312 \times 10^{-20}\text{ J}$ với $\gamma = 1$ cho kênh ngắn) yêu cầu mật độ biên độ nhiễu nhiệt quy về ngõ vào $\sqrt{\overline{V_{n,in}^2}} \le 5\text{ nV}/\sqrt{\text{Hz}}$ (tức $\overline{V_{n,in}^2} \le 2{,}5 \times 10^{-17}\text{ V}^2/\text{Hz}$, tương đương mức $5{,}16\text{ nV}/\sqrt{\text{Hz}}$ của Op-Amp hai tầng trong Ví dụ 9.26 Hình 9.87):
+1. Nếu chỉ tính riêng cặp đầu vào $M_{1,2}$ (giả sử tạm bỏ qua tải): $\frac{8 k T \gamma}{g_{m1,2}} \le 2{,}5 \times 10^{-17} \implies g_{m1,2} \ge 1{,}325\text{ mS}$ (quá lạc quan!).
 2. Trong thực tế có thêm cặp nguồn dòng gập $M_{7,8}$ và cặp nguồn dòng tải $M_{9,10}$: chọn định cỡ đối ngẫu sao cho $(g_m/I_D)_{1,2} = 20\text{ V}^{-1}$, còn nguồn gập (mang dòng gấp đôi $2 I_{D1}$) dùng $(g_m/I_D)_{7,8} = 6\text{ V}^{-1} \implies \frac{g_{m7,8}}{g_{m1,2}} = \frac{2 \times 6}{20} = 0{,}60$, và nguồn tải dùng $(g_m/I_D)_{9,10} = 6\text{ V}^{-1} \implies \frac{g_{m9,10}}{g_{m1,2}} = 0{,}30$.
 3. Hệ số nhân nhiễu tổng thể thực tế là:
 
@@ -153,7 +153,7 @@ $$
 4. Do đó cặp đầu vào phải được thiết kế với hỗ dẫn thực sự lớn gấp gần đôi:
 
 $$
-g_{m1,2} \ge \frac{8 k T \gamma \times 1{,}90}{2{,}5 \times 10^{-17}} \approx 1{,}01\text{ mS} \implies I_{D1,2} = \frac{1{,}01\text{ mS}}{20\text{ V}^{-1}} \approx 50{,}5\,\mu\text{A} \quad (I_{SS} \approx 101\,\mu\text{A})!
+g_{m1,2} \ge \frac{8 k T \gamma \times 1{,}90}{2{,}5 \times 10^{-17}} \approx 2{,}52\text{ mS} \implies I_{D1,2} = \frac{2{,}52\text{ mS}}{20\text{ V}^{-1}} \approx 126\,\mu\text{A} \quad (I_{SS} \approx 252\,\mu\text{A})!
 $$
 
 Phép tính 4 dòng này cho thấy rõ ràng vì sao quên đóng góp nhiễu của nguồn dòng gập và tải sẽ làm thiết kế trượt chỉ tiêu nhiễu gần $3\text{ dB}$ ngay lần tape-out đầu tiên!
@@ -163,7 +163,7 @@ Phép tính 4 dòng này cho thấy rõ ràng vì sao quên đóng góp nhiễu 
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
-- **Chương 9:** §9.11 *Power Supply Rejection* (tr. 400–402, Phương trình 9.81–9.87, Hình 9.81–9.83, Ví dụ 9.25), §9.12 *Noise in Op Amps* (tr. 402–405, Phương trình 9.88–9.100, Hình 9.84–9.85, Ví dụ 9.26).
+- **Chương 9:** §9.11 *Power Supply Rejection* (tr. 400–402, Phương trình 9.81–9.87, Hình 9.81–9.83, Ví dụ 9.25), §9.12 *Noise in Op Amps* (tr. 402–405, Phương trình 9.88–9.100, Hình 9.84–9.87, Ví dụ 9.26).
 - **Chú giải Hiệu đính Học thuật CLB (`NG09` & `T067`):**
   - **`T067` (Quy tắc dịch CLB P05):** Dịch `power supply rejection` là **khả năng khử nhiễu nguồn cấp / khả năng khử ảnh hưởng của nguồn cấp** (nhấn mạnh việc chặn nhiễu truyền từ nguồn cấp sang ngõ ra, tránh dịch thành "ổn định nguồn cấp").
   - **`NG09-12` (tr. 403):** Cuối đoạn phân tích nhiễu của Folded-Cascode trong §9.12, lời văn gốc dẫn chiếu sang `"Problem 9.15"` cho phần tính thêm nhiễu nhấp nháy $1/f$; thực tế Bài 9.15 hỏi về trở kháng ra của tầng tăng cường độ lợi, còn bài tập tính nhiễu $1/f$ của mạch Hình 9.85(a) chính là **Bài 9.17** (tr. 408).

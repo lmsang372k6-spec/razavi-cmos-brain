@@ -676,6 +676,7 @@ def cmd_status():
             "glossary_terms": len(terms),
             "book_sections": len(coords.get("sections", [])),
             "book_equations": len(coords.get("equations", [])),
+            "book_figures": len(coords.get("figures", [])),
             "book_index_terms": len(coords.get("index_terms", [])),
             "github_repos": len(catalog.get("repositories", [])),
         },
@@ -746,9 +747,10 @@ def _enrich_section_record(sec, base_url):
     }
 
 
-def _enrich_equation_record(eq, base_url):
+def _enrich_equation_record(eq, base_url, ch_map=None):
     nid = eq.get("node_id", "")
-    return {
+    ch_obj = ch_map.get(eq.get("chapter")) if ch_map else None
+    out = {
         "eq_id": eq.get("eq_id"),
         "eq_num": eq.get("eq_num"),
         "label": eq.get("label"),
@@ -762,6 +764,32 @@ def _enrich_equation_record(eq, base_url):
         "related_nodes": eq.get("related_nodes", []),
         "web_url": web_url_for_node(base_url, nid) if nid else "",
     }
+    if ch_obj and ch_obj.get("pdf_file"):
+        out["pdf_file"] = ch_obj.get("pdf_file")
+    return out
+
+
+def _enrich_figure_record(fig, base_url, ch_map=None):
+    nid = fig.get("node_id", "")
+    ch_obj = ch_map.get(fig.get("chapter")) if ch_map else None
+    cap = fig.get("caption") or fig.get("caption_en", "")
+    out = {
+        "fig_id": fig.get("fig_id"),
+        "fig_num": fig.get("fig_num"),
+        "label": fig.get("label"),
+        "chapter": fig.get("chapter"),
+        "section": fig.get("section"),
+        "book_page": fig.get("book_page"),
+        "pdf_page": fig.get("pdf_page"),
+        "caption": cap,
+        "caption_en": fig.get("caption_en") or cap,
+        "node_id": nid,
+        "related_nodes": fig.get("related_nodes", []),
+        "web_url": web_url_for_node(base_url, nid) if nid else "",
+    }
+    if ch_obj and ch_obj.get("pdf_file"):
+        out["pdf_file"] = ch_obj.get("pdf_file")
+    return out
 
 
 def cmd_coord(query_str, limit=12):
@@ -782,11 +810,15 @@ def cmd_coord(query_str, limit=12):
 
     sections_all = coords.get("sections", [])
     equations_all = coords.get("equations", [])
+    figures_all = coords.get("figures", [])
     index_all = coords.get("index_terms", [])
     chapters_all = coords.get("chapters", [])
+    ch_map = dict((c.get("chapter"), c) for c in chapters_all)
+    sec_id_map = dict((to_text(s.get("section_id", "")).lower(), s) for s in sections_all)
 
     matched_sections = []
     matched_equations = []
+    matched_figures = []
     matched_index_terms = []
     matched_chapters = []
     ordered_node_ids = []
@@ -797,18 +829,28 @@ def cmd_coord(query_str, limit=12):
             if nid and nid in node_map and nid not in ordered_node_ids:
                 ordered_node_ids.append(nid)
 
-    # 1. Equation pattern: "Eq. 10.25", "Eq.2.10", "(2.10)", "pt 5.19", "equation 9.21"
+    def add_chapter_num(cnum):
+        c_obj = ch_map.get(cnum)
+        if c_obj and all(x.get("chapter") != cnum for x in matched_chapters):
+            matched_chapters.append(c_obj)
+
+    # 1. Explicit Equation pattern: "Eq. 10.25", "Eq.2.10", "(2.10)", "pt 5.19", "phuong trinh 14.94"
+    eq_num_resolved = None
     eq_match = re.match(
-        r"^(?:(?:eq\.?|equation|pt|phuong\s*trinh)\s*\(?(\d+\.\d+[a-z]?)\)?|\((\d+\.\d+[a-z]?)\))$",
+        r"^(?:(?:eqs?\.?|equations?|pt|phuong\s*trinh)\s*\(?(\d+\.\d+[a-z]?)\)?|\((\d+\.\d+[a-z]?)\))$",
         q_raw.strip(),
         re.IGNORECASE,
     )
     if not eq_match:
         eq_match = re.match(
-            r"^(?:eq\.?|equation|pt|phuong\s*trinh)\s*\(?(\d+\.\d+[a-z]?)\)?$",
+            r"^(?:eqs?\.?|equations?|pt|phuong\s*trinh)\s*\(?(\d+\.\d+[a-z]?)\)?$",
             fold_ascii(q_raw),
             re.IGNORECASE,
         )
+    if eq_match:
+        eq_num_resolved = (
+            eq_match.group(1) or (eq_match.group(2) if eq_match.lastindex and eq_match.lastindex >= 2 else "")
+        ).strip()
 
     # 2. Page pattern: "page 342", "p. 342", "pp. 342", "trang 342", "pdf page 19", or bare integer > 19
     page_match = re.match(
@@ -818,49 +860,91 @@ def cmd_coord(query_str, limit=12):
     )
     bare_int_match = re.match(r"^(\d+)$", q_raw)
 
-    # 3. Section pattern: "9.2", "§12.3", "sec 9.2.3", "section 10.5", "muc 12.3"
-    sec_match = None
-    if not eq_match and not page_match:
-        sec_match = re.match(
-            r"^(?:sec\.?|section|muc|ch\.?\s*\d+\s*sec\.?)?\s*(\d+\.\d+(?:\.\d+)?)$",
-            fold_ascii(q_clean),
-            re.IGNORECASE,
-        )
-
-    # 4. Figure or Worked Example pattern: "Fig. 9.13", "Ex. 8.15", "Example 2.8"
+    # 3. Figure or Worked Example pattern: "Fig. 16.43", "Figure 12.34", "Hình 16.43", "Fig. 12.34(a)", "Ex. 8.15"
     fig_ex_match = None
-    if not eq_match and not page_match and not sec_match:
+    if not eq_num_resolved and not page_match and not bare_int_match:
         fig_ex_match = re.match(
-            r"^(fig(?:ure)?\.?|hinh|ex(?:ample)?\.?|vi\s*du)\s*(\d+\.\d+[a-z]?)$",
+            r"^(fig(?:ure)?s?\.?|hinh|ex(?:ample)?s?\.?|vi\s*du)\s*\(?(\d+\.\d+)\s*([a-z])?\)?\.?$",
             fold_ascii(q_raw),
             re.IGNORECASE,
         )
 
-    if eq_match:
+    # 4. Section vs bare X.Y ("10.49", "14.94", "9.2", "§12.3", "16.3.1", "2.Problems")
+    sec_id_resolved = None
+    fig_num_resolved = None
+    if not eq_num_resolved and not page_match and not bare_int_match and not fig_ex_match:
+        explicit_sec_m = re.match(
+            r"^(?:sec\.?|section|muc|ch\.?\s*\d+\s*sec\.?)\s*(\d+\.(?:\d+(?:\.\d+)?|problems))$",
+            fold_ascii(q_clean),
+            re.IGNORECASE,
+        )
+        bare_num_m = re.match(
+            r"^(\d+\.(?:\d+[a-z]?(?:\.\d+)?|problems))$",
+            fold_ascii(q_clean),
+            re.IGNORECASE,
+        )
+        if explicit_sec_m:
+            raw_tok = explicit_sec_m.group(1)
+            if raw_tok in sec_id_map:
+                sec_id_resolved = to_text(sec_id_map[raw_tok].get("section_id"))
+            else:
+                sec_id_resolved = raw_tok
+        elif bare_num_m:
+            cand_tok = bare_num_m.group(1)
+            cand_base = re.sub(r"[a-z]$", "", cand_tok)
+            if cand_tok in sec_id_map:
+                sec_id_resolved = to_text(sec_id_map[cand_tok].get("section_id"))
+            elif any(
+                to_text(e.get("eq_num", "")).lower() in (cand_tok, cand_base)
+                for e in equations_all
+            ):
+                eq_num_resolved = cand_tok
+            elif any(
+                to_text(fg.get("fig_num", "")).lower() in (cand_tok, cand_base)
+                for fg in figures_all
+            ):
+                fig_num_resolved = cand_base
+            else:
+                sec_id_resolved = cand_tok
+
+    if eq_num_resolved:
         query_type = "equation"
-        eq_num = (eq_match.group(1) or (eq_match.group(2) if eq_match.lastindex and eq_match.lastindex >= 2 else "")).strip()
+        eq_num = eq_num_resolved
+        eq_base = re.sub(r"[a-z]$", "", eq_num.lower())
         eq_label = "(%s)" % eq_num
         parent_sec_ids = []
         for eq in equations_all:
-            if to_text(eq.get("eq_num")).lower() == eq_num.lower() or to_text(eq.get("eq_id")).lower() == ("eq." + eq_num).lower():
-                matched_equations.append(_enrich_equation_record(eq, base_url))
+            enum_low = to_text(eq.get("eq_num")).lower()
+            eid_low = to_text(eq.get("eq_id")).lower()
+            if enum_low == eq_num.lower() or enum_low == eq_base or eid_low == ("eq." + eq_num.lower()):
+                matched_equations.append(_enrich_equation_record(eq, base_url, ch_map))
+                add_chapter_num(eq.get("chapter"))
                 if eq.get("section") and eq.get("section") not in parent_sec_ids:
                     parent_sec_ids.append(eq.get("section"))
                 add_nids([eq.get("node_id")])
                 add_nids(eq.get("related_nodes", []))
 
+        # Put exact deepest assigned section(s) FIRST, then any ancestor sections
+        for exact_sid in parent_sec_ids:
+            sec_exact = sec_id_map.get(to_text(exact_sid).lower())
+            if sec_exact:
+                matched_sections.append(_enrich_section_record(sec_exact, base_url))
+                add_nids(sec_exact.get("primary_nodes", []))
+
         for sec in sections_all:
             sid = sec.get("section_id", "")
+            if any(ms.get("section_id") == sid for ms in matched_sections):
+                continue
             key_eqs = [to_text(x).strip() for x in sec.get("key_equations", [])]
-            if sid in parent_sec_ids or eq_label in key_eqs or eq_num in key_eqs:
+            if eq_label in key_eqs or ("(%s)" % eq_base) in key_eqs or eq_num in key_eqs:
                 matched_sections.append(_enrich_section_record(sec, base_url))
                 add_nids(sec.get("primary_nodes", []))
 
         # Also scan node razavi_refs.equations so every equation cited in cards resolves
         for n in router.get("nodes", []):
             for ref in n.get("razavi_refs", []):
-                ref_eqs = [to_text(e).strip().strip("()") for e in ref.get("equations", [])]
-                if eq_num in ref_eqs:
+                ref_eqs = [to_text(e).strip().strip("()").lower() for e in ref.get("equations", [])]
+                if eq_num.lower() in ref_eqs or eq_base in ref_eqs:
                     add_nids([n.get("id")])
                     ref_sec = to_text(ref.get("section", "")).split(",")[0].split("-")[0].strip()
                     for sec in sections_all:
@@ -884,21 +968,30 @@ def cmd_coord(query_str, limit=12):
                 ):
                     matched_chapters.append(ch)
 
+        raw_page_secs = []
         for sec in sections_all:
             if is_pdf:
                 if sec.get("pdf_page_start", 0) <= pg <= sec.get("pdf_page_end", 0):
-                    matched_sections.append(_enrich_section_record(sec, base_url))
-                    add_nids(sec.get("primary_nodes", []))
+                    raw_page_secs.append(sec)
             else:
                 if sec.get("book_page_start", 0) <= pg <= sec.get("book_page_end", 0):
-                    matched_sections.append(_enrich_section_record(sec, base_url))
-                    add_nids(sec.get("primary_nodes", []))
+                    raw_page_secs.append(sec)
+        raw_page_secs.sort(key=lambda s: (-int(s.get("level", 1)), s.get("book_page_start", 0)))
+        for sec in raw_page_secs:
+            matched_sections.append(_enrich_section_record(sec, base_url))
+            add_nids(sec.get("primary_nodes", []))
 
         for eq in equations_all:
             if (is_pdf and eq.get("pdf_page") == pg) or (not is_pdf and eq.get("book_page") == pg):
-                matched_equations.append(_enrich_equation_record(eq, base_url))
+                matched_equations.append(_enrich_equation_record(eq, base_url, ch_map))
                 add_nids([eq.get("node_id")])
                 add_nids(eq.get("related_nodes", []))
+
+        for fg in figures_all:
+            if (is_pdf and fg.get("pdf_page") == pg) or (not is_pdf and fg.get("book_page") == pg):
+                matched_figures.append(_enrich_figure_record(fg, base_url, ch_map))
+                add_nids([fg.get("node_id")])
+                add_nids(fg.get("related_nodes", []))
 
         if not is_pdf:
             for it in index_all:
@@ -919,7 +1012,7 @@ def cmd_coord(query_str, limit=12):
                     )
                     add_nids(it.get("mapped_nodes", []))
 
-        # Also check node razavi_refs page ranges & chapter fallback (e.g. end-of-chapter Problems pages)
+        # Also check node razavi_refs page ranges & chapter fallback
         if not is_pdf:
             for n in router.get("nodes", []):
                 for ref in n.get("razavi_refs", []):
@@ -957,36 +1050,80 @@ def cmd_coord(query_str, limit=12):
             for ch in matched_chapters:
                 add_nids(ch.get("node_ids", []))
 
-    elif sec_match:
+    elif sec_id_resolved:
         query_type = "section"
-        sec_id = sec_match.group(1)
+        sec_id = sec_id_resolved
         ch_num = int(sec_id.split(".")[0])
-        for ch in chapters_all:
-            if ch.get("chapter") == ch_num:
-                matched_chapters.append(ch)
+        add_chapter_num(ch_num)
         for sec in sections_all:
             sid = to_text(sec.get("section_id", ""))
-            if sid == sec_id or sid.startswith(sec_id + "."):
+            if sid.lower() == sec_id.lower() or sid.lower().startswith(sec_id.lower() + "."):
                 matched_sections.append(_enrich_section_record(sec, base_url))
                 add_nids(sec.get("primary_nodes", []))
         for eq in equations_all:
             esec = to_text(eq.get("section", ""))
-            if esec == sec_id or esec.startswith(sec_id + "."):
-                matched_equations.append(_enrich_equation_record(eq, base_url))
+            if esec.lower() == sec_id.lower() or esec.lower().startswith(sec_id.lower() + "."):
+                matched_equations.append(_enrich_equation_record(eq, base_url, ch_map))
                 add_nids([eq.get("node_id")])
                 add_nids(eq.get("related_nodes", []))
+        for fg in figures_all:
+            fsec = to_text(fg.get("section", ""))
+            if fsec.lower() == sec_id.lower() or fsec.lower().startswith(sec_id.lower() + "."):
+                matched_figures.append(_enrich_figure_record(fg, base_url, ch_map))
+                add_nids([fg.get("node_id")])
+                add_nids(fg.get("related_nodes", []))
 
-    elif fig_ex_match:
-        query_type = "figure_or_example"
-        kind_tok = fig_ex_match.group(1).lower()
-        num_tok = fig_ex_match.group(2)
-        is_fig = kind_tok.startswith("fig") or kind_tok.startswith("hinh")
-        needle = ("fig. " + num_tok) if is_fig else ("ex. " + num_tok)
-        for sec in sections_all:
-            pool = sec.get("key_figures", []) if is_fig else sec.get("worked_examples", [])
-            if any(to_text(item).lower() == needle for item in pool):
-                matched_sections.append(_enrich_section_record(sec, base_url))
-                add_nids(sec.get("primary_nodes", []))
+    elif fig_ex_match or fig_num_resolved:
+        if fig_ex_match:
+            kind_tok = fig_ex_match.group(1).lower()
+            base_num = fig_ex_match.group(2)
+            sub_sfx = fig_ex_match.group(3) or ""
+            full_num = base_num + sub_sfx
+            is_fig = kind_tok.startswith("fig") or kind_tok.startswith("hinh")
+        else:
+            is_fig = True
+            base_num = fig_num_resolved
+            full_num = fig_num_resolved
+
+        if is_fig:
+            query_type = "figure"
+            fig_sec_ids = []
+            for fg in figures_all:
+                fnum_low = to_text(fg.get("fig_num", "")).lower()
+                if fnum_low == full_num.lower() or fnum_low == base_num.lower():
+                    matched_figures.append(_enrich_figure_record(fg, base_url, ch_map))
+                    add_chapter_num(fg.get("chapter"))
+                    if fg.get("section") and fg.get("section") not in fig_sec_ids:
+                        fig_sec_ids.append(fg.get("section"))
+                    add_nids([fg.get("node_id")])
+                    add_nids(fg.get("related_nodes", []))
+
+            for exact_sid in fig_sec_ids:
+                sec_exact = sec_id_map.get(to_text(exact_sid).lower())
+                if sec_exact:
+                    matched_sections.append(_enrich_section_record(sec_exact, base_url))
+                    add_nids(sec_exact.get("primary_nodes", []))
+
+            needle_full = "fig. " + full_num.lower()
+            needle_base = "fig. " + base_num.lower()
+            for sec in sorted(sections_all, key=lambda s: -int(s.get("level", 1))):
+                sid = sec.get("section_id", "")
+                if any(ms.get("section_id") == sid for ms in matched_sections):
+                    continue
+                pool = [to_text(item).lower() for item in sec.get("key_figures", [])]
+                if needle_full in pool or needle_base in pool:
+                    matched_sections.append(_enrich_section_record(sec, base_url))
+                    add_nids(sec.get("primary_nodes", []))
+                    add_chapter_num(sec.get("chapter"))
+        else:
+            query_type = "worked_example"
+            needle = "ex. " + base_num.lower()
+            for sec in sorted(sections_all, key=lambda s: -int(s.get("level", 1))):
+                pool = [to_text(item).lower() for item in sec.get("worked_examples", [])]
+                if needle in pool:
+                    matched_sections.append(_enrich_section_record(sec, base_url))
+                    add_nids(sec.get("primary_nodes", []))
+                    add_chapter_num(sec.get("chapter"))
 
     else:
         query_type = "subject_index"
@@ -1055,11 +1192,32 @@ def cmd_coord(query_str, limit=12):
                 scored_eq.append((sc, eq))
         scored_eq.sort(key=lambda pair: (-pair[0], pair[1].get("book_page", 0)))
         for _, eq in scored_eq[:limit]:
-            matched_equations.append(_enrich_equation_record(eq, base_url))
+            matched_equations.append(_enrich_equation_record(eq, base_url, ch_map))
             add_nids([eq.get("node_id")])
 
+        scored_fig = []
+        for fg in figures_all:
+            c_f = fold_ascii(fg.get("caption_en") or fg.get("caption", ""))
+            sc = 0
+            if q_fold and q_fold in c_f:
+                sc = 125
+            elif q_tokens and all(tok in c_f for tok in q_tokens):
+                sc = 82 + len(q_tokens) * 5
+            if sc > 0:
+                scored_fig.append((sc, fg))
+        scored_fig.sort(key=lambda pair: (-pair[0], pair[1].get("book_page", 0)))
+        for _, fg in scored_fig[:limit]:
+            matched_figures.append(_enrich_figure_record(fg, base_url, ch_map))
+            add_nids([fg.get("node_id")])
+
     mapped_nodes = [compact_node_hit(node_map[nid], cfg) for nid in ordered_node_ids[:limit]]
-    total_hits = len(matched_sections) + len(matched_equations) + len(matched_index_terms) + len(mapped_nodes)
+    total_hits = (
+        len(matched_sections)
+        + len(matched_equations)
+        + len(matched_figures)
+        + len(matched_index_terms)
+        + len(mapped_nodes)
+    )
 
     return {
         "ok": total_hits > 0,
@@ -1079,6 +1237,7 @@ def cmd_coord(query_str, limit=12):
         ],
         "sections": matched_sections[:limit],
         "equations": matched_equations[:limit],
+        "figures": matched_figures[:limit],
         "index_terms": matched_index_terms[:limit],
         "mapped_nodes": mapped_nodes,
         "web_url": ("%s/#book" % base_url) if base_url else "#book",
@@ -1738,11 +1897,11 @@ def cmd_recipe(circuit_query):
 HELP_TEXT = """Usage: python tools/kb_lookup.py COMMAND [ARGUMENTS] [--limit N] [--offline]
 
 Commands:
-  status               Show KB release (2026.11.18.6), 10-domain counts, GitHub URLs & OTA sync status
+  status               Show KB release (2026.11.18.7), 10-domain counts, GitHub URLs & OTA sync status
   domain [name]        List all 10 domains with counts, or list all cards in a domain
   recipe <circuit>     1-command 7-stage design blueprint (cards + checklists + CLI tools)
   search <query>       Accent-insensitive Vietnamese + English search across all 162 cards (Razavi + PMIC + AMS + EDA)
-  coord <query>        Exact coordinate lookup by Section (9.2, §12.3), Equation (Eq. 2.10), Page (page 342) or 20_Index
+  coord <query>        Exact coordinate lookup by Section (9.2, §12.3), Equation (10.49, Eq. 14.94), Figure (Fig. 16.43), Page or 20_Index
   skills [query]       Search & list vetted GitHub/Cadence skills (27 skill-* cards + 52 catalog.json repos)
   stage [1..7]         List cards for a stage of the 7-Stage Optimal Design Cycle (or list all 7 stages)
   node <id>            Show full metadata, Razavi/GitHub refs, 2D coords, checklists & edges for a card
@@ -1781,12 +1940,20 @@ def run_self_test():
         if not sr["results"][0].get("diagram_local_path") or not os.path.isfile(sr["results"][0]["diagram_local_path"]):
             raise AssertionError("Missing local SVG path in search hit: %r" % sr["results"][0])
 
+        # 4. Exact coordinate lookup for equations and figures
+        ce = cmd_coord("10.49", limit=5)
+        cf = cmd_coord("Fig. 16.43", limit=5)
+        if not ce.get("ok") or not ce.get("equations") or ce["equations"][0].get("section") != "10.7":
+            raise AssertionError("Unexpected coord('10.49') result: %r" % ce)
+        if not cf.get("ok") or not cf.get("figures") or cf["figures"][0].get("book_page") != 679:
+            raise AssertionError("Unexpected coord('Fig. 16.43') result: %r" % cf)
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "lookup_ms": dt_ms,
-            "tests_passed": 3,
+            "tests_passed": 5,
         }
     finally:
         if saved_env is None:

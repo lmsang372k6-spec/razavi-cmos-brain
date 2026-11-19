@@ -10,14 +10,14 @@
   "razavi_refs": [
     {
       "chapter": 4,
-      "section": "4.4",
-      "pages": "126-131",
-      "equations": ["4.49", "4.52"]
+      "section": "4.2.3, 4.3",
+      "pages": "116-123",
+      "equations": ["4.34", "4.35", "4.49", "4.52"]
     },
     {
       "chapter": 6,
       "section": "6.2, 6.5",
-      "pages": "178-184, 195-200",
+      "pages": "180-187, 196-198",
       "equations": ["6.25", "6.80"]
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "chapter": 14,
-      "section": "14.1.2-14.1.4",
-      "pages": "578-585",
+      "section": "14.1.2-14.1.6",
+      "pages": "579-591",
       "equations": ["14.17", "14.37"]
     },
     {
@@ -152,12 +152,12 @@ $$
    Chỉ cần $\Delta\phi_{\text{lag}}(\omega_0) = 1.8^\circ \equiv 0.0314\text{ rad}$ trên một mắt lọc $Q = 10$, số hạng $2 \Delta\phi_{\text{lag}} = 0.0628$ nhỏ hơn $\frac{1}{Q} = 0.10$ không bao nhiêu, đẩy $Q_{\text{eff}}$ vọt từ $10$ lên **$26.9$** (hoặc tự dao động nếu $Q = 16$)! **Cách khắc phục cực kỳ thanh lịch**: mắc nối tiếp với mỗi tụ tích phân $C$ một điện trở nhỏ $R_z$ (thực hiện bằng một MOSFET vùng triode $M_z$ điều khiển cổng đồng bộ theo dòng phân cực của $G_m$!) sao cho zero sớm pha $\omega_z = \frac{1}{R_z C}$ tạo góc bù $+\omega_0 R_z C = \Delta\phi_{\text{lag}}(\omega_0)$, khóa chặt pha tích phân ở đúng $-90.0^\circ$!
 
 ### 2.2. Bốn Kỹ thuật Tuyến tính Hóa Bộ Hỗ dẫn $G_m$ & Cái Giá Phạt Nhiễu (`Linearity vs. Noise Penalty` `T607`)
-Cặp vi sai MOS cơ bản (Razavi §14.1.2, Phương trình 14.17) có $\text{HD}_3 \approx \frac{1}{32}\left(\frac{\hat{v}_{\text{id}}}{V_{OV}}\right)^2$, nghĩa là ở $V_{OV} = 150\text{ mV}$, muốn $\text{HD}_3 \le -50\text{ dBc}$ thì biên độ đỉnh vào bị trói cứng ở $\hat{v}_{\text{id}} \le 27\text{ mV}$! Để mở rộng biên độ vào lên $300\text{--}800\text{ mV}_{\text{pp,diff}}$, bốn cấu trúc tuyến tính hóa kinh điển được sử dụng:
+Cặp vi sai MOS cơ bản (Razavi §14.1.2, Phương trình 14.17–14.22) có $\text{HD}_3 \approx \frac{1}{32}\left(\frac{\hat{v}_{\text{id}}}{V_{OV}}\right)^2$, nghĩa là ở $V_{OV} = 150\text{ mV}$, muốn $\text{HD}_3 \le -50\text{ dBc}$ thì biên độ đỉnh vi sai đầu vào bị trói cứng ở $\hat{v}_{\text{id}} \le \mathbf{47.7\text{ mV}_{\text{pk}}}$ ($\approx \mathbf{95.4\text{ mV}_{\text{pp,diff}}}$; nếu đòi hỏi $\text{HD}_3 \le -60\text{ dBc}$ thì chỉ còn $\hat{v}_{\text{id}} \le 26.8\text{ mV}_{\text{pk}}$)! Để mở rộng biên độ vào lên $300\text{--}800\text{ mV}_{\text{pp,diff}}$, bốn cấu trúc tuyến tính hóa kinh điển được sử dụng:
 
-1. **Suy biến Cực nguồn Tách Đuôi (`Split-Tail Source Degeneration` — Hình 4.35b Razavi)**: Đặt điện trở $R_S$ nối ngang giữa hai cực nguồn của $M_1, M_2$ và tách nguồn dòng đuôi thành hai nửa $I_{SS}/2$ ở hai bên (nhờ vậy ở cân bằng **không có dòng DC nào chảy qua $R_S$**, tiết kiệm trọn vẹn khoảng dự trữ điện áp $I_{SS} R_S$!). Gọi hệ số suy biến $N_{\text{deg}} = \frac{1}{2} g_{m1} R_S$:
+1. **Suy biến Cực nguồn Tách Đuôi (`Split-Tail Source Degeneration` — Hình 4.28 & Hình 14.12b Razavi)**: Đặt điện trở $R_S$ nối ngang giữa hai cực nguồn của $M_1, M_2$ và tách nguồn dòng đuôi thành hai nửa $I_{SS}/2$ ở hai bên (nhờ vậy ở cân bằng **không có dòng DC nào chảy qua $R_S$**, tiết kiệm trọn vẹn khoảng dự trữ điện áp $I_{SS} R_S / 2$!). Gọi hệ số suy biến vòng cục bộ $N_{\text{deg}} = \frac{1}{2} g_{m1} R_S$: phép đảo chuỗi lũy thừa bậc ba nén hệ số $a_3 \propto (1 + N_{\text{deg}})^{-4}$ và $a_1 \propto (1 + N_{\text{deg}})^{-1}$, nên tỷ số $\text{HD}_3$ tại cùng biên độ đỉnh đầu vào $\hat{v}_{\text{id}}$ giảm mạnh theo **lũy thừa bậc ba $(1 + N_{\text{deg}})^{-3}$**:
 $$
 G_{m,\text{eff}} = \frac{g_{m1}}{1 + g_{m1} R_S / 2} \approx \frac{2}{R_S} \quad (\text{khi } N_{\text{deg}} \gg 1), \qquad
-\text{HD}_3 \approx \frac{1}{32\,V_{OV}^2 \left(1 + N_{\text{deg}}\right)^2}\,\hat{v}_{\text{id}}^2
+\text{HD}_3 \approx \frac{\hat{v}_{\text{id}}^2}{32\,V_{OV}^2 \left(1 + N_{\text{deg}}\right)^3}
 $$
    *Cái giá về nhiễu*: Điện trở $R_S$ sinh nhiễu nhiệt $4 k T R_S$ và hai nguồn dòng đuôi $M_{\text{tail1,2}}$ nay **không còn là nút đồng pha chung nữa** mà bơm thẳng nhiễu dòng vi sai vào ngõ ra qua cầu chia dòng! Tổng mật độ phổ nhiễu nhiệt quy về ngõ vào phình to:
 $$
@@ -210,7 +210,7 @@ $$
 | Trục đánh giá Design Octagon | Cặp Vi sai $G_m\text{-}C$ Cơ bản | $G_m\text{-}C$ Suy biến Triode / Krummenacher | Active-RC Tow-Thomas + SAR Cap-Bank |
 | :--- | :--- | :--- | :--- |
 | Tần số cắt cực đại khả thi $f_0$ | **Rất cao ($100\text{--}800\text{ MHz}$)** | Cao ($20\text{--}250\text{ MHz}$) | Trung bình ($\le 30\text{--}50\text{ MHz}$) |
-| Dải biên độ vào tuyến tính ($\text{HD}_3 = -50\text{ dBc}$) | Hẹp ($\sim 40\text{--}60\text{ mV}_{\text{pp}}$) | Khá rộng ($300\text{--}700\text{ mV}_{\text{pp}}$) | **Toàn thang ($1.2\text{--}2.0\text{ V}_{\text{pp}}$ ở $-80\text{ dBc}$)** |
+| Dải biên độ vào tuyến tính ($\text{HD}_3 = -50\text{ dBc}$) | Hẹp ($\sim 75\text{--}125\text{ mV}_{\text{pp,diff}}$; $\approx 95.4\text{ mV}_{\text{pp}}$ ở $V_{OV}=150\text{ mV}$) | Khá rộng ($300\text{--}700\text{ mV}_{\text{pp}}$) | **Toàn thang ($1.2\text{--}2.0\text{ V}_{\text{pp}}$ ở $-80\text{ dBc}$)** |
 | Hệ số phạt nhiễu nhiệt dư ($\eta_{\text{noise}}$) | Thấp nhất ($\eta \approx 1.3\text{--}1.8$) | Cao hơn ($\eta \approx 2.5\text{--}5.0$ do suy biến) | Trung bình (nhiễu $4kTR$ + OTA đầu vào) |
 | Phương thức hiệu chỉnh tần số PVT | Liên tục mượt mà qua $I_{\text{bias}}$ | Liên tục qua áp cổng $V_{\text{tune}}$ của MOS triode | Rời rạc từng nấc theo mảng tụ số `tune<B-1:0>` |
 | Nguy cơ rò nhiễu xung nhịp hiệu chỉnh | Cần lọc kỹ đường $I_{\text{bias}}$ từ Master | Cần lọc đường $V_{\text{tune}}$ từ Master | **$0$ tuyệt đối** (tắt hẳn khối SAR sau khi chốt mã!) |
@@ -248,7 +248,7 @@ tran_cal tran stop=35u errpreset=moderate
 
 | Mục nội dung & Phương trình | Tham chiếu Razavi (2nd Ed.) & GitHub IP | Mã & Thuật ngữ Chuẩn CLB |
 | :--- | :--- | :--- |
-| Cặp vi sai suy biến cực nguồn tách đuôi và mở rộng dải tuyến tính | Chương 4, §4.4, PT (4.49)–(4.52), tr. 126–131 & Chương 14, §14.1.2–14.1.4 | `T057` Tính phi tuyến; `T523` Tính tuyến tính; `T607` đánh đổi độ lợi tín hiệu nhỏ lấy độ tuyến tính; `T1325` hỗ dẫn truyền thuận; `T2150` méo hài; `T2152` HD2 / HD3 |
-| Zero nửa mặt phẳng phải qua $C_{GD}$ và cực phụ nút nội cascode | Chương 6, §6.2 & §6.5, PT (6.25), (6.80), tr. 178–200 | `T861` bộ lọc thông thấp; `T1004` độ dịch pha; `T1031` bộ lọc thông dải; `T1158` tần số cắt của bộ lọc |
+| Cặp vi sai suy biến cực nguồn tách đuôi và mở rộng dải tuyến tính | Chương 4, §4.2.3 & §4.3, PT (4.34)–(4.52), tr. 116–123 & Chương 14, §14.1.2–14.1.6 | `T057` Tính phi tuyến; `T523` Tính tuyến tính; `T607` đánh đổi độ lợi tín hiệu nhỏ lấy độ tuyến tính; `T1325` hỗ dẫn truyền thuận; `T2150` méo hài; `T2152` HD2 / HD3 |
+| Zero nửa mặt phẳng phải qua $C_{GD}$ và cực phụ nút nội cascode | Chương 6, §6.2 & §6.5, PT (6.25), (6.80), tr. 180–198 | `T861` bộ lọc thông thấp; `T1004` độ dịch pha; `T1031` bộ lọc thông dải; `T1158` tần số cắt của bộ lọc |
 | Khóa hỗ dẫn Constant-$G_m$ bằng điện trở tụ chuyển mạch và vòng khóa pha PLL | Chương 12, §12.5, PT (12.52)–(12.54); Chương 13, §13.4; Chương 16, §16.1–16.2 | `T064` vòng khóa pha; `T069` Biến thiên PVT; `T087` Mạch tụ chuyển mạch; `T800` hồi tiếp chế độ chung; `T2146` bộ tích phân tụ chuyển mạch; `T2166` bộ dao động điều khiển bằng điện áp; `T2186` các góc quy trình chế tạo; `T2187` hiệu suất hỗ dẫn $g_m/I_D$ |
 | Nhiễu nhiệt tích phân $kT/C$ và benchmark Biquad OTA-C vi sai hoàn toàn | Chương 7, §7.8 & `Arcadia-1/analog-design-bench` (`ota-c-biquad-pvt`) | `T1009` nhiễu nhiệt; `T1089` nhiễu $kT/C$; kiểm chứng đa góc PVT tự động |

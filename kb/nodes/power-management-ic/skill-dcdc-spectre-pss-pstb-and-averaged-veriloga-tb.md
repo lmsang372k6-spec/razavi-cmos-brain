@@ -11,19 +11,19 @@
     {
       "chapter": 8,
       "section": "8.7-8.8",
-      "pages": "326-341",
-      "equations": ["8.73"]
+      "pages": "331-336",
+      "equations": ["8.198", "8.200", "8.206"]
     },
     {
       "chapter": 10,
       "section": "10.2-10.3, 10.8",
-      "pages": "411-420, 439-444",
+      "pages": "414-420, 439-455",
       "equations": ["10.5"]
     },
     {
       "chapter": 13,
       "section": "13.1-13.2",
-      "pages": "540-548",
+      "pages": "539-554",
       "equations": []
     }
   ],
@@ -114,10 +114,10 @@ Trong mọi bộ biến đổi hai công tắc đơn cuộn cảm (**Buck**, **B
 Gọi $v_{ap} = V(a) - V(p)$ là điện áp đặt ngang hai đầu cặp công tắc và $i_c$ là dòng trung bình đi ra khỏi cực chung `c` vào cuộn cảm:
 - **Trong chế độ dẫn liên tục (`CCM`):** Tỷ số truyền áp/dòng bằng chính chu kỳ nhiệm vụ lệnh $d \in (0, 1)$:
   $$\mu_{\text{CCM}} = d$$
-- **Trong chế độ dẫn gián đoạn (`DCM` — khi tải nhẹ làm dòng cuộn cảm về không trước hết chu kỳ):** Khoảng thời gian xả thực tế $d_2$ co ngắn lại sao cho dòng trung bình khớp $i_c = \frac{v_{ap} d (d + d_2)}{2 L f_{\text{sw}}} \implies$ tỷ số chuyển đổi hiệu dụng $\mu_{\text{DCM}}$ tự động nâng cao hơn $d$:
+- **Trong chế độ dẫn gián đoạn (`DCM` — khi tải nhẹ làm dòng cuộn cảm về không trước hết chu kỳ):** Khoảng thời gian xả thực tế $d_2 = d\frac{|v_{ap}| - |v_{cp}|}{|v_{cp}|}$ co ngắn lại sao cho dòng trung bình khớp $|i_c| = \frac{(|v_{ap}| - |v_{cp}|) d (d + d_2)}{2 L f_{\text{sw}}} = \frac{d^2 |v_{ap}| (|v_{ap}| - |v_{cp}|)}{2 L f_{\text{sw}} |v_{cp}|}$ $\implies$ giải theo $\mu_{\text{DCM}} = \frac{|v_{cp}|}{|v_{ap}|}$, tỷ số chuyển đổi hiệu dụng $\mu_{\text{DCM}}$ tự động nâng cao hơn $d$:
 
 $$
-\mu_{\text{DCM}} = \frac{d^2}{d^2 + \dfrac{2 L f_{\text{sw}} \, i_c}{v_{cp,\text{eff}}}} \quad \Longrightarrow \quad \mu_{\text{eff}} = \max_{\text{smooth}}\!\big(\mu_{\text{CCM}},\; \mu_{\text{DCM}}\big)
+\mu_{\text{DCM}} = \frac{d^2}{d^2 + \dfrac{2 L f_{\text{sw}} \, |i_c|}{|v_{ap}|}} \quad \Longrightarrow \quad \mu_{\text{eff}} = \max_{\text{smooth}}\!\big(\mu_{\text{CCM}},\; \mu_{\text{DCM}}\big)
 $$
 
 Và để đưa cả **Điểm không Nửa Mặt phẳng Phải (`RHP Zero`)** của mạch Boost / Buck-Boost vào đúng mô hình `.ac / .stb` mà không cần viết lại phương trình riêng cho từng cấu trúc, chỉ cần cộng thêm đạo hàm động học từ thông cuộn cảm hoặc nối trực tiếp cuộn cảm thực $L$ tại chân `c` với quan hệ cả hai chiều:
@@ -245,7 +245,7 @@ global 0
 
 parameters vin=3.3 vout_init=1.0 vref=0.6 fsw=2M tsw=1/fsw i_load=1.0
 parameters l_ind=1u dcr=30m c_out=10u r_esr=5m
-parameters r1=50k r_bias=75k r2=2.2k r3=1.6k c1=1.8n c2=45p c3=82p
+parameters r1=50k r_bias=75k r2=58.27k r3=1.29k c1=68.97p c2=1.775p c3=78.37p
 
 // Nguồn đầu vào mang biên độ thử PAC = 1 V để đo Audio-Susceptibility / PSRR đóng cắt!
 VIN_SRC   (vin 0)  vsource dc=vin pacmag=1.0

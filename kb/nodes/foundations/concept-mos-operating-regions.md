@@ -12,7 +12,7 @@
       "chapter": 2,
       "section": "2.1-2.2.2",
       "pages": "7-19",
-      "equations": ["2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "2.10", "2.11", "2.13", "2.14", "2.15", "2.16"]
+      "equations": ["2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15", "2.16"]
     }
   ],
   "glossary_codes": ["T024", "T054", "T056", "T061", "T080", "T083", "T084", "T106", "T111", "T154", "T167", "T175", "T183", "T185", "T188", "T198", "T207", "T208", "T214", "T221", "T552"],
@@ -106,11 +106,11 @@ Trong các mạch chồng tầng phức tạp (cascode, gương dòng, cặp vi 
   *Đọc nhanh:* Điện thế cực máng PMOS được phép **nhô cao hơn cực cổng một khoảng tối đa bằng $|V_{THP}|$** trước khi rơi vào vùng triode!
 
 ### 2.4. Hai Ví dụ Kinh điển Từ Sách Razavi (Ví dụ 2.1 & Bài tập 2.16 — Ghép Nối tiếp Kênh)
-1. **Công tắc / Điện trở Triode sâu có Cực Máng Hở Mạch (Ví dụ 2.1, Hình 2.14, tr. 15–16):**
+1. **Công tắc / Điện trở Triode sâu có Cực Máng Hở Mạch (Ví dụ 2.1, Hình 2.14, Phương trình 2.12, tr. 15–16):**
    Cho NMOS $M_1$ có $\mu_n C_{ox} = 50\,\mu\text{A/V}^2$, $W/L = 10$, $V_{TH} = 0.3\,\text{V}$, cực nguồn nối nguồn cố định $V_S = 1.0\,\text{V}$, cực máng để hở ($I_D = 0$). Khi quét $V_G$ từ $0$ lên $3\,\text{V}$:
    - Với $V_G < V_S + V_{TH} = 1.3\,\text{V}$: transistor ngắt hoàn toàn, $R_{on} = \infty$.
    - Với $V_G > 1.3\,\text{V}$: vì cực máng để hở nên $I_D = 0 \Rightarrow V_{DS} = 0 \ll 2(V_{GS} - V_{TH})$, linh kiện nằm **chính xác trong vùng triode sâu** với điện trở dẫn giảm theo đường hyperbol:
-     $$R_{on}(V_G) = \frac{1}{(50\,\mu\text{A/V}^2)\times 10 \times (V_G - 1.3\,\text{V})} = \frac{2\,\text{k}\Omega}{V_G - 1.3\,\text{V}}$$
+     $$R_{on}(V_G) = \frac{1}{(50\,\mu\text{A/V}^2)\times 10 \times (V_G - 1.3\,\text{V})} = \frac{2\,\text{k}\Omega\cdot\text{V}}{V_G - 1.3\,\text{V}}$$
      Ví dụ này phá tan ngộ nhận phổ biến rằng "$I_D = 0$ nghĩa là MOSFET tắt"!
 2. **Ghép nối tiếp hai MOSFET cùng cổng tạo kênh dài gấp đôi (Bài tập 2.16, Hình 2.55, tr. 42):**
    Khi hai NMOS giống hệt nhau kích thước $W/L$ nối chung cực cổng $V_G$ và mắc nối tiếp kênh (cực máng con dưới $M_1$ nối vào cực nguồn con trên $M_2$, bỏ qua $\gamma, \lambda$):

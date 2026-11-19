@@ -16,8 +16,8 @@
     },
     {
       "chapter": 10,
-      "section": "10.6",
-      "pages": "433-436, 457",
+      "section": "10.6, 10.Problems",
+      "pages": "433-435, 457-458",
       "equations": ["10.36", "10.37", "10.38", "10.59", "10.60"]
     }
   ],
@@ -50,7 +50,7 @@ Trong các hệ thống lấy mẫu rời rạc thời gian tốc độ cao — 
 
 ![Cơ chế dồn dòng đuôi ISS tại nút gập gây giới hạn tốc độ biến thiên (Slewing) và bẫy phục hồi sau quá kích (Overdrive Recovery) khi Ifold < ISS](../../diagrams/folded-cascode-ota.svg)
 
-Như Razavi giải phẫu xuyên suốt Chương 9 (§9.9–§9.10.2, tr. 390–400) và Chương 10 (§10.6, tr. 433–436 & Bài tập 10.26, tr. 457), đáp ứng quá độ của một Op-Amp thực tế trước bước nhảy lớn **không bao giờ là một hàm mũ đơn thuần**, mà bị chi phối bởi **bốn cơ chế vật lý nối đuôi nhau**:
+Như Razavi giải phẫu xuyên suốt Chương 9 (§9.9–§9.10.2, tr. 390–400) và Chương 10 (§10.6, tr. 433–435 & Bài tập 10.19, tr. 457–458), đáp ứng quá độ của một Op-Amp thực tế trước bước nhảy lớn **không bao giờ là một hàm mũ đơn thuần**, mà bị chi phối bởi **bốn cơ chế vật lý nối đuôi nhau**:
 1. **Chế độ giới hạn tốc độ biến thiên (`T1558`, slewing regime / `T1541`, slewing):** Cặp vi sai đầu vào bị bão hòa cứng, lái $100\%$ dòng đuôi $I_{SS}$ sang một nhánh nạp tụ với dốc hằng số bằng **tốc độ biến thiên điện áp cực đại (`T079`, slew rate — $\text{SR}$)**.
 2. **Phục hồi sau quá kích (`T1556`, overdrive recovery):** Nếu dòng dồn sang làm cạn nhánh cascode hoặc đẩy transistor tải/nguồn đuôi lún sâu vào vùng triode, mạch bị "đóng băng" một khoảng thời gian chết $t_{\text{rec}}$ để kéo nút nội bộ thoát khỏi vùng triode!
 3. **Quá trình xác lập tuyến tính (`T1546`, linear settling):** Khi điện áp sai số vi sai tại cổng đầu vào thu hẹp vào lại cửa sổ tuyến tính, Op-Amp quay về chế độ khuếch đại tín hiệu nhỏ và hội tụ hàm mũ theo hằng số thời gian vòng kín $\tau_{\text{CL}} = \frac{1}{\beta \omega_u}$.
@@ -61,7 +61,7 @@ Như Razavi giải phẫu xuyên suốt Chương 9 (§9.9–§9.10.2, tr. 390–
 ## 2. Hệ Phương trình Cốt lõi & Tư duy "Nhìn Mạch Đọc Nhanh" (Analysis by Inspection)
 
 ### 2.1. Phân rã Chính xác Ngân sách $t_{\text{settle}} = t_{\text{slew}} + t_{\text{linear}}$ & Ranh giới Bước Nhảy $V_{\text{step,crit}}$ (§9.9, Phương trình 9.59–9.71)
-Xét Op-Amp một cực trội đóng trong vòng hồi tiếp điện trở (Phương trình 9.59: $\left(V_{in} - V_{\text{out}}\frac{R_2}{R_1+R_2}\right)A - V_{\text{out}}\frac{1}{R_{\text{out}}} = \frac{V_{\text{out}}}{R_1+R_2} + V_{\text{out}} C_L s$) hoặc vòng hồi tiếp điện dung (Phương trình 9.63: $\left(V_{in} - \frac{C_1}{C_1+C_2}V_{\text{out}}\right)A_v - \frac{V_{\text{out}}}{R_{\text{out}}} = V_{\text{out}}\frac{C_1 C_2}{C_1+C_2}s$, hệ số hồi tiếp $\beta = \frac{C_1}{C_1+C_2}$ theo ký hiệu Hình 9.69 của Razavi):
+Xét Op-Amp một cực trội đóng trong vòng hồi tiếp điện trở (Hình 9.69, Phương trình 9.59: $\left(V_{in} - V_{\text{out}}\frac{R_2}{R_1+R_2}\right)A - V_{\text{out}}\frac{1}{R_{\text{out}}} = \frac{V_{\text{out}}}{R_1+R_2} + V_{\text{out}} C_L s$) hoặc vòng hồi tiếp điện dung (Ví dụ 9.22, Hình 9.73a, Phương trình 9.63: $\left(V_{in} - \frac{C_1}{C_1+C_2}V_{\text{out}}\right)A_v - \frac{V_{\text{out}}}{R_{\text{out}}} = V_{\text{out}}\frac{C_1 C_2}{C_1+C_2}s$, hệ số hồi tiếp $\beta = \frac{C_1}{C_1+C_2}$ theo ký hiệu Hình 9.73a của Razavi):
 - **Khi bước nhảy nhỏ (Thuần túy Xác lập Tuyến tính, Phương trình 9.66):**
   Đáp ứng bước đơn vị biên độ $V_0$ là hàm mũ chuẩn:
 
@@ -118,22 +118,22 @@ $$
 
    *(Để vượt qua giới hạn dòng tĩnh lớp A này mà không tốn công suất, §9.10.1–§9.10.2 giới thiệu OTA gương dòng tỷ lệ $M = W_4/W_8$ có hàm truyền nhánh gương Phương trình 9.74 và OTA hai tầng đẩy–kéo lớp AB Phương trình 9.80 kèm chú giải cực tính `NG09-11`!).*
 
-### 2.3. Đuôi Hàm Mũ Siêu Chậm Do Cặp Cực–Zero Gần Trùng (`T1707` / `T1708`, Bài tập 10.26 Phương trình 10.59–10.60)
+### 2.3. Đuôi Hàm Mũ Siêu Chậm Do Cặp Cực–Zero Gần Trùng (`T1707` / `T1708`, Bài tập 10.19 Phương trình 10.59–10.61)
 Giả sử mạch xuất hiện một cặp cực–zero nằm gần nhau ($\omega_z \approx \omega_{p2}$) ở tần số thấp hơn nhiều so với $\omega_u = A_0 \omega_{p1}$ (ví dụ do gương dòng chủ động `concept-diffpair-mirror-pole-doublet`, do OTA phụ trong `topo-gain-boosted-cascode` §9.4.3, hoặc do lệch điện trở khử zero $R_z$ trong bù Miller!). Hàm truyền vòng hở (Phương trình 10.59) và hàm truyền hồi tiếp đơn vị $\beta = 1$ (Phương trình 10.60, tr. 457) là:
 
 $$
 H_{\text{open}}(s) = A_0\,\frac{1 + \dfrac{s}{\omega_z}}{\left(1 + \dfrac{s}{\omega_{p1}}\right)\left(1 + \dfrac{s}{\omega_{p2}}\right)} \quad \text{(10.59)} \;\Longrightarrow\; H_{\text{closed}}(s) = \frac{A_0\left(1 + \dfrac{s}{\omega_z}\right)}{\dfrac{s^2}{\omega_{p1}\omega_{p2}} + \left(\dfrac{1}{\omega_{p1}} + \dfrac{1}{\omega_{p2}} + \dfrac{A_0}{\omega_z}\right)s + A_0 + 1} \quad \text{(10.60)}
 $$
 
-Khi $\omega_z, \omega_{p2} \ll \omega_u = A_0 \omega_{p1}$ và có độ lệch nhỏ $\Delta\omega = \omega_{p2} - \omega_z \neq 0$, hai cực vòng kín tách thành một cực nhanh $\omega_{\text{fast}} \approx \omega_u$ và một cực chậm bị "kẹt" sát zero tại $\omega_{\text{slow}} \approx \omega_z\left(1 + \frac{\omega_{p2} - \omega_z}{\omega_u}\right)$. Phép biến đổi Laplace ngược cho đáp ứng bước đơn vị:
+Khi $\omega_{p1} \ll \omega_z, \omega_{p2} \ll \omega_u = A_0 \omega_{p1}$ và có độ lệch nhỏ $\Delta\omega = \omega_{p2} - \omega_z \neq 0$, hai cực vòng kín tách thành một cực nhanh $\omega_{\text{fast}} \approx \omega_u \frac{\omega_{p2}}{\omega_z} \approx \omega_u$ và một cực chậm tiến từ $-\omega_{p1}$ về bị "kẹt" sát bên phải zero (khi $\omega_z < \omega_{p2}$) tại $\omega_{\text{slow}} \approx \omega_z\left[1 - \frac{\omega_z(\omega_{p2} - \omega_z)}{\omega_u\,\omega_{p2}}\right] \approx \omega_z\left(1 - \frac{\omega_{p2} - \omega_z}{\omega_u}\right)$. Phép biến đổi Laplace ngược cho đáp ứng bước đơn vị:
 
 $$
-V_{\text{out}}(t) \approx V_{\text{step}}\left[1 - (1 - k_d)e^{-\omega_u t} - k_d e^{-\omega_z t}\right]u(t), \qquad k_d \approx \frac{\omega_{p2} - \omega_z}{\omega_u}
+V_{\text{out}}(t) \approx V_{\text{step}}\left[1 - (1 - k_d)e^{-\omega_{\text{fast}} t} - k_d e^{-\omega_z t}\right]u(t), \qquad k_d \approx \frac{\omega_{p2} - \omega_z}{\omega_u}\cdot\frac{\omega_z}{\omega_{p2}} \approx \frac{\omega_{p2} - \omega_z}{\omega_u}
 $$
 
 - **Ví dụ định lượng gây sốc:** Giả sử $\omega_u = 2\pi(100\text{ MHz})$ ($\tau_{\text{CL}} = 1{,}59\text{ ns}$), có một doublet lệch $10\%$ nằm ở $\omega_z = 2\pi(5\text{ MHz}), \omega_{p2} = 2\pi(5{,}5\text{ MHz})$ ($\tau_z = 31{,}8\text{ ns}$):
-  - Trên đồ thị Bode AC: độ lệch pha cực đại của doublet chưa tới $3^\circ$ ở $5\text{ MHz}$ và bằng **$0{,}15^\circ$ tại $100\text{ MHz}$** — người thiết kế nhìn Bode tưởng mạch hoàn hảo tuyệt đối!
-  - Trong miền thời gian cho ADC $14\text{-bit}$ ($\epsilon = 0{,}003\% = 3\times 10^{-5}$): biên độ đuôi chậm là $k_d \approx \frac{0{,}5\text{ MHz}}{100\text{ MHz}} = 0{,}005 = 0{,}5\%$! Thay vì xác lập xong trong $10{,}5\,\tau_{\text{CL}} \approx 16{,}7\text{ ns}$, ngõ ra bị thành phần $0{,}005\,e^{-t/31{,}8\text{ ns}}$ cầm chân suốt **$t_{\text{doublet}} = 31{,}8\text{ ns} \times \ln\!\left(\frac{0{,}005}{3\times 10^{-5}}\right) \approx 163\text{ ns}$ — chậm gấp $10$ lần**!
+  - Trên đồ thị Bode AC: độ lệch pha cực đại của doublet chưa tới $3^\circ$ ở $5\text{ MHz}$ và chỉ khoảng **$0{,}26^\circ$ tại $100\text{ MHz}$** — người thiết kế nhìn Bode tưởng mạch hoàn hảo tuyệt đối!
+  - Trong miền thời gian cho ADC $14\text{-bit}$ ($\epsilon = 0{,}003\% = 3\times 10^{-5}$): biên độ đuôi chậm là $k_d \approx \frac{0{,}5}{100}\cdot\frac{5}{5{,}5} \approx 0{,}00455 \approx 0{,}45\%$ ($\sim 0{,}5\%$)! Thay vì xác lập xong trong $10{,}5\,\tau_{\text{CL}} \approx 16{,}7\text{ ns}$, ngõ ra bị thành phần $k_d\,e^{-t/31{,}8\text{ ns}}$ cầm chân suốt **$t_{\text{doublet}} = 31{,}8\text{ ns} \times \ln\!\left(\frac{0{,}00455}{3\times 10^{-5}}\right) \approx 160\text{ ns}$ — chậm gấp $10$ lần**!
 
 ---
 
@@ -212,8 +212,8 @@ when(t_set_0p01_ns > 2.2 * t_set_0p1_ns
   - §9.9 *Slew Rate* (tr. 390–397, Phương trình 9.59, 9.63, 9.66, 9.69, 9.71, Hình 9.68–9.77 — đối chiếu xác lập tuyến tính và giới hạn tốc độ biến thiên trên mạch hồi tiếp điện trở/điện dung, kèm phân tích sập nút gập khi $I_{\text{fold}} < I_{SS}$ và phục hồi quá kích).
   - §9.10.1–§9.10.2 *Push-Pull & Two-Stage Slew Enhancement* (tr. 397–400, Phương trình 9.74, 9.80, Hình 9.78–9.80 — tăng cường tốc độ biến thiên vượt trần $I_{SS}$).
 - **Chương 10:**
-  - §10.6 *Slewing in Two-Stage Op Amps* (tr. 433–436, Phương trình 10.36, 10.37, 10.38, Ví dụ 10.8, Hình 10.37–10.40 — slewing trên tụ bù Miller $C_C$, bước giật ngược ban đầu và bất đối xứng nạp tải).
-  - *Bài tập Chương 10 — Bài 10.26* (tr. 457, Phương trình 10.59, 10.60 — chứng minh hàm truyền vòng kín chứa cặp cực–zero gần trùng tạo ra số hạng hàm mũ chậm kéo dài đáp ứng bậc thang).
+  - §10.6 *Slewing in Two-Stage Op Amps* (tr. 433–435, Phương trình 10.36, 10.37, 10.38, Ví dụ 10.8, Hình 10.37–10.40 — slewing trên tụ bù Miller $C_C$, bước giật ngược ban đầu và bất đối xứng nạp tải).
+  - *Bài tập Chương 10 — Bài 10.19* (tr. 457–458, Phương trình 10.59–10.61 — chứng minh hàm truyền vòng kín chứa cặp cực–zero gần trùng tạo ra số hạng hàm mũ chậm kéo dài đáp ứng bậc thang).
 - **Chú giải Hiệu đính Nguồn CLB (`source_issues.json`):**
   - **`NG09-11` (tr. 398, Hình 9.79c):** Bản in gốc ghi lỗi chữ `'ccrrect polarity'` thay cho `'correct polarity'` (*cực tính đúng*) trong sơ đồ đẩy–kéo tăng cường slew rate.
   - **`NG10-08` & `NG10-09` (tr. 458, Bài tập 10.19d & 10.22):** Trong Bài 10.19(d) về đáp ứng quá độ có zero, bản in ghi hàm mũ $\exp(-\omega_{p2} t)$ nhưng lại gọi hằng số thời gian là $1/\omega_z$ (hằng số thời gian của số hạng đã in phải là $1/\omega_{p2}$); và ở Phương trình (10.62) Bài 10.22, dấu trước số hạng hàm mũ cuối bị in dấu trừ thay vì dấu cộng để thỏa mãn $V_{\text{out}}(0^+) = 0$.

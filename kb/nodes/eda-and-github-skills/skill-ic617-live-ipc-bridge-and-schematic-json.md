@@ -10,8 +10,8 @@
   "razavi_refs": [
     {
       "chapter": 2,
-      "section": "2.4.1-2.4.2",
-      "pages": "26-31",
+      "section": "2.3-2.4.2",
+      "pages": "24-31",
       "equations": ["2.38", "2.40", "2.42"]
     },
     {
@@ -23,7 +23,7 @@
     {
       "chapter": 19,
       "section": "19.2.1-19.2.6",
-      "pages": "739-755",
+      "pages": "737-753",
       "equations": ["19.10"]
     }
   ],
@@ -140,10 +140,10 @@ $$
 |---|---|---|---|
 | Kiểm tra kết nối tới phiên Virtuoso GUI đang mở & xem cell hiện hành | `python -B tools/ic617_client.py active-cv` | Live Socket (`< 15 ms`) | JSON `{ok, lib, cell, view, mode}` — 0 tốn license phụ |
 | Xuất toàn bộ đồ thị kết nối `net -> inst.term`, chân pin, CDF hiệu dụng & lỗi nối dây | `python -B tools/ic617_client.py dump-json --lib L --cell C --out sch.json` | Live Socket (hoặc Batch `"r"`) | Tệp JSON chuẩn từ `saDumpSchematicJson` phát hiện ngay `floating_nets` & `single_term_nets` |
-| Cập nhật bộ kích thước `{w, l, fingers, m, r, c}` từ `gmid_lut.py` / `sizing_opt.py` | `python -B tools/ic617_client.py set-param --lib L --cell C --inst M1 --params w=16u,l=180n,fingers=4` | Live Socket | Kích hoạt `PasCdfFormInit` + callback sạch `%L`, đồng bộ `fw/ad/as/pd/ps` |
+| Cập nhật bộ kích thước `{w, l, fingers, m, r, c}` từ `gmid_lut.py` / `sizing_opt.py` | `python -B tools/ic617_client.py set-param --lib L --cell C --inst M1 --param l=180n --param fingers=4 --param w=16u` | Live Socket | Kích hoạt `PasCdfFormInit` + callback sạch `%L`, đồng bộ `fw/ad/as/pd/ps` |
 | Kiểm tra quy tắc nối dây, lưu OpenAccess & chụp ảnh schematic PNG báo cáo | `ic617_client.py check-save` + `ic617_client.py export-png` | Live Socket | JSON đếm chính xác `errors`, `warnings` từ `schCheck(cv)` + ảnh PNG sắc nét |
 | Dựng mới schematic + symbol hoàn chỉnh từ bản kế hoạch cấu trúc | `saPlaceAndWireFromPlan(planPath outJsonPath)` qua `ic617_client.py eval` | Live / Batch cô lập | Tự sao lưu `<cell>_bak_<ts>`, bắt lưới `0.0625`, nối dây vuông góc & sinh symbol |
-| Chạy mô phỏng `spectre`, `ocean` hoặc xuất netlist `si` độc lập | `python -B tools/cadence_exec.py spectre --project P --run-id R --scs input.scs` | Subprocess cô lập | Tự nạp `env.sh`, kiểm tra `.cdslck`, xuất `-format psfascii` vào `sim/runs/<run_id>/` |
+| Chạy mô phỏng `spectre`, `ocean` hoặc xuất netlist `si` độc lập | `python -B tools/cadence_exec.py spectre --project P --run-id R --netlist input.scs --psf-ascii` | Subprocess cô lập | Tự nạp `env.sh`, kiểm tra `.cdslck`, xuất `-format psfascii` vào `sim/runs/<run_id>/` |
 
 ---
 
@@ -153,9 +153,9 @@ $$
 Trong cửa sổ CIW của phiên Virtuoso IC617 đang mở (hoặc thêm dòng tùy chọn vào `~/.cdsinit` cá nhân của người dùng), nạp tệp cầu nối:
 
 ```lisp
-;; Gõ một lần trong Virtuoso CIW (không ghi bất kỳ tệp nào vào thư mục SKILL-ANALOG!)
+;; Gõ một lần trong Virtuoso CIW (tự động khởi động cầu nối trừ khi SA_BRIDGE_NO_AUTOSTART=1)
 load("/home/disk/eda/references/SKILL-ANALOG/tools/ic617_live_bridge.il")
-saStartLiveBridge()
+saBridgeStart()
 ```
 
 Từ dòng lệnh của Codex trên máy RHEL 6.5 (`Python 2.6.6`), kiểm tra kết nối tức thì và xuất toàn bộ cấu trúc mạch đang mở ra JSON:
@@ -165,21 +165,21 @@ Từ dòng lệnh của Codex trên máy RHEL 6.5 (`Python 2.6.6`), kiểm tra k
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py ping
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py active-cv
 
-# Xuất đồ thị kết nối đầy đủ (instances, stored + CDF params, nets -> inst.term, pins, diagnostics)
+# Xuất đồ thị kết nối đầy đủ (instances, stored_props + effective_cdf, nets -> inst.term, pins, diagnostics)
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py dump-json \
   --lib analog_ws --cell folded_cascode_ota --view schematic \
   --out ./sim/runs/inspect_01/schematic_dump.json
 ```
 
 ### 5.2. Bước 2 — Dựng Mạch Từ Kế hoạch Dòng (`saPlaceAndWireFromPlan`) & Cập nhật Định cỡ Khép kín
-Định dạng tệp kế hoạch `.plan` được thiết kế dạng khóa–giá trị theo dòng để bộ phân tích pure-SKILL trong IC617 đọc trực tiếp tốc độ cao mà không cần thư viện JSON bên thứ ba:
+Định dạng tệp kế hoạch `.plan` được thiết kế dạng chỉ thị theo dòng (`LIB ... TECH ...`, `CELL ... VIEW ...`, `GRID`, `SYMBOL`, `PIN`, `INST`, `PARAM`, `STUB`, `NET`, `WIRE`; tự động sao lưu `<cell>_bak_<ts>` nếu cell đã tồn tại) để bộ phân tích pure-SKILL trong IC617 đọc trực tiếp tốc độ cao mà không cần thư viện JSON bên thứ ba:
 
 ```text
 # ota_core_build.plan — Line-oriented schematic & symbol synthesis plan (0.0625 grid)
-LIB analog_ws
-CELL five_t_ota_draft
-TECH_LIB gpdk090
-BACKUP 1
+LIB analog_ws TECH gpdk090
+CELL five_t_ota_draft VIEW schematic
+GRID 0.0625
+SYMBOL true
 
 PIN VINP input -1.0000 0.2500 R0
 PIN VINN input -1.0000 -0.2500 R0
@@ -188,11 +188,27 @@ PIN IBIAS input -1.0000 -0.8750 R0
 PIN VDD inputOutput 0.0000 1.2500 R0
 PIN VSS inputOutput 0.0000 -1.2500 R0
 
-INST M1 gpdk090 nmos1v symbol -0.3750 0.0000 R0 l=250n fingers=4 w=12u m=1
-INST M2 gpdk090 nmos1v symbol 0.3750 0.0000 MY l=250n fingers=4 w=12u m=1
-INST M3 gpdk090 pmos1v symbol -0.3750 0.6250 R0 l=500n fingers=4 w=16u m=1
-INST M4 gpdk090 pmos1v symbol 0.3750 0.6250 MY l=500n fingers=4 w=16u m=1
-INST M5 gpdk090 nmos1v symbol 0.0000 -0.6250 R0 l=500n fingers=4 w=16u m=1
+INST M1 gpdk090 nmos1v symbol -0.3750 0.0000 R0
+INST M2 gpdk090 nmos1v symbol  0.3750 0.0000 MY
+INST M3 gpdk090 pmos1v symbol -0.3750 0.6250 R0
+INST M4 gpdk090 pmos1v symbol  0.3750 0.6250 MY
+INST M5 gpdk090 nmos1v symbol  0.0000 -0.6250 R0
+
+PARAM M1 l 250n
+PARAM M1 fingers 4
+PARAM M1 w 12u
+PARAM M2 l 250n
+PARAM M2 fingers 4
+PARAM M2 w 12u
+PARAM M3 l 500n
+PARAM M3 fingers 4
+PARAM M3 w 16u
+PARAM M4 l 500n
+PARAM M4 fingers 4
+PARAM M4 w 16u
+PARAM M5 l 500n
+PARAM M5 fingers 4
+PARAM M5 w 16u
 
 NET VINP M1.G PIN.VINP
 NET VINN M2.G PIN.VINN
@@ -201,7 +217,6 @@ NET N_MIR M3.G M3.D M1.D
 NET VOUT M2.D M4.D PIN.VOUT
 NET VDD M3.S M3.B M4.S M4.B PIN.VDD
 NET VSS M5.S M5.B M1.B M2.B PIN.VSS
-GENERATE_SYMBOL 1
 ```
 
 Kích hoạt dựng mạch, cập nhật một nhánh linh kiện trong vòng lặp tối ưu và chạy Spectre 15.1 an toàn qua `cadence_exec.py`:
@@ -213,15 +228,15 @@ PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools
 
 # 2. Tinh chỉnh kích thước M1/M2 trong vòng lặp tối ưu hóa và lưu sạch
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py set-param \
-  --lib analog_ws --cell five_t_ota_draft --inst M1 --params l=300n,fingers=4,w=14.4u
+  --lib analog_ws --cell five_t_ota_draft --inst M1 --param l=300n --param fingers=4 --param w=14.4u
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py set-param \
-  --lib analog_ws --cell five_t_ota_draft --inst M2 --params l=300n,fingers=4,w=14.4u
+  --lib analog_ws --cell five_t_ota_draft --inst M2 --param l=300n --param fingers=4 --param w=14.4u
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/ic617_client.py check-save \
   --lib analog_ws --cell five_t_ota_draft
 
 # 3. Xuất netlist và chạy Spectre 15.1 (-format psfascii) trong thư mục phiên chạy cô lập
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/cadence_exec.py spectre \
-  --project . --run-id iter_02_tt --scs ./sim/tb_ota_stb.scs --psf-ascii
+  --project . --run-id iter_02_tt --netlist ./sim/tb_ota_stb.scs --psf-ascii
 ```
 
 ---

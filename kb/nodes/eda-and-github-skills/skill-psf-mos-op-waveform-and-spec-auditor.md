@@ -11,25 +11,25 @@
     {
       "chapter": 2,
       "section": "2.2.2-2.4.2",
-      "pages": "16-31",
+      "pages": "15-31",
       "equations": ["2.11", "2.27", "2.36"]
     },
     {
       "chapter": 8,
-      "section": "8.5, 8.8",
-      "pages": "301-334",
+      "section": "8.5-8.8",
+      "pages": "303-336",
       "equations": ["8.68", "8.184"]
     },
     {
       "chapter": 10,
       "section": "10.1-10.3, 10.6",
-      "pages": "410-420, 439-446",
+      "pages": "410-420, 433-435",
       "equations": ["10.2", "10.14", "10.36"]
     },
     {
       "chapter": 11,
-      "section": "11.4-11.6",
-      "pages": "466-507",
+      "section": "11.2, 11.4-11.6",
+      "pages": "460-463, 466-507",
       "equations": ["11.6", "11.14"]
     }
   ],
@@ -129,18 +129,18 @@ $$
 $$
 
 Trên sóng quá độ `tran.tran`, bốn phép đo động được định nghĩa chặt chẽ không mơ hồ:
-- **Slew Rate dương/âm (`slew_rate_pos`, `slew_rate_neg`):** Độ dốc cát tuyến giữa ngưỡng $20\%$ và $80\%$ biên độ bước nhảy $\Delta V = V_{\text{final}} - V_{\text{init}}$.
-- **Độ vọt lố phần trăm (`overshoot_pct`):** $100 \times \max(0, (V_{\text{peak}} - V_{\text{final}}) / \Delta V)$ theo chiều bước nhảy.
-- **Thời gian xác lập cuối cùng (`settling_time_s`):** Duyệt **ngược từ cuối mảng thời gian về đầu** để tìm thời điểm cuối cùng $|V(t) - V_{\text{final}}| > \epsilon |\Delta V|$ (mặc định $\epsilon = 0{,}001$ tức $0{,}1\%$), tuyệt đối không lấy điểm cắt đầu tiên!
+- **Slew Rate dương/âm (`slew_rate_pos`, `slew_rate_neg`):** Độ dốc cát tuyến giữa ngưỡng $10\%$ và $90\%$ biên độ bước nhảy ($0{,}80|\Delta V| / (t_{90} - t_{10})$ với $\Delta V = V_{\text{final}} - V_{\text{init}}$).
+- **Độ vọt lố phần trăm (`overshoot_pct`):** $100 \times \max(0, (V_{\text{peak}} - V_{\text{final}}) / |\Delta V|)$ theo chiều bước nhảy.
+- **Thời gian xác lập cuối cùng (`settling_time_s`):** Kiểm tra đuôi sóng đã nằm trọn trong dải dung sai rồi tìm thời điểm cuối cùng $|V(t) - V_{\text{final}}| > \epsilon |\Delta V|$ (mặc định `--settling-tol 0.01` tức $1\%$, có thể siết chặt về `--settling-tol 0.001` tức $0{,}1\%$), tuyệt đối không lấy điểm cắt đầu tiên!
 - **Độ gợn đỉnh–đỉnh xác lập (`ripple_pp`):** $\max(V) - \min(V)$ tính riêng trên cửa sổ $20\%$ thời gian cuối khi mạch DC-DC hoặc bơm điện tích đã vào xác lập tuần hoàn.
 
 ---
 
 ## 3. Bất biến Kiểm toán & Bẫy Đọc Kết quả Mô phỏng (Invariants & Traps)
 
-- **[INV-PSF-01] Bất biến Phân cấp Cổng Kiểm tra (`DC Saturation Gate Before AC/Tran Gate`):** Khi đánh giá một lần chạy mô phỏng, nếu `op-audit` phát hiện transistor chủ chốt bị ngắt (`region == 0`) hoặc rơi vào triode ngoài ý muốn (`region == 1`), kết quả tổng thể của điểm thiết kế đó phải bị gắn cờ **`OP_VIOLATION`**, không được dùng các con số băng thông hay công suất thấp giả tạo (do mạch bị tắt một nửa!) để làm đầu vào khen thưởng cho bộ tối ưu hóa!
+- **[INV-PSF-01] Bất biến Phân cấp Cổng Kiểm tra (`DC Saturation Gate Before AC/Tran Gate`):** Khi đánh giá một lần chạy mô phỏng, nếu `op-audit` phát hiện transistor chủ chốt bị ngắt (`region == 0`) hoặc rơi vào triode ngoài ý muốn (`region == 1`), kết quả tổng thể của điểm thiết kế đó phải bị gắn cờ **`FAIL` (`UNINTENDED_TRIODE` / `UNEXPECTED_CUTOFF`)**, không được dùng các con số băng thông hay công suất thấp giả tạo (do mạch bị tắt một nửa!) để làm đầu vào khen thưởng cho bộ tối ưu hóa!
 - **[INV-PSF-02] Bất biến Trạng thái Ba Giá trị (`PASS` / `FAIL` / `NOT_VERIFIED`):** Nếu hàm truyền vòng có độ lợi DC $A_0 < 0\text{ dB}$ nên không bao giờ cắt trục $0\text{ dB}$, cả `stb_ugf_hz` lẫn `phase_margin_deg` đều không xác định. `psf_audit.py` bắt buộc ghi nhận `null` kèm trạng thái **`NOT_VERIFIED`** (tính là không đạt hợp đồng `spec.json`), nghiêm cấm điền số `0` hay `180` giả tạo!
-- **[TRAP-PSF-01] Bẫy Định dạng Mặc định `psfxl` / `sst2` Của Phân tích `.tran` Trong Spectre 15.1:** Nếu quên truyền cờ `-format psfascii` cho `spectre`, tệp `dcOpInfo.info` đôi khi vẫn có thể đọc được bằng công cụ `psf`, nhưng phân tích `.tran` mặc định ghi ra định dạng nhị phân nén tốc độ cao `psfxl` (gồm cặp tệp `.tran.tran` + `.tran.tran.psfxl`). Khi đó phải truyền `-format psfascii` qua `cadence_exec.py --psf-ascii` ngay từ lúc chạy mô phỏng, hoặc gọi tiện ích `psf -i tran.tran -o tran.ascii` đi kèm bộ `/opt/MMSIM151/tools/bin/psf`.
+- **[TRAP-PSF-01] Bẫy Định dạng Mặc định `psfxl` / `sst2` Của Phân tích `.tran` Trong Spectre 15.1:** Nếu quên truyền cờ `-format psfascii` cho `spectre`, tệp `dcOpInfo.info` đôi khi vẫn có thể đọc được bằng công cụ `psf`, nhưng phân tích `.tran` mặc định ghi ra định dạng nhị phân nén tốc độ cao `psfxl` (gồm cặp tệp `.tran.tran` + `.tran.tran.psfxl`). Khi đó phải truyền `-format psfascii` qua `cadence_exec.py spectre --netlist <deck.scs> --psf-ascii` ngay từ lúc chạy mô phỏng, hoặc gọi tiện ích `psf -i tran.tran -o tran.ascii` đi kèm bộ `/opt/MMSIM151/tools/bin/psf`.
 - **[TRAP-PSF-02] Bẫy Transistor PDK Bọc Trong Subcircuit (`X` Prefix vs `M` Prefix):** Trong nhiều bộ PDK (như một số biến thể RF/IO của GPDK090/045 hoặc SKY130), mỗi linh kiện trên schematic thực chất là một `subckt` chứa mô hình hạt nhân `M0` bên trong kèm mạng điện trở cổng/đế ký sinh (`MN1.m0` hoặc `XMN1.main`). `psf_audit.py` tự động quét mọi bản ghi có kiểu chứa các trường đặc trưng `("ids", "gm", "gds", "vdsat")` bất kể tiền tố tên, rồi gộp theo tên instance cấp thiết kế để không bỏ sót linh kiện nào!
 
 ---
@@ -149,30 +149,25 @@ Trên sóng quá độ `tran.tran`, bốn phép đo động được định ngh
 
 | Phân tích Spectre (`.scs`) | Tên Tệp Mặc định Trong `<run>.raw/` | Cấu trúc PSF Nội tại | Chỉ số Trích xuất Tự động Bởi `psf_audit.py` |
 |---|---|---|---|
-| `dcOp dc write="spectre.dc"` + `dcOpInfo info what=oppoint where=rawfile` | `dcOp.dc` & `dcOpInfo.info` | Vô hướng thực + Tuple `STRUCT` BSIM4 nhiều trường | Dòng nguồn `idd_a`, `power_w`, bảng toàn bộ MOSFET `{region, gm_id, gm_gds, vov, sat_margin, cgg}` |
+| `dcOp dc write="spectre.dc"` + `dcOpInfo info what=oppoint where=rawfile` | `dcOp.dc` & `dcOpInfo.info` | Vô hướng thực + Tuple `STRUCT` BSIM4 nhiều trường | Dòng nguồn `idd_a`, `dc_power_w` (đồng bộ bí danh `power_w`), bảng MOSFET `{region, gm_id, gm_gds, vov, sat_margin, cgg}` |
 | `stb stb probe=IPRB0 start=1 stop=10G dec=25` | `stb.stb` & `stb.margin.stb` | Số phức `(re im)` dọc biến quét `"freq"` | `loop_dc_gain_db`, `stb_ugf_hz`, `phase_margin_deg` (trải pha liên tục), `gain_margin_db` |
-| `ac ac start=1 stop=10G dec=25` | `ac.ac` | Số phức `(re im)` của các nút áp ra | `dc_gain_db`, `bw_3db_hz`, `ugf_hz`, `pm_ac_deg`, `psrr_dc_db`, `cmrr_dc_db` |
-| `tran tran stop=2u errpreset=conservative` | `tran.tran` | `TRACE GROUP` + nén sai phân giữ bậc dọc `"time"` | `slew_rate_pos`, `slew_rate_neg`, `overshoot_pct`, `settling_time_s`, `ripple_pp`, `vout_final` |
-| Quét tham số / Góc (`sweep` hoặc cây thư mục góc) | `sw1.sweep1/001_stb.stb` hoặc `corners/*/input.raw` | Đa thư mục con phân cấp | Bảng tổng hợp `worst_case` (`min`/`max` qua mọi góc) đối chiếu trực tiếp với `spec.json` |
+| `ac ac start=1 stop=10G dec=25` + `noise` / `pnoise` | `ac.ac` & `noise.noise` | Số phức `(re im)` & phổ mật độ nhiễu dọc `"freq"` | `dc_gain_db`, `bw_3db_hz`, `ugf_hz`, `pm_ac_deg`; `integrated_rms_noise_v`, `integrated_rms_noise_a` |
+| `tran tran stop=2u errpreset=conservative` | `tran.tran` | `TRACE GROUP` + nén sai phân giữ bậc dọc `"time"` | `slew_rate_pos`, `slew_rate_neg`, `overshoot_pct`, `settling_time_s`, `ripple_pp` |
+| Quét tham số / Góc (`sweep` hoặc cây thư mục góc) | `sw1-001_stb.stb` hoặc `corners/*/input.raw` | Đa thư mục con phân cấp | Bảng tổng hợp cực trị đa góc đối chiếu trực tiếp với `spec.json` (`PASS` / `FAIL` / `NOT_VERIFIED`) |
 
 ---
 
 ## 5. Quy trình Thực hành Kiểm toán Điểm Làm việc & Chấm Điểm Hợp đồng `spec.json`
 
 ### 5.1. Cú pháp Cấu hình `spec.json` Chuẩn Cho Bộ Đánh giá Tự động
-Tệp `spec.json` định nghĩa rành mạch tên chỉ số, ngưỡng `min`/`max`, đơn vị và tín hiệu mục tiêu để cả người thiết kế, `psf_audit.py` lẫn `sizing_opt.py` dùng chung một nguồn sự thật duy nhất:
+Tệp `spec.json` định nghĩa rành mạch phạm vi phủ góc/phép phân tích (`coverage`) cùng ngưỡng `min`/`max` và đơn vị chuẩn SI để cả người thiết kế, `psf_audit.py` lẫn `sizing_opt.py` dùng chung một nguồn sự thật duy nhất:
 
 ```json
 {
   "circuit_name": "folded_cascode_ota_gpdk090",
-  "vdd_nominal": 1.2,
-  "supply_current_signal": "VDD:p",
-  "ac_output_signal": "vout_diff",
-  "tran_output_signal": "vout",
-  "mos_op_rules": {
-    "min_sat_margin_v": 0.05,
-    "allow_subthreshold": ["M1", "M2"],
-    "expect_triode": []
+  "coverage": {
+    "corners": ["NN_27C", "SS_125C", "FF_m40C"],
+    "analyses": ["dc", "stb", "tran"]
   },
   "targets": {
     "loop_dc_gain_db":  {"min": 65.0, "unit": "dB"},
@@ -182,7 +177,7 @@ Tệp `spec.json` định nghĩa rành mạch tên chỉ số, ngưỡng `min`/`
     "slew_rate_neg":    {"min": 45.0e6, "unit": "V/s"},
     "settling_time_s":  {"max": 25.0e-9, "unit": "s"},
     "overshoot_pct":    {"max": 8.0, "unit": "%"},
-    "power_w":          {"max": 480.0e-6, "unit": "W"}
+    "dc_power_w":       {"max": 480.0e-6, "unit": "W"}
   }
 }
 ```
@@ -194,12 +189,16 @@ Tệp `spec.json` định nghĩa rành mạch tên chỉ số, ngưỡng `min`/`
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/psf_audit.py op-audit \
   ./sim/runs/iter_02_tt/input.raw/dcOpInfo.info \
   --vds-margin 0.05 \
-  --expect-triode M_RCMFB1,M_RCMFB2
+  --expect-triode M_RCMFB1,M_RCMFB2 \
+  --fail-on-violation
 
 # 2. Giải mã toàn bộ sóng AC/STB/Tran (kể cả thư mục con quét góc PVT) và chấm đạt/trượt theo spec.json
 PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools/psf_audit.py metrics \
   ./sim/runs/iter_02_pvt \
   --spec ./spec.json \
+  --vout vout \
+  --settling-tol 0.001 \
+  --fail-on-spec \
   --out ./sim/runs/iter_02_pvt/audit_summary.json
 ```
 
@@ -207,25 +206,37 @@ Ví dụ cấu trúc báo cáo JSON súc tích do `psf_audit.py op-audit` trả 
 
 ```json
 {
-  "ok": false,
+  "command": "op-audit",
+  "ok": true,
+  "audit_pass": false,
+  "status": "FAIL",
   "device_count": 11,
-  "violation_count": 1,
-  "violations": [
+  "flags": [
     {
-      "inst": "M_TAIL",
-      "issue": "UNINTENDED_TRIODE",
+      "device": "M_TAIL",
+      "code": "UNINTENDED_TRIODE",
+      "severity": "error",
       "region": 1,
-      "vds_v": 0.072,
-      "vdsat_v": 0.198,
-      "sat_margin_v": -0.126,
-      "gm_id": 8.4,
-      "gm_gds": 3.1
+      "sat_margin": -0.126,
+      "message": "M_TAIL is in linear/triode region (region=1, sat_margin=-0.126 V)"
     }
-  ]
+  ],
+  "devices": {
+    "M_TAIL": {
+      "region": 1,
+      "region_name": "triode",
+      "vds": 0.072,
+      "vdsat": 0.198,
+      "sat_margin": -0.126,
+      "gm_id": 8.4,
+      "gm_gds": 3.1,
+      "status": "FAIL"
+    }
+  }
 }
 ```
 
-Nhìn vào dòng `M_TAIL: region=1, sat_margin_v=-0.126, gm_gds=3.1`, tác tử lập tức kết luận nguồn dòng đuôi bị ép sập vào vùng triode làm tụt trở kháng đuôi $R_{SS}$ (theo đúng cây lỗi `skill-5t-ota-root-cause-fault-tree`), thay vì mò mẫm tăng chiều rộng cặp vi sai!
+Nhìn vào bản ghi `M_TAIL: region=1, sat_margin=-0.126, gm_gds=3.1`, tác tử lập tức kết luận nguồn dòng đuôi bị ép sập vào vùng triode làm tụt trở kháng đuôi $R_{SS}$ (theo đúng cây lỗi `skill-5t-ota-root-cause-fault-tree`), thay vì mò mẫm tăng chiều rộng cặp vi sai!
 
 ---
 

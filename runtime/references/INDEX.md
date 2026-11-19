@@ -1,4 +1,4 @@
-# Tra cứu theo việc đang làm (`2026.11.18.6`)
+# Tra cứu theo việc đang làm (`2026.11.18.7`)
 
 Đọc `project.json`, `spec.json`, `STATE.md` của dự án trước (`analogctl.py locate`). Tra cứu nguyên lý, bất biến cấu trúc đa tiến trình (`180nm`, `90nm`, `65nm`, `45nm`), bẫy lỗi kinh điển và lộ trình nâng cấp qua **Bộ não Tri thức 162 Thẻ (Razavi Ch.01–19 + PMIC + AMS + Cadence/GitHub Skills)** tại [../kb/README.md](../kb/README.md) (`kb_lookup.py` + `kb_fetch.py`). Xem [SOURCE-MAP.md](SOURCE-MAP.md) để mở đúng tệp cục bộ và [SOURCE-LINKS.md](SOURCE-LINKS.md) khi source trích chọn có liên kết thiếu; chỉ đọc `sources.lock.json` khi cần kiểm tra provenance/commit. Các tệp trong `sources/` chỉ là tài liệu tham khảo thụ động, không thay thế quy trình hay công cụ chuẩn của thư viện.
 

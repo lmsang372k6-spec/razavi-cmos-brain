@@ -13,7 +13,7 @@ Spline (PCHIP) inverse ratio solver for Murmann gm/ID methodology:
               full realized operating point re-queried at JD_realized = ID / W_total
   - tradeoff: Pareto table across (gm/ID, L) -> (gm*ro, fT, JD, Vdsat) + role recommendations
 
-Release: 2026.11.18.6
+Release: 2026.11.18.7
 """
 from __future__ import print_function
 
@@ -36,7 +36,7 @@ if TOOLS_DIR not in sys.path:
 
 import gpdk_techsweep  # noqa: E402
 
-RELEASE = "2026.11.18.6"
+RELEASE = "2026.11.18.7"
 TIMER = getattr(time, "perf_counter", time.time)
 
 DEV_ALIASES = {

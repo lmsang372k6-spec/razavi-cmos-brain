@@ -19,7 +19,7 @@
     {
       "chapter": 9,
       "section": "9.9-9.10",
-      "pages": "393-400",
+      "pages": "390-400",
       "equations": [
         "9.62",
         "9.76"
@@ -27,12 +27,14 @@
     },
     {
       "chapter": 13,
-      "section": "13.3.2",
-      "pages": "560-563",
+      "section": "13.3.1-13.3.3",
+      "pages": "555-568",
       "equations": [
         "13.40",
         "13.42",
-        "13.44"
+        "13.44",
+        "13.53",
+        "13.58"
       ]
     },
     {
@@ -120,7 +122,7 @@ Trước khi đặt bút vẽ bất kỳ một transistor nào cho bộ chuyển
    - Đặt song song toàn bộ $2^N - 1$ bộ so sánh chốt tốc độ cao so sánh trực tiếp $V_{\text{in}}$ với $2^N - 1$ mức áp chia từ thang điện trở tham chiếu. Kết quả xuất ra dạng **mã nhiệt kế (`Thermometer Code`: `00...011...1`)**, đi qua tầng **triệt lỗi bọt khí (`Bubble / Sparkle Suppression`)** và bộ mã hóa **ROM Mã Gray / Cây cộng Wallace** để thành mã nhị phân $N\text{-bit}$ ngay trong 1 chu kỳ xung nhịp!
 2. **Bộ chuyển đổi Đường ống (`Pipelined ADC` dùng `1.5-bit/stage Flip-Around MDAC` + Sửa lỗi số `RSD`, $10\text{–}16\text{ bit}$, $50\text{ MS/s} \dots 2\text{ GS/s}$):**
    - Chia nhỏ quá trình lượng tử hóa thành chuỗi $M$ tầng nối tiếp hoạt động xen kẽ hai pha đồng hồ không chồng lấp ($\phi_1, \phi_2$): khi tầng lẻ đang lấy mẫu thì tầng chẵn đang khuếch đại điện áp dư và ngược lại — nhờ đó **mỗi chu kỳ xung nhịp $1/f_s$ vẫn xuất ra trọn vẹn 1 mẫu kết quả mới (`throughput = 1 sample/clock`)**, trong khi tổng số bộ so sánh giảm từ hàm mũ $2^N$ xuống tuyến tính $2 M$!
-   - Trái tim của mỗi tầng là khối **DAC Nhân Dư Tụ Chuyển Mạch Lật Tụ `1.5-bit/stage` (`Flip-Around Multiplying DAC — MDAC`, phát triển trực tiếp từ mạch nhân đôi chính xác `T2149` Razavi §13.3.2)**: dùng một `sub-ADC` siêu thô chỉ gồm **2 bộ so sánh** (ngưỡng $\pm V_{\text{REF}}/4$) tạo mã ba mức $D \in \{-1, 0, +1\}$, rồi dùng Op-Amp tụ chuyển mạch tính chính xác $V_{\text{res}} = 2 V_{\text{in}} - D \cdot V_{\text{REF}}$ chuyển cho tầng sau. Nhờ $0.5\text{ bit}$ dư thừa mỗi tầng trong thuật toán **Chữ số Có dấu Dư thừa (`Redundant Signed Digit — RSD`)**, bộ so sánh phụ được phép lệch ngưỡng tới **$\pm V_{\text{REF}}/4$ ($\pm 250\text{ mV}$!) mà không gây bất kỳ một sai số bit nào ở ngõ ra cuối cùng**!
+   - Trái tim của mỗi tầng là khối **DAC Nhân Dư Tụ Chuyển Mạch Lật Tụ `1.5-bit/stage` (`Flip-Around Multiplying DAC — MDAC`, phát triển trực tiếp từ mạch nhân đôi chính xác `T2149` Razavi §13.3.3)**: dùng một `sub-ADC` siêu thô chỉ gồm **2 bộ so sánh** (ngưỡng $\pm V_{\text{REF}}/4$) tạo mã ba mức $D \in \{-1, 0, +1\}$, rồi dùng Op-Amp tụ chuyển mạch tính chính xác $V_{\text{res}} = 2 V_{\text{in}} - D \cdot V_{\text{REF}}$ chuyển cho tầng sau. Nhờ $0.5\text{ bit}$ dư thừa mỗi tầng trong thuật toán **Chữ số Có dấu Dư thừa (`Redundant Signed Digit — RSD`)**, bộ so sánh phụ được phép lệch ngưỡng tới **$\pm V_{\text{REF}}/4$ ($\pm 250\text{ mV}$!) mà không gây bất kỳ một sai số bit nào ở ngõ ra cuối cùng**!
 
 ---
 
@@ -171,7 +173,7 @@ $$
      3) **Bộ Đếm Tổng Số Bit `1` Dùng Cây Cộng `Wallace Tree` (`Ones-Counter Adder`):** Cộng tổng đại số toàn bộ $2^N - 1$ bit nhiệt kế — hoàn toàn miễn nhiễm với thứ tự xáo trộn vị trí của mọi bọt khí!
 
 ### 2.3. Tầng `1.5-bit/stage Flip-Around MDAC` & Phép Màu Sửa Lỗi Dư thừa `RSD` ($\pm V_{\text{REF}}/4$)
-Xét cấu trúc vi sai (biểu diễn đơn đầu quy về $V_{CM} = 0$, dải vào $[-V_{\text{REF}}, +V_{\text{REF}}]$) của tầng `1.5-bit/stage Flip-Around MDAC` (`topo-switched-capacitor-unity-and-multiplying-amps`, Razavi §13.3.2 Hình 13.23):
+Xét cấu trúc vi sai (biểu diễn đơn đầu quy về $V_{CM} = 0$, dải vào $[-V_{\text{REF}}, +V_{\text{REF}}]$) của tầng `1.5-bit/stage Flip-Around MDAC` (`topo-switched-capacitor-unity-and-multiplying-amps`, Razavi §13.3.3 Hình 13.53):
 1. **Phương trình Truyền Điện tích Hai Pha & Lợi thế Hệ số Hồi tiếp $\beta_{\text{flip}} = \frac{1}{2}$:**
    Sử dụng chỉ **hai tụ điện bằng nhau $C_1 = C_2 = C$** (không tốn tụ hồi tiếp $C_F$ thứ ba!):
    - *Pha lấy mẫu ($\phi_1$):* Cả $C_1$ và $C_2$ cùng nạp $V_{\text{in}}$ thông qua lấy mẫu tấm đáy ngắt sớm (`T2135`): tổng điện tích lưu trên hai tấm đỉnh nối vào nút cổng đảo Op-Amp là $Q_{\text{in}}(\phi_1) = -(C_1 + C_2) V_{\text{in}} = -2 C V_{\text{in}}$. Ngay cuối $\phi_1$, `sub-ADC` gồm 2 bộ so sánh động kiểm tra nhanh $V_{\text{in}}$ với hai ngưỡng $-\frac{V_{\text{REF}}}{4}$ và $+\frac{V_{\text{REF}}}{4}$ để chốt mã ba mức $D \in \{-1, 0, +1\}$.
@@ -269,7 +271,7 @@ tran_mdac_curve tran stop=(204*Ts) errpreset=conservative maxstep=(Ts/100) \
 ## 6. Mốc Đối chiếu Sách Razavi, GitHub Thực chiến & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition) & Kho Mã Nguồn Mở
-- **Chương 13:** §13.3.2 *Switched-Capacitor Unity-Gain and Multiplying Amplifiers* (tr. 560–563, Phương trình 13.40–13.44, Hình 13.23 — dẫn xuất trực tiếp mạch nhân đôi lật tụ `multiply-by-two` và công thức sai số độ lợi hữu hạn Op-Amp chính là hạt nhân của tầng `1.5-bit Flip-Around MDAC`!).
+- **Chương 13:** §13.3.1–§13.3.3 *Switched-Capacitor Unity-Gain, Noninverting & Precision Multiply-by-Two Amplifiers* (tr. 555–568, Phương trình 13.40–13.44, 13.53, 13.58, Hình 13.53–13.54 — dẫn xuất trực tiếp mạch nhân đôi lật tụ `multiply-by-two` và công thức sai số độ lợi hữu hạn / hằng số thời gian Op-Amp chính là hạt nhân của tầng `1.5-bit Flip-Around MDAC`!).
 - **Chương 8, Chương 9 & Chương 14:** §8.1–§8.2 (sai số độ lợi vòng kín $1/(\beta A_0)$); §9.9–§9.10 (phân bổ thời gian slewing và xác lập tuyến tính trong nửa chu kỳ đồng hồ); §14.1.4–§14.2.1 (tuyến tính tụ điện và định luật khớp Pelgrom).
 - **Đối chiếu GitHub:** Kho `bmurmann/ADC-survey` (dữ liệu chuẩn toàn cầu $\text{FoM}_W$, $\text{FoM}_S$ và trần jitter khẩu độ) kết hợp `Arcadia-1/ADCToolbox` (hiệu chuẩn trọng số gian tầng cho ADC đường ống).
 

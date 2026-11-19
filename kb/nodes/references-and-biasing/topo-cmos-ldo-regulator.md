@@ -30,7 +30,7 @@
     {
       "chapter": 12,
       "section": "12.6, 12.8",
-      "pages": "525-528, 534-535",
+      "pages": "525-529, 533-535",
       "equations": [
         "12.60",
         "12.65"
@@ -185,7 +185,7 @@ Tồn tại **hai trường phái bù tần số kinh điển** tùy thuộc b�
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 - **Tổng hợp nguyên lý từ sách gốc Razavi (2nd Ed.):**
-  - Chương 8: Mục `8.3.1` (Hồi tiếp Điện áp–Điện áp, trang 284–288), Mục `8.5` (Hiệu ứng tải mạng hồi tiếp cầu điện trở, trang 303–312), Mục `8.7` (Mở vòng chính xác Middlebrook, trang 326–336).
+  - Chương 8: Mục `8.2.1` (Hồi tiếp Điện áp–Điện áp, trang 286–291), Mục `8.5` (Hiệu ứng tải mạng hồi tiếp cầu điện trở, trang 303–312), Mục `8.7` (Mở vòng chính xác Middlebrook, trang 331–332).
   - Chương 10: Mục `10.3`–`10.7` (Dự trữ pha hệ đa cực, tách cực Miller, khử RHP zero và bù qua nhánh cascode Ahuja, trang 416–439).
   - Chương 12: Mục `12.6` (Trở kháng ra theo tần số, quá độ tải và truyền nhiễu tham chiếu, trang 525–529) và Mục `12.8` (Điều áp nguồn cấp cục bộ $V_{DDL}$ nâng PSRR trong Hình `12.39`–`12.41`, trang 534–535).
 - **Đối chiếu Thuật ngữ Chuẩn CLB (`THUẬT NGỮ CHUẨN.md`):**

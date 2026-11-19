@@ -69,24 +69,24 @@ Trong mô hình bậc nhất quy luật bình phương của `concept-mos-operat
 ### 2.1. Phương trình Dòng Dưới ngưỡng Đầy đủ & Điều kiện Bão hòa Chỉ Cần $3\,V_T$!
 Gộp cả sự phụ thuộc tỉ lệ hình học $W/L$ và hiệu thế máng–nguồn $V_{DS}$ trong cơ chế khuếch tán hạt tải, dòng cực máng dưới ngưỡng (khi $V_{GS} < V_{TH}$) tuân theo phương trình chuẩn (tổng quát từ Phương trình 2.33, tr. 24–26):
 
-$$I_D = I_0 \exp\!\left(\frac{V_{GS}}{\zeta V_T}\right)\left[1 - \exp\!\left(-\frac{V_{DS}}{V_T}\right)\right] = \alpha \frac{W}{L} \exp\!\left(\frac{V_{GS} - V_{TH}}{\zeta V_T}\right)\left[1 - \exp\!\left(-\frac{V_{DS}}{V_T}\right)\right]$$
+$$I_D = I_0 \exp\!\left(\frac{V_{GS}}{\zeta V_T}\right)\left[1 - \exp\!\left(-\frac{V_{DS}}{V_T}\right)\right] = I_{D0} \frac{W}{L} \exp\!\left(\frac{V_{GS} - V_{TH}}{\zeta V_T}\right)\left[1 - \exp\!\left(-\frac{V_{DS}}{V_T}\right)\right]$$
 
-trong đó $I_0 \propto \frac{W}{L}\mu C_{ox}(\zeta - 1)V_T^2 \exp\!\left(-\frac{V_{TH}}{\zeta V_T}\right)$ (hoặc viết quy chiếu quanh $V_{TH}$ với hệ số dòng đặc trưng $\alpha = \mu C_{ox}(\zeta - 1)V_T^2$). Hai hệ quả cực kỳ quan trọng nhảy ra ngay khi nhìn bằng mắt (inspection):
+trong đó $I_0 = \alpha \frac{W}{L}$ với hằng số dòng $\alpha = I_{D0}\exp\!\left(-\frac{V_{TH}}{\zeta V_T}\right)$ (đơn vị $\text{A}$, khớp nguyên văn Phương trình 2.37: $I_D = \alpha \frac{W}{L}\exp\!\left(\frac{V_{GS}}{\zeta V_T}\right)$ khi $V_{DS} \gtrsim 4 V_T$), còn $I_{D0} = \mu C_{ox}(\zeta - 1)V_T^2$ là dòng đặc trưng quy chiếu tại $V_{GS} = V_{TH}$. Hai hệ quả cực kỳ quan trọng nhảy ra ngay khi nhìn bằng mắt (inspection):
 1. **Điện áp bão hòa tối thiểu $V_{DS,\min}$ không phụ thuộc $W/L$ và nhỏ kỷ lục ($\sim 3\text{–}4\,V_T$):**
    Trong vùng nghịch đảo mạnh, $V_{DS,\text{sat}} = V_{GS} - V_{TH}$ có thể chiếm $150\text{–}300\,\text{mV}$. Ngược lại, trong vùng dưới ngưỡng, thừa số $\left[1 - \exp(-V_{DS}/V_T)\right]$ tiến tới $0{,}95$ ngay khi $V_{DS} = 3 V_T \approx 78\,\text{mV}$ và đạt $0{,}982$ tại $V_{DS} = 4 V_T \approx 104\,\text{mV}$! Một khi $V_{DS} \gtrsim 4 V_T \approx 100\,\text{mV}$, nồng độ hạt tải tại đầu máng đã tụt về gần không nên gradien khuếch tán đạt cực đại và phương trình rút gọn đúng thành Phương trình (2.33) của Razavi:
    $$I_D \approx I_0 \exp\!\left(\frac{V_{GS}}{\zeta V_T}\right) \quad (\text{khi } V_{DS} \gtrsim 4 V_T \approx 100\,\text{mV}, \text{ bỏ qua điều biến kênh})$$
 2. **Độ dốc dưới ngưỡng (`T278`, subthreshold slope — $S$):**
-   Lấy logarit thập phân hai vế của (2.33) để tìm lượng điện áp $V_{GS}$ cần giảm nhằm cắt dòng rò đi đúng $10$ lần ($1\text{ decade}$, Phương trình 2.34–2.36, Ví dụ 2.8 tr. 25):
+   Lấy logarit thập phân hai vế của (2.33) để tìm lượng điện áp $V_{GS}$ cần giảm nhằm cắt dòng rò đi đúng $10$ lần ($1\text{ decade}$, §2.3, Hình 2.28, tr. 24–25):
    $$\frac{I_{D1}}{I_{D2}} = 10 \quad \Longleftrightarrow \quad S \triangleq \left(\frac{\partial \log_{10} I_D}{\partial V_{GS}}\right)^{-1} = \zeta V_T \ln 10 \approx 2{,}3026\,\zeta V_T$$
    - Ở giới hạn lý tưởng tuyệt đối $\zeta = 1$ tại $T = 300\,\text{K}$: $S_{\min} = (25{,}85\,\text{mV})\times \ln 10 \approx 59{,}5\,\text{mV/decade}$ (mốc kinh điển $60\,\text{mV/dec}$).
    - Với CMOS phẳng thực tế $\zeta \approx 1{,}35\text{–}1{,}55$: $S \approx 80\text{–}95\,\text{mV/decade}$ ở nhiệt độ phòng, và **tồi đi tuyến tính theo nhiệt độ tuyệt đối $T$** (lên tới $105\text{–}125\,\text{mV/dec}$ tại $125\,^\circ\text{C}$!).
 
-### 2.2. Bài toán Minh họa Kinh điển của Razavi (Ví dụ 2.8, tr. 25 — Thảm họa Dòng Rò SRAM)
-Xét một mảng bộ nhớ SRAM cỡ vừa chứa $N = 18\times 10^6$ transistor truy cập có $V_{TH} = 0{,}4\,\text{V}$ và độ dốc dưới ngưỡng $S = 80\,\text{mV/dec}$ (ứng với $\zeta \approx 1{,}34$). Giả sử tại ranh giới $V_{GS} = V_{TH} = 0{,}4\,\text{V}$, mỗi transistor mang dòng $I_D(V_{TH}) = 10\,\mu\text{A}$. Khi tắt hoàn toàn cổng xuống $V_{GS} = 0\,\text{V}$, hiệu áp lùi dưới ngưỡng chỉ được $\Delta V_{GS} = 400\,\text{mV} = 5 \times (80\,\text{mV/dec})$, tức dòng rò mỗi transistor chỉ giảm được $10^5$ lần (Phương trình 2.37):
-$$I_{\text{off,1-cell}} = 10\,\mu\text{A} \times 10^{-0{,}40 / 0{,}08} = 10\,\mu\text{A} \times 10^{-5} = 100\,\text{pA}$$
-Con số $100\,\text{pA}$ nghe có vẻ vô hại trên một linh kiện đơn lẻ, nhưng nhân trên $18$ triệu transistor đang ở trạng thái chờ ($V_{GS} = 0$):
-$$I_{\text{leak,total}} = 18 \times 10^6 \times 100\,\text{pA} = 1{,}8 \times 10^{-3}\,\text{A}\text{ đến }18\,\text{mA}$$
-(trong Ví dụ 2.8 sách Razavi lấy $I_D(V_{TH}) = 100\,\mu\text{A}$ hoặc tương đương cho ra đúng **$18\,\text{mA}$ dòng tĩnh rút cạn pin** dù chip hoàn toàn nghỉ!). Đó là lý do các tiến trình $90\text{nm}/65\text{nm}/45\text{nm}$ không thể hạ $V_{TH}$ tùy ý xuống $0{,}15\,\text{V}$ khi hạ $V_{DD}$, mà buộc phải cung cấp họ linh kiện ngưỡng cao `HVT` cho các khối nhạy rò!
+### 2.2. Bài toán Minh họa Kinh điển của Razavi (§2.3, Hình 2.28, tr. 24–25 — Thảm họa Dòng Rò Tĩnh $18\,\text{mA}$)
+Xét một vi mạch cỡ lớn chứa $N = 100\times 10^6$ transistor có điện áp ngưỡng thấp $V_{TH} = 0{,}3\,\text{V}$ và độ dốc dưới ngưỡng $S = 80\,\text{mV/dec}$ (ứng với $\zeta \approx 1{,}34$). Giả sử tại ranh giới $V_{GS} = V_{TH} = 0{,}3\,\text{V}$, mỗi transistor mang dòng $I_D(V_{TH}) = 1\,\mu\text{A}$. Khi tắt hoàn toàn cổng xuống $V_{GS} = 0\,\text{V}$, hiệu áp lùi dưới ngưỡng chỉ được $\Delta V_{GS} = 300\,\text{mV} = 3{,}75 \times (80\,\text{mV/dec})$, tức dòng rò mỗi transistor chỉ giảm được $10^{3{,}75} \approx 5{,}62 \times 10^3$ lần:
+$$I_{\text{off,1-FET}} = 1\,\mu\text{A} \times 10^{-0{,}30 / 0{,}08} = 1\,\mu\text{A} \times 10^{-3{,}75} \approx 178\,\text{pA}$$
+Con số $178\,\text{pA}$ nghe có vẻ vô hại trên một linh kiện đơn lẻ, nhưng nhân trên $100$ triệu transistor đang ở trạng thái tắt ($V_{GS} = 0$):
+$$I_{\text{leak,total}} = 100 \times 10^6 \times 178\,\text{pA} \approx 17{,}8\,\text{mA} \approx 18\,\text{mA}$$
+(đúng con số **$18\,\text{mA}$ dòng rò tĩnh rút cạn pin** được Razavi cảnh báo ở tr. 25 dù toàn chip đang ở trạng thái chờ!). Đó là lý do các tiến trình $90\text{nm}/65\text{nm}/45\text{nm}$ không thể hạ $V_{TH}$ tùy ý xuống $0{,}15\,\text{V}$ khi hạ $V_{DD}$, mà buộc phải cung cấp họ linh kiện ngưỡng cao `HVT` cho các khối nhạy rò!
 
 ### 2.3. Nghịch lý Mở Rộng $W \to \infty$, Trần Hiệu suất $(g_m / I_D)_{\max}$ & Tần số $f_T$
 Một câu hỏi nền tảng mà Razavi đặt ra ở cuối §2.3 (tr. 25–26): *Theo công thức quy luật bình phương $g_m = \sqrt{2\mu_n C_{ox}\frac{W}{L} I_D}$ (Phương trình 2.19), nếu ta giữ dòng phân cực $I_D$ không đổi và tăng chiều rộng $W$ lên lớn tùy ý, liệu $g_m$ có tăng lên vô hạn và vượt qua cả BJT ($g_{m,\text{BJT}} = I_C / V_T$) hay không?*
@@ -98,7 +98,7 @@ Một câu hỏi nền tảng mà Razavi đặt ra ở cuối §2.3 (tr. 25–26
 ### 2.4. Quy tắc Chuyển giao Nghịch đảo Mạnh – Yếu (Phương trình 2.38–2.39) & Cái giá Tốc độ $f_T$
 Khi giải bài toán tìm $V_{GS}$ tại dòng $I_D$ và tỉ số $W/L$ cho trước, Razavi nêu quy tắc thực hành sắc bén (Phương trình 2.38–2.39, tr. 26): tính $V_{GS}$ theo cả hai công thức — nghịch đảo mạnh (2.38) và nghịch đảo yếu (2.39) — rồi **chọn giá trị nhỏ hơn** (vì ở mật độ dòng thấp, cơ chế dưới ngưỡng đã cung cấp đủ dòng $I_D$ trước khi $V_{GS}$ kịp vươn tới giá trị đòi hỏi bởi luật bình phương):
 
-$$V_{GS,\text{SI}} = V_{TH} + \sqrt{\frac{2 I_D}{\mu_n C_{ox}(W/L)}} \quad (2.38), \qquad V_{GS,\text{WI}} = V_{TH} + \zeta V_T \ln\!\left(\frac{I_D}{\alpha (W/L)}\right) \quad (2.39)$$
+$$V_{GS,\text{SI}} = V_{TH} + \sqrt{\frac{2 I_D}{\mu_n C_{ox}(W/L)}} \quad (2.38), \qquad V_{GS,\text{WI}} = \zeta V_T \ln\!\left(\frac{I_D}{\alpha (W/L)}\right) = V_{TH} + \zeta V_T \ln\!\left(\frac{I_D}{I_{D0}(W/L)}\right) \quad (2.39)$$
 
 Điểm giao thoa chuyển tiếp (vùng **nghịch đảo vừa — moderate inversion**) xảy ra quanh điện áp vượt ngưỡng biểu kiến $V_{OV,\text{trans}} = 2\zeta V_T \approx 70\text{–}80\,\text{mV}$ (ứng với $g_m/I_D \approx 15\text{–}20\,\text{V}^{-1}$), nơi cả đạo hàm $I_D$ lẫn $g_m/I_D$ nối trơn liên tục giữa hai tiệm cận:
 $$\frac{g_m}{I_D} \approx \frac{2}{V_{OV}} \quad (\text{Strong Inversion, } V_{OV} \gg 2\zeta V_T) \qquad \longleftrightarrow \qquad \frac{g_m}{I_D} = \frac{1}{\zeta V_T} \quad (\text{Weak Inversion})$$
@@ -182,8 +182,8 @@ printf("Subthreshold Slope S = %.1f mV/dec | zeta = %.2f | Max gm/ID = %.1f V^-1
 ## 6. Mốc Đối chiếu Sách Razavi & Thuật ngữ Chuẩn CLB
 
 ### 6.1. Đối chiếu Sách Gốc Razavi (2nd Edition)
-- **Chương 2:** §2.3 *Second-Order Effects — Subthreshold Conduction* (tr. 24–26, PDF tr. 18–20): Phương trình (2.32) (nhắc lại điều biến kênh ở Ví dụ 2.7), Phương trình (2.33) đặc tuyến hàm mũ dưới ngưỡng, Hình 2.28 đường cong $\log I_D$ theo $V_{GS}$, Phương trình (2.34)–(2.37) trong Ví dụ 2.8 (độ dốc $80\,\text{mV/dec}$ và dòng rò mảng nhớ), chứng minh $g_m = I_D / (\xi V_T)$ và Phương trình (2.38)–(2.39) quy tắc chọn giá trị $V_{GS}$ nhỏ hơn giữa luật bình phương và hàm mũ; §2.5 *Appendix A: FinFETs* (tr. 36–37, cải thiện kiểm soát tĩnh điện cổng giảm dòng rò dưới ngưỡng); Bài tập 2.21–2.24 (tr. 42–43).
-- **Chương 11:** §11.2–§11.3 (tr. 460–467, đường cong thực nghiệm $g_m/I_D$ trơn từ vùng dưới ngưỡng sang nghịch đảo mạnh, Phương trình 11.5–11.6) và §11.6.5 *Low-Power Op Amp Design* (Ví dụ 11.16, tr. 505–507, tận dụng vùng dưới ngưỡng cho transistor cascode để tiết kiệm dự trữ điện áp và tăng $g_m$).
+- **Chương 2:** §2.3 *Second-Order Effects — Subthreshold Conduction* (tr. 24–26, PDF tr. 18–20): Phương trình (2.32) (nhắc lại điều biến kênh ở Ví dụ 2.7), Phương trình (2.33) đặc tuyến hàm mũ dưới ngưỡng, Hình 2.28 đường cong $\log I_D$ theo $V_{GS}$ kèm phép ước lượng độ dốc $80\,\text{mV/dec}$ và dòng rò tĩnh $18\,\text{mA}$ trên $100$ triệu transistor, chứng minh $g_m = I_D / (\xi V_T)$ cùng điểm giao $(V_{GS}-V_{TH})_1 = 2\xi V_T$ ở Phương trình (2.34)–(2.35), và Ví dụ 2.8 Phương trình (2.36)–(2.39) khảo sát mật độ dòng $I_D/W$ cùng quy tắc chọn giá trị $V_{GS}$ nhỏ hơn giữa luật bình phương và hàm mũ; §2.5 *Appendix A: FinFETs* (tr. 36–37, cải thiện kiểm soát tĩnh điện cổng giảm dòng rò dưới ngưỡng); Bài tập 2.14 & 2.27 (tr. 42–43).
+- **Chương 11:** §11.2–§11.3 (tr. 460–467, đường cong thực nghiệm $g_m/I_D$ trơn từ vùng dưới ngưỡng sang nghịch đảo mạnh, Phương trình 11.5–11.6) và §11.6.5 *Large-Signal Behavior* (Ví dụ 11.16, tr. 505–507, tận dụng vùng dưới ngưỡng cho transistor cascode để tiết kiệm dự trữ điện áp và tăng $g_m$).
 - **Ghi chú Ký hiệu Bản gốc & Bản dịch CLB:** Trong ấn bản 2 tiếng Anh của Razavi, hệ số không lý tưởng dưới ngưỡng được in bằng chữ Hy Lạp $\xi$ (*xi*, Phương trình 2.33 & 2.39), trong khi ấn bản 1 và nhiều tài liệu vi mạch dùng $\zeta$ (*zeta*) hoặc $n$; cả hai đều biểu diễn cùng một đại lượng vật lý $1 + C_{\text{dep}}/C_{ox} > 1$.
 
 ### 6.2. Bảng Thuật ngữ Chuẩn CLB Vi Mạch Sử dụng trong Thẻ

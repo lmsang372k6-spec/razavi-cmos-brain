@@ -86,10 +86,10 @@ $$
 Giải phương trình trùng phương cho tỉ số dương $\frac{\omega_1}{\omega_{p2}}$ và thay vào $\text{PM} = 180^\circ - \arctan\!\left(\frac{\omega_1}{\omega_{p1}}\right) - \arctan\!\left(\frac{\omega_1}{\omega_{p2}}\right) \approx 90^\circ - \arctan\!\left(\frac{\omega_1}{\omega_{p2}}\right) = \arctan\!\left(\frac{\omega_{p2}}{\omega_1}\right)$, ta thu được **công thức đóng vạn năng ánh xạ chính xác $\zeta \leftrightarrow \text{PM}$**:
 
 $$
-\frac{\omega_1}{\omega_{p2}} = \frac{\sqrt{\sqrt{1 + 4\zeta^4} - 2\zeta^2}}{2\zeta^2}, \qquad \text{PM}(\zeta) = \arctan\!\left(\frac{2\zeta}{\sqrt{\sqrt{1 + 4\zeta^4} - 2\zeta^2}}\right)
+\frac{\omega_1}{\omega_{p2}} = \frac{\sqrt{\sqrt{1 + 4\zeta^4} - 2\zeta^2}}{2\zeta}, \qquad \text{PM}(\zeta) = \arctan\!\left(\frac{2\zeta}{\sqrt{\sqrt{1 + 4\zeta^4} - 2\zeta^2}}\right)
 $$
 
-*(Công thức nhẩm nhanh cực nhạy trên bàn giấy: trong suốt dải $0 < \text{PM} \le 65^\circ$, quy luật tuyến tính **$\zeta \approx \dfrac{\text{PM (độ)}}{100}$** đúng với sai số dưới $5\%$! Ngược lại khi giải ngược từ $\text{PM}$ đã biết, thay $\frac{\omega_1}{\omega_{p2}} = \cot(\text{PM})$ vào phương trình trùng phương $\left(\frac{\omega_1}{\omega_{p2}}\right)^2\left[1 + \left(\frac{\omega_1}{\omega_{p2}}\right)^2\right] = \cot^2(\text{PM})\csc^2(\text{PM}) = \left(\frac{\beta A_0 \omega_{p1}}{\omega_{p2}}\right)^2$, ta thu được đẳng thức lượng giác đóng tuyệt đẹp dễ nhớ suốt đời: **$4\zeta^2 = \dfrac{\omega_{p2}}{\beta A_0 \omega_{p1}} = \sin(\text{PM})\tan(\text{PM})$**!)*
+*(Công thức nhẩm nhanh cực nhạy trên bàn giấy: trong suốt dải $0 < \text{PM} \le 65^\circ$, quy luật tuyến tính **$\zeta \approx \dfrac{\text{PM (độ)}}{100}$** đúng với sai số dưới $5\%$! Ngược lại khi giải ngược từ $\text{PM}$ đã biết, thay $\frac{\omega_1}{\omega_{p2}} = \cot(\text{PM})$ vào phương trình trùng phương $\left(\frac{\omega_1}{\omega_{p2}}\right)^2\left[1 + \left(\frac{\omega_1}{\omega_{p2}}\right)^2\right] = \cot^2(\text{PM})\csc^2(\text{PM}) = \left(\frac{\beta A_0 \omega_{p1}}{\omega_{p2}}\right)^2$, ta thu được đẳng thức lượng giác đóng tuyệt đẹp dễ nhớ suốt đời: **$4\zeta^2 = \dfrac{\omega_{p2}}{\beta A_0 \omega_{p1}} = \sin(\text{PM})\tan(\text{PM}) \iff \zeta = \dfrac{1}{2}\sqrt{\sin(\text{PM})\tan(\text{PM})}$**!)*
 
 ### 2.2. Độ Nhô Đỉnh Đáp ứng Tần số ($M_p$, §10.3 Phương trình 10.10–10.18) & Độ Vọt lố Bước Nhảy ($\text{OS}\%$)
 1. **Phép dựng vector trực tiếp của Razavi tại $\omega = \omega_1$ (§10.3, Phương trình 10.10–10.18 + `NG10-02`):**
@@ -101,8 +101,8 @@ $$
 
    Đối chiếu ba mốc kinh điển Razavi tính tường tận trong §10.3:
    - **Khi $\text{PM} = 5^\circ$ (Sát bờ vực dao động, Phương trình 10.10, 10.12, 10.14):** $\beta H(j\omega_1) = e^{-j175^\circ} \approx -0{,}996 - j0{,}087 \implies \left|\frac{Y}{X}(j\omega_1)\right| = \frac{1}{\beta \cdot 2\sin(2{,}5^\circ)} \approx \frac{11{,}46}{\beta}$ — đỉnh nhọn cộng hưởng vọt cao gấp **$11{,}5$ lần ($+21{,}2\text{ dB}$)**!
-   - **Khi $\text{PM} = 45^\circ$ (`T1652`, Ví dụ 10.4, Phương trình 10.16, 10.17, 10.18):** $\beta H(j\omega_1) = e^{-j135^\circ} = -\frac{\sqrt{2}}{2} - j\frac{\sqrt{2}}{2} \implies \left|\frac{Y}{X}(j\omega_1)\right| = \frac{1}{\beta\sqrt{2 - \sqrt{2}}} \approx \frac{1{,}307}{\beta}$ — đáp ứng tần số nhô cao hơn **$+30{,}7\%$ ($+2{,}32\text{ dB}$)** ngay tại $\omega_1$ (và cực đại toàn dải $M_p = \frac{1}{2\zeta\sqrt{1 - \zeta^2}}$ với $\zeta = 0{,}4206$ đạt $1{,}369 = +2{,}73\text{ dB}$)!
-   - **Khi $\text{PM} = 60^\circ$ (`NG10-02`, tr. 419):** $\beta H(j\omega_1) = e^{-j120^\circ} \implies \frac{Y}{X}(j\omega_1) = \frac{e^{-j60^\circ}}{\beta}$, nên độ lớn $\left|\frac{Y}{X}(j\omega_1)\right| = \frac{1}{\beta}$ ($0\text{ dB}$ tại $\omega_1$; đỉnh nhô cực đại toàn dải chỉ còn $+0{,}28\text{ dB}$, và biến mất hoàn toàn $M_p = 0\text{ dB}$ từ $\zeta \ge \frac{1}{\sqrt{2}} = 0{,}7071 \iff \text{PM} \ge 65{,}53^\circ$!).
+   - **Khi $\text{PM} = 45^\circ$ (`T1652`, §10.3 tr. 418–419 ngay sau Ví dụ 10.4, Hình 10.12, Phương trình 10.15–10.17):** $\beta H(j\omega_1) = e^{-j135^\circ} = -\frac{\sqrt{2}}{2} - j\frac{\sqrt{2}}{2} \implies \left|\frac{Y}{X}(j\omega_1)\right| = \frac{1}{\beta\sqrt{2 - \sqrt{2}}} \approx \frac{1{,}307}{\beta}$ — đáp ứng tần số nhô cao hơn **$+30{,}7\%$ ($+2{,}32\text{ dB}$)** ngay tại $\omega_1$ (và cực đại toàn dải $M_p = \frac{1}{2\zeta\sqrt{1 - \zeta^2}}$ tại $\omega_{\text{peak}} = \omega_n\sqrt{1 - 2\zeta^2}$ với $\zeta = 0{,}4204$ đạt **$1{,}311 = +2{,}35\text{ dB}$**)!
+   - **Khi $\text{PM} = 60^\circ$ (`NG10-02`, tr. 419, Phương trình 10.18):** $\beta H(j\omega_1) = e^{-j120^\circ} \implies \frac{Y}{X}(j\omega_1) = \frac{e^{-j60^\circ}}{\beta}$, nên độ lớn $\left|\frac{Y}{X}(j\omega_1)\right| = \frac{1}{\beta}$ ($0\text{ dB}$ tại $\omega_1$; với $\zeta = 0{,}6124$, đỉnh nhô cực đại toàn dải chỉ còn **$+0{,}28\text{ dB}$** và độ vọt lố bước nhảy là **$8{,}77\%$**; độ nhô đỉnh biến mất hoàn toàn $M_p = 0\text{ dB}$ từ $\zeta \ge \frac{1}{\sqrt{2}} = 0{,}7071 \iff \text{PM} \ge 65{,}53^\circ$!).
 
 2. **Độ Vọt lố Đáp ứng Bước Đơn vị Trong Miền Thời gian ($\text{OS}\%$ cho $0 < \zeta < 1$):**
    Đáp ứng bước đơn vị của hệ bậc hai tắt dần dưới hạn ($0 < \zeta < 1$) có dạng $y(t) = 1 - \frac{e^{-\zeta\omega_n t}}{\sqrt{1 - \zeta^2}}\sin\!\left(\omega_n\sqrt{1 - \zeta^2}\,t + \arccos\zeta\right)$, đạt đỉnh vọt lố đầu tiên tại $t_p = \frac{\pi}{\omega_n\sqrt{1 - \zeta^2}}$ với biên độ phần trăm vọt lố:
@@ -115,11 +115,11 @@ $$
 
 | Dự trữ pha $\text{PM}$ | Hệ số tắt dần $\zeta$ | Tách cực $\dfrac{\omega_{p2}}{\beta A_0 \omega_{p1}} = \sin\text{PM}\tan\text{PM}$ | Tỉ số thực tại GX $\dfrac{\omega_{p2}}{\omega_{\text{GX}}} = \tan\text{PM}$ | Độ nhô đỉnh AC $M_p$ ($\text{dB}$) | Vọt lố bước nhảy $\text{OS}\%$ | Đánh giá Thiết kế & Tốc độ Xác lập $0{,}1\%$ |
 |---|---|---|---|---|---|---|
-| **$30{,}0^\circ$** | $0{,}268$ | $0{,}289$ | $0{,}577$ | $+5{,}80\text{ dB}$ | **$41{,}5\%$** | Rung lắc dữ dội nhiều chu kỳ; cấm dùng trong Op-Amp! |
-| **$45{,}0^\circ$** | $0{,}421$ | $0{,}707$ | $1{,}000$ ($\omega_{\text{GX}} = \omega_{p2}$) | $+2{,}73\text{ dB}$ | **$23{,}3\%$** | Quá rung cho mạch tương tự chính xác; chỉ dùng làm mốc biên giới dưới |
-| **$60{,}0^\circ$** | $0{,}592$ | **$1{,}500$** | $1{,}732$ | $+0{,}28\text{ dB}$ | **$9{,}95\%$** | Mốc chuẩn kinh điển Razavi; hầu như phẳng AC, nhanh nhưng vọt lố $\sim 10\%$ |
-| **$65{,}5^\circ$ (Butterworth)** | **$0{,}707$** | **$2{,}000$** | $2{,}197$ | **$0{,}00\text{ dB}$** | **$4{,}32\%$** | **ĐIỂM TỐI ƯU VÀNG:** Phẳng cực đại AC, thời gian xác lập $0{,}1\%$ ngắn nhất! |
-| **$70{,}0^\circ$** | $0{,}803$ | $2{,}582$ | $2{,}747$ | $0{,}00\text{ dB}$ | **$1{,}46\%$** | An toàn cao chống trôi góc PVT cho bộ đệm chính xác |
+| **$30{,}0^\circ$** | $0{,}269$ | $0{,}289$ | $0{,}577$ | $+5{,}72\text{ dB}$ | **$41{,}6\%$** | Rung lắc dữ dội nhiều chu kỳ; cấm dùng trong Op-Amp! |
+| **$45{,}0^\circ$** | $0{,}420$ | $0{,}707$ | $1{,}000$ ($\omega_{\text{GX}} = \omega_{p2}$) | $+2{,}35\text{ dB}$ | **$23{,}3\%$** | Quá rung cho mạch tương tự chính xác; chỉ dùng làm mốc biên giới dưới |
+| **$60{,}0^\circ$** | $0{,}6124$ | **$1{,}500$** | $1{,}732$ | $+0{,}28\text{ dB}$ | **$8{,}77\%$** | Mốc chuẩn kinh điển Razavi; hầu như phẳng AC, nhanh, vọt lố $8{,}77\%$ |
+| **$65{,}5^\circ$ (Butterworth)** | **$0{,}7071$** | **$2{,}000$** | $2{,}197$ | **$0{,}00\text{ dB}$** | **$4{,}32\%$** | **ĐIỂM TỐI ƯU VÀNG:** Phẳng cực đại AC, thời gian xác lập $0{,}1\%$ ngắn nhất! |
+| **$70{,}0^\circ$** | $0{,}803$ | $2{,}582$ | $2{,}747$ | $0{,}00\text{ dB}$ | **$1{,}44\%$** | An toàn cao chống trôi góc PVT cho bộ đệm chính xác |
 | **$76{,}3^\circ$ (Tới hạn)** | **$1{,}000$** | **$4{,}000$** | $4{,}116$ | $0{,}00\text{ dB}$ | **$0{,}00\%$** | Tắt dần tới hạn không vọt lố, nhưng tốn gấp đôi $C_C$ và chậm hơn $\text{PM}=65^\circ$! |
 
 ---
@@ -155,8 +155,8 @@ Trên các tiến trình **90nm, 65nm và 45nm**, tỉ số $\omega_{p2}/(\beta\
 
 | Góc Thiết kế & Môi trường | Mục tiêu $\text{PM}$ thiết kế | Giới hạn Vọt lố Bước Nhảy Nhỏ ($\text{OS}\%$) | Quy tắc Định cỡ $g_m/I_D$ & Biến số Bù |
 |---|---|---|---|
-| **Danh định (`TT, 27°C, Ctyp`)** | **$64^\circ \text{ – } 68^\circ$** ($\zeta \approx 0{,}68\text{–}0{,}75$) | $2{,}5\% \text{ – } 6{,}0\%$ | Đặt $\omega_{p2} \approx (2{,}5\text{–}3{,}0)\,\beta\,\omega_u$; nếu có LHP zero chỉ dùng để triệt đúng cực phụ chứ không bơm PM ảo! |
-| **Góc xấu nhất về ổn định (`FF/-40°C/Cmin`, `FS`, `SF`)** | **$\ge 55^\circ$** (Tuyệt đối không dưới $50^\circ$!) | $\le 13{,}0\%$ | Dẫn dòng phân cực từ nguồn dòng hằng định $g_m$ (`tech-ptat-current-and-constant-gm`) để giữ tỉ số $g_{m1}/g_{m2}$ bám nhau qua nhiệt độ |
+| **Danh định (`TT, 27°C, Ctyp`)** | **$64^\circ \text{ – } 68^\circ$** ($\zeta \approx 0{,}68\text{–}0{,}76$) | $2{,}6\% \text{ – } 5{,}5\%$ | Đặt $\omega_{p2} \approx (2{,}5\text{–}3{,}0)\,\beta\,\omega_u$; nếu có LHP zero chỉ dùng để triệt đúng cực phụ chứ không bơm PM ảo! |
+| **Góc xấu nhất về ổn định (`FF/-40°C/Cmin`, `FS`, `SF`)** | **$\ge 55^\circ$** (Tuyệt đối không dưới $50^\circ$!) | $\le 13{,}3\%$ | Dẫn dòng phân cực từ nguồn dòng hằng định $g_m$ (`tech-ptat-current-and-constant-gm`) để giữ tỉ số $g_{m1}/g_{m2}$ bám nhau qua nhiệt độ |
 | **Góc xấu nhất về tốc độ (`SS/125°C/Cmax`)** | $\le 76^\circ$ (Tránh quá tắt dần ì ạch) | $0\% \text{ – } 3{,}0\%$ | Bảo đảm băng thông $\omega_{\text{GX}}$ ở góc `SS, 125°C` vẫn đáp ứng cận dưới $\tau_{\text{CL,max}}$ của ngân sách thời gian xác lập |
 
 ### 5.2. Kịch bản OCEAN / Spectre Đối Chiếu Chéo 3 Miền: `stb` (PM) $\leftrightarrow$ `ac` ($M_p$) $\leftrightarrow$ `tran` ($\text{OS}\%$ Nhỏ & Lớn)
@@ -215,7 +215,7 @@ when(os_large_pct > os_small_pct + 8.0
 | Mã CLB | Thuật ngữ Tiếng Anh | Thuật ngữ Tiếng Việt Chuẩn | Ghi chú Ngữ cảnh |
 |---|---|---|---|
 | `T063` | phase margin | Dự trữ pha | $\text{PM} = 180^\circ + \angle\beta H(j\omega_{\text{GX}})$ |
-| `T1652` | 45° phase margin | dự trữ pha 45° | Xảy ra khi $\omega_{\text{GX}} = \omega_{p2}$, gây nhô đỉnh $+2{,}7\text{ dB}$ và vọt lố $23{,}3\%$ |
+| `T1652` | 45° phase margin | dự trữ pha 45° | Xảy ra khi $\omega_{\text{GX}} = \omega_{p2}$, gây nhô đỉnh $+2{,}35\text{ dB}$ và vọt lố $23{,}3\%$ |
 | `T1653` | frequency peaking | độ nhô đỉnh đáp ứng tần số | Đỉnh lồi biên độ vòng kín $M_p$ gần $\omega_{\text{GX}}$ khi $\text{PM} < 65{,}5^\circ$ |
 | `T1613` | Bode plots | đồ thị Bode | Đồ thị biên độ ($\text{dB}$) và pha (độ) của $\beta H(j\omega)$ theo $\log\omega$ |
 | `T868` | Bode's approximations | phép xấp xỉ Bode | Xấp xỉ tiệm cận đường gãy khúc $-20\text{ dB/dec}$ và $-45^\circ/\text{dec}$ |

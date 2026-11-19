@@ -149,7 +149,7 @@ Thiết kế bộ tổng hợp tần số CP-PLL Loại II tạo $f_{out} = 2.4\
 3. **Tính giá trị linh kiện thụ động $R_P, C_1, C_2$ trên chip**:
    - Tại $\omega_u = \sqrt{\omega_z \omega_{p3}}$, điều kiện $|L(j\omega_u)| = 1$ cho công thức chính xác $R_P = \frac{2\pi M \omega_u}{I_P K_{VCO}} \cdot \frac{b + 1}{b} = \frac{2\pi M f_u}{I_P K_{VCO,\text{Hz}}} \cdot \frac{b + 1}{b} = \frac{2\pi \times 120 \times 1\text{ MHz}}{1.2\text{ mA} \times 80\text{ MHz/V}} \times 1.10 = \mathbf{8.64\text{ k}\Omega}$.
    - $C_1 = \frac{1}{2\pi f_z R_P} = \frac{1}{2\pi \times 301.51\text{ kHz} \times 8.639\text{ k}\Omega} \approx \mathbf{61.1\text{ pF}}$ (tích hợp gọn trên chip bằng tụ MIM/MOM $\sim 175\,\mu\text{m} \times 175\,\mu\text{m}$!).
-   - $C_2 = \frac{C_1}{10} \approx \mathbf{6.11\text{ pF}}$; hệ số tắt dần tương đương $\zeta \approx \frac{1}{2}\sqrt{\frac{\omega_u}{\omega_z}} \approx 0.91$, hằng số thời gian hội tụ khóa tinh $\tau_{\text{decay}} \approx 0.32\,\mu\text{s}$.
+   - $C_2 = \frac{C_1}{10} \approx \mathbf{6.11\text{ pF}}$; hệ số tắt dần tương đương $\zeta \approx \frac{1}{2}\sqrt{\frac{\omega_u}{\omega_z}} \approx 0.91$, hằng số thời gian hội tụ khóa tinh xấp xỉ bậc hai $\tau_{\text{decay}} \approx \frac{2}{\omega_u} \approx 0.32\,\mu\text{s}$ (nghiệm cực thực chậm nhất của đa thức bậc ba chính xác tại $s = -0.574\,\omega_u$ cho $\tau_{\text{slow}} \approx 0.28\,\mu\text{s}$).
 
 ## 3. Bất biến Cấu trúc & Các Bẫy Lỗi Kinh điển (Structural Invariants & Traps)
 
