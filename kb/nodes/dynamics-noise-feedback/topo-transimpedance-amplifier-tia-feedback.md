@@ -80,7 +80,7 @@ $$
    - **Đối chiếu với Nghiệm KCL Chính Xác Tuyệt Đối (Kể cả Truyền Thẳng Qua $R_F$):** Giải trực tiếp KCL nút vào và nút ra cho mạch Hình 8.62a cho nghiệm chính xác không xấp xỉ:
 
 $$
-R_{T,\text{exact}} = -\frac{(g_m R_F - 1) R_D'}{1 + g_m R_D' + \dfrac{R_D'}{R_F}}, \qquad R_{\text{in,exact}} = \frac{R_F + R_D'}{1 + g_m R_D'}, \qquad R_{\text{out,exact}} = \frac{R_D'}{1 + g_m R_D'} = R_D' \parallel \frac{1}{g_m}
+R_{T,\text{exact}} = -\frac{(g_m R_F - 1) R_D'}{1 + g_m R_D'}, \qquad R_{\text{in,exact}} = \frac{R_F + R_D'}{1 + g_m R_D'}, \qquad R_{\text{out,exact}} = \frac{R_D'}{1 + g_m R_D'} = R_D' \parallel \frac{1}{g_m}
 $$
 
    Tổng quát cho một lõi khuếch đại điện áp đảo pha có độ lợi hở tải $-A_v$ ($A_v > 0$) và trở kháng ra $R_{\text{out,core}}$: điện trở đầu vào vòng kín là **$R_{\text{in,closed}} = \dfrac{R_F + R_{\text{out,core}}}{1 + A_v}$** — cho thấy muốn $R_{\text{in,closed}}$ thật thấp, bản thân lõi khuếch đại không chỉ cần $A_v$ lớn mà còn cần $R_{\text{out,core}} \ll R_F$ (ví dụ thêm tầng đệm Source Follower trước khi nối $R_F$ quay về cổng!).

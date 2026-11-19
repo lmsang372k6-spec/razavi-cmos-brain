@@ -496,14 +496,39 @@ _UNIT_INFO_CASE_SENSITIVE = {
     "MV": (1.0e6, "voltage"),
     "mA": (1.0e-3, "current"),
     "MA": (1.0e6, "current"),
+    "s": (1.0, "time"),
     "ms": (1.0e-3, "time"),
-    "mS": (1.0e-3, "conductance"),
+    "us": (1.0e-6, "time"),
+    "ns": (1.0e-9, "time"),
+    "ps": (1.0e-12, "time"),
+    "fs": (1.0e-15, "time"),
     "S": (1.0, "conductance"),
+    "mS": (1.0e-3, "conductance"),
+    "uS": (1.0e-6, "conductance"),
+    "nS": (1.0e-9, "conductance"),
+    "pS": (1.0e-12, "conductance"),
+    "A/V": (1.0, "conductance"),
+    "mA/V": (1.0e-3, "conductance"),
+    "uA/V": (1.0e-6, "conductance"),
+    "uS/V": (1.0e-6, "conductance"),
+    "1/V": (1.0, "gm_id"),
+    "V^-1": (1.0, "gm_id"),
+    "V**-1": (1.0, "gm_id"),
+    "S/A": (1.0, "gm_id"),
+    "mS/mA": (1.0, "gm_id"),
+    "uS/uA": (1.0, "gm_id"),
+    "mS/A": (1.0e-3, "gm_id"),
+    "uS/mA": (1.0e-3, "gm_id"),
+    "uS/A": (1.0e-6, "gm_id"),
+    "V/V": (1.0, "ratio"),
+    "A/A": (1.0, "ratio"),
     "mOhm": (1.0e-3, "resistance"),
     "MOhm": (1.0e6, "resistance"),
     "Mohm": (1.0e6, "resistance"),
     "Mohms": (1.0e6, "resistance"),
     "MOhms": (1.0e6, "resistance"),
+    "mF": (1.0e-3, "capacitance"),
+    "fF": (1.0e-15, "capacitance"),
     "mV/rtHz": (1.0e-3, "noise_density"),
     "MV/s": (1.0e6, "slew_rate"),
     "mV/s": (1.0e-3, "slew_rate"),
@@ -513,6 +538,9 @@ _UNIT_INFO_LOWER = {
     "": (1.0, None),
     "db": (1.0, "db"),
     "dbc": (1.0, "db"),
+    "dbfs": (1.0, "db"),
+    "dbv": (1.0, "db"),
+    "dbm": (1.0, "db"),
     "dbc/hz": (1.0, "phase_noise"),
     "deg": (1.0, "angle"),
     "rad": (180.0 / math.pi, "angle"),
@@ -520,19 +548,23 @@ _UNIT_INFO_LOWER = {
     "khz": (1.0e3, "freq"),
     "mhz": (1.0e6, "freq"),
     "ghz": (1.0e9, "freq"),
+    "thz": (1.0e12, "freq"),
     "v": (1.0, "voltage"),
     "vrms": (1.0, "voltage"),
     "vpp": (1.0, "voltage"),
     "mv": (1.0e-3, "voltage"),
     "mvrms": (1.0e-3, "voltage"),
+    "mvpp": (1.0e-3, "voltage"),
     "uv": (1.0e-6, "voltage"),
     "uvrms": (1.0e-6, "voltage"),
     "nv": (1.0e-9, "voltage"),
+    "nvrms": (1.0e-9, "voltage"),
     "a": (1.0, "current"),
     "ma": (1.0e-3, "current"),
     "ua": (1.0e-6, "current"),
     "na": (1.0e-9, "current"),
     "pa": (1.0e-12, "current"),
+    "fa": (1.0e-15, "current"),
     "w": (1.0, "power"),
     "mw": (1.0e-3, "power"),
     "uw": (1.0e-6, "power"),
@@ -549,8 +581,11 @@ _UNIT_INFO_LOWER = {
     "v/ms": (1.0e3, "slew_rate"),
     "v/us": (1.0e6, "slew_rate"),
     "v/ns": (1.0e9, "slew_rate"),
+    "mv/us": (1.0e3, "slew_rate"),
     "v/rthz": (1.0, "noise_density"),
     "v/sqrt(hz)": (1.0, "noise_density"),
+    "mv/rthz": (1.0e-3, "noise_density"),
+    "mv/sqrt(hz)": (1.0e-3, "noise_density"),
     "uv/rthz": (1.0e-6, "noise_density"),
     "uv/sqrt(hz)": (1.0e-6, "noise_density"),
     "nv/rthz": (1.0e-9, "noise_density"),
@@ -563,16 +598,36 @@ _UNIT_INFO_LOWER = {
     "megohms": (1.0e6, "resistance"),
     "mohm": (1.0e-3, "resistance"),
     "mohms": (1.0e-3, "resistance"),
+    "gohm": (1.0e9, "resistance"),
+    "gohms": (1.0e9, "resistance"),
     "f": (1.0, "capacitance"),
+    "uf": (1.0e-6, "capacitance"),
+    "nf": (1.0e-9, "capacitance"),
     "pf": (1.0e-12, "capacitance"),
     "ff": (1.0e-15, "capacitance"),
-    "nf": (1.0e-9, "capacitance"),
-    "uf": (1.0e-6, "capacitance"),
+    "af": (1.0e-18, "capacitance"),
+    "siemens": (1.0, "conductance"),
+    "msiemens": (1.0e-3, "conductance"),
+    "usiemens": (1.0e-6, "conductance"),
+    "a/v": (1.0, "conductance"),
+    "ma/v": (1.0e-3, "conductance"),
+    "ua/v": (1.0e-6, "conductance"),
     "us/v": (1.0e-6, "conductance"),
     "1/v": (1.0, "gm_id"),
     "v^-1": (1.0, "gm_id"),
+    "v**-1": (1.0, "gm_id"),
+    "s/a": (1.0, "gm_id"),
+    "ms/ma": (1.0, "gm_id"),
+    "us/ua": (1.0, "gm_id"),
+    "v/v": (1.0, "ratio"),
+    "a/a": (1.0, "ratio"),
     "%": (1.0, "percent"),
     "pct": (1.0, "percent"),
+    "percent": (1.0, "percent"),
+    "um2": (1.0, "area"),
+    "um^2": (1.0, "area"),
+    "mm2": (1.0e6, "area"),
+    "mm^2": (1.0e6, "area"),
 }
 
 
@@ -583,36 +638,65 @@ def _infer_metric_native_unit(metric_name):
         return 1.0e-9, "noise_density"
     if m.endswith("_uv_rt_hz") or m.endswith("_uv_rthz"):
         return 1.0e-6, "noise_density"
+    if m.endswith("_mv_rt_hz") or m.endswith("_mv_rthz"):
+        return 1.0e-3, "noise_density"
     if m.endswith("_v_rt_hz") or m.endswith("_v_rthz"):
         return 1.0, "noise_density"
-    if m.endswith("_v_us") or m.endswith("_v_per_us"):
-        return 1.0e6, "slew_rate"
     if m.endswith("_v_ns") or m.endswith("_v_per_ns"):
         return 1.0e9, "slew_rate"
+    if m.endswith("_v_us") or m.endswith("_v_per_us"):
+        return 1.0e6, "slew_rate"
+    if m.endswith("_v_ms") or m.endswith("_v_per_ms"):
+        return 1.0e3, "slew_rate"
     if m.endswith("_v_per_s") or m.endswith("_v_s"):
         return 1.0, "slew_rate"
     if m.endswith("_dbc_hz") or m.endswith("_dbc_per_hz"):
         return 1.0, "phase_noise"
-    if m.endswith("_db") or m.endswith("_dbc") or m in ("dc_gain", "psrr", "cmrr", "gain_margin", "snr", "sndr", "sfdr"):
+    if (
+        m.endswith(("_db", "_dbc", "_dbfs", "_dbv", "_dbm"))
+        or m in ("dc_gain", "psrr", "cmrr", "gain_margin", "snr", "sndr", "sfdr", "thd")
+    ):
         return 1.0, "db"
-    if m.endswith("_deg") or m in ("phase_margin",):
+    if m in ("gm_id", "gmid", "gm_over_id") or m.endswith(("_gm_id", "_gmid", "_gm_over_id", "_v_inv", "_inv_v")):
+        return 1.0, "gm_id"
+    if m.endswith("_msiemens"):
+        return 1.0e-3, "conductance"
+    if m.endswith("_usiemens"):
+        return 1.0e-6, "conductance"
+    if m.endswith("_siemens"):
+        return 1.0, "conductance"
+    if m.endswith(("_ma_v", "_ma_per_v")):
+        return 1.0e-3, "conductance"
+    if m.endswith(("_ua_v", "_ua_per_v")):
+        return 1.0e-6, "conductance"
+    if m.endswith(("_a_v", "_a_per_v")) or m in ("gm", "gds") or m.endswith(("_gm", "_gds")):
+        return 1.0, "conductance"
+    if m.endswith("_rad"):
+        return 180.0 / math.pi, "angle"
+    if m.endswith("_deg") or m in ("phase_margin", "pm"):
         return 1.0, "angle"
+    if m.endswith("_thz"):
+        return 1.0e12, "freq"
     if m.endswith("_ghz"):
         return 1.0e9, "freq"
     if m.endswith("_mhz"):
         return 1.0e6, "freq"
     if m.endswith("_khz"):
         return 1.0e3, "freq"
-    if m.endswith("_hz") or m in ("ugf", "gbw", "bw_3db"):
+    if m.endswith("_hz") or m in ("ugf", "gbw", "bw_3db", "f_3db", "ft", "f_t") or m.endswith(("_ugf", "_gbw", "_bw")):
         return 1.0, "freq"
-    if m.endswith("_mw"):
-        return 1.0e-3, "power"
-    if m.endswith("_uw"):
-        return 1.0e-6, "power"
+    if m.endswith("_pw"):
+        return 1.0e-12, "power"
     if m.endswith("_nw"):
         return 1.0e-9, "power"
+    if m.endswith("_uw"):
+        return 1.0e-6, "power"
+    if m.endswith("_mw"):
+        return 1.0e-3, "power"
     if m.endswith("_w") or m in ("power", "dc_power", "p_dc", "pdc"):
         return 1.0, "power"
+    if m.endswith("_fs"):
+        return 1.0e-15, "time"
     if m.endswith("_ps"):
         return 1.0e-12, "time"
     if m.endswith("_ns"):
@@ -623,44 +707,94 @@ def _infer_metric_native_unit(metric_name):
         return 1.0e-3, "time"
     if m.endswith("_s") or m in ("settling_time", "t_settle", "rise_time", "fall_time"):
         return 1.0, "time"
-    if m.endswith("_uv") or m.endswith("_uvrms"):
+    if m.endswith(("_nv", "_nvrms")):
+        return 1.0e-9, "voltage"
+    if m.endswith(("_uv", "_uvrms")):
         return 1.0e-6, "voltage"
-    if m.endswith("_mv") or m.endswith("_mvrms"):
+    if m.endswith(("_mv", "_mvrms", "_mvpp")):
         return 1.0e-3, "voltage"
-    if m.endswith("_v") or m.endswith("_vrms") or m.endswith("_vpp") or m in ("v_os", "offset", "min_sat_margin"):
+    if (
+        m.endswith(("_v", "_vrms", "_vpp", "_vds", "_vov", "_vdsat", "_headroom", "_vth", "_vgs", "_offset"))
+        or m in ("v_os", "offset", "min_sat_margin", "vds", "vgs", "vov", "vdsat", "vth", "vdd", "headroom", "swing")
+    ):
         return 1.0, "voltage"
+    if m.endswith("_pa"):
+        return 1.0e-12, "current"
+    if m.endswith("_na"):
+        return 1.0e-9, "current"
     if m.endswith("_ua"):
         return 1.0e-6, "current"
     if m.endswith("_ma"):
         return 1.0e-3, "current"
-    if m.endswith("_a") or m in ("i_dd", "i_bias", "i_q"):
+    if (
+        m.endswith("_a")
+        or m in ("idd", "i_dd", "ibias", "i_bias", "iq", "i_q", "i_tail", "i_ref", "iss", "i_ss")
+        or m.endswith(("_idd", "_i_dd", "_ibias", "_i_bias", "_iq", "_i_q", "_i_tail", "_i_ref", "_iss", "_i_ss"))
+    ):
         return 1.0, "current"
-    if m.endswith("_ohm"):
+    if m.endswith(("_gohm", "_gohms")):
+        return 1.0e9, "resistance"
+    if m.endswith(("_megohm", "_megohms")):
+        return 1.0e6, "resistance"
+    if m.endswith(("_kohm", "_kohms")):
+        return 1.0e3, "resistance"
+    if m.endswith(("_mohm", "_mohms")):
+        return 1.0e-3, "resistance"
+    if m.endswith(("_ohm", "_ohms")):
         return 1.0, "resistance"
-    if m.endswith("_pf"):
-        return 1.0e-12, "capacitance"
+    if m.endswith("_af"):
+        return 1.0e-18, "capacitance"
     if m.endswith("_ff"):
         return 1.0e-15, "capacitance"
+    if m.endswith("_pf"):
+        return 1.0e-12, "capacitance"
+    if m.endswith("_nf"):
+        return 1.0e-9, "capacitance"
+    if m.endswith("_uf"):
+        return 1.0e-6, "capacitance"
     if m.endswith("_f"):
         return 1.0, "capacitance"
-    if m.endswith("_pct") or m.endswith("_percent"):
+    if m.endswith(("_pct", "_percent", "_overshoot")) or m == "overshoot":
         return 1.0, "percent"
+    if m.endswith("_um2"):
+        return 1.0, "area"
     return 1.0, None
 
 
-def _convert_constraint_value(raw_val, unit_str, metric_name, cid):
+def _resolve_unit_token(unit_token, context_desc):
+    tok = str(unit_token or "").strip().replace(" ", "")
+    if not tok:
+        return 1.0, None
+    if tok in _UNIT_INFO_CASE_SENSITIVE:
+        return _UNIT_INFO_CASE_SENSITIVE[tok]
+    tok_low = tok.lower()
+    if tok_low not in _UNIT_INFO_LOWER:
+        raise SizingOptError("Unknown %s '%s'" % (context_desc, tok))
+    return _UNIT_INFO_LOWER[tok_low]
+
+
+def _convert_constraint_value(raw_val, unit_str, metric_name, cid, native_unit=None):
     raw_u = str(unit_str or "").strip().replace(" ", "")
+    if native_unit is not None and str(native_unit).strip() != "":
+        m_scale, m_fam = _resolve_unit_token(
+            native_unit, "native_unit on %s (metric=%s)" % (cid, metric_name)
+        )
+    else:
+        m_scale, m_fam = _infer_metric_native_unit(metric_name)
+
     if not raw_u:
         return float(raw_val), 1.0
-    if raw_u in _UNIT_INFO_CASE_SENSITIVE:
-        u_scale, u_fam = _UNIT_INFO_CASE_SENSITIVE[raw_u]
-    else:
-        u_low = raw_u.lower()
-        if u_low not in _UNIT_INFO_LOWER:
-            raise SizingOptError("Unknown constraint unit '%s' on %s (metric=%s)" % (raw_u, cid, metric_name))
-        u_scale, u_fam = _UNIT_INFO_LOWER[u_low]
-    m_scale, m_fam = _infer_metric_native_unit(metric_name)
-    if u_fam is not None and m_fam is not None and u_fam != m_fam:
+
+    u_scale, u_fam = _resolve_unit_token(
+        raw_u, "constraint unit on %s (metric=%s)" % (cid, metric_name)
+    )
+    if m_fam is None:
+        raise SizingOptError(
+            "Cannot convert constraint unit '%s' for metric '%s' on %s because native metric "
+            "unit/dimension is unknown; rename metric with unit suffix (e.g. _v, _ma, _hz, _gm_id) "
+            "or provide 'native_unit'" % (raw_u, metric_name, cid)
+        )
+    if u_fam != m_fam:
         raise SizingOptError(
             "Incompatible unit '%s' (%s) for metric '%s' (%s) on constraint %s"
             % (raw_u, u_fam, metric_name, m_fam, cid)
@@ -687,11 +821,14 @@ def normalize_constraints(problem):
         cid = item.get("id", metric or ("c_%d" % idx))
         op = str(item.get("op", item.get("operator", ">="))).strip()
         unit_str = str(item.get("unit", "") or "").strip()
+        native_unit = item.get("native_unit")
         raw_tgt = item.get("target")
         target_raw = _safe_finite_float(raw_tgt)
         if target_raw is None:
             raise SizingOptError("Invalid or non-finite constraint target %r on %s" % (raw_tgt, cid))
-        target, unit_factor = _convert_constraint_value(target_raw, unit_str, metric, cid)
+        target, unit_factor = _convert_constraint_value(
+            target_raw, unit_str, metric, cid, native_unit=native_unit
+        )
         default_scale = max(abs(target) * 0.15, 1e-30) if target != 0.0 else 1e-9
         if "scale" in item and item["scale"] is not None:
             raw_sc = _safe_finite_float(item["scale"])
@@ -1916,6 +2053,57 @@ def run_self_test():
         if nv_res["worst_case_pvt_summary"][0]["status"] != "NOT_VERIFIED":
             raise AssertionError("Expected worst_case_pvt_summary NOT_VERIFIED, got %r" % nv_res["worst_case_pvt_summary"])
 
+        # 15. Finding #06: Fail-closed unit conversion & dimension checking
+        idd_cons = normalize_constraints({
+            "enforce_mos_sat_margin": False,
+            "hard_constraints": [
+                {"id": "idd_min", "metric": "idd_na", "op": ">=", "target": 100.0, "unit": "uA"},
+            ],
+        })
+        if abs(idd_cons[0]["target"] - 100000.0) > 1e-6:
+            raise AssertionError("Expected 100 uA -> 100000 nA on idd_na, got %r" % idd_cons[0]["target"])
+        chk_idd = check_constraints({"idd_na": 50000.0}, idd_cons)
+        if chk_idd["all_pass"] or chk_idd["status"] != "FAIL" or chk_idd["details"][0]["status"] != "FAIL":
+            raise AssertionError("idd_na=50000 vs >=100 uA MUST FAIL, got %r" % chk_idd)
+
+        for bad_unit_case in (
+            {"id": "gmid_ghz", "metric": "s1_gm_id", "op": "<=", "target": 17.0, "unit": "GHz"},
+            {"id": "unknown_dim", "metric": "custom_x", "op": ">=", "target": 1.0, "unit": "GHz"},
+            {"id": "unknown_native", "metric": "custom_x", "op": ">=", "target": 1.0, "unit": "GHz", "native_unit": "bogus_unit"},
+            {"id": "ms_vs_mS", "metric": "settling_ms", "op": "<=", "target": 5.0, "unit": "mS"},
+            {"id": "gm_vs_ms", "metric": "m1_gm", "op": ">=", "target": 1.0, "unit": "ms"},
+            {"id": "gm_db_vs_S", "metric": "gm_db", "op": ">=", "target": 10.0, "unit": "S"},
+        ):
+            caught_f06 = False
+            try:
+                normalize_constraints({"enforce_mos_sat_margin": False, "hard_constraints": [bad_unit_case]})
+            except SizingOptError:
+                caught_f06 = True
+            if not caught_f06:
+                raise AssertionError("Failed to fail-closed reject constraint %r!" % (bad_unit_case,))
+
+        custom_cons = normalize_constraints({
+            "enforce_mos_sat_margin": False,
+            "hard_constraints": [
+                {"id": "cx", "metric": "custom_x", "native_unit": "MHz", "op": ">=", "target": 1.0, "unit": "GHz"},
+                {"id": "gmid_vinv", "metric": "s1_gm_id", "op": ">=", "target": 12.0, "unit": "V^-1"},
+                {"id": "gmid_msma", "metric": "s1_gm_id", "op": "<=", "target": 20.0, "unit": "mS/mA"},
+                {"id": "t_us", "metric": "settling_ms", "op": "<=", "target": 500.0, "unit": "us"},
+                {"id": "gm_mS", "metric": "m1_gm", "op": ">=", "target": 2.0, "unit": "mS"},
+            ],
+        })
+        if abs(custom_cons[0]["target"] - 1000.0) > 1e-9:
+            raise AssertionError("Expected 1 GHz -> 1000 MHz via native_unit, got %r" % custom_cons[0]["target"])
+        if abs(custom_cons[1]["target"] - 12.0) > 1e-9 or abs(custom_cons[2]["target"] - 20.0) > 1e-9:
+            raise AssertionError("gm_id V^-1 / mS/mA conversion failed: %r" % custom_cons[1:3])
+        if abs(custom_cons[3]["target"] - 0.5) > 1e-12:
+            raise AssertionError("Expected 500 us -> 0.5 ms on settling_ms, got %r" % custom_cons[3]["target"])
+        if abs(custom_cons[4]["target"] - 2.0e-3) > 1e-12:
+            raise AssertionError("Expected 2 mS -> 2e-3 S on m1_gm, got %r" % custom_cons[4]["target"])
+        chk_cx_fail = check_constraints({"custom_x": 10.0, "s1_gm_id": 15.0, "settling_ms": 0.4, "m1_gm": 3e-3}, custom_cons)
+        if chk_cx_fail["all_pass"] or chk_cx_fail["details"][0]["status"] != "FAIL":
+            raise AssertionError("custom_x=10 MHz vs >=1 GHz should FAIL, got %r" % chk_cx_fail)
+
         return {
             "ok": True,
             "release": RELEASE,
@@ -1943,6 +2131,7 @@ def run_self_test():
                 "nonfinite_and_bool_targets_rejected",
                 "template_canonical_and_legacy_aliases_verified",
                 "three_state_not_verified_on_none_corner_metric",
+                "fail_closed_unit_dimension_and_native_unit_verified",
             ],
             "elapsed_ms": res["elapsed_ms"],
         }

@@ -452,6 +452,10 @@ def parse_psf_file(
                     idx += 1
                 sw_props, idx = _consume_trailing_props(tokens, idx)
                 sweeps.append({"name": sw_name, "type": sw_type, "props": sw_props})
+                if sw_props.get("units"):
+                    field_units[sw_name] = sw_props["units"]
+                elif sw_type in types and types[sw_type].get("props", {}).get("units"):
+                    field_units[sw_name] = types[sw_type]["props"]["units"]
 
         elif section == "TRACE":
             while idx < n:
@@ -560,6 +564,8 @@ def parse_psf_file(
                         atom, idx = _parse_value_atom(
                             tokens, idx, m_name, reject_nonfinite=reject_nonfinite
                         )
+                        if atom[2].get("units"):
+                            field_units[m_name] = atom[2]["units"]
                         if atom[0] in ("num", "complex"):
                             _record_scalar(m_name, atom[1])
                         elif atom[0] == "tuple":
@@ -621,6 +627,8 @@ def parse_psf_file(
                     atom, idx = _parse_value_atom(
                         tokens, idx, raw_key, reject_nonfinite=reject_nonfinite
                     )
+                    if atom[2].get("units"):
+                        field_units[raw_key] = atom[2]["units"]
                     if atom[0] == "complex":
                         _record_scalar(raw_key, atom[1])
                     elif atom[0] == "tuple":
@@ -647,15 +655,17 @@ def parse_psf_file(
                     continue
 
                 # Case 4: Standard scalar / string value
-                type_meta = types.get(effective_type, {}) if effective_type else {}
+                type_tag = types.get(effective_type, {}) if effective_type else {}
                 want_int = (
-                    ("int" in type_meta.get("kind", ""))
-                    and ("float" not in type_meta.get("kind", ""))
-                    and ("double" not in type_meta.get("kind", ""))
+                    ("int" in type_tag.get("kind", ""))
+                    and ("float" not in type_tag.get("kind", ""))
+                    and ("double" not in type_tag.get("kind", ""))
                 )
                 atom, idx = _parse_value_atom(
                     tokens, idx, raw_key, reject_nonfinite=reject_nonfinite, as_int=want_int
                 )
+                if atom[2].get("units"):
+                    field_units[raw_key] = atom[2]["units"]
                 if atom[0] in ("num", "complex"):
                     _record_scalar(raw_key, atom[1])
                 elif atom[0] == "str":

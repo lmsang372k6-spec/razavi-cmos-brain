@@ -120,8 +120,8 @@ Giả sử cần tạo $g_{m1} = 1\text{ mS}$ cho lõi phân cực chuẩn để
 2. Từ phương trình (12.54): $g_{m1} = \frac{2}{R_S}(0,5) = \frac{1}{R_S} \implies$ đọc ngay **$R_S = 1\text{ k}\Omega$**!
 3. Chọn điểm làm việc nghịch đảo vừa cho $M_1$ với $V_{OV1} \approx 160\text{ mV}$ ($g_{m1}/I_{D1} = 2/V_{OV1} = 12,5\text{ V}^{-1}$) $\implies$ dòng nhánh chuẩn cần thiết là $I_{out} = \frac{1}{2} g_{m1} V_{OV1} = 80\,\mu\text{A}$ (kiểm tra lại sụt áp trên $R_S$: $I_{out} R_S = 80\text{ mV} = V_{OV1}/2$, khớp tuyệt đối!).
 4. Nếu dùng biến thể tụ chuyển mạch Hình 12.21 với xung nhịp thạch anh $f_{CK} = 20\text{ MHz}$ để thay thế $R_S = 1\text{ k}\Omega$:
-   $$C_S = \frac{1}{R_S f_{CK}} = \frac{1}{10^3 \times 20 \times 10^6} = 50\text{ fF}, \qquad C_B \ge 25 C_S \approx 1,5\text{ pF}$$
-   Chỉ tốn diện tích tụ cực nhỏ trên chip nhưng loại bỏ hoàn toàn sự biến thiên $\pm 25\%$ của điện trở tấm!
+   $$C_S = \frac{1}{R_S f_{CK}} = \frac{1}{10^3 \times 20 \times 10^6} = 50\text{ pF}, \qquad C_B \ge 25 C_S = 1,25\text{ nF}$$
+   Lưu ý quy mô diện tích thực tế: ở $f_{CK} = 20\text{ MHz}$ và $R_S = 1\text{ k}\Omega$, cặp tụ $C_S = 50\text{ pF}, C_B \ge 1,25\text{ nF}$ chiếm diện tích rất lớn trên chip (thường quá cồng kềnh để tích hợp trực tiếp ở mức $g_m = 1\text{ mS}$); cấu trúc điện trở tụ chuyển mạch phát huy ưu thế rõ rệt ở nhánh dòng thấp hơn ($R_{\text{eq}}$ lớn, ví dụ với $C_S = 50\text{ fF}$ tại $f_{CK} = 20\text{ MHz}$ thì $R_{\text{eq}} = 1\,\text{M}\Omega$, cho $g_{m1} = 1\,\mu\text{S}$ khi $K=4$ và $\text{GBW} \approx 99,5\text{ kHz}$ trên tải $C_L = 1,6\text{ pF}$) hoặc ở $f_{CK}$ cao hơn, nơi tụ chiếm diện tích nhỏ mà vẫn loại bỏ hoàn toàn sự biến thiên $\pm 25\%$ của điện trở tấm!
 
 ### 2.5. Bộ Chuyển đổi Điện áp sang Dòng điện Chính xác (Hình 12.22)
 Kết hợp một điện áp tham chiếu vùng cấm $V_{REF}$ (`topo-bandgap-reference-core`) với Op-Amp kẹp nút nguồn MOSFET $M_1$ vào mạng tụ chuyển mạch $(C_S f_{CK})^{-1}$ kèm tụ lọc $C_B$ (Hình 12.22, trang 525), ta tạo được nguồn dòng chuẩn tuyệt đối:

@@ -230,10 +230,10 @@
       "sha256": "4461729f1a42becd3301b52f5bae2885ee7bb41c8f60772a9eeccdbe33454676"
     },
     {
-      "bytes": 65082,
+      "bytes": 72183,
       "path": "tools/gmid_lut.py",
       "repo_path": "runtime/tools/gmid_lut.py",
-      "sha256": "fccaeee24d3378f49596cf23df2b9ce2a9d205baf5eb723ee2ba5cac6ab989ab"
+      "sha256": "398755ee50ece522f8ea9f3bc849a9df6894e67b5e6b837ef2f3888bfadcf7a1"
     },
     {
       "bytes": 80410,
@@ -260,16 +260,16 @@
       "sha256": "0cec73a0bdab144b3b77b1e40701ba8286a9a205e1d25e789e4192b297866dec"
     },
     {
-      "bytes": 36358,
+      "bytes": 37332,
       "path": "tools/kb_fetch.py",
       "repo_path": "runtime/tools/kb_fetch.py",
-      "sha256": "b5c38fbfa51aa03d3320285f8d49f70cfd0aac7c62e506d9abc17f5992038d1f"
+      "sha256": "7a2893db707a6221f6a1c6c40000b95e6d891f9ddda0c72fb1af74aefa652a1e"
     },
     {
-      "bytes": 118604,
+      "bytes": 125226,
       "path": "tools/kb_lookup.py",
       "repo_path": "runtime/tools/kb_lookup.py",
-      "sha256": "83c76fc1406775eb3397490e3930cd90487f3bd2bedbab1fbdcb3459790207e5"
+      "sha256": "7022c4edfa0a0b7a111e8bd8cd5b310785dcb491ed3eacc43dec23da8a21bc65"
     },
     {
       "bytes": 65657,
@@ -284,22 +284,22 @@
       "sha256": "74bf3cc01e534b9d4b02badf60df2371222eead54a0ee7f1316c6282b0e46b40"
     },
     {
-      "bytes": 41017,
+      "bytes": 41606,
       "path": "tools/psf_ascii_reader.py",
       "repo_path": "runtime/tools/psf_ascii_reader.py",
-      "sha256": "cf0ddbb6f629365e75a13413d0a741fa11ebbcb0b182d55a7d15c9ddabacfb80"
+      "sha256": "de637f36bb21c37aa56cf41812753b68117172aa642d532ce467fab96b3a2a16"
     },
     {
-      "bytes": 277745,
+      "bytes": 330312,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "03304300f4bfd7bbd94334308f1ab8c029dd559fa9150c60326dcae379ba0254"
+      "sha256": "aed3b85bb3f682876550c0326a7c61ec55658ef09dce730ca6a73fca633c12c0"
     },
     {
-      "bytes": 85508,
+      "bytes": 93814,
       "path": "tools/sizing_opt.py",
       "repo_path": "runtime/tools/sizing_opt.py",
-      "sha256": "e997fd6d08d05e54410cbda940649b901c9fd8edcd0ac0487b6fb1d45e4e70df"
+      "sha256": "f8244e5598248d34ff8f9d58c7d6d5831bd4d4f26bd8d0eede007493221dd909"
     }
   ],
   "release": "2026.11.19.1",

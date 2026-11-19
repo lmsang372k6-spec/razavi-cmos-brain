@@ -356,6 +356,28 @@ TOPIC_PRIORITY_RULES = (
         ),
     ),
     (
+        re.compile(r"\b(sub\s*1v\s+bandgap|sub1v\s+bandgap|fractional\s+bandgap|low\s+voltage\s+bandgap)\b"),
+        None,
+        (
+            "topo-low-voltage-sub1v-bandgap",
+            "topo-bandgap-reference-core",
+            "law-ctat-ptat-temperature-cancellation",
+            "tech-bandgap-curvature-compensation-and-speed",
+            "skill-bandgap-startup-curvature-montecarlo-tb",
+        ),
+    ),
+    (
+        re.compile(r"\b(bgr|bandgap(?:\s+reference)?|brokaw|banba)\b"),
+        re.compile(r"\b(sub\s*1v|sub1v|fractional\s+bandgap|low\s+voltage\s+bandgap|por|uvlo|soft\s*start|softstart|ocp|tsd)\b"),
+        (
+            "topo-bandgap-reference-core",
+            "topo-low-voltage-sub1v-bandgap",
+            "tech-bandgap-curvature-compensation-and-speed",
+            "law-ctat-ptat-temperature-cancellation",
+            "skill-bandgap-startup-curvature-montecarlo-tb",
+        ),
+    ),
+    (
         re.compile(r"\b(amux|analog\s+mux|t\s+switch|track\s+and\s+hold\s+driver|charge\s+bucket|adc\s+driver)\b"),
         None,
         (
@@ -462,6 +484,7 @@ def fold_ascii(value):
 
 
 _SYNONYM_PATTERNS = (
+    (re.compile(r"\bbgr\b"), "bandgap reference"),
     (re.compile(r"\boutput\s+capacitor\s*less\b"), "capless"),
     (re.compile(r"\bcapacitor\s*less\b"), "capless"),
     (re.compile(r"\bcap\s+less\b"), "capless"),
@@ -2061,16 +2084,71 @@ _FLAVOR_TO_TECHSWEEP = {
 }
 
 
+_SUPPORTED_PDK_45_RE = re.compile(
+    r"\b(gpdk045|gpdk045_\w*|gpdk\s*45|45\s*nm|g45|g45[np]\d\w*)\b",
+    re.IGNORECASE,
+)
+_SUPPORTED_PDK_90_RE = re.compile(
+    r"\b(gpdk090|gpdk090_\w*|gpdk\s*90|90\s*nm|g90)\b",
+    re.IGNORECASE,
+)
+_UNSUPPORTED_PDK_RE = re.compile(
+    r"\b(gpdk\s*\d+\w*|tsmc\s*\d*\w*|skywater(?:\s*\d+\w*)?|sky\s*\d+\w*|gf\s*\d+\w*|"
+    r"umc\s*\d*\w*|smic\s*\d*\w*|ihp\s*\d*\w*|asap\s*\d+\w*|freepdk\s*\d*\w*|"
+    r"samsung\s*\d*\w*|tower\s*\d*\w*|\d+\s*nm|0\.\d+\s*u(?:m)?)\b",
+    re.IGNORECASE,
+)
+
+
 def _infer_recipe_lut_params(circuit_query):
     """Infer PDK, flavor, corner, temperature tag, device, L, Vds matching gpdk_techsweep.py."""
     raw_txt = to_text(circuit_query)
     q_low = raw_txt.lower()
     q_fold = fold_ascii(raw_txt)
 
-    if re.search(r"\b(gpdk045|gpdk\s*45|45\s*nm|g45|g45[np]\d\w*)\b", q_low):
+    has_45 = bool(_SUPPORTED_PDK_45_RE.search(raw_txt))
+    has_90 = bool(_SUPPORTED_PDK_90_RE.search(raw_txt))
+    stripped_sup = _SUPPORTED_PDK_90_RE.sub(" ", _SUPPORTED_PDK_45_RE.sub(" ", raw_txt))
+    m_unsup = _UNSUPPORTED_PDK_RE.search(stripped_sup)
+
+    has_pmos = bool(re.search(r"\b(pmos|pfet)\b", q_fold))
+    has_nmos = bool(re.search(r"\b(nmos|nfet)\b", q_fold))
+    dev_type = "pmos" if (has_pmos and not has_nmos) else "nmos"
+
+    if m_unsup is not None:
+        return {
+            "pdk_supported": False,
+            "pdk_inferred_default": False,
+            "requested_pdk": m_unsup.group(0).strip(),
+            "supported_pdks": ["gpdk045", "gpdk090"],
+            "pdk": None,
+            "flavor": None,
+            "techsweep_flavor": None,
+            "corner": None,
+            "temp_tag": None,
+            "temp_c": None,
+            "dev": dev_type,
+            "l": None,
+            "vds": None,
+            "lut_path": None,
+        }
+
+    if has_45 and not has_90:
         pdk_key = "gpdk045"
+        pdk_inferred_default = False
+        requested_pdk = "gpdk045"
+    elif has_90 and not has_45:
+        pdk_key = "gpdk090"
+        pdk_inferred_default = False
+        requested_pdk = "gpdk090"
+    elif has_45 and has_90:
+        pdk_key = "gpdk045"
+        pdk_inferred_default = False
+        requested_pdk = "gpdk045"
     else:
         pdk_key = "gpdk090"
+        pdk_inferred_default = True
+        requested_pdk = None
 
     if pdk_key == "gpdk045":
         if re.search(r"\b(io|1v8|1\.8\s*v|io_?1v8|g45[np]2svt)\b", q_low):
@@ -2128,13 +2206,13 @@ def _infer_recipe_lut_params(circuit_query):
     temp_tag = ("%g" % float(temp_val)).replace("-", "m").replace(".", "p")
     temp_c_num = int(temp_val) if temp_val == int(temp_val) else temp_val
 
-    has_pmos = bool(re.search(r"\b(pmos|pfet)\b", q_fold))
-    has_nmos = bool(re.search(r"\b(nmos|nfet)\b", q_fold))
-    dev_type = "pmos" if (has_pmos and not has_nmos) else "nmos"
-
     lut_filename = "%s_%s_%s_%sC.lut.json.gz" % (pdk_key, flavor_label, corner, temp_tag)
     lut_path = "~/.cache/skill-analog/gmid-luts/" + lut_filename
     return {
+        "pdk_supported": True,
+        "pdk_inferred_default": pdk_inferred_default,
+        "requested_pdk": requested_pdk,
+        "supported_pdks": ["gpdk045", "gpdk090"],
         "pdk": pdk_key,
         "flavor": flavor_label,
         "techsweep_flavor": _FLAVOR_TO_TECHSWEEP.get(flavor_label, "core"),
@@ -2151,7 +2229,9 @@ def _infer_recipe_lut_params(circuit_query):
 _STRIP_PVT_PATTERNS = (
     re.compile(u"(?<![a-z0-9])[+-]?\\d+(?:\\.\\d+)?\\s*(?:deg\\s*c|\u00b0\\s*c|c)\\b", re.IGNORECASE),
     re.compile(r"(?<![a-z0-9])m\d+(?:\.\d+)?c\b", re.IGNORECASE),
-    re.compile(r"\b(gpdk045|gpdk090|gpdk\s*45|gpdk\s*90|45\s*nm|90\s*nm|g45|g90|g45[np]\d\w*)\b", re.IGNORECASE),
+    _SUPPORTED_PDK_45_RE,
+    _SUPPORTED_PDK_90_RE,
+    _UNSUPPORTED_PDK_RE,
     re.compile(r"\b(core_1v_svt|core_1v_lvt|core_1v_hvt|core_1v|io_1v8|io_2v5|1v8|2v5|svt|lvt|hvt)\b", re.IGNORECASE),
     re.compile(r"\b(tt|nn|ss|ff|fs|sf)\b", re.IGNORECASE),
 )
@@ -2209,40 +2289,87 @@ def cmd_recipe(circuit_query, offline=False):
         for h in hits:
             h["fetch_cmd"] = _fmt_tool_cmd("kb_fetch.py", h["id"] + offline_tail)
 
-    resolved_lut_path = os.path.expanduser(lut_info["lut_path"])
-    lut_exists = os.path.isfile(resolved_lut_path)
-    generate_cmd = _fmt_tool_cmd(
-        "gpdk_techsweep.py",
-        "--pdk %s --flavor %s --corner %s --temp %g --run --out %s"
-        % (
-            lut_info["pdk"],
-            lut_info["techsweep_flavor"],
-            lut_info["corner"],
-            float(lut_info["temp_c"]),
-            lut_info["lut_path"],
-        ),
-    )
-    gmid_cmd = _fmt_tool_cmd(
-        "gmid_lut.py",
-        "size --lut %s --dev %s --gm 1e-3 --gm-id 15 --l %s --vds %s"
-        % (lut_info["lut_path"], lut_info["dev"], lut_info["l"], lut_info["vds"]),
-    )
-    lut_status = {
-        "lut_path": lut_info["lut_path"],
-        "resolved_path": resolved_lut_path,
-        "lut_exists": lut_exists,
-        "ready": lut_exists,
-        "pdk": lut_info["pdk"],
-        "flavor": lut_info["flavor"],
-        "corner": lut_info["corner"],
-        "temp_c": lut_info["temp_c"],
-        "generate_cmd": generate_cmd,
-        "warning": (
-            None
-            if lut_exists
-            else "Target LUT not found on disk; generate it with gpdk_techsweep.py before running gmid_lut.py."
-        ),
-    }
+    if not lut_info.get("pdk_supported", True):
+        lut_exists = False
+        warn_msg = (
+            "Unsupported PDK/technology '%s' (built-in LUTs support gpdk045, gpdk090 only). "
+            "Process-agnostic theory cards and checklists are returned; Stage 3 sizing commands omitted."
+            % lut_info.get("requested_pdk")
+        )
+        lut_status = {
+            "pdk_supported": False,
+            "pdk_inferred_default": False,
+            "requested_pdk": lut_info.get("requested_pdk"),
+            "supported_pdks": list(lut_info.get("supported_pdks", ["gpdk045", "gpdk090"])),
+            "lut_path": None,
+            "resolved_path": None,
+            "lut_exists": False,
+            "ready": False,
+            "pdk": None,
+            "flavor": None,
+            "corner": None,
+            "temp_c": None,
+            "generate_cmd": None,
+            "warning": warn_msg,
+        }
+        stage3_dict = {
+            "stage": 3,
+            "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
+            "sizing_available": False,
+            "lut_ready": False,
+            "prereq_cmds": [],
+            "sizing_cmd": None,
+            "cmds": [],
+            "warning": warn_msg,
+        }
+    else:
+        resolved_lut_path = os.path.expanduser(lut_info["lut_path"])
+        lut_exists = os.path.isfile(resolved_lut_path)
+        generate_cmd = _fmt_tool_cmd(
+            "gpdk_techsweep.py",
+            "--pdk %s --flavor %s --corner %s --temp %g --run --out %s"
+            % (
+                lut_info["pdk"],
+                lut_info["techsweep_flavor"],
+                lut_info["corner"],
+                float(lut_info["temp_c"]),
+                lut_info["lut_path"],
+            ),
+        )
+        gmid_cmd = _fmt_tool_cmd(
+            "gmid_lut.py",
+            "size --lut %s --dev %s --gm 1e-3 --gm-id 15 --l %s --vds %s"
+            % (lut_info["lut_path"], lut_info["dev"], lut_info["l"], lut_info["vds"]),
+        )
+        lut_status = {
+            "pdk_supported": True,
+            "pdk_inferred_default": bool(lut_info.get("pdk_inferred_default", False)),
+            "requested_pdk": lut_info.get("requested_pdk"),
+            "supported_pdks": list(lut_info.get("supported_pdks", ["gpdk045", "gpdk090"])),
+            "lut_path": lut_info["lut_path"],
+            "resolved_path": resolved_lut_path,
+            "lut_exists": lut_exists,
+            "ready": lut_exists,
+            "pdk": lut_info["pdk"],
+            "flavor": lut_info["flavor"],
+            "corner": lut_info["corner"],
+            "temp_c": lut_info["temp_c"],
+            "generate_cmd": generate_cmd,
+            "warning": (
+                None
+                if lut_exists
+                else "Target LUT not found on disk; generate it with gpdk_techsweep.py before running gmid_lut.py."
+            ),
+        }
+        stage3_dict = {
+            "stage": 3,
+            "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
+            "sizing_available": True,
+            "lut_ready": lut_exists,
+            "prereq_cmds": ([] if lut_exists else [generate_cmd]),
+            "sizing_cmd": gmid_cmd,
+            "cmds": ([gmid_cmd] if lut_exists else [generate_cmd, gmid_cmd]),
+        }
 
     qf = _normalize_query_synonyms(fold_ascii(circuit_query))
     is_ldo_query = bool(re.search(r"\b(ldo|capless|capacitorless)\b", qf))
@@ -2292,14 +2419,7 @@ def cmd_recipe(circuit_query, offline=False):
                 _fmt_tool_cmd("kb_fetch.py", "tech-hierarchical-chip-spec-budgeting-and-interfaces" + offline_tail),
             ],
         },
-        {
-            "stage": 3,
-            "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
-            "lut_ready": lut_exists,
-            "prereq_cmds": ([] if lut_exists else [generate_cmd]),
-            "sizing_cmd": gmid_cmd,
-            "cmds": ([gmid_cmd] if lut_exists else [generate_cmd, gmid_cmd]),
-        },
+        stage3_dict,
         {
             "stage": 4,
             "name": "Inspect or update schematic via Live Virtuoso CIW Bridge (zero .cdslck conflict)",
@@ -2647,12 +2767,49 @@ def run_self_test():
         if rc_on != 0 or len(sync_calls) != 1 or not captured_payloads or captured_payloads[0].get("ok") is not True:
             raise AssertionError("Valid online search did not invoke post-lookup maybe_auto_sync cleanly: rc=%r sync=%r" % (rc_on, sync_calls))
 
+        # 13. Finding #08 + BGR+capless LDO: Unsupported PDKs fail closed in Stage 3 & BGR+capless LDO hits both cards
+        for u_query, u_tok, top_card in (
+            ("capless LDO GPDK777", "GPDK777", "topo-capless-ldo-fvf-ahuja-dfc-and-sre"),
+            ("gain boosted cascode 65nm", "65nm", "topo-gain-boosted-cascode"),
+            ("bandgap tsmc28", "tsmc28", "topo-bandgap-reference-core"),
+        ):
+            rec_u = cmd_recipe(u_query, offline=True)
+            st3_u = rec_u.get("closed_loop_7_stages", [{}, {}, {}])[2]
+            lut_st_u = rec_u.get("lut_status", {})
+            if (
+                not rec_u.get("ok")
+                or rec_u.get("recipe_ready") is not False
+                or rec_u["recommended_cards"][0]["id"] != top_card
+                or lut_st_u.get("pdk_supported") is not False
+                or lut_st_u.get("requested_pdk") != u_tok
+                or lut_st_u.get("lut_path") is not None
+                or lut_st_u.get("generate_cmd") is not None
+                or st3_u.get("sizing_available") is not False
+                or st3_u.get("lut_ready") is not False
+                or st3_u.get("prereq_cmds") != []
+                or st3_u.get("sizing_cmd") is not None
+                or st3_u.get("cmds") != []
+                or "gpdk090_" in json.dumps(rec_u)
+            ):
+                raise AssertionError("Unsupported PDK %r leaked gpdk090 or failed Stage 3 gate: %r" % (u_query, rec_u))
+
+        rec_bgr_ldo = cmd_recipe("BGR + capless LDO", offline=True)
+        bgr_ldo_ids = [c["id"] for c in rec_bgr_ldo.get("recommended_cards", [])]
+        if (
+            not rec_bgr_ldo.get("ok")
+            or "topo-capless-ldo-fvf-ahuja-dfc-and-sre" not in bgr_ldo_ids
+            or "topo-bandgap-reference-core" not in bgr_ldo_ids
+            or "ldo-regulator" not in rec_bgr_ldo.get("mandatory_checklists", [])
+            or "bandgap-and-bias" not in rec_bgr_ldo.get("mandatory_checklists", [])
+        ):
+            raise AssertionError("BGR + capless LDO failed to surface both Capless LDO & Bandgap cards/checklists: %r" % rec_bgr_ldo)
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "lookup_ms": dt_ms,
-            "tests_passed": 13,
+            "tests_passed": 15,
         }
     finally:
         os.path.expanduser = orig_expanduser

@@ -506,13 +506,13 @@
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 251288,
-      "sha256": "d9d7b340b5d9d69af4b1818dae49580ade97f992f201491bd4991746ed5acfbb"
+      "bytes": 251577,
+      "sha256": "c796773d2d731a6c1a6fd42f8d5557556cebc5cd49422ef6dda52c7e58a93838"
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1313250,
-      "sha256": "719f2df50783f9a75f93ebef2944d20e503b845004be496efbde02b7565ba965"
+      "bytes": 1313442,
+      "sha256": "d765f848e724983b9912b6b2db176d66b07c46eeb095de4878b044a8e124eda1"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -661,8 +661,8 @@
     },
     {
       "path": "kb/nodes/dynamics-noise-feedback/topo-transimpedance-amplifier-tia-feedback.md",
-      "bytes": 30029,
-      "sha256": "42402e523b4dced68629a801db14c45ae0b16ccf0b7a2d4a7d443b1875b52f4f"
+      "bytes": 30009,
+      "sha256": "c1508d54aa5339e71c087f39ceccebee88f88d4e5020b80e6a5d07bb79fc3954"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-5t-ota-root-cause-fault-tree.md",
@@ -1086,8 +1086,8 @@
     },
     {
       "path": "kb/nodes/references-and-biasing/tech-ptat-current-and-constant-gm.md",
-      "bytes": 20246,
-      "sha256": "94b57331170780b6fed92e16e716308e8648ade1bbeab59e29b66bd6487658f7"
+      "bytes": 20908,
+      "sha256": "468bbbfffbe4b3b65643f16cd74893f6c1e95d4c75a267d6c4265dedc96b3b6b"
     },
     {
       "path": "kb/nodes/references-and-biasing/tech-supply-independent-bias-and-startup.md",
@@ -1327,7 +1327,7 @@
     {
       "path": "kb/router-index.json",
       "bytes": 1764041,
-      "sha256": "e8b0a9c54d615a6896dcc2defa13f923f4f84682d4c7016a0385abf71652bcaf"
+      "sha256": "562ceadf4af00010480d4669f7ff647f59cbaf982216f6b65d49bad2c312d0d7"
     }
   ]
 }

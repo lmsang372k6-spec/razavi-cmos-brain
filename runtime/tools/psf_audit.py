@@ -79,6 +79,10 @@ UNIT_SCALE_CASE_SENSITIVE = {
     "MA": 1e6,
     "MV": 1e6,
     "mHz": 1e-3,
+    "mS": 1e-3,
+    "S": 1.0,
+    "mSiemens": 1e-3,
+    "mF": 1e-3,
 }
 
 UNIT_DIM_CASE_SENSITIVE = {
@@ -90,6 +94,10 @@ UNIT_DIM_CASE_SENSITIVE = {
     "MA": "current",
     "MV": "voltage",
     "mHz": "freq",
+    "mS": "conductance",
+    "S": "conductance",
+    "mSiemens": "conductance",
+    "mF": "capacitance",
 }
 
 UNIT_SCALE_TO_SI = {
@@ -98,7 +106,11 @@ UNIT_SCALE_TO_SI = {
     "hz": 1.0, "khz": 1e3, "mhz": 1e6, "ghz": 1e9, "thz": 1e12,
     # Time
     "s": 1.0, "sec": 1.0, "secs": 1.0, "second": 1.0, "seconds": 1.0,
-    "ms": 1e-3, "us": 1e-6, "ns": 1e-9, "ps": 1e-12, "fs": 1e-15,
+    "ms": 1e-3, "msec": 1e-3, "msecs": 1e-3, "millisecond": 1e-3, "milliseconds": 1e-3,
+    "us": 1e-6, "usec": 1e-6, "usecs": 1e-6, "microsecond": 1e-6, "microseconds": 1e-6,
+    "ns": 1e-9, "nsec": 1e-9, "nsecs": 1e-9, "nanosecond": 1e-9, "nanoseconds": 1e-9,
+    "ps": 1e-12, "psec": 1e-12, "psecs": 1e-12, "picosecond": 1e-12, "picoseconds": 1e-12,
+    "fs": 1e-15, "fsec": 1e-15, "fsecs": 1e-15, "femtosecond": 1e-15, "femtoseconds": 1e-15,
     # Power
     "w": 1.0, "kw": 1e3, "mw": 1e-3, "uw": 1e-6, "nw": 1e-9, "pw": 1e-12, "fw": 1e-15,
     # Voltage (DC, RMS, peak-to-peak)
@@ -114,15 +126,18 @@ UNIT_SCALE_TO_SI = {
     "ohm": 1.0, "ohms": 1.0, "kohm": 1e3, "kohms": 1e3,
     "megohm": 1e6, "megohms": 1e6, "gohm": 1e9, "gohms": 1e9,
     "mohm": 1e-3, "mohms": 1e-3,
-    "siemens": 1.0, "msiemens": 1e-3, "usiemens": 1e-6,
-    "a/v": 1.0, "ma/v": 1e-3, "ua/v": 1e-6,
+    "siemens": 1.0, "ksiemens": 1e3, "msiemens": 1e-3, "usiemens": 1e-6, "nsiemens": 1e-9, "psiemens": 1e-12,
+    "mho": 1.0, "mmho": 1e-3, "umho": 1e-6, "nmho": 1e-9,
+    "a/v": 1.0, "ma/v": 1e-3, "ua/v": 1e-6, "na/v": 1e-9, "pa/v": 1e-12,
     # Capacitance & Inductance & Charge
     "f": 1.0, "mf": 1e-3, "uf": 1e-6, "nf": 1e-9, "pf": 1e-12, "ff": 1e-15, "af": 1e-18,
     "h": 1.0, "mh": 1e-3, "uh": 1e-6, "nh": 1e-9, "ph": 1e-12,
     "c": 1.0, "mc": 1e-3, "uc": 1e-6, "nc": 1e-9, "pc": 1e-12, "fc": 1e-15,
     # Slew rate
-    "v/s": 1.0, "v/ms": 1e3, "v/us": 1e6, "v/ns": 1e9, "v/ps": 1e12,
+    "v/s": 1.0, "mv/s": 1e-3, "uv/s": 1e-6,
+    "v/ms": 1e3, "v/us": 1e6, "v/ns": 1e9, "v/ps": 1e12,
     "mv/ms": 1.0, "mv/us": 1e3, "mv/ns": 1e6, "mv/ps": 1e9, "kv/us": 1e9,
+    "uv/us": 1.0, "uv/ns": 1e3,
     # Spectral noise density (ASD)
     "v/sqrt(hz)": 1.0, "v/rthz": 1.0,
     "mv/sqrt(hz)": 1e-3, "mv/rthz": 1e-3,
@@ -136,6 +151,7 @@ UNIT_SCALE_TO_SI = {
     # Logarithmic, angular, dimensionless
     "db": 1.0, "dbc": 1.0, "dbfs": 1.0, "dbv": 1.0, "dbm": 1.0,
     "deg": 1.0, "degree": 1.0, "degrees": 1.0,
+    "rad": 180.0 / math.pi, "rads": 180.0 / math.pi, "radian": 180.0 / math.pi, "radians": 180.0 / math.pi,
     "%": 1.0, "pct": 1.0, "percent": 1.0,
     "v/v": 1.0, "a/a": 1.0, "s/a": 1.0, "1/v": 1.0, "v^-1": 1.0,
 }
@@ -144,7 +160,11 @@ UNIT_DIM_LOWER = {
     "": None,
     "hz": "freq", "khz": "freq", "mhz": "freq", "ghz": "freq", "thz": "freq",
     "s": "time", "sec": "time", "secs": "time", "second": "time", "seconds": "time",
-    "ms": "time", "us": "time", "ns": "time", "ps": "time", "fs": "time",
+    "ms": "time", "msec": "time", "msecs": "time", "millisecond": "time", "milliseconds": "time",
+    "us": "time", "usec": "time", "usecs": "time", "microsecond": "time", "microseconds": "time",
+    "ns": "time", "nsec": "time", "nsecs": "time", "nanosecond": "time", "nanoseconds": "time",
+    "ps": "time", "psec": "time", "psecs": "time", "picosecond": "time", "picoseconds": "time",
+    "fs": "time", "fsec": "time", "fsecs": "time", "femtosecond": "time", "femtoseconds": "time",
     "w": "power", "kw": "power", "mw": "power", "uw": "power", "nw": "power", "pw": "power", "fw": "power",
     "v": "voltage", "kv": "voltage", "mv": "voltage", "uv": "voltage", "nv": "voltage", "pv": "voltage", "fv": "voltage",
     "vrms": "voltage", "v_rms": "voltage", "mvrms": "voltage", "mv_rms": "voltage",
@@ -156,13 +176,16 @@ UNIT_DIM_LOWER = {
     "ohm": "resistance", "ohms": "resistance", "kohm": "resistance", "kohms": "resistance",
     "megohm": "resistance", "megohms": "resistance", "gohm": "resistance", "gohms": "resistance",
     "mohm": "resistance", "mohms": "resistance",
-    "siemens": "conductance", "msiemens": "conductance", "usiemens": "conductance",
-    "a/v": "conductance", "ma/v": "conductance", "ua/v": "conductance",
+    "siemens": "conductance", "ksiemens": "conductance", "msiemens": "conductance", "usiemens": "conductance", "nsiemens": "conductance", "psiemens": "conductance",
+    "mho": "conductance", "mmho": "conductance", "umho": "conductance", "nmho": "conductance",
+    "a/v": "conductance", "ma/v": "conductance", "ua/v": "conductance", "na/v": "conductance", "pa/v": "conductance",
     "f": "capacitance", "mf": "capacitance", "uf": "capacitance", "nf": "capacitance", "pf": "capacitance", "ff": "capacitance", "af": "capacitance",
     "h": "inductance", "mh": "inductance", "uh": "inductance", "nh": "inductance", "ph": "inductance",
     "c": "charge", "mc": "charge", "uc": "charge", "nc": "charge", "pc": "charge", "fc": "charge",
-    "v/s": "slew_rate", "v/ms": "slew_rate", "v/us": "slew_rate", "v/ns": "slew_rate", "v/ps": "slew_rate",
+    "v/s": "slew_rate", "mv/s": "slew_rate", "uv/s": "slew_rate",
+    "v/ms": "slew_rate", "v/us": "slew_rate", "v/ns": "slew_rate", "v/ps": "slew_rate",
     "mv/ms": "slew_rate", "mv/us": "slew_rate", "mv/ns": "slew_rate", "mv/ps": "slew_rate", "kv/us": "slew_rate",
+    "uv/us": "slew_rate", "uv/ns": "slew_rate",
     "v/sqrt(hz)": "voltage_asd", "v/rthz": "voltage_asd",
     "mv/sqrt(hz)": "voltage_asd", "mv/rthz": "voltage_asd",
     "uv/sqrt(hz)": "voltage_asd", "uv/rthz": "voltage_asd",
@@ -174,6 +197,7 @@ UNIT_DIM_LOWER = {
     "pa/sqrt(hz)": "current_asd", "pa/rthz": "current_asd",
     "db": "db", "dbc": "db", "dbfs": "db", "dbv": "db", "dbm": "db",
     "deg": "angle", "degree": "angle", "degrees": "angle",
+    "rad": "angle", "rads": "angle", "radian": "angle", "radians": "angle",
     "%": "percent", "pct": "percent", "percent": "percent",
     "v/v": "ratio", "a/a": "ratio", "s/a": "inv_voltage", "1/v": "inv_voltage", "v^-1": "inv_voltage",
 }
@@ -237,6 +261,104 @@ NON_SUPPLY_STIM_STEMS = (
     "vclk", "clk", "ven", "en", "vctrl", "ctrl", "vfb", "fb", "vtest", "vprobe", "iprobe",
     "gnd", "agnd", "dgnd", "0",
 )
+
+
+_TRACE_UNIT_ALIASES_LOWER = {
+    "amp": "a", "amps": "a", "ampere": "a", "amperes": "a",
+    "kamp": "ka", "kamps": "ka",
+    "mamp": "ma", "mamps": "ma", "milliamp": "ma", "milliamps": "ma",
+    "uamp": "ua", "uamps": "ua", "microamp": "ua", "microamps": "ua",
+    "namp": "na", "namps": "na", "nanoamp": "na", "nanoamps": "na",
+    "pamp": "pa", "pamps": "pa", "picoamp": "pa", "picoamps": "pa",
+    "famp": "fa", "famps": "fa", "femtoamp": "fa", "femtoamps": "fa",
+    "volt": "v", "volts": "v",
+    "kvolt": "kv", "kvolts": "kv",
+    "mvolt": "mv", "mvolts": "mv", "millivolt": "mv", "millivolts": "mv",
+    "uvolt": "uv", "uvolts": "uv", "microvolt": "uv", "microvolts": "uv",
+    "nvolt": "nv", "nvolts": "nv", "nanovolt": "nv", "nanovolts": "nv",
+    "pvolt": "pv", "pvolts": "pv",
+    "hertz": "hz", "khertz": "khz", "mhertz": "mhz", "ghertz": "ghz", "thertz": "thz",
+    "watt": "w", "watts": "w", "mwatt": "mw", "mwatts": "mw", "uwatt": "uw", "uwatts": "uw",
+    "nwatt": "nw", "nwatts": "nw", "pwatt": "pw", "pwatts": "pw",
+    "farad": "f", "farads": "f", "pfarad": "pf", "ffarad": "ff", "nfarad": "nf", "ufarad": "uf",
+    "dbv": "dbv", "db": "db", "degc": "temp_c", "c_deg": "temp_c", "kelvin": "temp_k",
+}
+
+
+def _resolve_trace_unit_scale(unit_str, expected_dim=None):
+    """Resolve a PSF TRACE/TYPE unit property into `(si_scale, error_reason_or_None)`.
+
+    Fail-closed on unknown unit strings or unit dimension mismatches so non-SI
+    PSF traces (`mA`, `mV`, `MHz`, `ns`, ...) are always scaled cleanly to SI or rejected.
+    """
+    raw_u = str(unit_str or "").strip().replace(" ", "")
+    if not raw_u:
+        return 1.0, None
+    if raw_u in UNIT_SCALE_CASE_SENSITIVE:
+        u_scale = UNIT_SCALE_CASE_SENSITIVE[raw_u]
+        u_dim = UNIT_DIM_CASE_SENSITIVE.get(raw_u)
+        # Allow time unit `"s"`/`"sec"` vs `"S"` ONLY strictly by case (`S`=Siemens, `s`=seconds)
+    else:
+        u_key = raw_u.lower()
+        u_key = _TRACE_UNIT_ALIASES_LOWER.get(u_key, u_key)
+        if u_key not in UNIT_SCALE_TO_SI:
+            return None, "unknown_trace_unit:%s" % raw_u
+        u_scale = UNIT_SCALE_TO_SI[u_key]
+        u_dim = UNIT_DIM_LOWER.get(u_key)
+    if expected_dim is not None:
+        if expected_dim == "voltage_or_ratio":
+            if u_dim not in ("voltage", "ratio"):
+                return None, "trace_unit_dimension_mismatch:%s" % raw_u
+        elif u_dim != expected_dim:
+            return None, "trace_unit_dimension_mismatch:%s" % raw_u
+    return float(u_scale), None
+
+
+def _get_parsed_signal_unit(parsed, sig_name):
+    """Extract declared PSF `units` property for a trace, sweep axis, or type."""
+    if not isinstance(parsed, dict) or not sig_name:
+        return ""
+    f_units = parsed.get("field_units") or {}
+    if sig_name in f_units and f_units[sig_name]:
+        return str(f_units[sig_name])
+    types = parsed.get("types") or {}
+    for tr in parsed.get("traces") or []:
+        if tr.get("name") == sig_name:
+            u = (tr.get("props") or {}).get("units")
+            if u:
+                return str(u)
+            t_meta = types.get(tr.get("type"), {})
+            u2 = (t_meta.get("props") or {}).get("units")
+            if u2:
+                return str(u2)
+            break
+    for sw in parsed.get("sweeps") or []:
+        if sw.get("name") == sig_name:
+            u = (sw.get("props") or {}).get("units")
+            if u:
+                return str(u)
+            t_meta = types.get(sw.get("type"), {})
+            u2 = (t_meta.get("props") or {}).get("units")
+            if u2:
+                return str(u2)
+            break
+    tr_types = parsed.get("trace_types") or {}
+    if sig_name in tr_types:
+        t_meta = types.get(tr_types[sig_name], {})
+        u3 = (t_meta.get("props") or {}).get("units")
+        if u3:
+            return str(u3)
+    return ""
+
+
+def _scale_numeric_sequence(seq, scale, as_complex=False):
+    if abs(scale - 1.0) <= 1e-15:
+        if as_complex:
+            return [complex(v) for v in seq]
+        return [float(x.real) if isinstance(x, complex) else float(x) for x in seq]
+    if as_complex:
+        return [complex(v) * scale for v in seq]
+    return [(float(x.real) if isinstance(x, complex) else float(x)) * scale for x in seq]
 
 
 class _SilentOptionParser(OptionParser):
@@ -303,18 +425,27 @@ def _is_pmos_device(inst_name, type_name, fields_lc, vgs, vth, vds=None, ids=Non
 
 
 def _extract_mos_devices_from_parsed(parsed):
-    """Extract raw MOSFET field dicts from either STRUCT instances or flat M1:param values."""
+    """Extract raw MOSFET field dicts + unit maps from either STRUCT instances or flat M1:param values."""
     mos_map = {}
 
     for inst_name, meta in parsed.get("instances", {}).items():
         fields = meta.get("fields", {})
         if _is_mos_struct(meta.get("type", ""), fields):
+            u_map = {}
+            inst_fu = meta.get("field_units") or {}
+            prefix = inst_name + ":"
+            for fk in fields.keys():
+                u_val = inst_fu.get(prefix + fk) or _get_parsed_signal_unit(parsed, prefix + fk)
+                if u_val:
+                    u_map[fk.lower()] = u_val
             mos_map[inst_name] = {
                 "type": meta.get("type", "mos"),
                 "fields_lc": dict([(k.lower(), v) for k, v in fields.items()]),
+                "units_lc": u_map,
             }
 
     grouped_flat = {}
+    grouped_units = {}
     for sig_name, arr in parsed.get("values", {}).items():
         if not arr or isinstance(arr[0], complex):
             continue
@@ -324,15 +455,49 @@ def _extract_mos_devices_from_parsed(parsed):
         inst, param = sig_name.rsplit(sep, 1)
         if not inst or not param:
             continue
-        grouped_flat.setdefault(inst, {})[param.lower()] = arr[0]
+        p_low = param.lower()
+        grouped_flat.setdefault(inst, {})[p_low] = arr[0]
+        u_val = _get_parsed_signal_unit(parsed, sig_name)
+        if u_val:
+            grouped_units.setdefault(inst, {})[p_low] = u_val
 
     for inst_name, flc in grouped_flat.items():
         if inst_name in mos_map:
             continue
         if _is_mos_struct("mos", flc):
-            mos_map[inst_name] = {"type": "mos_flat", "fields_lc": flc}
+            mos_map[inst_name] = {
+                "type": "mos_flat",
+                "fields_lc": flc,
+                "units_lc": grouped_units.get(inst_name, {}),
+            }
 
     return mos_map
+
+
+def _pick_scaled_mos_field(flc, units_lc, canonical, expected_dim, inst_name, unit_errs):
+    cands = MOS_FIELD_ALIASES.get(canonical, (canonical,))
+    for cand in cands:
+        if cand in flc:
+            val = flc[cand]
+            if isinstance(val, _NUM_TYPES) and not isinstance(val, bool):
+                u_str = (units_lc or {}).get(cand, "")
+                scale, err = _resolve_trace_unit_scale(u_str, expected_dim=expected_dim)
+                if err:
+                    unit_errs.append("%s.%s: %s" % (inst_name, cand, err))
+                    return None
+                return float(val) * scale
+    if canonical == "gds" and "rout" in flc:
+        rv = flc["rout"]
+        if isinstance(rv, _NUM_TYPES) and not isinstance(rv, bool) and abs(rv) > 1e-18:
+            u_str = (units_lc or {}).get("rout", "")
+            scale, err = _resolve_trace_unit_scale(u_str, expected_dim="resistance")
+            if err:
+                unit_errs.append("%s.rout: %s" % (inst_name, err))
+                return None
+            r_si = float(rv) * scale
+            if abs(r_si) > 1e-18:
+                return 1.0 / r_si
+    return None
 
 
 def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
@@ -343,6 +508,7 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
 
     devices = {}
     flags = []
+    unit_errors = []
     buckets = {
         "saturation": [],
         "cutoff": [],
@@ -364,19 +530,24 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
     for inst_name in sorted(mos_raw.keys()):
         entry = mos_raw[inst_name]
         flc = entry["fields_lc"]
+        ulc = entry.get("units_lc") or {}
         dev_type = entry["type"]
+        dev_unit_errs = []
 
-        ids = _pick_field(flc, "ids")
-        vgs = _pick_field(flc, "vgs")
-        vds = _pick_field(flc, "vds")
-        vth = _pick_field(flc, "vth")
-        vdsat = _pick_field(flc, "vdsat")
-        gm = _pick_field(flc, "gm")
-        gds = _pick_field(flc, "gds")
-        gmb = _pick_field(flc, "gmb")
-        cgg = _pick_field(flc, "cgg")
-        cgd = _pick_field(flc, "cgd")
-        cgs = _pick_field(flc, "cgs")
+        ids = _pick_scaled_mos_field(flc, ulc, "ids", "current", inst_name, dev_unit_errs)
+        vgs = _pick_scaled_mos_field(flc, ulc, "vgs", "voltage", inst_name, dev_unit_errs)
+        vds = _pick_scaled_mos_field(flc, ulc, "vds", "voltage", inst_name, dev_unit_errs)
+        vth = _pick_scaled_mos_field(flc, ulc, "vth", "voltage", inst_name, dev_unit_errs)
+        vdsat = _pick_scaled_mos_field(flc, ulc, "vdsat", "voltage", inst_name, dev_unit_errs)
+        gm = _pick_scaled_mos_field(flc, ulc, "gm", "conductance", inst_name, dev_unit_errs)
+        gds = _pick_scaled_mos_field(flc, ulc, "gds", "conductance", inst_name, dev_unit_errs)
+        gmb = _pick_scaled_mos_field(flc, ulc, "gmb", "conductance", inst_name, dev_unit_errs)
+        cgg = _pick_scaled_mos_field(flc, ulc, "cgg", "capacitance", inst_name, dev_unit_errs)
+        cgd = _pick_scaled_mos_field(flc, ulc, "cgd", "capacitance", inst_name, dev_unit_errs)
+        cgs = _pick_scaled_mos_field(flc, ulc, "cgs", "capacitance", inst_name, dev_unit_errs)
+        if dev_unit_errs:
+            unit_errors.extend(dev_unit_errs)
+            any_missing_op = True
         reg_raw = _pick_field(flc, "region")
         if reg_raw is not None:
             reg_rounded = int(round(float(reg_raw)))
@@ -567,6 +738,20 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
                     ),
                 })
 
+        if dev_unit_errs:
+            dev_flags.append("UNIT_ERROR")
+            any_missing_op = True
+            if status != "FAIL":
+                status = "NOT_VERIFIED"
+            flags.append({
+                "device": inst_name,
+                "code": "UNIT_ERROR",
+                "severity": "error",
+                "message": "%s has invalid/mismatched PSF OP trace units: %s" % (
+                    inst_name, "; ".join(dev_unit_errs)
+                ),
+            })
+
         devices[inst_name] = {
             "type": dev_type,
             "region": effective_region,
@@ -608,25 +793,29 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
         and (not any_headroom_violation)
     )
 
+    summary_out = {
+        "saturation": buckets["saturation"],
+        "cutoff": buckets["cutoff"],
+        "unintended_triode": buckets["unintended_triode"],
+        "expected_triode": buckets["expected_triode"],
+        "subthreshold": buckets["subthreshold"],
+        "breakdown": buckets["breakdown"],
+        "unknown_region": buckets["unknown_region"],
+        "tight_headroom": buckets["tight_headroom"],
+        "missing_op_fields": buckets["missing_op_fields"],
+        "min_sat_margin_v": _round_clean(min_sat_margin),
+        "worst_headroom_device": worst_headroom_dev,
+    }
+    if unit_errors:
+        summary_out["unit_errors"] = unit_errors
+
     return {
         "audit_pass": audit_pass,
         "status": overall,
         "device_count": len(devices),
         "devices": devices,
         "flags": flags,
-        "summary": {
-            "saturation": buckets["saturation"],
-            "cutoff": buckets["cutoff"],
-            "unintended_triode": buckets["unintended_triode"],
-            "expected_triode": buckets["expected_triode"],
-            "subthreshold": buckets["subthreshold"],
-            "breakdown": buckets["breakdown"],
-            "unknown_region": buckets["unknown_region"],
-            "tight_headroom": buckets["tight_headroom"],
-            "missing_op_fields": buckets["missing_op_fields"],
-            "min_sat_margin_v": _round_clean(min_sat_margin),
-            "worst_headroom_device": worst_headroom_dev,
-        },
+        "summary": summary_out,
     }
 
 
@@ -814,6 +1003,7 @@ def _extract_dc_power_single(parsed):
     voltage_nodes = {}        # stem -> list of (orig_key, float_list)
     supply_voltage_nodes = {}
     current_probes = []       # list of (orig_key, stem, float_list)
+    unit_errors = []
 
     for k in sorted(vals.keys()):
         if sweep_name and k == sweep_name:
@@ -836,23 +1026,34 @@ def _extract_dc_power_single(parsed):
             continue
 
         kl = k.lower()
-        unit_lc = str(field_units.get(k, "")).strip().lower()
+        raw_unit = _get_parsed_signal_unit(parsed, k)
         is_curr_term = (
             kl.endswith(":p") or kl.endswith(".p") or kl.endswith(":i") or kl.endswith(".i")
         )
         if is_curr_term:
             leaf0 = re.split(r'[/:.]', kl)[0]
-            if leaf0.startswith("v") or unit_lc in ("a", "amp", "amps"):
+            c_scale, c_err = _resolve_trace_unit_scale(raw_unit, expected_dim="current")
+            if c_err is None:
+                is_curr_unit = bool(raw_unit.strip())
+                if leaf0.startswith("v") or is_curr_unit:
+                    stem = _normalize_rail_stem(k)
+                    current_probes.append((k, stem, _scale_numeric_sequence(f_arr, c_scale)))
+            else:
                 stem = _normalize_rail_stem(k)
-                current_probes.append((k, stem, f_arr))
+                if leaf0.startswith("v") or _is_supply_rail_stem(stem) or _is_neg_supply_rail_stem(stem):
+                    unit_errors.append("%s: %s" % (k, c_err))
             continue
 
         # Skip flat device OP fields like `M1:vds` or `R1.i`
         if ":" in k:
             continue
-        if unit_lc and unit_lc not in ("v", "volt", "volts"):
-            continue
         stem = _normalize_rail_stem(k)
+        v_scale, v_err = _resolve_trace_unit_scale(raw_unit, expected_dim="voltage")
+        if v_err is not None:
+            if _is_supply_rail_stem(stem) or _is_neg_supply_rail_stem(stem):
+                unit_errors.append("%s: %s" % (k, v_err))
+            continue
+        f_arr = _scale_numeric_sequence(f_arr, v_scale)
         if stem in ("0", "gnd", "agnd", "dgnd"):
             continue
         if _is_neg_supply_rail_stem(stem):
@@ -886,15 +1087,27 @@ def _extract_dc_power_single(parsed):
     if mos_map:
         p_mos = 0.0
         mos_ok = False
-        for m_entry in mos_map.values():
+        mos_u_errs = []
+        for m_name, m_entry in mos_map.items():
             flc = m_entry["fields_lc"]
-            ids = _pick_field(flc, "ids")
-            vds = _pick_field(flc, "vds")
+            ulc = m_entry.get("units_lc") or {}
+            ids = _pick_scaled_mos_field(flc, ulc, "ids", "current", m_name, mos_u_errs)
+            vds = _pick_scaled_mos_field(flc, ulc, "vds", "voltage", m_name, mos_u_errs)
             if ids is not None and vds is not None:
                 p_mos += abs(float(ids) * float(vds))
                 mos_ok = True
-        if mos_ok:
+        if mos_ok and not mos_u_errs:
             out["mos_power_estimate_w"] = _round_clean(p_mos)
+
+    if unit_errors:
+        out.update({
+            "dc_power_w": None,
+            "idd_a": None,
+            "vdd_v": None,
+            "power_method": "trace_unit_error",
+            "dc_unit_errors": unit_errors,
+        })
+        return out
 
     # When named supply probes are present, do NOT merge generic 0V ammeters (`V_TAIL:p`, `V_MEAS:p`)!
     if supply_named_probes:
@@ -969,12 +1182,16 @@ def _extract_dc_power_single(parsed):
 
         if (not ambiguous) and matched_pairs and (not unmatched_probes) and (not unmatched_supply_v):
             total_p, total_i, max_power_idx, max_idd_idx, n_pts, matched_rails = _eval_worst_across_sweep(matched_pairs)
+            rail_volts = dict([(r["rail"], r["vdd_v"]) for r in matched_rails])
+            prim_rail = "vdd" if "vdd" in rail_volts else (matched_rails[0]["rail"] if len(matched_rails) == 1 else None)
             out.update({
                 "vdd_v": matched_rails[0]["vdd_v"] if len(matched_rails) == 1 else None,
                 "idd_a": _round_clean(total_i),
                 "dc_power_w": _round_clean(total_p),
                 "power_method": "supply_terminal" if len(matched_rails) == 1 else "multi_rail_supply_terminal",
                 "supply_rails": matched_rails,
+                "rail_voltages": rail_volts,
+                "primary_supply_rail": prim_rail,
             })
             if len(matched_rails) == 1:
                 out["supply_node"] = matched_rails[0]["voltage_node"]
@@ -1004,6 +1221,9 @@ def _extract_dc_power_single(parsed):
                     "power_method": "supply_terminal",
                     "supply_node": v_key,
                     "current_probe": c_key,
+                    "supply_rails": matched_rails,
+                    "rail_voltages": {only_v_stem: matched_rails[0]["vdd_v"]},
+                    "primary_supply_rail": only_v_stem,
                 })
                 if n_pts > 1:
                     out["dc_sweep_points"] = n_pts
@@ -1035,11 +1255,12 @@ def _extract_dc_power(parsed_list):
 
     - Sums `|V_k * I_k|` across all matched supply rails (`VDD:p` * `VDD` + `VDD18:p` * `VDD18`, etc.).
     - Evaluates EVERY sweep point in EVERY DC file and reports worst-case (`max`) power and `max` supply current independently.
-    - If ANY DC file has ambiguous / cross-rail supply matching, fails closed (`dc_power_w = None`).
+    - If ANY DC file has ambiguous / cross-rail supply matching or trace unit errors, fails closed (`dc_power_w = None`, `idd_a = None`).
     - MOS `sum(|Vds * Ids|)` fallback is stored ONLY in `mos_power_estimate_w`, NEVER in `dc_power_w`.
     """
     valid_results = []
     ambiguous_res = None
+    unit_err_res = None
     mos_est_max = None
 
     for parsed in parsed_list:
@@ -1049,10 +1270,17 @@ def _extract_dc_power(parsed_list):
         if res.get("mos_power_estimate_w") is not None:
             if mos_est_max is None or res["mos_power_estimate_w"] > mos_est_max:
                 mos_est_max = res["mos_power_estimate_w"]
-        if res.get("power_method") == "ambiguous_multi_rail":
+        if res.get("power_method") == "trace_unit_error":
+            unit_err_res = res
+        elif res.get("power_method") == "ambiguous_multi_rail":
             ambiguous_res = res
         elif isinstance(res.get("dc_power_w"), _NUM_TYPES) and not isinstance(res.get("dc_power_w"), bool):
             valid_results.append(res)
+
+    if unit_err_res is not None:
+        if mos_est_max is not None and "mos_power_estimate_w" not in unit_err_res:
+            unit_err_res["mos_power_estimate_w"] = mos_est_max
+        return unit_err_res
 
     if ambiguous_res is not None:
         if mos_est_max is not None and "mos_power_estimate_w" not in ambiguous_res:
@@ -1116,7 +1344,15 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
     freq_key = parsed.get("sweep_name") or _pick_signal_key(vals, ("freq", "frequency", "f"))
     if not freq_key or freq_key not in vals:
         return {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
-    freqs = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[freq_key]]
+    ac_u_errs = []
+    f_u = _get_parsed_signal_unit(parsed, freq_key)
+    f_scale, f_err = _resolve_trace_unit_scale(f_u, expected_dim="freq")
+    if f_err:
+        return {
+            "dc_gain_db": None, "bw_3db_hz": None, "ugf_hz": None, "pm_ac_deg": None,
+            "ac_unit_errors": ["%s: %s" % (freq_key, f_err)],
+        }
+    freqs = _scale_numeric_sequence(vals[freq_key], f_scale, as_complex=False)
     if len(freqs) < 2:
         return {}
 
@@ -1138,14 +1374,27 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
     out_label = None
     out_used_keys = []
     if vout_hint and vout_hint in vals:
-        h_vec = [complex(v) for v in vals[vout_hint]]
+        v_s, v_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vout_hint), expected_dim="voltage_or_ratio")
+        if v_err:
+            ac_u_errs.append("%s: %s" % (vout_hint, v_err))
+        else:
+            h_vec = _scale_numeric_sequence(vals[vout_hint], v_s, as_complex=True)
         out_label = vout_hint
         out_used_keys = [vout_hint]
     elif not vout_hint:
         vp = _pick_signal_key(vals, ("voutp", "vout_p", "outp", "out_p", "vop"), exclude=(freq_key,))
         vn = _pick_signal_key(vals, ("voutn", "vout_n", "outn", "out_n", "von"), exclude=(freq_key,))
         if vp and vn and len(vals[vp]) == len(freqs) and len(vals[vn]) == len(freqs):
-            h_vec = [complex(vals[vp][i]) - complex(vals[vn][i]) for i in range(len(freqs))]
+            sp, ep = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vp), expected_dim="voltage_or_ratio")
+            sn, en = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vn), expected_dim="voltage_or_ratio")
+            if ep:
+                ac_u_errs.append("%s: %s" % (vp, ep))
+            if en:
+                ac_u_errs.append("%s: %s" % (vn, en))
+            if (not ep) and (not en):
+                vp_sc = _scale_numeric_sequence(vals[vp], sp, as_complex=True)
+                vn_sc = _scale_numeric_sequence(vals[vn], sn, as_complex=True)
+                h_vec = [vp_sc[i] - vn_sc[i] for i in range(len(freqs))]
             out_label = "%s-%s" % (vp, vn)
             out_used_keys = [vp, vn]
         else:
@@ -1160,9 +1409,20 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
                         vo = k
                         break
             if vo and len(vals[vo]) == len(freqs):
-                h_vec = [complex(v) for v in vals[vo]]
+                sv, ev = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vo), expected_dim="voltage_or_ratio")
+                if ev:
+                    ac_u_errs.append("%s: %s" % (vo, ev))
+                else:
+                    h_vec = _scale_numeric_sequence(vals[vo], sv, as_complex=True)
                 out_label = vo
                 out_used_keys = [vo]
+
+    if ac_u_errs:
+        return {
+            "ac_output": out_label,
+            "dc_gain_db": None, "bw_3db_hz": None, "ugf_hz": None, "pm_ac_deg": None,
+            "ac_unit_errors": ac_u_errs,
+        }
 
     if not h_vec:
         return {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
@@ -1185,7 +1445,14 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
             else:
                 res_mi["missing_vin"] = vin_hint
             return res_mi
-        vin_arr = [complex(v) for v in vals[vin_hint]]
+        si, ei = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vin_hint), expected_dim="voltage_or_ratio")
+        if ei:
+            return {
+                "ac_output": out_label, "ac_input": vin_hint,
+                "dc_gain_db": None, "bw_3db_hz": None, "ugf_hz": None, "pm_ac_deg": None,
+                "ac_unit_errors": ["%s: %s" % (vin_hint, ei)],
+            }
+        vin_arr = _scale_numeric_sequence(vals[vin_hint], si, as_complex=True)
         in_label = vin_hint
     else:
         excl_in = tuple([freq_key] + out_used_keys)
@@ -1202,13 +1469,30 @@ def _extract_ac_metrics(parsed, vout_hint=None, vin_hint=None):
             kp = _pick_signal_key(vals, (p_cand,), exclude=excl_in)
             kn = _pick_signal_key(vals, (n_cand,), exclude=excl_in)
             if kp and kn and kp != kn and len(vals[kp]) == len(freqs) and len(vals[kn]) == len(freqs):
-                vin_arr = [complex(vals[kp][i]) - complex(vals[kn][i]) for i in range(len(freqs))]
+                sp, ep = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, kp), expected_dim="voltage_or_ratio")
+                sn, en = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, kn), expected_dim="voltage_or_ratio")
+                if ep or en:
+                    return {
+                        "ac_output": out_label, "ac_input": "%s-%s" % (kp, kn),
+                        "dc_gain_db": None, "bw_3db_hz": None, "ugf_hz": None, "pm_ac_deg": None,
+                        "ac_unit_errors": [x for x in (ep and "%s: %s" % (kp, ep), en and "%s: %s" % (kn, en)) if x],
+                    }
+                vp_sc = _scale_numeric_sequence(vals[kp], sp, as_complex=True)
+                vn_sc = _scale_numeric_sequence(vals[kn], sn, as_complex=True)
+                vin_arr = [vp_sc[i] - vn_sc[i] for i in range(len(freqs))]
                 in_label = "%s-%s" % (kp, kn)
                 break
         if vin_arr is None:
             vin_key = _pick_signal_key(vals, ("vin", "vin_ac", "in", "v_in"), exclude=excl_in)
             if vin_key and len(vals[vin_key]) == len(freqs):
-                vin_arr = [complex(v) for v in vals[vin_key]]
+                si, ei = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vin_key), expected_dim="voltage_or_ratio")
+                if ei:
+                    return {
+                        "ac_output": out_label, "ac_input": vin_key,
+                        "dc_gain_db": None, "bw_3db_hz": None, "ugf_hz": None, "pm_ac_deg": None,
+                        "ac_unit_errors": ["%s: %s" % (vin_key, ei)],
+                    }
+                vin_arr = _scale_numeric_sequence(vals[vin_key], si, as_complex=True)
                 in_label = vin_key
 
     # Ensure ascending frequency order for (freqs, h_vec, vin_arr) BEFORE inspecting vin_arr
@@ -1371,10 +1655,55 @@ def _is_finite_num(val):
     return not (math.isnan(f) or math.isinf(f))
 
 
+def _extract_provenance_tags(parsed):
+    """Extract normalized provenance tags (circuit/design/netlist/subckt/loop/testbench) from PSF HEADER."""
+    tags = {}
+    header = parsed.get("header") if isinstance(parsed, dict) else None
+    if not isinstance(header, dict):
+        return tags
+    key_map = {
+        "circuit": "circuit", "design": "circuit", "cell": "circuit", "subckt": "circuit",
+        "testbench": "testbench", "tb": "testbench",
+        "loop": "loop", "loop_name": "loop", "stb_loop": "loop",
+        "netlist": "netlist",
+    }
+    for hk_raw, hv_raw in header.items():
+        hk = str(hk_raw).strip().lower()
+        cat = key_map.get(hk)
+        if not cat:
+            continue
+        hv = str(hv_raw).strip().strip('"').strip("'").lower()
+        if not hv:
+            continue
+        if cat == "netlist":
+            hv = os.path.basename(hv.replace("\\", "/"))
+        tags[cat] = hv
+    return tags
+
+
+def _pz_loop_stem(path):
+    if not path:
+        return ""
+    bn = os.path.basename(path).lower()
+    st = re.sub(r'(?:\.pz\.psf|\.pz|\.psf|\.info)$', '', bn)
+    st = re.sub(r'(?:^|[_.-])(?:open[\s_-]?loop|closed[\s_-]?loop|openloop|closedloop)(?:$|[_.-])', '_', st)
+    st = st.strip('_.- ')
+    return st
+
+
 def _extract_pz_metrics(parsed, path=""):
-    """Extract open-loop or closed-loop pole-zero metrics from a parsed `.pz` PSF ASCII file."""
+    """Extract open-loop or closed-loop pole-zero metrics from a parsed `.pz` PSF ASCII file.
+
+    Fail-closed invariants (Finding #03):
+    - Never defaults untyped `.pz` files to `closed_loop` (`pz_mode = 'unknown'`).
+    - Strictly enforces open LHP asymptotic stability (`Re(p) < -eps`), flagging origin (`0+0j`) and jw-axis poles.
+    """
     if not isinstance(parsed, dict):
-        return {"pz_mode": "closed_loop", "pz_parsed_ok": False, "poles_count": 0, "zeros_count": 0, "rhp_poles": 0}
+        return {
+            "pz_mode": "unknown", "pz_parsed_ok": False,
+            "poles_count": 0, "zeros_count": 0, "rhp_poles": 0,
+            "jw_axis_poles": 0, "non_lhp_poles": 0,
+        }
 
     pz_mode = None
     header = parsed.get("header") or {}
@@ -1398,7 +1727,10 @@ def _extract_pz_metrics(parsed, path=""):
         elif _PZ_CLOSED_LOOP_RE.search(bn_low):
             pz_mode = "closed_loop"
     if pz_mode is None:
-        pz_mode = "closed_loop"
+        pz_mode = "unknown"
+
+    prov_tags = _extract_provenance_tags(parsed)
+    pz_stem = _pz_loop_stem(path)
 
     poles = []
     zeros_count = 0
@@ -1499,7 +1831,15 @@ def _extract_pz_metrics(parsed, path=""):
                     elif _is_finite_num(elem):
                         poles.append(complex(float(elem), 0.0))
 
-    rhp_poles = sum([1 for p in poles if p.real > 1e-12])
+    rhp_poles = 0
+    jw_axis_poles = 0
+    for p in poles:
+        eps_p = 1e-12 * max(1.0, abs(p.real), abs(p.imag))
+        if p.real > eps_p:
+            rhp_poles += 1
+        elif abs(p.real) <= eps_p:
+            jw_axis_poles += 1
+    non_lhp_poles = rhp_poles + jw_axis_poles
     pz_ok = (len(poles) >= 1)
     out_pz = {
         "pz_mode": pz_mode,
@@ -1507,15 +1847,23 @@ def _extract_pz_metrics(parsed, path=""):
         "poles_count": len(poles),
         "zeros_count": zeros_count,
         "rhp_poles": rhp_poles,
+        "jw_axis_poles": jw_axis_poles,
+        "non_lhp_poles": non_lhp_poles,
+        "provenance_tags": prov_tags,
+        "pz_stem": pz_stem,
     }
     if poles:
         out_pz["max_pole_real"] = _round_clean(max([p.real for p in poles]))
     if pz_mode == "closed_loop":
         out_pz["closed_loop_poles"] = len(poles)
         out_pz["closed_loop_rhp_poles"] = rhp_poles
-    else:
+        out_pz["closed_loop_jw_axis_poles"] = jw_axis_poles
+        out_pz["closed_loop_non_lhp_poles"] = non_lhp_poles
+    elif pz_mode == "open_loop":
         out_pz["open_loop_poles"] = len(poles)
         out_pz["open_loop_rhp_poles"] = rhp_poles
+        out_pz["open_loop_jw_axis_poles"] = jw_axis_poles
+        out_pz["open_loop_non_lhp_poles"] = non_lhp_poles
     return out_pz
 
 
@@ -1529,200 +1877,231 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
     out = {}
     if rejected_bf:
         out["rejected_backfilled_signals"] = rejected_bf
+    if stb_parsed:
+        out["provenance_tags"] = _extract_provenance_tags(stb_parsed)
+    elif margin_parsed:
+        out["provenance_tags"] = _extract_provenance_tags(margin_parsed)
 
     rhp_pole_suspected = False
     dc_pos_fb = False
+    stb_u_errs = []
 
     if freq_key and lg_key and len(vals[freq_key]) >= 2 and len(vals[lg_key]) == len(vals[freq_key]):
-        freqs = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[freq_key]]
-        lg = [complex(v) for v in vals[lg_key]]
-        if any([freqs[i] > freqs[i + 1] for i in range(len(freqs) - 1)]):
-            order = sorted(range(len(freqs)), key=lambda idx: freqs[idx])
-            freqs = [freqs[idx] for idx in order]
-            lg = [lg[idx] for idx in order]
-
-        mags = [abs(c) for c in lg]
-        mag_db = [20.0 * math.log10(m) if m > 1e-300 else -600.0 for m in mags]
-        raw_phase = [math.degrees(math.atan2(c.imag, c.real)) for c in lg]
-        unwrapped = _unwrap_phase_deg(raw_phase)
-        nyq_n, nyq_closed = _compute_nyquist_encirclements(freqs, lg)
-
-        dc_pos_fb = (lg[0].real < 0.0 and mags[0] > 1.0)
-        loop_dc_gain_db = mag_db[0] if mags[0] > 0.0 else None
-
-        ugf_crossings = []
-        for i in range(len(freqs) - 1):
-            if (mag_db[i] >= 0.0 and mag_db[i + 1] < 0.0) or (mag_db[i] < 0.0 and mag_db[i + 1] >= 0.0):
-                f_c, frac = _log_interp_x(freqs[i], freqs[i + 1], mag_db[i], mag_db[i + 1], 0.0)
-                phi_c = unwrapped[i] + frac * (unwrapped[i + 1] - unwrapped[i])
-                pm_c = _phase_margin_from_unwrapped(phi_c)
-                direction = "falling" if mag_db[i] >= mag_db[i + 1] else "rising"
-                # Bode gain-phase RHP open-loop pole check:
-                # For open-loop stable (P=0) causal L(s) rolling off from |L(0)| > 1 through 0 dB,
-                # phase cannot lead past +45 deg or rise monotonically into positive phase while gain falls.
-                if (not dc_pos_fb) and mag_db[0] > 0.0 and direction == "falling":
-                    dphi_c = unwrapped[i + 1] - unwrapped[i]
-                    if phi_c > 45.0 or (phi_c > 10.0 and dphi_c > 0.0):
-                        rhp_pole_suspected = True
-                ugf_crossings.append({
-                    "freq_hz": _round_clean(f_c),
-                    "phase_deg": _round_clean(phi_c),
-                    "phase_margin_deg": _round_clean(pm_c),
-                    "direction": direction,
-                })
-
-        # Secondary high-frequency roll-off RHP-pole check (e.g. L(s)=K/(s-p)^n where phase rises > +90 deg as |L|->0)
-        if (
-            (not dc_pos_fb)
-            and mag_db[0] > 0.0
-            and mag_db[-1] < mag_db[0] - 6.0
-            and max(unwrapped) > unwrapped[0] + 90.0
-            and unwrapped[-1] > unwrapped[0] + 60.0
-        ):
-            rhp_pole_suspected = True
-
-        # Bode gain-phase slope consistency check across active frequency range:
-        # An RHP open-loop pole adds -20 dB/dec magnitude rolloff with +90 deg phase lead (+180 deg anomaly
-        # relative to minimum-phase Bode relation phi ~ 4.5 deg * slope_dB_per_dec). Over any sustained
-        # monotonic rolloff window (>= 0.45 dec) with steep slope (<= -32 dB/dec) not on a decelerating
-        # resonant skirt, excess phase lead >= +100 deg signals P > 0 RHP open-loop pole(s).
-        if (not rhp_pole_suspected) and (not dc_pos_fb) and mag_db[0] > 0.0 and len(freqs) >= 3:
-            n_f = len(freqs)
-            for wi in range(n_f - 1):
-                if freqs[wi] <= 0.0:
-                    continue
-                for wj in range(wi + 1, n_f):
-                    if freqs[wj] <= freqs[wi]:
-                        continue
-                    dec_w = math.log10(freqs[wj] / freqs[wi])
-                    if dec_w < 0.45:
-                        continue
-                    if dec_w > 1.5 and wj > wi + 1:
-                        break
-                    mono_down = True
-                    for wk in range(wi, wj):
-                        if mag_db[wk + 1] > mag_db[wk] + 0.5:
-                            mono_down = False
-                            break
-                    if not mono_down:
-                        continue
-                    s_win = (mag_db[wj] - mag_db[wi]) / dec_w
-                    if s_win > -32.0:
-                        continue
-                    dec_loc = math.log10(freqs[wj] / freqs[wj - 1]) if freqs[wj - 1] > 0.0 else 0.0
-                    s_loc = ((mag_db[wj] - mag_db[wj - 1]) / dec_loc) if dec_loc > 1e-9 else s_win
-                    s_cons = max(s_win, s_loc)
-                    if s_cons > -32.0 or s_loc > s_win + 20.0:
-                        continue
-                    phi_rel_j = unwrapped[wj] - unwrapped[0]
-                    exp_min_phase = 4.5 * s_cons
-                    if (phi_rel_j - exp_min_phase) >= 100.0:
-                        rhp_pole_suspected = True
-                        break
-                if rhp_pole_suspected:
-                    break
-
-        falling_crossings = [c for c in ugf_crossings if c["direction"] == "falling"]
-        primary_ugf = None
-        worst_pm = None
-        if falling_crossings:
-            primary_ugf = falling_crossings[0]["freq_hz"]
-        elif ugf_crossings:
-            primary_ugf = ugf_crossings[0]["freq_hz"]
-        if ugf_crossings:
-            worst_pm = min([c["phase_margin_deg"] for c in ugf_crossings])
-
-        if dc_pos_fb and (worst_pm is None or worst_pm > 0.0):
-            worst_pm = -abs(worst_pm) if worst_pm is not None else -180.0
-
-        # Check ALL odd-multiple 180 deg phase crossings: 180 * (2*m - 1) = ..., -540, -180, +180, +540, ...
-        phi_min = min(unwrapped)
-        phi_max = max(unwrapped)
-        m_lo = int(math.floor((phi_min + 180.0) / 360.0)) - 1
-        m_hi = int(math.ceil((phi_max + 180.0) / 360.0)) + 1
-        crit_targets = [180.0 * (2 * m - 1) for m in range(m_lo, m_hi + 1)]
-
-        gm_db = None
-        gm_freq_hz = None
-        gm_crossings = []
-        for crit_deg in crit_targets:
-            if crit_deg < phi_min - 1e-12 or crit_deg > phi_max + 1e-12:
-                continue
-            for i in range(len(freqs) - 1):
-                u0 = unwrapped[i]
-                u1 = unwrapped[i + 1]
-                crossed = False
-                if abs(u0 - crit_deg) <= 1e-12:
-                    f_g, mdb_g = freqs[i], mag_db[i]
-                    crossed = True
-                elif (u0 > crit_deg and u1 <= crit_deg) or (u0 < crit_deg and u1 >= crit_deg):
-                    f_g, frac = _log_interp_x(freqs[i], freqs[i + 1], u0, u1, crit_deg)
-                    mdb_g = mag_db[i] + frac * (mag_db[i + 1] - mag_db[i])
-                    crossed = True
-                if crossed:
-                    cand_gm = -mdb_g
-                    gm_crossings.append({
-                        "phase_deg": crit_deg,
-                        "freq_hz": _round_clean(f_g),
-                        "gain_margin_db": _round_clean(cand_gm),
-                    })
-                    if gm_db is None or cand_gm < gm_db:
-                        gm_db = cand_gm
-                        gm_freq_hz = f_g
-
-        if rhp_pole_suspected:
-            # Bode phase/gain margin is INVALID when open-loop RHP poles are present (Nyquist P != 0).
-            # Fail closed so closed-loop instability (e.g. L(s)=3/(s-1)^2 or 10/[(1-s/20)(1+s/10)^2]) can NEVER pass!
-            out.update({
-                "stb_probe_signal": lg_key,
-                "loop_dc_gain_db": _round_clean(loop_dc_gain_db),
-                "stb_ugf_hz": _round_clean(primary_ugf),
-                "phase_margin_deg": None,
-                "gain_margin_db": None,
-                "gm_freq_hz": None,
-                "dc_positive_feedback": dc_pos_fb,
-                "rhp_open_loop_pole_suspected": True,
-                "stb_bode_valid": False,
-                "raw_bode_phase_margin_deg": _round_clean(worst_pm),
-                "ugf_crossing_count": len(ugf_crossings),
-                "nyquist_cw_encirclements": nyq_n,
-                "nyquist_contour_closed": nyq_closed,
-                "stb_notes": (
-                    "Bode gain-phase anomaly indicates suspected RHP open-loop pole(s) (P > 0); "
-                    "Bode-only phase/gain margins cannot certify closed-loop stability when P > 0 "
-                    "and full Nyquist encirclement analysis (N = Z - P) is required."
-                ),
-            })
+        f_scale, f_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(stb_parsed, freq_key), expected_dim="freq")
+        if f_err:
+            stb_u_errs.append("%s: %s" % (freq_key, f_err))
         else:
-            out.update({
-                "stb_probe_signal": lg_key,
-                "loop_dc_gain_db": _round_clean(loop_dc_gain_db),
-                "stb_ugf_hz": _round_clean(primary_ugf),
-                "phase_margin_deg": _round_clean(worst_pm),
-                "gain_margin_db": _round_clean(gm_db),
-                "gm_freq_hz": _round_clean(gm_freq_hz),
-                "dc_positive_feedback": dc_pos_fb,
-                "rhp_open_loop_pole_suspected": False,
-                "stb_bode_valid": True,
-                "ugf_crossing_count": len(ugf_crossings),
-                "nyquist_cw_encirclements": nyq_n,
-                "nyquist_contour_closed": nyq_closed,
-            })
-        if len(ugf_crossings) > 1:
-            out["all_ugf_crossings"] = ugf_crossings
-        if len(gm_crossings) > 1:
-            out["all_gm_crossings"] = gm_crossings
+            freqs = _scale_numeric_sequence(vals[freq_key], f_scale, as_complex=False)
+            lg = [complex(v) for v in vals[lg_key]]
+            if any([freqs[i] > freqs[i + 1] for i in range(len(freqs) - 1)]):
+                order = sorted(range(len(freqs)), key=lambda idx: freqs[idx])
+                freqs = [freqs[idx] for idx in order]
+                lg = [lg[idx] for idx in order]
+
+            mags = [abs(c) for c in lg]
+            mag_db = [20.0 * math.log10(m) if m > 1e-300 else -600.0 for m in mags]
+            raw_phase = [math.degrees(math.atan2(c.imag, c.real)) for c in lg]
+            unwrapped = _unwrap_phase_deg(raw_phase)
+            nyq_n, nyq_closed = _compute_nyquist_encirclements(freqs, lg)
+
+            dc_pos_fb = (lg[0].real < 0.0 and mags[0] > 1.0)
+            loop_dc_gain_db = mag_db[0] if mags[0] > 0.0 else None
+
+            ugf_crossings = []
+            for i in range(len(freqs) - 1):
+                if (mag_db[i] >= 0.0 and mag_db[i + 1] < 0.0) or (mag_db[i] < 0.0 and mag_db[i + 1] >= 0.0):
+                    f_c, frac = _log_interp_x(freqs[i], freqs[i + 1], mag_db[i], mag_db[i + 1], 0.0)
+                    phi_c = unwrapped[i] + frac * (unwrapped[i + 1] - unwrapped[i])
+                    pm_c = _phase_margin_from_unwrapped(phi_c)
+                    direction = "falling" if mag_db[i] >= mag_db[i + 1] else "rising"
+                    # Bode gain-phase RHP open-loop pole check:
+                    # For open-loop stable (P=0) causal L(s) rolling off from |L(0)| > 1 through 0 dB,
+                    # phase cannot lead past +45 deg or rise monotonically into positive phase while gain falls.
+                    if (not dc_pos_fb) and mag_db[0] > 0.0 and direction == "falling":
+                        dphi_c = unwrapped[i + 1] - unwrapped[i]
+                        if phi_c > 45.0 or (phi_c > 10.0 and dphi_c > 0.0):
+                            rhp_pole_suspected = True
+                    ugf_crossings.append({
+                        "freq_hz": _round_clean(f_c),
+                        "phase_deg": _round_clean(phi_c),
+                        "phase_margin_deg": _round_clean(pm_c),
+                        "direction": direction,
+                    })
+
+            # Secondary high-frequency roll-off RHP-pole check (e.g. L(s)=K/(s-p)^n where phase rises > +90 deg as |L|->0)
+            if (
+                (not dc_pos_fb)
+                and mag_db[0] > 0.0
+                and mag_db[-1] < mag_db[0] - 6.0
+                and max(unwrapped) > unwrapped[0] + 90.0
+                and unwrapped[-1] > unwrapped[0] + 60.0
+            ):
+                rhp_pole_suspected = True
+
+            # Bode gain-phase slope consistency check across active frequency range:
+            # An RHP open-loop pole adds -20 dB/dec magnitude rolloff with +90 deg phase lead (+180 deg anomaly
+            # relative to minimum-phase Bode relation phi ~ 4.5 deg * slope_dB_per_dec). Over any sustained
+            # monotonic rolloff window (>= 0.45 dec) with steep slope (<= -32 dB/dec) not on a decelerating
+            # resonant skirt, excess phase lead >= +100 deg signals P > 0 RHP open-loop pole(s).
+            if (not rhp_pole_suspected) and (not dc_pos_fb) and mag_db[0] > 0.0 and len(freqs) >= 3:
+                n_f = len(freqs)
+                for wi in range(n_f - 1):
+                    if freqs[wi] <= 0.0:
+                        continue
+                    for wj in range(wi + 1, n_f):
+                        if freqs[wj] <= freqs[wi]:
+                            continue
+                        dec_w = math.log10(freqs[wj] / freqs[wi])
+                        if dec_w < 0.45:
+                            continue
+                        if dec_w > 1.5 and wj > wi + 1:
+                            break
+                        mono_down = True
+                        for wk in range(wi, wj):
+                            if mag_db[wk + 1] > mag_db[wk] + 0.5:
+                                mono_down = False
+                                break
+                        if not mono_down:
+                            continue
+                        s_win = (mag_db[wj] - mag_db[wi]) / dec_w
+                        if s_win > -32.0:
+                            continue
+                        dec_loc = math.log10(freqs[wj] / freqs[wj - 1]) if freqs[wj - 1] > 0.0 else 0.0
+                        s_loc = ((mag_db[wj] - mag_db[wj - 1]) / dec_loc) if dec_loc > 1e-9 else s_win
+                        s_cons = max(s_win, s_loc)
+                        if s_cons > -32.0 or s_loc > s_win + 20.0:
+                            continue
+                        phi_rel_j = unwrapped[wj] - unwrapped[0]
+                        exp_min_phase = 4.5 * s_cons
+                        if (phi_rel_j - exp_min_phase) >= 100.0:
+                            rhp_pole_suspected = True
+                            break
+                    if rhp_pole_suspected:
+                        break
+
+            falling_crossings = [c for c in ugf_crossings if c["direction"] == "falling"]
+            primary_ugf = None
+            worst_pm = None
+            if falling_crossings:
+                primary_ugf = falling_crossings[0]["freq_hz"]
+            elif ugf_crossings:
+                primary_ugf = ugf_crossings[0]["freq_hz"]
+            if ugf_crossings:
+                worst_pm = min([c["phase_margin_deg"] for c in ugf_crossings])
+
+            if dc_pos_fb and (worst_pm is None or worst_pm > 0.0):
+                worst_pm = -abs(worst_pm) if worst_pm is not None else -180.0
+
+            # Check ALL odd-multiple 180 deg phase crossings: 180 * (2*m - 1) = ..., -540, -180, +180, +540, ...
+            phi_min = min(unwrapped)
+            phi_max = max(unwrapped)
+            m_lo = int(math.floor((phi_min + 180.0) / 360.0)) - 1
+            m_hi = int(math.ceil((phi_max + 180.0) / 360.0)) + 1
+            crit_targets = [180.0 * (2 * m - 1) for m in range(m_lo, m_hi + 1)]
+
+            gm_db = None
+            gm_freq_hz = None
+            gm_crossings = []
+            for crit_deg in crit_targets:
+                if crit_deg < phi_min - 1e-12 or crit_deg > phi_max + 1e-12:
+                    continue
+                for i in range(len(freqs) - 1):
+                    u0 = unwrapped[i]
+                    u1 = unwrapped[i + 1]
+                    crossed = False
+                    if abs(u0 - crit_deg) <= 1e-12:
+                        f_g, mdb_g = freqs[i], mag_db[i]
+                        crossed = True
+                    elif (u0 > crit_deg and u1 <= crit_deg) or (u0 < crit_deg and u1 >= crit_deg):
+                        f_g, frac = _log_interp_x(freqs[i], freqs[i + 1], u0, u1, crit_deg)
+                        mdb_g = mag_db[i] + frac * (mag_db[i + 1] - mag_db[i])
+                        crossed = True
+                    if crossed:
+                        cand_gm = -mdb_g
+                        gm_crossings.append({
+                            "phase_deg": crit_deg,
+                            "freq_hz": _round_clean(f_g),
+                            "gain_margin_db": _round_clean(cand_gm),
+                        })
+                        if gm_db is None or cand_gm < gm_db:
+                            gm_db = cand_gm
+                            gm_freq_hz = f_g
+
+            if rhp_pole_suspected:
+                # Bode phase/gain margin is INVALID when open-loop RHP poles are present (Nyquist P != 0).
+                # Fail closed so closed-loop instability (e.g. L(s)=3/(s-1)^2 or 10/[(1-s/20)(1+s/10)^2]) can NEVER pass!
+                out.update({
+                    "stb_probe_signal": lg_key,
+                    "loop_dc_gain_db": _round_clean(loop_dc_gain_db),
+                    "stb_ugf_hz": _round_clean(primary_ugf),
+                    "phase_margin_deg": None,
+                    "gain_margin_db": None,
+                    "gm_freq_hz": None,
+                    "dc_positive_feedback": dc_pos_fb,
+                    "rhp_open_loop_pole_suspected": True,
+                    "stb_bode_valid": False,
+                    "raw_bode_phase_margin_deg": _round_clean(worst_pm),
+                    "ugf_crossing_count": len(ugf_crossings),
+                    "nyquist_cw_encirclements": nyq_n,
+                    "nyquist_contour_closed": nyq_closed,
+                    "stb_notes": (
+                        "Bode gain-phase anomaly indicates suspected RHP open-loop pole(s) (P > 0); "
+                        "Bode-only phase/gain margins cannot certify closed-loop stability when P > 0 "
+                        "and full Nyquist encirclement analysis (N = Z - P) is required."
+                    ),
+                })
+            else:
+                out.update({
+                    "stb_probe_signal": lg_key,
+                    "loop_dc_gain_db": _round_clean(loop_dc_gain_db),
+                    "stb_ugf_hz": _round_clean(primary_ugf),
+                    "phase_margin_deg": _round_clean(worst_pm),
+                    "gain_margin_db": _round_clean(gm_db),
+                    "gm_freq_hz": _round_clean(gm_freq_hz),
+                    "dc_positive_feedback": dc_pos_fb,
+                    "rhp_open_loop_pole_suspected": False,
+                    "stb_bode_valid": True,
+                    "ugf_crossing_count": len(ugf_crossings),
+                    "nyquist_cw_encirclements": nyq_n,
+                    "nyquist_contour_closed": nyq_closed,
+                })
+            if len(ugf_crossings) > 1:
+                out["all_ugf_crossings"] = ugf_crossings
+            if len(gm_crossings) > 1:
+                out["all_gm_crossings"] = gm_crossings
 
     if margin_parsed and (not rhp_pole_suspected) and (not dc_pos_fb):
         mvals, _ = _usable_waveform_values(margin_parsed)
         if out.get("phase_margin_deg") is None and "phaseMargin" in mvals and mvals["phaseMargin"]:
-            out["phase_margin_deg"] = _round_clean(float(mvals["phaseMargin"][0].real))
+            s_pm, e_pm = _resolve_trace_unit_scale(_get_parsed_signal_unit(margin_parsed, "phaseMargin"), expected_dim="angle")
+            if e_pm:
+                stb_u_errs.append("phaseMargin: %s" % e_pm)
+            else:
+                out["phase_margin_deg"] = _round_clean(float(mvals["phaseMargin"][0].real) * s_pm)
         if out.get("stb_ugf_hz") is None and "phaseMarginFreq" in mvals and mvals["phaseMarginFreq"]:
-            out["stb_ugf_hz"] = _round_clean(float(mvals["phaseMarginFreq"][0].real))
+            s_pf, e_pf = _resolve_trace_unit_scale(_get_parsed_signal_unit(margin_parsed, "phaseMarginFreq"), expected_dim="freq")
+            if e_pf:
+                stb_u_errs.append("phaseMarginFreq: %s" % e_pf)
+            else:
+                out["stb_ugf_hz"] = _round_clean(float(mvals["phaseMarginFreq"][0].real) * s_pf)
         if out.get("gain_margin_db") is None and "gainMargin" in mvals and mvals["gainMargin"]:
-            out["gain_margin_db"] = _round_clean(float(mvals["gainMargin"][0].real))
+            s_gm, e_gm = _resolve_trace_unit_scale(_get_parsed_signal_unit(margin_parsed, "gainMargin"), expected_dim="db")
+            if e_gm:
+                stb_u_errs.append("gainMargin: %s" % e_gm)
+            else:
+                out["gain_margin_db"] = _round_clean(float(mvals["gainMargin"][0].real) * s_gm)
         if out.get("gm_freq_hz") is None and "gainMarginFreq" in mvals and mvals["gainMarginFreq"]:
-            out["gm_freq_hz"] = _round_clean(float(mvals["gainMarginFreq"][0].real))
+            s_gf, e_gf = _resolve_trace_unit_scale(_get_parsed_signal_unit(margin_parsed, "gainMarginFreq"), expected_dim="freq")
+            if e_gf:
+                stb_u_errs.append("gainMarginFreq: %s" % e_gf)
+            else:
+                out["gm_freq_hz"] = _round_clean(float(mvals["gainMarginFreq"][0].real) * s_gf)
+
+    if stb_u_errs:
+        out["stb_unit_errors"] = stb_u_errs
+        out["phase_margin_deg"] = None
+        out["gain_margin_db"] = None
+        out["stb_ugf_hz"] = None
 
     return out
 
@@ -1924,7 +2303,14 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
     t_key = parsed.get("sweep_name") or _pick_signal_key(vals, ("time", "t"))
     if not t_key or t_key not in vals:
         return {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
-    times = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[t_key]]
+    t_scale, t_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, t_key), expected_dim="time")
+    if t_err:
+        return {
+            "slew_rate_pos": None, "slew_rate_neg": None,
+            "overshoot_pct": None, "settling_time_s": None, "ripple_pp": None,
+            "tran_unit_errors": ["%s: %s" % (t_key, t_err)],
+        }
+    times = _scale_numeric_sequence(vals[t_key], t_scale, as_complex=False)
     if len(times) < 4:
         return {}
 
@@ -1957,7 +2343,15 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
     if not vo_key or len(vals[vo_key]) != len(times):
         return {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
 
-    vout = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[vo_key]]
+    v_scale, v_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, vo_key), expected_dim="voltage")
+    if v_err:
+        return {
+            "tran_output": vo_key,
+            "slew_rate_pos": None, "slew_rate_neg": None,
+            "overshoot_pct": None, "settling_time_s": None, "ripple_pp": None,
+            "tran_unit_errors": ["%s: %s" % (vo_key, v_err)],
+        }
+    vout = _scale_numeric_sequence(vals[vo_key], v_scale, as_complex=False)
 
     t_span = times[-1] - times[0]
     t_tail_start = times[0] + 0.80 * t_span
@@ -1981,7 +2375,10 @@ def _extract_tran_metrics(parsed, vout_hint=None, settling_tol_ratio=0.01, targe
     trig_key = _pick_signal_key(vals, ("vin", "vstep", "in", "iload", "i_load"), exclude=(t_key, vo_key))
     trig_vals = None
     if trig_key and len(vals[trig_key]) == len(times):
-        trig_vals = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[trig_key]]
+        trig_dim = "current" if trig_key.lower() in ("iload", "i_load") else "voltage"
+        tr_scale, tr_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, trig_key), expected_dim=trig_dim)
+        if tr_err is None:
+            trig_vals = _scale_numeric_sequence(vals[trig_key], tr_scale, as_complex=False)
 
     v_min = min(vout)
     v_max = max(vout)
@@ -2287,7 +2684,15 @@ def _extract_noise_metrics(parsed, return_curve=False):
     if not f_key or f_key not in vals:
         out_e = {"rejected_backfilled_signals": rejected_bf} if rejected_bf else {}
         return (out_e, None) if return_curve else out_e
-    freqs = [float(x.real) if isinstance(x, complex) else float(x) for x in vals[f_key]]
+    f_scale, f_err = _resolve_trace_unit_scale(_get_parsed_signal_unit(parsed, f_key), expected_dim="freq")
+    if f_err:
+        out_u = {
+            "integrated_rms_noise_v": None,
+            "integrated_rms_noise_a": None,
+            "noise_unit_errors": ["%s: %s" % (f_key, f_err)],
+        }
+        return (out_u, None) if return_curve else out_u
+    freqs = _scale_numeric_sequence(vals[f_key], f_scale, as_complex=False)
     if len(freqs) < 2:
         return ({}, None) if return_curve else {}
     n_key = _pick_signal_key(vals, ("out", "onoise", "inoise", "vout_noise", "iout_noise"), exclude=(f_key,))
@@ -2399,12 +2804,12 @@ _PEX_HEADER_VAL_RE = re.compile(
     re.IGNORECASE,
 )
 _PARASITIC_RC_NAME_RE = re.compile(
-    r'(?:^|[./:])(?:'
+    r'(?:^|[\s./:])(?:'
     r'(?:cpar|rpar|c_par|r_par|c_pex|r_pex|cpex|rpex|c_qrc|r_qrc|cqrc|rqrc|c_rcx|r_rcx|crcx|rrcx|c_ext|r_ext|avc|avr|parasitic_[rc])\w*'
     r'|[rc]_(?:net|n)\d+\w*'
     r'|[rc]_\d+_\d+'
     r'|[rc]\d+[#$]\d+\w*'
-    r')(?:$|[./:])',
+    r')(?:$|[\s./:(])',
     re.IGNORECASE,
 )
 _PARASITIC_RC_TYPE_RE = re.compile(
@@ -2413,52 +2818,69 @@ _PARASITIC_RC_TYPE_RE = re.compile(
 )
 
 
+def _count_unique_mc_iterations(sw_vals):
+    """Count unique finite/non-empty Monte Carlo iteration identifiers."""
+    uniq = set()
+    for v in (sw_vals or []):
+        if isinstance(v, (bool, complex)) or v is None:
+            continue
+        if isinstance(v, _NUM_TYPES):
+            fv = float(v)
+            if _is_finite_num(fv):
+                uniq.add(("n", round(fv, 12)))
+        else:
+            sv = str(v).strip()
+            if not sv:
+                continue
+            try:
+                fv = float(sv)
+                if _is_finite_num(fv):
+                    uniq.add(("n", round(fv, 12)))
+                    continue
+            except Exception:
+                pass
+            uniq.add(("s", sv.lower()))
+    return len(uniq)
+
+
 def _detect_mc_from_parsed(parsed):
-    """Detect genuine Monte Carlo evidence from parsed PSF HEADER or SWEEP."""
+    """Detect genuine Monte Carlo evidence from parsed PSF SWEEP iteration data (never scalar mc_runs)."""
     is_mc = False
     mc_runs = 0
-    header = parsed.get("header") or {}
-    if isinstance(header, dict):
-        for hk_raw, hv_raw in header.items():
-            hk = str(hk_raw).strip().lower()
-            hv = str(hv_raw).strip().lower()
-            if hk in _MC_HEADER_KEYS and _MC_HEADER_VAL_RE.search(hv):
-                is_mc = True
-            elif hk in ("mc_iteration", "montecarlo", "monte_carlo", "mc_runs", "mc_run"):
-                if hv not in ("", "0", "false", "no", "off", "none"):
-                    is_mc = True
-                    if hk == "mc_runs" and isinstance(hv_raw, _INT_TYPES) and not isinstance(hv_raw, bool) and hv_raw > mc_runs:
-                        mc_runs = int(hv_raw)
-
-    sw_names = []
-    if parsed.get("sweep_name"):
-        sw_names.append(str(parsed.get("sweep_name")).strip().lower())
-    for sw in parsed.get("sweeps") or []:
-        if isinstance(sw, dict) and sw.get("name"):
-            sw_names.append(str(sw.get("name")).strip().lower())
-        elif isinstance(sw, TEXT_TYPES):
-            sw_names.append(str(sw).strip().lower())
-    for sn in sw_names:
-        if sn in _MC_SWEEP_NAMES:
+    sw_primary = str(parsed.get("sweep_name") or "").strip().lower()
+    if sw_primary in _MC_SWEEP_NAMES:
+        sw_vals = parsed.get("sweep_values") or []
+        uniq_n = _count_unique_mc_iterations(sw_vals)
+        if uniq_n >= 1:
             is_mc = True
-            sw_vals = parsed.get("sweep_values") or []
-            if len(sw_vals) > mc_runs:
-                mc_runs = len(sw_vals)
-            break
-
+            mc_runs = uniq_n
+    else:
+        for sw in parsed.get("sweeps") or []:
+            if isinstance(sw, dict):
+                sn = str(sw.get("name") or "").strip().lower()
+                if sn in _MC_SWEEP_NAMES:
+                    sv = sw.get("values")
+                    if sv is None and (not sw_primary):
+                        sv = parsed.get("sweep_values")
+                    uniq_n = _count_unique_mc_iterations(sv or [])
+                    if uniq_n >= 1:
+                        is_mc = True
+                        if uniq_n > mc_runs:
+                            mc_runs = uniq_n
+                        break
     return is_mc, mc_runs
 
 
 def _detect_pex_from_parsed(parsed):
-    """Detect genuine post-layout/PEX evidence from parsed PSF HEADER or parasitic RC elements."""
-    is_pex = False
+    """Detect genuine post-layout/PEX evidence requiring BOTH extraction provenance header AND parasitic RC elements."""
+    has_pex_header = False
     header = parsed.get("header") or {}
     if isinstance(header, dict):
         for hk_raw, hv_raw in header.items():
             hk = str(hk_raw).strip().lower()
             hv = str(hv_raw).strip().lower()
             if hk in _PEX_HEADER_KEYS and _PEX_HEADER_VAL_RE.search(hv):
-                is_pex = True
+                has_pex_header = True
                 break
 
     rc_elems = set()
@@ -2484,8 +2906,7 @@ def _detect_pex_from_parsed(parsed):
                 rc_elems.add(str(tname).split(":", 1)[0].lower())
 
     rc_cnt = len(rc_elems)
-    if rc_cnt > 0:
-        is_pex = True
+    is_pex = bool(has_pex_header and rc_cnt > 0)
     return is_pex, rc_cnt
 
 
@@ -2574,7 +2995,10 @@ def _strip_spectre_comments(text):
 
 
 def _netlist_has_pex_markers(raw_lines, net_body):
-    if _PARASITIC_RC_NAME_RE.search(net_body) or _PEX_TOKEN_RE.search(net_body):
+    has_rc = bool(_PARASITIC_RC_NAME_RE.search(net_body) or _PARASITIC_RC_TYPE_RE.search(net_body))
+    if not has_rc:
+        return False
+    if _PEX_TOKEN_RE.search(net_body):
         return True
     for raw_ln in raw_lines:
         if _PEX_VIEW_MARKER_RE.search(raw_ln):
@@ -2932,6 +3356,8 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
 
                 distinct_single_mc = 0
                 sweep_mc_total = 0
+                seen_single_shas = set()
+                seen_header_iters = set()
                 has_explicit_mc_list = len(cand_mc_entries) > 0
                 for norm_mc, mc_path in resolved_mc_targets:
                     try:
@@ -2947,8 +3373,10 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
                     sw_vals = mc_parsed.get("sweep_values") or []
                     sw_name = str(mc_parsed.get("sweep_name") or "").strip().lower()
                     if sw_name in _MC_SWEEP_NAMES and len(sw_vals) > 0:
-                        sweep_mc_total += len(sw_vals)
-                        verified_mc_files_map[norm_mc] = len(sw_vals)
+                        uniq_sw = _count_unique_mc_iterations(sw_vals)
+                        if uniq_sw > 0:
+                            sweep_mc_total += uniq_sw
+                            verified_mc_files_map[norm_mc] = uniq_sw
                     elif is_p_mc and p_mc_runs > 0:
                         sweep_mc_total += p_mc_runs
                         verified_mc_files_map[norm_mc] = p_mc_runs
@@ -2956,6 +3384,26 @@ def _detect_evidence_from_run_metadata(psf_files, return_details=False):
                         bn_l = os.path.basename(mc_path).lower()
                         is_mc_fn = (_classify_psf_filename(bn_l) == "mc") or ("mc" in bn_l) or ("iter" in bn_l)
                         if is_p_mc or is_mc_fn or (has_explicit_mc_list and len(resolved_mc_targets) >= 2):
+                            file_sha = verified_psf.get(norm_mc, (None, None))[1]
+                            if not file_sha:
+                                file_sha = _sha256_file(mc_path)
+                            if file_sha in seen_single_shas:
+                                continue
+                            hdr_iter_tok = None
+                            hdr_obj = mc_parsed.get("header") or {}
+                            if isinstance(hdr_obj, dict):
+                                for h_k, h_v in hdr_obj.items():
+                                    hk_l = str(h_k).strip().lower()
+                                    if hk_l in ("mc_iteration", "mc_iter", "iteration", "mc_run"):
+                                        hv_l = str(h_v).strip().lower()
+                                        if hv_l not in ("", "0", "false", "no", "off", "none"):
+                                            hdr_iter_tok = hv_l
+                                            break
+                            if hdr_iter_tok is not None:
+                                if hdr_iter_tok in seen_header_iters:
+                                    continue
+                                seen_header_iters.add(hdr_iter_tok)
+                            seen_single_shas.add(file_sha)
                             distinct_single_mc += 1
                             verified_mc_files_map[norm_mc] = 1
 
@@ -3049,13 +3497,35 @@ def _check_point_label_vs_metadata(point_label, pm):
                 conflicts.append("label temperature %gC != psf_temperature_c %gC" % (lt, psf_temp))
 
     lbl_volts = _extract_label_voltages(point_label)
+    rail_volts = {}
+    rv_raw = pm.get("rail_voltages")
+    if isinstance(rv_raw, dict):
+        for rk, rval in rv_raw.items():
+            if _is_finite_num(rval):
+                rail_volts[str(rk).strip().lower()] = float(rval)
+    for r in pm.get("supply_rails") or []:
+        if isinstance(r, dict) and _is_finite_num(r.get("vdd_v")):
+            rk = str(r.get("rail") or "vdd").strip().lower()
+            rail_volts.setdefault(rk, float(r["vdd_v"]))
+
     supply_vs = []
     vdd = pm.get("vdd_v")
     if _is_finite_num(vdd):
         supply_vs.append(float(vdd))
-    for r in pm.get("supply_rails") or []:
-        if isinstance(r, dict) and _is_finite_num(r.get("vdd_v")):
-            supply_vs.append(float(r["vdd_v"]))
+    elif "vdd" in rail_volts:
+        supply_vs.append(float(rail_volts["vdd"]))
+    elif pm.get("primary_supply_rail") and str(pm["primary_supply_rail"]).strip().lower() in rail_volts:
+        supply_vs.append(float(rail_volts[str(pm["primary_supply_rail"]).strip().lower()]))
+    elif len(rail_volts) == 1:
+        supply_vs.append(float(list(rail_volts.values())[0]))
+    elif len(rail_volts) > 1 and lbl_volts:
+        conflicts.append(
+            "ambiguous bare label voltage %s across multi-rail %s" % (
+                ",".join(["%gV" % v for v in lbl_volts]),
+                repr(sorted(rail_volts.keys())),
+            )
+        )
+
     if supply_vs and lbl_volts:
         for lv in lbl_volts:
             tol_v = max(0.01, 0.02 * abs(lv))
@@ -3063,6 +3533,223 @@ def _check_point_label_vs_metadata(point_label, pm):
                 conflicts.append("label voltage %gV != measured supply_v %s" % (lv, repr(supply_vs)))
 
     return conflicts
+
+
+def _aggregate_ac_group(runs_map):
+    """Aggregate one or more AC/PAC runs worst-case; fail closed on unit errors."""
+    out = {}
+    u_errs = []
+    for k in sorted(runs_map.keys()):
+        for err in runs_map[k].get("ac_unit_errors") or []:
+            u_errs.append("%s: %s" % (k, err))
+    for m_k in ("dc_gain_db", "bw_3db_hz", "ugf_hz", "pm_ac_deg"):
+        if u_errs:
+            out[m_k] = None
+            continue
+        vals_k = [
+            r[m_k] for r in runs_map.values()
+            if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)
+        ]
+        any_none = any([r.get(m_k) is None for r in runs_map.values()])
+        if vals_k and not any_none:
+            out[m_k] = _round_clean(min(vals_k))
+        elif len(runs_map) == 1 and vals_k:
+            out[m_k] = _round_clean(vals_k[0])
+        else:
+            out[m_k] = None
+    first_ac = runs_map[sorted(runs_map.keys())[0]]
+    if first_ac.get("ac_output"):
+        out["ac_output"] = first_ac["ac_output"]
+    if first_ac.get("ac_input"):
+        out["ac_input"] = first_ac["ac_input"]
+    if len(runs_map) > 1:
+        out["ac_runs"] = runs_map
+    if u_errs:
+        out["ac_unit_errors"] = u_errs
+    return out
+
+
+def _aggregate_stb_group(group_loops):
+    """Aggregate STB or PSTB loops worst-case; fail closed on RHP anomaly or unit errors."""
+    out = {}
+    u_errs = []
+    for k in sorted(group_loops.keys()):
+        for err in group_loops[k].get("stb_unit_errors") or []:
+            u_errs.append("%s: %s" % (k, err))
+    any_rhp_pole = any([bool(r.get("rhp_open_loop_pole_suspected")) for r in group_loops.values()])
+    for m_k in ("loop_dc_gain_db", "stb_ugf_hz", "phase_margin_deg", "gain_margin_db"):
+        vals_k = [
+            r[m_k] for r in group_loops.values()
+            if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)
+        ]
+        tainted = bool(u_errs)
+        if (not tainted) and any_rhp_pole and m_k in ("phase_margin_deg", "gain_margin_db"):
+            tainted = True
+        if (not tainted) and m_k in ("phase_margin_deg", "stb_ugf_hz") and len(group_loops) > 1:
+            for r in group_loops.values():
+                if r.get(m_k) is None and (r.get("loop_dc_gain_db") is None or r.get("loop_dc_gain_db", -1.0) >= 0.0):
+                    tainted = True
+                    break
+        if vals_k and not tainted:
+            out[m_k] = _round_clean(min(vals_k))
+        else:
+            out[m_k] = None
+    out["dc_positive_feedback"] = any([bool(r.get("dc_positive_feedback")) for r in group_loops.values()])
+    if any_rhp_pole:
+        out["rhp_open_loop_pole_suspected"] = True
+        for r_s in group_loops.values():
+            if r_s.get("stb_notes"):
+                out["stb_notes"] = r_s["stb_notes"]
+                break
+    if u_errs:
+        out["stb_unit_errors"] = u_errs
+    if len(group_loops) == 1:
+        only_stb = group_loops[list(group_loops.keys())[0]]
+        for extra_k in (
+            "stb_probe_signal", "gm_freq_hz", "ugf_crossing_count",
+            "all_ugf_crossings", "all_gm_crossings", "stb_notes",
+            "nyquist_cw_encirclements", "nyquist_contour_closed",
+        ):
+            if extra_k in only_stb:
+                out[extra_k] = only_stb[extra_k]
+    else:
+        out["stb_loops"] = group_loops
+        out["nyquist_contour_closed"] = all([bool(r.get("nyquist_contour_closed")) for r in group_loops.values()])
+        nyq_vals = [
+            r["nyquist_cw_encirclements"] for r in group_loops.values()
+            if r.get("nyquist_cw_encirclements") is not None
+        ]
+        if nyq_vals and len(nyq_vals) == len(group_loops):
+            out["nyquist_cw_encirclements"] = max(nyq_vals) if any([v > 0 for v in nyq_vals]) else min(nyq_vals)
+    return out
+
+
+def _aggregate_noise_group(runs_map):
+    """Aggregate Noise or PNoise runs worst-case (`max`); fail closed on unit errors."""
+    out = {}
+    u_errs = []
+    for k in sorted(runs_map.keys()):
+        for err in runs_map[k].get("noise_unit_errors") or []:
+            u_errs.append("%s: %s" % (k, err))
+    for nk in ("integrated_rms_noise_v", "integrated_rms_noise_a"):
+        if u_errs:
+            out[nk] = None
+            continue
+        vals_k = [
+            r[nk] for r in runs_map.values()
+            if isinstance(r.get(nk), _NUM_TYPES) and not isinstance(r.get(nk), bool)
+        ]
+        out[nk] = _round_clean(max(vals_k)) if vals_k else None
+    fmins = [
+        r["noise_freq_min_hz"] for r in runs_map.values()
+        if isinstance(r.get("noise_freq_min_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_min_hz"), bool)
+    ]
+    fmaxs = [
+        r["noise_freq_max_hz"] for r in runs_map.values()
+        if isinstance(r.get("noise_freq_max_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_max_hz"), bool)
+    ]
+    if fmins:
+        out["noise_freq_min_hz"] = _round_clean(min(fmins))
+    if fmaxs:
+        out["noise_freq_max_hz"] = _round_clean(max(fmaxs))
+    if len(runs_map) == 1:
+        only_ns = runs_map[list(runs_map.keys())[0]]
+        for extra_k in ("noise_signal", "noise_unit", "noise_domain"):
+            if extra_k in only_ns:
+                out[extra_k] = only_ns[extra_k]
+    else:
+        out["noise_runs"] = runs_map
+    if u_errs:
+        out["noise_unit_errors"] = u_errs
+    return out
+
+
+_GENERIC_PZ_STEMS = set(["", "pz", "closed_loop", "open_loop", "closedloop", "openloop", "cl", "ol", "pz_cl", "pz_ol"])
+_GENERIC_STB_STEMS = set(["", "stb", "pstb", "margin", "loop"])
+
+
+def _check_pz_stb_provenance(pz_runs, stb_loops, stb_loop_stems, cl_valid):
+    """Validate circuit/testbench/loop/stem consistency across `.pz` and `.stb` runs."""
+    conflicts = []
+    # Cross-`.pz` global header agreement (circuit, testbench, netlist)
+    pz_global_tags = {}
+    for pr in pz_runs:
+        ptags = pr.get("provenance_tags") or {}
+        for cat in ("circuit", "testbench", "netlist"):
+            val = ptags.get(cat)
+            if not val:
+                continue
+            if cat in pz_global_tags and pz_global_tags[cat] != val:
+                conflicts.append("pz_%s_conflict:%s!=%s" % (cat, pz_global_tags[cat], val))
+            else:
+                pz_global_tags[cat] = val
+
+    # Match each `.pz` file against `.stb`/`.pstb` loops by stem & provenance tags
+    all_stb_stems = set([st for st in stb_loop_stems.values() if st])
+    named_stb_stems = set([st for st in all_stb_stems if st not in _GENERIC_STB_STEMS])
+    stb_tags_list = [(skey, stb_loop_stems.get(skey, ""), (lr.get("provenance_tags") or {})) for skey, lr in stb_loops.items()]
+
+    for pr in pz_runs:
+        raw_stem = str(pr.get("pz_stem") or "").lower()
+        norm_stem = re.sub(r'(?:^|[_.-])pz(?:$|[_.-])', '_', raw_stem).strip('_.- ')
+        ptags = pr.get("provenance_tags") or {}
+        is_generic = (raw_stem in _GENERIC_PZ_STEMS) or (norm_stem in _GENERIC_PZ_STEMS)
+
+        if stb_loops and (not is_generic):
+            stem_ok = (norm_stem in all_stb_stems) or (raw_stem in all_stb_stems)
+            if (not stem_ok) and named_stb_stems:
+                stem_ok = any([(norm_stem == st or raw_stem == st) for st in named_stb_stems])
+            if not stem_ok:
+                conflicts.append("pz_stb_stem_mismatch:%s" % raw_stem)
+
+        if len(stb_tags_list) == 1:
+            stags = stb_tags_list[0][2]
+            for cat in ("circuit", "testbench", "loop", "netlist"):
+                if ptags.get(cat) and stags.get(cat) and ptags[cat] != stags[cat]:
+                    conflicts.append("pz_stb_%s_mismatch:%s!=%s" % (cat, ptags[cat], stags[cat]))
+        elif len(stb_tags_list) > 1:
+            matched_targets = []
+            for skey, s_stem, stags in stb_tags_list:
+                if (not is_generic) and (norm_stem == s_stem or raw_stem == s_stem):
+                    matched_targets.append((skey, stags))
+                elif ptags.get("loop") and stags.get("loop") and ptags["loop"] == stags["loop"]:
+                    matched_targets.append((skey, stags))
+            if not matched_targets:
+                matched_targets = [(skey, stags) for skey, _, stags in stb_tags_list]
+            for _, stags in matched_targets:
+                for cat in ("circuit", "testbench", "netlist"):
+                    if ptags.get(cat) and stags.get(cat) and ptags[cat] != stags[cat]:
+                        conflicts.append("pz_stb_%s_mismatch:%s!=%s" % (cat, ptags[cat], stags[cat]))
+                if (len(matched_targets) == 1) and ptags.get("loop") and stags.get("loop") and ptags["loop"] != stags["loop"]:
+                    conflicts.append("pz_stb_loop_mismatch:%s!=%s" % (ptags["loop"], stags["loop"]))
+
+    # Multi-loop closed-loop `.pz` coverage requirement
+    cl_all_loops_covered = True
+    if len(stb_loops) > 1 and cl_valid:
+        for skey, s_stem in stb_loop_stems.items():
+            stags = (stb_loops[skey].get("provenance_tags") or {})
+            loop_tag = stags.get("loop")
+            found = False
+            for cr in cl_valid:
+                c_raw = str(cr.get("pz_stem") or "").lower()
+                c_norm = re.sub(r'(?:^|[_.-])pz(?:$|[_.-])', '_', c_raw).strip('_.- ')
+                ctags = cr.get("provenance_tags") or {}
+                if loop_tag and ctags.get("loop") and loop_tag == ctags["loop"]:
+                    found = True
+                    break
+                if s_stem and s_stem not in _GENERIC_STB_STEMS and (c_norm == s_stem or c_raw == s_stem):
+                    found = True
+                    break
+            if not found:
+                cl_all_loops_covered = False
+        if not cl_all_loops_covered:
+            conflicts.append("multi_loop_missing_matching_closed_loop_pz")
+
+    dedup_conf = []
+    for c in conflicts:
+        if c not in dedup_conf:
+            dedup_conf.append(c)
+    return dedup_conf, cl_all_loops_covered
 
 
 def _extract_point_metrics(
@@ -3121,7 +3808,6 @@ def _extract_point_metrics(
             pex_flag[0] = True
         if rc_cnt > 0:
             rc_count_box[0] += rc_cnt
-            pex_flag[0] = True
         hc, ht, hc_conf, ht_conf = _extract_psf_pvt_header(parsed_obj)
         src_bn = os.path.basename(fpath) if fpath else "psf"
         if hc_conf:
@@ -3133,6 +3819,9 @@ def _extract_point_metrics(
         if ht is not None:
             hdr_temps.append((src_bn, ht))
 
+    metrics_by_analysis = {}
+    all_trace_u_errs = []
+
     parsed_dc = []
     for p in psf_files_by_kind.get("dc", []):
         dc_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
@@ -3140,15 +3829,22 @@ def _extract_point_metrics(
         parsed_dc.append(dc_parsed)
     if parsed_dc:
         _add_analysis("dc")
-        metrics.update(_extract_dc_power(parsed_dc))
+        dc_res = _extract_dc_power(parsed_dc)
+        metrics.update(dc_res)
+        metrics_by_analysis["dc"] = dict(dc_res)
+        for uerr in dc_res.get("dc_unit_errors") or []:
+            all_trace_u_errs.append("dc: %s" % uerr)
 
-    # Process ALL `.ac` / `.pac` files in this point with collision-free keys and aggregate worst-case
+    # Process ALL `.ac` / `.pac` files in this point with strict per-analysis partitioning
     ac_files = psf_files_by_kind.get("ac", [])
     ac_keys = _build_unique_file_keys(ac_files, base_dir=base_dir)
     ac_runs = {}
+    pure_ac_runs = {}
+    pac_runs = {}
     has_pac = False
     for p in ac_files:
-        if os.path.basename(p).lower().endswith(".pac"):
+        is_pac_file = os.path.basename(p).lower().endswith(".pac")
+        if is_pac_file:
             has_pac = True
         ac_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         _inspect_parsed_evidence(ac_parsed, p)
@@ -3158,72 +3854,81 @@ def _extract_point_metrics(
             vin_hint=vin_hint,
         )
         if ac_res:
-            ac_runs[ac_keys[p]] = ac_res
+            akey = ac_keys[p]
+            ac_runs[akey] = ac_res
+            if is_pac_file:
+                pac_runs[akey] = ac_res
+            else:
+                pure_ac_runs[akey] = ac_res
     if ac_runs:
         _add_analysis("ac")
         if has_pac:
             _add_analysis("pac")
-        for m_k in ("dc_gain_db", "bw_3db_hz", "ugf_hz", "pm_ac_deg"):
-            vals_k = [r[m_k] for r in ac_runs.values() if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)]
-            any_none = any([r.get(m_k) is None for r in ac_runs.values()])
-            if vals_k and not any_none:
-                metrics[m_k] = _round_clean(min(vals_k))
-            elif len(ac_runs) == 1 and vals_k:
-                metrics[m_k] = _round_clean(vals_k[0])
-            else:
-                metrics[m_k] = None
-        first_ac = ac_runs[sorted(ac_runs.keys())[0]]
-        if first_ac.get("ac_output"):
-            metrics["ac_output"] = first_ac["ac_output"]
-        if first_ac.get("ac_input"):
-            metrics["ac_input"] = first_ac["ac_input"]
-        if len(ac_runs) > 1:
-            metrics["ac_runs"] = ac_runs
+        ac_agg = _aggregate_ac_group(ac_runs)
+        metrics.update(ac_agg)
+        for uerr in ac_agg.get("ac_unit_errors") or []:
+            all_trace_u_errs.append("ac: %s" % uerr)
+        if pure_ac_runs:
+            metrics_by_analysis["ac"] = _aggregate_ac_group(pure_ac_runs)
+        elif pac_runs:
+            metrics_by_analysis["ac"] = _aggregate_ac_group(pac_runs)
+        if pac_runs:
+            metrics_by_analysis["pac"] = _aggregate_ac_group(pac_runs)
 
-    # Process ALL `.stb` / `.pstb` + `.margin.stb` loops with collision-free keys & strict stem matching
+    # Process ALL `.stb` / `.pstb` + `.margin.*` loops cleanly (NEVER cross-pair `.stb` with `.pstb`)
     stb_files = psf_files_by_kind.get("stb", [])
     margin_files = psf_files_by_kind.get("stb_margin", [])
     all_stb_keys = _build_unique_file_keys(stb_files + margin_files, base_dir=base_dir)
 
-    margin_entries = []  # list of (mp, dir_real, stem, parsed)
-    margin_by_dir_stem = {}
-    margin_by_stem_list = {}
+    margin_entries = []  # list of (mp, is_pstb, dir_real, stem, parsed)
+    margin_by_kind_dir_stem = {}
+    margin_by_kind_stem_list = {}
     has_pstb = False
+    stb_file_counts = {False: 0, True: 0}
+    margin_file_counts = {False: 0, True: 0}
+    for sp in stb_files:
+        is_p = os.path.basename(sp).lower().endswith(".pstb")
+        stb_file_counts[is_p] = stb_file_counts.get(is_p, 0) + 1
     for mp in margin_files:
-        if os.path.basename(mp).lower().endswith(".pstb"):
+        is_p = os.path.basename(mp).lower().endswith(".pstb")
+        if is_p:
             has_pstb = True
+        margin_file_counts[is_p] = margin_file_counts.get(is_p, 0) + 1
         m_stem = _stb_loop_stem(mp)
         m_dir = os.path.realpath(os.path.dirname(mp))
         m_parsed = parse_psf_file(mp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         _inspect_parsed_evidence(m_parsed, mp)
-        entry = (mp, m_dir, m_stem, m_parsed)
+        entry = (mp, is_p, m_dir, m_stem, m_parsed)
         margin_entries.append(entry)
-        margin_by_dir_stem[(m_dir, m_stem)] = entry
-        margin_by_stem_list.setdefault(m_stem, []).append(entry)
+        margin_by_kind_dir_stem[(is_p, m_dir, m_stem)] = entry
+        margin_by_kind_stem_list.setdefault((is_p, m_stem), []).append(entry)
 
     generic_margin_stems = set(["stb", "pstb", "margin", "loop"])
     stb_loops = {}
+    stb_loops_pure = {}
+    pstb_loops = {}
     stb_loop_stems = {}
     used_margin_paths = set()
     for sp in stb_files:
-        if os.path.basename(sp).lower().endswith(".pstb"):
+        is_p = os.path.basename(sp).lower().endswith(".pstb")
+        if is_p:
             has_pstb = True
         stem = _stb_loop_stem(sp)
         s_dir = os.path.realpath(os.path.dirname(sp))
-        m_entry = margin_by_dir_stem.get((s_dir, stem))
+        m_entry = margin_by_kind_dir_stem.get((is_p, s_dir, stem))
         if m_entry is None:
-            same_stem = [e for e in margin_by_stem_list.get(stem, []) if e[0] not in used_margin_paths]
+            same_stem = [e for e in margin_by_kind_stem_list.get((is_p, stem), []) if e[0] not in used_margin_paths]
             if len(same_stem) == 1:
                 m_entry = same_stem[0]
-        if m_entry is None and len(stb_files) == 1 and len(margin_entries) == 1:
-            # Allow generic unnamed margin file (`stb.margin.stb`, `margin.stb`) ONLY — never cross-pair named loops!
-            only_m = margin_entries[0]
-            if only_m[2].lower() in generic_margin_stems and only_m[0] not in used_margin_paths:
-                m_entry = only_m
+        if m_entry is None and stb_file_counts.get(is_p, 0) == 1 and margin_file_counts.get(is_p, 0) == 1:
+            # Allow generic unnamed margin file within the SAME analysis kind (`.stb` vs `.pstb`) ONLY
+            same_kind_cands = [e for e in margin_entries if e[1] == is_p and e[0] not in used_margin_paths]
+            if len(same_kind_cands) == 1 and same_kind_cands[0][3].lower() in generic_margin_stems:
+                m_entry = same_kind_cands[0]
         m_parsed = None
         if m_entry is not None:
             used_margin_paths.add(m_entry[0])
-            m_parsed = m_entry[3]
+            m_parsed = m_entry[4]
         s_parsed = parse_psf_file(sp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         _inspect_parsed_evidence(s_parsed, sp)
         s_res = _extract_stb_metrics(s_parsed, margin_parsed=m_parsed)
@@ -3231,67 +3936,44 @@ def _extract_point_metrics(
             skey = all_stb_keys[sp]
             stb_loops[skey] = s_res
             stb_loop_stems[skey] = stem.lower()
+            if is_p:
+                pstb_loops[skey] = s_res
+            else:
+                stb_loops_pure[skey] = s_res
 
-    for mp, _, m_stem, m_parsed in margin_entries:
+    for mp, is_p, _, m_stem, m_parsed in margin_entries:
         if mp not in used_margin_paths:
             s_res = _extract_stb_metrics(None, margin_parsed=m_parsed)
             if s_res:
                 skey = all_stb_keys[mp]
                 stb_loops[skey] = s_res
                 stb_loop_stems[skey] = m_stem.lower()
+                if is_p:
+                    pstb_loops[skey] = s_res
+                else:
+                    stb_loops_pure[skey] = s_res
 
     if stb_loops:
         _add_analysis("stb")
         if has_pstb:
             _add_analysis("pstb")
-        any_rhp_pole = any([bool(r.get("rhp_open_loop_pole_suspected")) for r in stb_loops.values()])
-        for m_k in ("loop_dc_gain_db", "stb_ugf_hz", "phase_margin_deg", "gain_margin_db"):
-            vals_k = [r[m_k] for r in stb_loops.values() if isinstance(r.get(m_k), _NUM_TYPES) and not isinstance(r.get(m_k), bool)]
-            # Fail closed if ANY loop has RHP-pole suspicion or failed to yield PM/UGF with positive DC gain
-            tainted = False
-            if any_rhp_pole and m_k in ("phase_margin_deg", "gain_margin_db"):
-                tainted = True
-            if (not tainted) and m_k in ("phase_margin_deg", "stb_ugf_hz") and len(stb_loops) > 1:
-                for r in stb_loops.values():
-                    if r.get(m_k) is None and (r.get("loop_dc_gain_db") is None or r.get("loop_dc_gain_db", -1.0) >= 0.0):
-                        tainted = True
-                        break
-            if vals_k and not tainted:
-                metrics[m_k] = _round_clean(min(vals_k))
-            else:
-                metrics[m_k] = None
-        metrics["dc_positive_feedback"] = any([bool(r.get("dc_positive_feedback")) for r in stb_loops.values()])
-        if any_rhp_pole:
-            metrics["rhp_open_loop_pole_suspected"] = True
-            for r_s in stb_loops.values():
-                if r_s.get("stb_notes"):
-                    metrics["stb_notes"] = r_s["stb_notes"]
-                    break
-        if len(stb_loops) == 1:
-            only_stb = stb_loops[list(stb_loops.keys())[0]]
-            for extra_k in (
-                "stb_probe_signal", "gm_freq_hz", "ugf_crossing_count",
-                "all_ugf_crossings", "all_gm_crossings", "stb_notes",
-                "nyquist_cw_encirclements", "nyquist_contour_closed",
-            ):
-                if extra_k in only_stb:
-                    metrics[extra_k] = only_stb[extra_k]
-        else:
-            metrics["stb_loops"] = stb_loops
-            all_closed = all([bool(r.get("nyquist_contour_closed")) for r in stb_loops.values()])
-            metrics["nyquist_contour_closed"] = all_closed
-            nyq_vals = [
-                r["nyquist_cw_encirclements"] for r in stb_loops.values()
-                if r.get("nyquist_cw_encirclements") is not None
-            ]
-            if nyq_vals and len(nyq_vals) == len(stb_loops):
-                metrics["nyquist_cw_encirclements"] = max(nyq_vals) if any([v > 0 for v in nyq_vals]) else min(nyq_vals)
+        stb_agg = _aggregate_stb_group(stb_loops)
+        metrics.update(stb_agg)
+        for uerr in stb_agg.get("stb_unit_errors") or []:
+            all_trace_u_errs.append("stb: %s" % uerr)
+        if stb_loops_pure:
+            metrics_by_analysis["stb"] = _aggregate_stb_group(stb_loops_pure)
+        elif pstb_loops:
+            metrics_by_analysis["stb"] = _aggregate_stb_group(pstb_loops)
+        if pstb_loops:
+            metrics_by_analysis["pstb"] = _aggregate_stb_group(pstb_loops)
 
-    # Process `.pz` / `.pz.psf` / `pz.info` files (closed-loop and open-loop pole-zero analysis)
+    # Process `.pz` / `.pz.psf` / `pz.info` files (closed-loop, open-loop, and unknown/untyped)
     pz_files = psf_files_by_kind.get("pz", [])
     pz_keys = _build_unique_file_keys(pz_files, base_dir=base_dir)
     cl_pz_runs = []
     ol_pz_runs = []
+    unknown_pz_runs = []
     any_pz_parsed_ok = False
     for pz_p in pz_files:
         pz_parsed = parse_psf_file(pz_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
@@ -3300,17 +3982,20 @@ def _extract_point_metrics(
         _add_analysis("pz")
         if pz_res.get("pz_parsed_ok"):
             any_pz_parsed_ok = True
-        pz_bn = os.path.basename(pz_p).lower()
-        pz_stem = re.sub(r'(?:\.pz\.psf|\.pz|\.psf|\.info)$', '', pz_bn)
-        pz_stem = re.sub(r'(?:^|[_-])(?:open[\s_-]?loop|closed[\s_-]?loop)(?:$|[_-])', '', pz_stem)
         pz_res["file_key"] = pz_keys[pz_p]
-        pz_res["stem"] = pz_stem
-        if pz_res.get("pz_mode") == "open_loop":
+        pz_res["stem"] = pz_res.get("pz_stem") or _pz_loop_stem(pz_p)
+        mode_pz = pz_res.get("pz_mode")
+        if mode_pz == "open_loop":
             ol_pz_runs.append(pz_res)
-        else:
+        elif mode_pz == "closed_loop":
             cl_pz_runs.append(pz_res)
+        else:
+            unknown_pz_runs.append(pz_res)
     if pz_files:
         metrics["pz_parsed_ok"] = any_pz_parsed_ok
+        metrics["pz_modes_present"] = sorted(list(set([r.get("pz_mode", "unknown") for r in (cl_pz_runs + ol_pz_runs + unknown_pz_runs)])))
+        if unknown_pz_runs:
+            metrics["pz_unknown_mode_count"] = len(unknown_pz_runs)
 
     # Process `.pss` files if present so `pss` analysis coverage can be verified distinctly
     for pss_p in psf_files_by_kind.get("pss", []):
@@ -3318,7 +4003,7 @@ def _extract_point_metrics(
         _inspect_parsed_evidence(pss_parsed, pss_p)
         _add_analysis("pss")
 
-    # Process ALL `.tran` files with collision-free keys and aggregate worst-case; fail-closed on unsettled step
+    # Process ALL `.tran` files with collision-free keys and aggregate worst-case; fail-closed on unsettled step or unit errors
     tran_files = psf_files_by_kind.get("tran", [])
     tran_keys = _build_unique_file_keys(tran_files, base_dir=base_dir)
     tran_runs = {}
@@ -3335,37 +4020,64 @@ def _extract_point_metrics(
             tran_runs[tran_keys[tp]] = tr_res
     if tran_runs:
         _add_analysis("tran")
-        for min_k in ("slew_rate_pos", "slew_rate_neg"):
-            vals_k = [r[min_k] for r in tran_runs.values() if isinstance(r.get(min_k), _NUM_TYPES) and not isinstance(r.get(min_k), bool)]
-            metrics[min_k] = _round_clean(min(vals_k)) if vals_k else None
-        for max_k in ("overshoot_pct", "ripple_pp"):
-            vals_k = [r[max_k] for r in tran_runs.values() if isinstance(r.get(max_k), _NUM_TYPES) and not isinstance(r.get(max_k), bool)]
-            metrics[max_k] = _round_clean(max(vals_k)) if vals_k else None
-
-        step_runs = [r for r in tran_runs.values() if r.get("step_detected")]
-        if step_runs:
-            if any([r.get("settling_time_s") is None for r in step_runs]):
-                metrics["settling_time_s"] = None
-            else:
-                metrics["settling_time_s"] = _round_clean(max([r["settling_time_s"] for r in step_runs]))
+        tran_agg = {}
+        tran_u_errs = []
+        for tk in sorted(tran_runs.keys()):
+            for uerr in tran_runs[tk].get("tran_unit_errors") or []:
+                tran_u_errs.append("%s: %s" % (tk, uerr))
+        if tran_u_errs:
+            all_trace_u_errs.extend(["tran: %s" % e for e in tran_u_errs])
+            tran_agg["tran_unit_errors"] = tran_u_errs
+            for m_k in ("slew_rate_pos", "slew_rate_neg", "overshoot_pct", "ripple_pp", "settling_time_s"):
+                metrics[m_k] = None
+                tran_agg[m_k] = None
         else:
-            metrics["settling_time_s"] = None
+            for min_k in ("slew_rate_pos", "slew_rate_neg"):
+                vals_k = [r[min_k] for r in tran_runs.values() if isinstance(r.get(min_k), _NUM_TYPES) and not isinstance(r.get(min_k), bool)]
+                val_m = _round_clean(min(vals_k)) if vals_k else None
+                metrics[min_k] = val_m
+                tran_agg[min_k] = val_m
+            for max_k in ("overshoot_pct", "ripple_pp"):
+                vals_k = [r[max_k] for r in tran_runs.values() if isinstance(r.get(max_k), _NUM_TYPES) and not isinstance(r.get(max_k), bool)]
+                val_m = _round_clean(max(vals_k)) if vals_k else None
+                metrics[max_k] = val_m
+                tran_agg[max_k] = val_m
+
+            step_runs = [r for r in tran_runs.values() if r.get("step_detected")]
+            if step_runs:
+                if any([r.get("settling_time_s") is None for r in step_runs]):
+                    metrics["settling_time_s"] = None
+                    tran_agg["settling_time_s"] = None
+                else:
+                    val_st = _round_clean(max([r["settling_time_s"] for r in step_runs]))
+                    metrics["settling_time_s"] = val_st
+                    tran_agg["settling_time_s"] = val_st
+            else:
+                metrics["settling_time_s"] = None
+                tran_agg["settling_time_s"] = None
 
         first_tr = tran_runs[sorted(tran_runs.keys())[0]]
         for tr_extra in ("tran_output", "tran_init_v", "tran_final_v", "settling_target_v", "static_error_v"):
             if first_tr.get(tr_extra) is not None:
                 metrics[tr_extra] = first_tr[tr_extra]
+                tran_agg[tr_extra] = first_tr[tr_extra]
         if len(tran_runs) > 1:
             metrics["tran_runs"] = tran_runs
+            tran_agg["tran_runs"] = tran_runs
+        metrics_by_analysis["tran"] = tran_agg
 
-    # Process ALL `.noise` / `.pnoise` files with collision-free keys and preserve spectral curves for band checks
+    # Process ALL `.noise` / `.pnoise` files with strict per-analysis partitioning & curve separation
     noise_files = psf_files_by_kind.get("noise", [])
     noise_keys = _build_unique_file_keys(noise_files, base_dir=base_dir)
     noise_runs = {}
-    noise_curves = []
+    pure_noise_runs = {}
+    pnoise_runs = {}
+    pure_noise_curves = []
+    pnoise_curves = []
     has_pnoise = False
     for np_file in noise_files:
-        if os.path.basename(np_file).lower().endswith(".pnoise"):
+        is_pn_file = os.path.basename(np_file).lower().endswith(".pnoise")
+        if is_pn_file:
             has_pnoise = True
         np_parsed = parse_psf_file(np_file, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         _inspect_parsed_evidence(np_parsed, np_file)
@@ -3374,40 +4086,47 @@ def _extract_point_metrics(
             return_curve=True,
         )
         if ns_res:
-            noise_runs[noise_keys[np_file]] = ns_res
+            nkey = noise_keys[np_file]
+            noise_runs[nkey] = ns_res
+            if is_pn_file:
+                pnoise_runs[nkey] = ns_res
+            else:
+                pure_noise_runs[nkey] = ns_res
         if curve_info is not None:
-            noise_curves.append(curve_info)
+            if is_pn_file:
+                pnoise_curves.append(curve_info)
+            else:
+                pure_noise_curves.append(curve_info)
     if noise_runs:
         _add_analysis("noise")
         if has_pnoise:
             _add_analysis("pnoise")
-        for nk in ("integrated_rms_noise_v", "integrated_rms_noise_a"):
-            vals_k = [r[nk] for r in noise_runs.values() if isinstance(r.get(nk), _NUM_TYPES) and not isinstance(r.get(nk), bool)]
-            metrics[nk] = _round_clean(max(vals_k)) if vals_k else None
-        fmins = [r["noise_freq_min_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_min_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_min_hz"), bool)]
-        fmaxs = [r["noise_freq_max_hz"] for r in noise_runs.values() if isinstance(r.get("noise_freq_max_hz"), _NUM_TYPES) and not isinstance(r.get("noise_freq_max_hz"), bool)]
-        if fmins:
-            metrics["noise_freq_min_hz"] = _round_clean(min(fmins))
-        if fmaxs:
-            metrics["noise_freq_max_hz"] = _round_clean(max(fmaxs))
-        if len(noise_runs) == 1:
-            only_ns = noise_runs[list(noise_runs.keys())[0]]
-            for extra_k in ("noise_signal", "noise_unit", "noise_domain"):
-                if extra_k in only_ns:
-                    metrics[extra_k] = only_ns[extra_k]
-        else:
-            metrics["noise_runs"] = noise_runs
-        if aux_out is not None and noise_curves:
-            aux_out["noise_curves"] = noise_curves
+        ns_agg = _aggregate_noise_group(noise_runs)
+        metrics.update(ns_agg)
+        for uerr in ns_agg.get("noise_unit_errors") or []:
+            all_trace_u_errs.append("noise: %s" % uerr)
+        if pure_noise_runs:
+            metrics_by_analysis["noise"] = _aggregate_noise_group(pure_noise_runs)
+        elif pnoise_runs:
+            metrics_by_analysis["noise"] = _aggregate_noise_group(pnoise_runs)
+        if pnoise_runs:
+            metrics_by_analysis["pnoise"] = _aggregate_noise_group(pnoise_runs)
+        if aux_out is not None and (pure_noise_curves or pnoise_curves):
+            aux_out["noise_curves"] = pure_noise_curves + pnoise_curves
+            nc_by_an = {}
+            if pure_noise_curves:
+                nc_by_an["noise"] = pure_noise_curves
+            elif pnoise_curves:
+                nc_by_an["noise"] = pnoise_curves
+            if pnoise_curves:
+                nc_by_an["pnoise"] = pnoise_curves
+            aux_out["noise_curves_by_analysis"] = nc_by_an
 
     # Process dedicated Monte Carlo PSF analysis files (`mc*.psf`, `mcdata*`, `montecarlo*`)
+    # Strict anti-spoofing (Finding #01): never trust filename alone without genuine iteration sweep evidence
     for mc_p in psf_files_by_kind.get("mc", []):
         mc_parsed = parse_psf_file(mc_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        mc_flag[0] = True
         _inspect_parsed_evidence(mc_parsed, mc_p)
-        sw_vals = mc_parsed.get("sweep_values") or []
-        if len(sw_vals) > mc_runs_box[0]:
-            mc_runs_box[0] = len(sw_vals)
 
     # Check cryptographically bound run metadata JSON (`run_manifest.json` / `cadence_run.json`)
     all_psf_files = []
@@ -3425,10 +4144,15 @@ def _extract_point_metrics(
     if meta_details.get("manifest_rejected_reason"):
         metrics["manifest_rejected_reason"] = meta_details["manifest_rejected_reason"]
 
-    # Stability proof verification (Finding #1):
-    # Requires closed-loop .pz (RHP=0) OR (open-loop .pz / bound manifest P + closed Nyquist Z=N+P==0)
+    # Stability proof verification (Finding #01 & Finding #03):
+    # Requires typed closed-loop .pz (non-LHP=0) OR (typed open-loop .pz / bound manifest P + closed Nyquist Z=N+P==0)
     cl_valid = [r for r in cl_pz_runs if r.get("pz_parsed_ok")]
     ol_valid = [r for r in ol_pz_runs if r.get("pz_parsed_ok")]
+    all_pz_parsed = cl_valid + ol_valid + [r for r in unknown_pz_runs if r.get("pz_parsed_ok")]
+    stability_proof_conflicts, cl_all_loops_covered = _check_pz_stb_provenance(
+        all_pz_parsed, stb_loops, stb_loop_stems, cl_valid
+    )
+
     closed_loop_unstable = False
     nyquist_unstable = False
     nyquist_proved = False
@@ -3436,9 +4160,13 @@ def _extract_point_metrics(
     if cl_valid:
         tot_cl_poles = sum([r["closed_loop_poles"] for r in cl_valid])
         tot_cl_rhp = sum([r["closed_loop_rhp_poles"] for r in cl_valid])
+        tot_cl_jw = sum([r.get("closed_loop_jw_axis_poles", 0) for r in cl_valid])
+        tot_cl_non_lhp = tot_cl_rhp + tot_cl_jw
         metrics["closed_loop_poles"] = tot_cl_poles
         metrics["closed_loop_rhp_poles"] = tot_cl_rhp
-        if tot_cl_rhp > 0:
+        metrics["closed_loop_jw_axis_poles"] = tot_cl_jw
+        metrics["closed_loop_non_lhp_poles"] = tot_cl_non_lhp
+        if tot_cl_non_lhp > 0:
             closed_loop_unstable = True
 
     bound_ol_rhp = meta_details.get("open_loop_rhp_poles")
@@ -3446,13 +4174,27 @@ def _extract_point_metrics(
     open_loop_p_conflict = False
     if ol_valid:
         tot_ol_rhp = sum([r["open_loop_rhp_poles"] for r in ol_valid])
+        tot_ol_jw = sum([r.get("open_loop_jw_axis_poles", 0) for r in ol_valid])
         open_loop_p = tot_ol_rhp
         metrics["open_loop_rhp_poles"] = open_loop_p
+        if tot_ol_jw > 0:
+            metrics["open_loop_jw_axis_poles"] = tot_ol_jw
+            stability_proof_conflicts.append("open_loop_jw_axis_pole_on_nyquist_contour")
+            open_loop_p_conflict = True
         if bound_ol_rhp is not None and bound_ol_rhp != tot_ol_rhp:
             open_loop_p_conflict = True
+            stability_proof_conflicts.append("open_loop_p_manifest_mismatch")
     elif bound_ol_rhp is not None:
         open_loop_p = bound_ol_rhp
         metrics["open_loop_rhp_poles"] = open_loop_p
+
+    # Physical law contradiction check: Z = N + P >= N for any closed Nyquist contour.
+    if stb_loops and cl_valid and (not closed_loop_unstable):
+        for lr in stb_loops.values():
+            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
+                if int(lr["nyquist_cw_encirclements"]) > 0:
+                    stability_proof_conflicts.append("nyquist_positive_encirclements_contradicts_lhp_closed_loop_pz")
+                    break
 
     if stb_loops and open_loop_p is not None and (not open_loop_p_conflict):
         if len(stb_loops) == 1:
@@ -3480,8 +4222,6 @@ def _extract_point_metrics(
                     loop_p = ol_by_stem[lstem]["open_loop_rhp_poles"]
                 elif bound_ol_rhp is not None:
                     loop_p = bound_ol_rhp
-                elif len(ol_valid) == 1 and len(stb_loops) == 1:
-                    loop_p = ol_valid[0]["open_loop_rhp_poles"]
                 if loop_p is None:
                     all_loops_proved = False
                     continue
@@ -3503,12 +4243,18 @@ def _extract_point_metrics(
         metrics["closed_loop_unstable"] = True
     if nyquist_unstable:
         metrics["nyquist_unstable"] = True
+    if stability_proof_conflicts:
+        metrics["stability_proof_conflicts"] = stability_proof_conflicts
 
     if closed_loop_unstable or nyquist_unstable:
         metrics["stability_proof_verified"] = False
         metrics["stability_proof_method"] = "closed_loop_pz" if closed_loop_unstable else "open_loop_pz_plus_nyquist"
         metrics["bode_measurement_only"] = False
-    elif cl_valid and metrics.get("closed_loop_rhp_poles") == 0:
+    elif stability_proof_conflicts:
+        metrics["stability_proof_verified"] = False
+        metrics["stability_proof_method"] = "stability_proof_conflict"
+        metrics["bode_measurement_only"] = False
+    elif cl_valid and metrics.get("closed_loop_non_lhp_poles") == 0 and cl_all_loops_covered:
         metrics["stability_proof_verified"] = True
         metrics["stability_proof_method"] = "closed_loop_pz"
         metrics["bode_measurement_only"] = False
@@ -3516,6 +4262,10 @@ def _extract_point_metrics(
         metrics["stability_proof_verified"] = True
         metrics["stability_proof_method"] = "open_loop_pz_plus_nyquist"
         metrics["bode_measurement_only"] = False
+    elif unknown_pz_runs:
+        metrics["stability_proof_verified"] = False
+        metrics["stability_proof_method"] = "unknown_pz_mode"
+        metrics["bode_measurement_only"] = True
     elif stb_loops or ac_runs or pz_files:
         metrics["stability_proof_verified"] = False
         metrics["stability_proof_method"] = "none_bode_only"
@@ -3580,6 +4330,13 @@ def _extract_point_metrics(
             metrics["parasitic_rc_count"] = rc_count_box[0]
     else:
         metrics["pex_evidence"] = False
+        if rc_count_box[0] > 0:
+            metrics["rc_hint_count"] = rc_count_box[0]
+
+    if metrics_by_analysis:
+        metrics["metrics_by_analysis"] = metrics_by_analysis
+    if all_trace_u_errs:
+        metrics["trace_unit_errors"] = all_trace_u_errs
 
     metrics["analyses_present"] = analyses_present
     return metrics
@@ -3849,6 +4606,28 @@ def _extract_global_supplies(spec_obj):
     return dedup
 
 
+def _extract_global_supplies_by_rail(spec_obj):
+    """Extract optional per-rail supply sweep expectations `{rail_stem: [v1, ...]}`."""
+    if not isinstance(spec_obj, dict):
+        return {}
+    out = {}
+    cov = spec_obj.get("coverage")
+    for src in (cov if isinstance(cov, dict) else {}, spec_obj):
+        sbr = src.get("supplies_by_rail")
+        if isinstance(sbr, dict):
+            for rk, rvals in sbr.items():
+                rn = _normalize_rail_stem(str(rk))
+                if not rn:
+                    continue
+                vals = _parse_numeric_list(rvals)
+                if vals:
+                    bucket = out.setdefault(rn, [])
+                    for v in vals:
+                        if not any([abs(v - x) < 1e-6 for x in bucket]):
+                            bucket.append(v)
+    return out
+
+
 def _extract_global_temperatures(spec_obj):
     if not isinstance(spec_obj, dict):
         return []
@@ -3920,23 +4699,62 @@ def _extract_pex_requirement(spec_obj):
     return False
 
 
-def _match_supply_covered(v_req, points_metrics):
-    """Require real numeric `vdd_v` / `supply_rails` simulator metadata (never bare folder labels)."""
+def _point_rail_voltages(pm):
+    rv_map = {}
+    rv_raw = pm.get("rail_voltages")
+    if isinstance(rv_raw, dict):
+        for rk, rval in rv_raw.items():
+            if _is_finite_num(rval):
+                rn = _normalize_rail_stem(str(rk))
+                if rn:
+                    rv_map[rn] = float(rval)
+    for r in pm.get("supply_rails") or []:
+        if isinstance(r, dict) and _is_finite_num(r.get("vdd_v")):
+            rn = _normalize_rail_stem(str(r.get("rail") or "vdd"))
+            if rn:
+                rv_map.setdefault(rn, float(r["vdd_v"]))
+    return rv_map
+
+
+def _match_supply_covered(v_req, points_metrics, rail_name=None):
+    """Require real numeric `vdd_v` / primary or named rail metadata (never cross-match secondary rails to flat `supplies_V`)."""
     tol_v = max(0.01, 0.02 * abs(v_req))
+    req_rn = _normalize_rail_stem(str(rail_name)) if rail_name is not None else None
     for pt_label, pm in points_metrics.items():
         if not isinstance(pm, dict):
             continue
+        rv_map = _point_rail_voltages(pm)
+        if req_rn is not None:
+            if req_rn in rv_map:
+                if abs(rv_map[req_rn] - v_req) <= tol_v:
+                    return True
+            elif req_rn == "vdd":
+                vdd = pm.get("vdd_v")
+                if _is_finite_num(vdd) and abs(float(vdd) - v_req) <= tol_v:
+                    return True
+            continue
+
+        # Flat `supplies_V` check: match explicit primary `vdd` or sole single rail ONLY
         vdd = pm.get("vdd_v")
-        if isinstance(vdd, _NUM_TYPES) and not isinstance(vdd, bool):
+        if _is_finite_num(vdd):
             if abs(float(vdd) - v_req) <= tol_v:
                 return True
-        for r in pm.get("supply_rails", []):
-            if not isinstance(r, dict):
-                continue
-            rv = r.get("vdd_v")
-            if isinstance(rv, _NUM_TYPES) and not isinstance(rv, bool):
-                if abs(float(rv) - v_req) <= tol_v:
+            continue
+        if "vdd" in rv_map:
+            if abs(rv_map["vdd"] - v_req) <= tol_v:
+                return True
+            continue
+        prim = pm.get("primary_supply_rail")
+        if prim:
+            prim_rn = _normalize_rail_stem(str(prim))
+            if prim_rn in rv_map:
+                if abs(rv_map[prim_rn] - v_req) <= tol_v:
                     return True
+                continue
+        if len(rv_map) == 1:
+            sole_v = list(rv_map.values())[0]
+            if abs(sole_v - v_req) <= tol_v:
+                return True
     return False
 
 
@@ -4399,11 +5217,21 @@ def _normalize_spec_requirements(spec_obj):
     return reqs
 
 
+def _has_relevant_unit_error(src_dict, m_dict):
+    for key in ("dc_unit_errors", "ac_unit_errors", "stb_unit_errors", "tran_unit_errors", "noise_unit_errors", "trace_unit_errors"):
+        if src_dict.get(key):
+            return True
+    if src_dict is not m_dict and m_dict.get("trace_unit_errors"):
+        return True
+    return False
+
+
 def evaluate_spec(points_metrics, spec_obj, aux_data=None):
     approval_pending = _is_spec_approval_pending(spec_obj)
     global_conds = _extract_global_conditions(spec_obj)
     global_analyses = _extract_global_analyses(spec_obj)
     global_supplies = _extract_global_supplies(spec_obj)
+    global_supplies_by_rail = _extract_global_supplies_by_rail(spec_obj)
     global_temps = _extract_global_temperatures(spec_obj)
     mc_req_runs = _extract_mc_requirement(spec_obj)
     pex_req = _extract_pex_requirement(spec_obj)
@@ -4463,15 +5291,23 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         (k, points_metrics[k]) for k in available_keys if k not in conflict_points
     ])
     missing_global_supplies = [v for v in global_supplies if not _match_supply_covered(v, clean_points_metrics)]
+    missing_global_supplies_by_rail = {}
+    for r_name in sorted(global_supplies_by_rail.keys()):
+        miss_rv = [v for v in global_supplies_by_rail[r_name] if not _match_supply_covered(v, clean_points_metrics, rail_name=r_name)]
+        if miss_rv:
+            missing_global_supplies_by_rail[r_name] = miss_rv
     missing_global_temps = [t for t in global_temps if not _match_temp_covered(t, clean_points_metrics)]
 
     # Full Cartesian PVT product coverage whenever >= 2 of (corners, supplies, temps) are specified
     missing_pvt_combinations = []
-    active_pvt_axes = (1 if global_conds else 0) + (1 if global_supplies else 0) + (1 if global_temps else 0)
+    has_rail_grid = bool(global_supplies_by_rail)
+    active_pvt_axes = (1 if global_conds else 0) + (1 if (global_supplies or has_rail_grid) else 0) + (1 if global_temps else 0)
     if active_pvt_axes >= 2:
         c_list = global_conds if global_conds else [None]
         v_list = global_supplies if global_supplies else [None]
         t_list = global_temps if global_temps else [None]
+        rail_axes = [(rn, global_supplies_by_rail[rn]) for rn in sorted(global_supplies_by_rail.keys())]
+        # Expand flat supply axis AND each rail supply axis against (corner x temp)
         for c_req in c_list:
             for v_req in v_list:
                 for t_req in t_list:
@@ -4490,6 +5326,27 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                         break
                     if not combo_covered:
                         missing_pvt_combinations.append(_format_pvt_combo(c_req, v_req, t_req))
+        for r_name, r_vals in rail_axes:
+            for rv in r_vals:
+                for c_req in c_list:
+                    for t_req in t_list:
+                        rc_ok = False
+                        for pt_label in available_keys:
+                            if pt_label in conflict_points:
+                                continue
+                            pm = points_metrics[pt_label]
+                            if c_req is not None and not _point_matches_condition(c_req, pt_label, pm, conflict_points=conflict_points):
+                                continue
+                            if not _match_supply_covered(rv, {pt_label: pm}, rail_name=r_name):
+                                continue
+                            if t_req is not None and not _match_temp_covered(t_req, {pt_label: pm}):
+                                continue
+                            rc_ok = True
+                            break
+                        if not rc_ok:
+                            lbl_c = _format_pvt_combo(c_req, rv, t_req) + (" [%s]" % r_name.upper())
+                            if lbl_c not in missing_pvt_combinations:
+                                missing_pvt_combinations.append(lbl_c)
 
     missing_coverage_flags = []
     if mc_req_runs > 0 and _count_mc_points(points_metrics) < mc_req_runs:
@@ -4572,22 +5429,36 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
         for cond_name in eval_keys:
             m_dict = points_metrics[cond_name]
+            src_dict = m_dict
             if req_an:
-                # Exact analysis match: `.pstb` populates BOTH `stb` and `pstb`, `.stb` populates ONLY `stb`!
+                # Strict per-analysis routing: enforce BOTH presence and non-cross-contaminated metrics
                 if req_an not in m_dict.get("analyses_present", []):
                     any_missing = True
                     req_reason = req_reason or "missing_analysis"
                     per_cond[cond_name] = {"measured_si": None, "status": "NOT_VERIFIED", "reason": "missing_analysis"}
                     continue
+                mba = m_dict.get("metrics_by_analysis")
+                if isinstance(mba, dict) and mba:
+                    if req_an not in mba:
+                        any_missing = True
+                        req_reason = req_reason or "missing_analysis"
+                        per_cond[cond_name] = {"measured_si": None, "status": "NOT_VERIFIED", "reason": "missing_analysis"}
+                        continue
+                    src_dict = mba[req_an]
 
-            m_key = _resolve_metric_key(req["quantity"], m_dict)
-            m_val = m_dict.get(m_key)
+            m_key = _resolve_metric_key(req["quantity"], src_dict)
+            m_val = src_dict.get(m_key)
 
             # Frequency-band strict verification & integration for integrated RMS noise requirements
             if m_key in ("integrated_rms_noise_v", "integrated_rms_noise_a") and (req_fmin is not None or req_fmax is not None):
                 req_domain = "voltage" if m_key == "integrated_rms_noise_v" else "current"
                 pt_aux = (aux_data or {}).get(cond_name, {}) if isinstance(aux_data, dict) else {}
-                curves = [c for c in pt_aux.get("noise_curves", []) if c.get("domain") == req_domain]
+                nc_by_an = pt_aux.get("noise_curves_by_analysis")
+                if req_an and isinstance(nc_by_an, dict) and nc_by_an:
+                    cand_curves = nc_by_an.get(req_an, [])
+                else:
+                    cand_curves = pt_aux.get("noise_curves", [])
+                curves = [c for c in cand_curves if c.get("domain") == req_domain]
                 if curves:
                     band_rms_vals = []
                     band_err = None
@@ -4608,8 +5479,8 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                         continue
                     m_val = max(band_rms_vals)
                 else:
-                    f_lo = m_dict.get("noise_freq_min_hz")
-                    f_hi = m_dict.get("noise_freq_max_hz")
+                    f_lo = src_dict.get("noise_freq_min_hz")
+                    f_hi = src_dict.get("noise_freq_max_hz")
                     if f_lo is None or f_hi is None:
                         any_missing = True
                         req_reason = req_reason or "noise_band_unverified"
@@ -4633,38 +5504,39 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
             # Static target voltage verification for settling_time_s requirements
             if m_key == "settling_time_s":
-                if req_tv is not None and isinstance(m_dict.get("tran_final_v"), _NUM_TYPES) and not isinstance(m_dict.get("tran_final_v"), bool):
-                    v_init_m = m_dict.get("tran_init_v")
+                if req_tv is not None and isinstance(src_dict.get("tran_final_v"), _NUM_TYPES) and not isinstance(src_dict.get("tran_final_v"), bool):
+                    v_init_m = src_dict.get("tran_init_v")
                     v_init_f = float(v_init_m) if (isinstance(v_init_m, _NUM_TYPES) and not isinstance(v_init_m, bool)) else 0.0
                     tol_ratio_eff = req_tol_r if req_tol_r is not None else 0.01
                     tol_v = tol_ratio_eff * max(abs(float(req_tv) - v_init_f), 1e-9)
-                    if abs(float(m_dict["tran_final_v"]) - float(req_tv)) > tol_v:
+                    if abs(float(src_dict["tran_final_v"]) - float(req_tv)) > tol_v:
                         any_failed = True
                         per_cond[cond_name] = {
                             "measured_si": None,
                             "status": "FAIL",
                             "reason": "static_target_voltage_error",
-                            "static_error_v": _round_clean(float(m_dict["tran_final_v"]) - float(req_tv)),
+                            "static_error_v": _round_clean(float(src_dict["tran_final_v"]) - float(req_tv)),
                         }
                         continue
-                if m_val is None and isinstance(m_dict.get("static_error_v"), _NUM_TYPES) and not isinstance(m_dict.get("static_error_v"), bool) and abs(float(m_dict["static_error_v"])) > 0.0:
+                if m_val is None and isinstance(src_dict.get("static_error_v"), _NUM_TYPES) and not isinstance(src_dict.get("static_error_v"), bool) and abs(float(src_dict["static_error_v"])) > 0.0:
                     any_failed = True
                     per_cond[cond_name] = {
                         "measured_si": None,
                         "status": "FAIL",
                         "reason": "static_target_voltage_error",
-                        "static_error_v": _round_clean(m_dict["static_error_v"]),
+                        "static_error_v": _round_clean(src_dict["static_error_v"]),
                     }
                     continue
 
             if m_key in _STABILITY_METRICS:
                 if m_dict.get("closed_loop_unstable"):
                     any_failed = True
-                    fail_reason = fail_reason or "closed_loop_rhp_pole"
+                    cl_r = "closed_loop_rhp_pole" if m_dict.get("closed_loop_rhp_poles", 0) > 0 else "closed_loop_jw_axis_pole"
+                    fail_reason = fail_reason or cl_r
                     per_cond[cond_name] = {
                         "measured_si": _round_clean(m_val) if m_val is not None else None,
                         "status": "FAIL",
-                        "reason": "closed_loop_rhp_pole",
+                        "reason": cl_r,
                     }
                     continue
                 if m_dict.get("nyquist_unstable"):
@@ -4679,9 +5551,12 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
             if m_val is None:
                 any_missing = True
-                miss_r = "rhp_open_loop_pole_suspected" if (
-                    m_key in ("phase_margin_deg", "gain_margin_db") and m_dict.get("rhp_open_loop_pole_suspected")
-                ) else "missing_metric"
+                if m_key in ("phase_margin_deg", "gain_margin_db") and src_dict.get("rhp_open_loop_pole_suspected"):
+                    miss_r = "rhp_open_loop_pole_suspected"
+                elif _has_relevant_unit_error(src_dict, m_dict):
+                    miss_r = "trace_unit_error"
+                else:
+                    miss_r = "missing_metric"
                 req_reason = req_reason or miss_r
                 per_cond[cond_name] = {"measured_si": None, "status": "NOT_VERIFIED", "reason": miss_r}
                 continue
@@ -4695,11 +5570,17 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
             if m_key in _STABILITY_METRICS and ok_cmp and (not m_dict.get("stability_proof_verified")):
                 any_missing = True
-                req_reason = req_reason or "bode_only_open_loop_rhp_unproven"
+                if m_dict.get("stability_proof_conflicts"):
+                    nv_r = "stability_proof_conflict"
+                elif m_dict.get("stability_proof_method") == "unknown_pz_mode":
+                    nv_r = "unknown_pz_mode"
+                else:
+                    nv_r = "bode_only_open_loop_rhp_unproven"
+                req_reason = req_reason or nv_r
                 per_cond[cond_name] = {
                     "measured_si": _round_clean(m_val),
                     "status": "NOT_VERIFIED",
-                    "reason": "bode_only_open_loop_rhp_unproven",
+                    "reason": nv_r,
                 }
             else:
                 st = "PASS" if ok_cmp else "FAIL"
@@ -4763,6 +5644,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         missing_global_corners
         or missing_global_analyses
         or missing_global_supplies
+        or missing_global_supplies_by_rail
         or missing_global_temps
         or missing_pvt_combinations
         or missing_coverage_flags
@@ -4809,6 +5691,8 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         summary_out["missing_analyses"] = missing_global_analyses
     if missing_global_supplies:
         summary_out["missing_supplies_V"] = missing_global_supplies
+    if missing_global_supplies_by_rail:
+        summary_out["missing_supplies_by_rail"] = missing_global_supplies_by_rail
     if missing_global_temps:
         summary_out["missing_temperatures_C"] = missing_global_temps
     if missing_pvt_combinations:
@@ -5822,7 +6706,7 @@ def run_self_test():
         codex_clpz_dir = os.path.join(tmp_root, "codex_cl_pz_fail")
         _write_utf8(os.path.join(codex_clpz_dir, "stb.stb"), codex_stb_txt)
         _write_utf8(os.path.join(codex_clpz_dir, "pz.pz"), (
-            'HEADER\n"PSFversion" "1.00"\n"analysis type" "pz"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "pz"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
             '"pole1" "c_t" (-11.0989 0.0)\n'
             '"pole2" "c_t" (1000.0989 0.0)\n'
             '"zero1" "c_t" (1010.0 0.0)\nEND\n'
@@ -5864,7 +6748,7 @@ def run_self_test():
         valid_cl_dir = os.path.join(tmp_root, "valid_cl_pz")
         _write_utf8(os.path.join(valid_cl_dir, "stb.stb"), good_stb_txt)
         _write_utf8(os.path.join(valid_cl_dir, "pz.info"), (
-            'HEADER\n"PSFversion" "1.00"\nTYPE\n"pz_t" STRUCT( "real" FLOAT DOUBLE "imag" FLOAT DOUBLE )\nVALUE\n'
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\nTYPE\n"pz_t" STRUCT( "real" FLOAT DOUBLE "imag" FLOAT DOUBLE )\nVALUE\n'
             '"pole1" "pz_t" ( -505.0 870.0 )\n'
             '"pole2" "pz_t" ( -505.0 -870.0 )\n'
             '"zero1" "pz_t" ( 5000.0 0.0 )\nEND\n'
@@ -6012,6 +6896,163 @@ def run_self_test():
             assert pt_m["pvt_metadata_conflict"] is False, (pt_k, pt_m)
         assert main(["metrics", good_8_dir, "--spec", pvt_spec_path, "--fail-on-spec"], quiet=True) == 0
 
+        # 31. Codex Findings #01..#05 Adversarial Regression Suite
+        # 31a (Finding #01): scalar mc_runs=50, duplicate iteration=7, headerless cpar_out:i MUST NOT pass MC/PEX
+        spoof_hdr_mc_pex = os.path.join(tmp_root, "f01_scalar_mc_headerless_pex")
+        _write_utf8(os.path.join(spoof_hdr_mc_pex, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"mc_runs" 50\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -1.0e-4\n"cpar_out:i" "i_t" 1.0e-9\nEND\n'
+        ))
+        res_f01a = run_metrics(spoof_hdr_mc_pex, spec_path=spec_mc_pex_path)
+        assert res_f01a["verdict"] == "NOT_VERIFIED", res_f01a
+        assert res_f01a["metrics"]["mc_evidence"] is False, res_f01a["metrics"]
+        assert res_f01a["metrics"].get("mc_runs_verified", 0) == 0, res_f01a["metrics"]
+        assert res_f01a["metrics"]["pex_evidence"] is False, res_f01a["metrics"]
+        assert res_f01a["metrics"].get("rc_hint_count", 0) >= 1, res_f01a["metrics"]
+        assert main(["metrics", spoof_hdr_mc_pex, "--spec", spec_mc_pex_path, "--fail-on-spec"], quiet=True) == 1
+
+        dup_mc_dir = os.path.join(tmp_root, "f01_dup_mc_iter")
+        _write_utf8(os.path.join(dup_mc_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n'
+            'TYPE\n"i_sw" INT LONG\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"iteration" "i_sw"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+            '"iteration" 7\n"VDD" 1.0\n"VDD:p" -1.0e-4\n'
+            '"iteration" 7\n"VDD" 1.0\n"VDD:p" -1.1e-4\n'
+            '"iteration" 7\n"VDD" 1.0\n"VDD:p" -1.2e-4\nEND\n'
+        ))
+        spec_mc3_path = os.path.join(tmp_root, "spec_mc3.json")
+        _write_utf8(spec_mc3_path, json.dumps({
+            "coverage": {"monte_carlo": 3},
+            "requirements": [{"id": "I1", "quantity": "idd_a", "operator": "<=", "target": 1.0, "unit": "mA"}],
+        }))
+        res_f01b = run_metrics(dup_mc_dir, spec_path=spec_mc3_path)
+        assert res_f01b["verdict"] == "NOT_VERIFIED", res_f01b
+        assert res_f01b["metrics"]["mc_runs_verified"] == 1, res_f01b["metrics"]
+        assert "monte_carlo" in res_f01b["spec_evaluation"].get("missing_coverage", []), res_f01b["spec_evaluation"]
+
+        # 31b (Finding #02): Multi-rail VDD=0.9V + VDDA=1.1V MUST NOT satisfy flat supplies_V=[0.9, 1.1]
+        multi_rail_dir = os.path.join(tmp_root, "f02_multirail_pvt", "TT_0p9V_27C")
+        _write_utf8(os.path.join(multi_rail_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"corner" "TT"\n"temperature" 27\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\nVALUE\n'
+            '"VDD" "v_t" 0.9\n"VDD:p" "i_t" -1.0e-4\n'
+            '"VDDA" "v_t" 1.1\n"VDDA:p" "i_t" -1.0e-4\nEND\n'
+        ))
+        spec_flat_v_path = os.path.join(tmp_root, "spec_f02_flat.json")
+        _write_utf8(spec_flat_v_path, json.dumps({
+            "coverage": {"corners": ["TT"], "supplies_V": [0.9, 1.1], "temperatures_C": [27]},
+            "requirements": [{"id": "P1", "quantity": "dc_power_w", "operator": "<=", "target": 1.0, "unit": "mW"}],
+        }))
+        res_f02 = run_metrics(os.path.dirname(multi_rail_dir), spec_path=spec_flat_v_path)
+        assert res_f02["verdict"] == "NOT_VERIFIED", res_f02
+        assert res_f02["spec_evaluation"].get("missing_supplies_V") == [1.1], res_f02["spec_evaluation"]
+
+        spec_rail_v_path = os.path.join(tmp_root, "spec_f02_rail.json")
+        _write_utf8(spec_rail_v_path, json.dumps({
+            "coverage": {"corners": ["TT"], "supplies_by_rail": {"VDD": [0.9], "VDDA": [1.1]}, "temperatures_C": [27]},
+            "requirements": [{"id": "P1", "quantity": "dc_power_w", "operator": "<=", "target": 1.0, "unit": "mW"}],
+        }))
+        res_f02_ok = run_metrics(os.path.dirname(multi_rail_dir), spec_path=spec_rail_v_path)
+        assert res_f02_ok["verdict"] == "PASS", res_f02_ok
+
+        # 31c (Finding #03): Untyped .pz, pole1=0 jw-axis pole, stem mismatch, and circuit header mismatch
+        untyped_pz_dir = os.path.join(tmp_root, "f03_untyped_pz")
+        _write_utf8(os.path.join(untyped_pz_dir, "stb.stb"), codex_stb_txt)
+        _write_utf8(os.path.join(untyped_pz_dir, "pz.pz"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-10.0 0.0)\n"pole2" "c_t" (-1000.0 0.0)\nEND\n'
+        ))
+        res_f03a = run_metrics(untyped_pz_dir, spec_path=spec_stb_pm_path)
+        assert res_f03a["metrics"]["stability_proof_verified"] is False, res_f03a["metrics"]
+        assert res_f03a["metrics"]["stability_proof_method"] == "unknown_pz_mode", res_f03a["metrics"]
+        assert res_f03a["verdict"] == "NOT_VERIFIED", res_f03a
+
+        stem_mismatch_dir = os.path.join(tmp_root, "f03_stem_mismatch_pz")
+        _write_utf8(os.path.join(stem_mismatch_dir, "main_loop.stb"), good_stb_txt)
+        _write_utf8(os.path.join(stem_mismatch_dir, "other_loop_closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-100.0 0.0)\nEND\n'
+        ))
+        res_f03s = run_metrics(stem_mismatch_dir, spec_path=spec_stb_pm_path)
+        assert res_f03s["metrics"]["stability_proof_verified"] is False, res_f03s["metrics"]
+        assert res_f03s["metrics"]["stability_proof_method"] == "stability_proof_conflict", res_f03s["metrics"]
+        assert res_f03s["verdict"] == "NOT_VERIFIED", res_f03s
+
+        jw_pz_dir = os.path.join(tmp_root, "f03_jw_origin_pz")
+        _write_utf8(os.path.join(jw_pz_dir, "stb.stb"), good_stb_txt)
+        _write_utf8(os.path.join(jw_pz_dir, "closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (0.0 0.0)\nEND\n'
+        ))
+        res_f03b = run_metrics(jw_pz_dir, spec_path=spec_stb_pm_path)
+        assert res_f03b["metrics"]["stability_proof_verified"] is False, res_f03b["metrics"]
+        assert res_f03b["metrics"]["closed_loop_jw_axis_poles"] == 1, res_f03b["metrics"]
+        assert res_f03b["metrics"]["closed_loop_non_lhp_poles"] == 1, res_f03b["metrics"]
+        assert res_f03b["verdict"] == "FAIL", res_f03b
+        assert res_f03b["spec_evaluation"]["results"][0]["conditions"]["nominal"]["reason"] == "closed_loop_jw_axis_pole", res_f03b
+
+        hdr_mismatch_pz_dir = os.path.join(tmp_root, "f03_hdr_mismatch_pz")
+        _write_utf8(os.path.join(hdr_mismatch_pz_dir, "main.stb"), good_stb_txt.replace('"PSFversion" "1.00"', '"PSFversion" "1.00"\n"circuit" "dut_ldo"'))
+        _write_utf8(os.path.join(hdr_mismatch_pz_dir, "closed_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"circuit" "dummy_rc"\n"pz_mode" "closed_loop"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-100.0 0.0)\nEND\n'
+        ))
+        res_f03c = run_metrics(hdr_mismatch_pz_dir, spec_path=spec_stb_pm_path)
+        assert res_f03c["metrics"]["stability_proof_verified"] is False, res_f03c["metrics"]
+        assert res_f03c["metrics"]["stability_proof_method"] == "stability_proof_conflict", res_f03c["metrics"]
+        assert res_f03c["verdict"] == "NOT_VERIFIED", res_f03c
+
+        # 31d (Finding #04): core.stb GM MUST NOT satisfy analysis="pstb" when periodic.margin.pstb lacks GM
+        pstb_mix_dir = os.path.join(tmp_root, "f04_stb_pstb_mix")
+        core_stb_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_i in range(61):
+            w_val = 10.0 ** (float(k_i) * 5.0 / 60.0)
+            s_c = complex(0.0, w_val)
+            l_val = 10.0 / ((1.0 + s_c / 100.0) ** 3)
+            core_stb_lines.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        core_stb_lines.append("END\n")
+        _write_utf8(os.path.join(pstb_mix_dir, "core.stb"), "".join(core_stb_lines))
+        _write_utf8(os.path.join(pstb_mix_dir, "periodic.margin.pstb"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"deg_t" FLOAT DOUBLE PROP( "units" "deg" )\nVALUE\n'
+            '"phaseMargin" "deg_t" 68.0\nEND\n'
+        ))
+        spec_pstb_gm_path = os.path.join(tmp_root, "spec_f04_pstb_gm.json")
+        _write_utf8(spec_pstb_gm_path, json.dumps({
+            "requirements": [{"id": "GM_P", "quantity": "gain_margin_db", "operator": ">=", "target": 10.0, "unit": "dB", "analysis": "pstb"}]
+        }))
+        res_f04 = run_metrics(pstb_mix_dir, spec_path=spec_pstb_gm_path)
+        assert res_f04["verdict"] == "NOT_VERIFIED", res_f04
+        assert abs(res_f04["metrics"]["metrics_by_analysis"]["pstb"]["phase_margin_deg"] - 68.0) < 0.01, res_f04["metrics"]
+        assert res_f04["metrics"]["metrics_by_analysis"]["pstb"]["gain_margin_db"] is None, res_f04["metrics"]
+        assert main(["metrics", pstb_mix_dir, "--spec", spec_pstb_gm_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 31e (Finding #05): DC trace units ("mA", both TYPE PROP & VALUE PROP), unknown trace unit, and --no-relax-units
+        dc_ma_dir = os.path.join(tmp_root, "f05_dc_ma")
+        _write_utf8(os.path.join(dc_ma_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -0.1 PROP( "units" "mA" )\nEND\n'
+        ))
+        spec_idd_min_path = os.path.join(tmp_root, "spec_f05_idd_min.json")
+        _write_utf8(spec_idd_min_path, json.dumps({
+            "requirements": [{"id": "IDD_MIN", "quantity": "idd_a", "operator": ">=", "target": 1.0, "unit": "mA"}]
+        }))
+        res_f05a = run_metrics(dc_ma_dir, spec_path=spec_idd_min_path)
+        assert abs(res_f05a["metrics"]["idd_a"] - 1e-4) < 1e-9, res_f05a["metrics"]
+        assert abs(res_f05a["metrics"]["dc_power_w"] - 1e-4) < 1e-9, res_f05a["metrics"]
+        assert res_f05a["verdict"] == "FAIL", res_f05a
+        assert main(["metrics", dc_ma_dir, "--spec", spec_idd_min_path, "--no-relax-units", "--fail-on-spec"], quiet=True) == 1
+
+        dc_unk_u_dir = os.path.join(tmp_root, "f05_unknown_unit")
+        _write_utf8(os.path.join(dc_unk_u_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "furlong" )\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -0.1\nEND\n'
+        ))
+        res_f05b = run_metrics(dc_unk_u_dir, spec_path=spec_idd_min_path)
+        assert res_f05b["verdict"] == "NOT_VERIFIED", res_f05b
+        assert res_f05b["metrics"]["idd_a"] is None, res_f05b["metrics"]
+        assert res_f05b["spec_evaluation"]["results"][0]["reason"] == "trace_unit_error", res_f05b["spec_evaluation"]
+
         return {
             "command": "self-test",
             "ok": True,
@@ -6053,6 +7094,7 @@ def run_self_test():
                 "cryptographically_bound_manifest_mc_and_pex",
                 "stb_bode_only_rhp_pole_zero_and_pz_nyquist_proof",
                 "pvt_header_metadata_enforcement_and_conflict_detection",
+                "codex_f01_to_f05_invariants_mc_multirail_pz_pstb_units",
             ],
         }
     finally:
@@ -6060,9 +7102,12 @@ def run_self_test():
 
 
 HELP_TEXT = """Usage:
-  python tools/psf_audit.py op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--fail-on-violation]
-  python tools/psf_audit.py metrics   <run_dir> [--spec spec.json] [--vout Vout] [--vin Vin] [--settling-tol 0.01] [--target-v 1.0] [--fail-on-spec]
+  python tools/psf_audit.py op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--no-relax-units] [--fail-on-violation]
+  python tools/psf_audit.py metrics   <run_dir> [--spec spec.json] [--vout Vout] [--vin Vin] [--settling-tol 0.01] [--target-v 1.0] [--no-relax-units] [--fail-on-spec]
   python tools/psf_audit.py self-test (or --self-test)
+
+Notes:
+  Strict trace and spec unit enforcement is enabled by default; `--no-relax-units` explicitly asserts strict unit scaling.
 """
 
 
@@ -6083,6 +7128,7 @@ def main(argv=None, quiet=False):
         parser.add_option("-h", "--help", action="store_true", dest="help", default=False)
         parser.add_option("--vds-margin", type="float", dest="vds_margin", default=0.05)
         parser.add_option("--expect-triode", type="string", dest="expect_triode", default="")
+        parser.add_option("--no-relax-units", action="store_true", dest="strict_units", default=True)
         parser.add_option("--fail-on-violation", action="store_true", dest="fail_on_violation", default=False)
         parser.add_option("--out", type="string", dest="out_path", default=None)
         try:
@@ -6122,6 +7168,7 @@ def main(argv=None, quiet=False):
         parser.add_option("--vin", type="string", dest="vin_hint", default=None)
         parser.add_option("--settling-tol", type="float", dest="settling_tol", default=0.01)
         parser.add_option("--target-v", type="float", dest="target_v", default=None)
+        parser.add_option("--no-relax-units", action="store_true", dest="strict_units", default=True)
         parser.add_option("--fail-on-spec", action="store_true", dest="fail_on_spec", default=False)
         parser.add_option("--out", type="string", dest="out_path", default=None)
         try:

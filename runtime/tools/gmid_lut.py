@@ -671,6 +671,7 @@ class GmidLut(object):
         grid=5.0e-9,
         even_nf=True,
         vds_margin=0.05,
+        target_tol=0.05,
         method="pchip",
         allow_soa_violation=True,
     ):
@@ -679,25 +680,34 @@ class GmidLut(object):
             raise LutError("Provide exactly one of --gm (Siemens) or --id (Amps) for sizing.")
 
         l_in = _require_finite(l_m, "l_m")
+        if l_in <= 0.0:
+            raise LutError("Channel length l_m must be strictly positive (got %r)." % (l_m,))
         grid_f = _require_finite(grid, "grid")
         if grid_f <= 0.0:
             raise LutError("Manufacturing grid must be strictly positive (got %r)." % (grid,))
         vds_in = _require_finite(vds, "vds")
+        if abs(vds_in) <= 0.0:
+            raise LutError("Drain-source voltage |vds| must be strictly positive (got %r)." % (vds,))
         vsb_in = _require_finite(vsb, "vsb")
         vds_margin_f = _require_finite(vds_margin, "vds_margin")
+        if vds_margin_f < 0.0:
+            raise LutError("vds_margin must be non-negative (got %r)." % (vds_margin,))
         wf_min_f = _require_finite(w_finger_min, "w_finger_min")
+        if wf_min_f <= 0.0:
+            raise LutError("w_finger_min must be strictly positive (got %r)." % (w_finger_min,))
         wf_max_f = _require_finite(w_finger_max, "w_finger_max")
-        l_snapped = _snap_grid(l_in, grid_f)
+        if wf_max_f <= 0.0:
+            raise LutError("w_finger_max must be strictly positive (got %r)." % (w_finger_max,))
+        if wf_max_f < wf_min_f:
+            raise LutError(
+                "w_finger_max (%.4g) must be >= w_finger_min (%.4g)." % (wf_max_f, wf_min_f)
+            )
         gmid_val = _require_finite(gm_id, "gm_id")
-        q = self.query(
-            dev=dev,
-            l_m=l_snapped,
-            gm_id=gmid_val,
-            vds=vds_in,
-            vsb=vsb_in,
-            method=method,
-            allow_soa_violation=True,
-        )
+        if gmid_val <= 0.0:
+            raise LutError("Target gm/ID must be strictly positive (got %r)." % (gm_id,))
+        target_tol_f = _require_finite(target_tol, "target_tol")
+        if target_tol_f <= 0.0:
+            raise LutError("target_tol must be strictly positive (got %r)." % (target_tol,))
 
         if gm is not None:
             gm_target = _require_finite(gm, "gm")
@@ -709,6 +719,17 @@ class GmidLut(object):
             if id_req <= 0.0:
                 raise LutError("Target drain current ID must be strictly positive (Amps).")
             gm_target = id_req * gmid_val
+
+        l_snapped = _snap_grid(l_in, grid_f)
+        q = self.query(
+            dev=dev,
+            l_m=l_snapped,
+            gm_id=gmid_val,
+            vds=vds_in,
+            vsb=vsb_in,
+            method=method,
+            allow_soa_violation=True,
+        )
 
         jd_val = q["jd_a_per_m"]
         w_ideal = id_req / jd_val
@@ -790,21 +811,81 @@ class GmidLut(object):
         cgd_f = w_total * q_real["cgd_f_per_m"]
         cdd_f = w_total * q_real["cdd_f_per_m"]
         vds_min = q_real["vdsat"] + vds_margin_f
-        if abs(vds_in) < vds_min:
-            warnings.append(
-                "Applied |VDS|=%.3fV is below vds_min=%.3fV (vdsat=%.3fV + margin=%.3fV)!"
-                % (abs(vds_in), vds_min, q_real["vdsat"], vds_margin_f)
+        vds_headroom_ok = (abs(vds_in) >= vds_min - 1e-12)
+        gm_rel_err = abs(gm_realized - gm_target) / max(abs(gm_target), 1e-30)
+        id_rel_err = abs(id_realized - id_req) / max(abs(id_req), 1e-30)
+        gm_id_rel_err = abs(q_real["gm_id"] - gmid_val) / max(abs(gmid_val), 1e-30)
+        primary_rel_err = gm_rel_err if gm is not None else id_rel_err
+        target_within_tol = (primary_rel_err <= target_tol_f) and (gm_id_rel_err <= target_tol_f)
+
+        failure_reasons = []
+        if lut_clamped:
+            failure_reasons.append(
+                "LUT JD domain clamped at boundary (requested %.3e A/m, realized %.3e A/m)"
+                % (jd_requested, jd_actual)
             )
+        if not vds_headroom_ok:
+            msg_hd = "Applied |VDS|=%.4gV is below vds_min=%.4gV (vdsat=%.4gV + margin=%.4gV)!" % (
+                abs(vds_in), vds_min, q_real["vdsat"], vds_margin_f
+            )
+            warnings.append(msg_hd)
+            failure_reasons.append(msg_hd)
+        if not target_within_tol:
+            msg_tol = (
+                "Realized operating point violates target_tol=%.3g: "
+                "gm_rel_err=%.4g, id_rel_err=%.4g, gm_id_rel_err=%.4g"
+                % (target_tol_f, gm_rel_err, id_rel_err, gm_id_rel_err)
+            )
+            warnings.append(msg_tol)
+            failure_reasons.append(msg_tol)
         for sv in q_real["soa_violations"]:
             warnings.append("SOA violation: %s" % sv)
+        if not q_real["soa_ok"]:
+            failure_reasons.append("SOA violation: %s" % "; ".join(q_real["soa_violations"]))
+
+        feasible = (
+            (not lut_clamped)
+            and bool(q_real["soa_ok"])
+            and vds_headroom_ok
+            and target_within_tol
+        )
+        ok_flag = (
+            (not lut_clamped)
+            and vds_headroom_ok
+            and target_within_tol
+            and (bool(q_real["soa_ok"]) or bool(allow_soa_violation))
+        )
 
         is_gpdk090 = str(q_real.get("model_name", "")).startswith("gpdk090_")
         w_total_str = _format_spectre_dim(w_total)
         w_finger_str = _format_spectre_dim(wf_snapped)
         l_str = _format_spectre_dim(l_snapped)
+        spectre_dict = {
+            "model": q_real["model_name"],
+            "w_total": w_total_str,
+            "w_finger": w_finger_str,
+            "l": l_str,
+            "nf": nf,
+            "m": nf if is_gpdk090 else 1,
+            "simM": nf if is_gpdk090 else 1,
+            "netlist_hint": (
+                "w=%s l=%s m=%d simM=%d" % (w_finger_str, l_str, nf, nf)
+                if is_gpdk090
+                else "w=%s l=%s nf=%d m=1" % (w_total_str, l_str, nf)
+            ),
+        }
         elapsed_ms = (TIMER() - t0) * 1000.0
         return {
-            "ok": (not lut_clamped),
+            "ok": ok_flag,
+            "feasible": feasible,
+            "usable": ok_flag,
+            "failure_reasons": failure_reasons,
+            "vds_headroom_ok": vds_headroom_ok,
+            "target_within_tol": target_within_tol,
+            "target_tol": target_tol_f,
+            "gm_rel_err": round(gm_rel_err, 6),
+            "id_rel_err": round(id_rel_err, 6),
+            "gm_id_rel_err": round(gm_id_rel_err, 6),
             "lut_clamped": lut_clamped,
             "command": "size",
             "device": q_real["device"],
@@ -844,20 +925,7 @@ class GmidLut(object):
             "cgs_f": cgs_f,
             "cgd_f": cgd_f,
             "cdd_f": cdd_f,
-            "spectre_params": {
-                "model": q_real["model_name"],
-                "w_total": w_total_str,
-                "w_finger": w_finger_str,
-                "l": l_str,
-                "nf": nf,
-                "m": nf if is_gpdk090 else 1,
-                "simM": nf if is_gpdk090 else 1,
-                "netlist_hint": (
-                    "w=%s l=%s m=%d simM=%d" % (w_finger_str, l_str, nf, nf)
-                    if is_gpdk090
-                    else "w=%s l=%s nf=%d m=1" % (w_total_str, l_str, nf)
-                ),
-            },
+            "spectre_params": spectre_dict if ok_flag else None,
             "warnings": warnings,
             "elapsed_ms": round(elapsed_ms, 4),
         }
@@ -1286,6 +1354,81 @@ def run_self_test():
         if "e+" in w_tot_s.lower() or "e-" in w_tot_s.lower():
             raise AssertionError("Invalid Spectre scientific+suffix width emitted: %r" % w_tot_s)
 
+        # 11. Finding #07: Positive geometry bounds, Vds headroom, and target tolerance gate
+        for bad_kw in (
+            {"w_finger_min": -5e-6, "w_finger_max": -1e-6},
+            {"w_finger_min": -1e-6, "w_finger_max": 5e-6},
+            {"w_finger_min": 0.0, "w_finger_max": 5e-6},
+            {"w_finger_min": 1e-6, "w_finger_max": 0.0},
+            {"l_m": 0.0},
+            {"l_m": -90e-9},
+            {"gm_id": 0.0},
+            {"gm_id": -10.0},
+            {"vds": 0.0},
+            {"vds_margin": -0.02},
+            {"target_tol": 0.0},
+        ):
+            kw = {"dev": "nmos", "gm": 1e-3, "gm_id": 15.0, "l_m": 90e-9, "vds": 0.5}
+            kw.update(bad_kw)
+            caught_neg = False
+            try:
+                lut45.size(**kw)
+            except LutError:
+                caught_neg = True
+            if not caught_neg:
+                raise AssertionError("size() failed to reject invalid non-positive arg %r!" % (bad_kw,))
+
+        proc_neg = subprocess.Popen(
+            [
+                sys.executable, "-B", os.path.realpath(__file__), "size",
+                "--lut", lut45_path, "--dev", "nmos", "--gm", "0.001", "--gm-id", "15", "--l", "90e-9", "--vds", "0.5",
+                "--w-finger-min", "-5e-6", "--w-finger-max", "-1e-6",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        out_neg, _ = proc_neg.communicate()
+        parsed_neg = json.loads(out_neg.decode("utf-8"))
+        if proc_neg.returncode != 1 or parsed_neg.get("ok") is not False or "w_total_m" in parsed_neg:
+            raise AssertionError("CLI negative width bounds must fail before emitting geometry: %r" % parsed_neg)
+
+        proc_vds = subprocess.Popen(
+            [
+                sys.executable, "-B", os.path.realpath(__file__), "size",
+                "--lut", lut45_path, "--dev", "nmos", "--gm", "0.001", "--gm-id", "15", "--l", "45e-9",
+                "--vds", "0.1", "--vds-margin", "0.08", "--strict-soa",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        out_vds, _ = proc_vds.communicate()
+        parsed_vds = json.loads(out_vds.decode("utf-8"))
+        if (
+            proc_vds.returncode != 1
+            or parsed_vds.get("ok") is not False
+            or parsed_vds.get("feasible") is not False
+            or parsed_vds.get("vds_headroom_ok") is not False
+            or parsed_vds.get("spectre_params") is not None
+        ):
+            raise AssertionError("CLI size violating vds_min under --strict-soa must fail closed: %r" % parsed_vds)
+
+        proc_wmin = subprocess.Popen(
+            [
+                sys.executable, "-B", os.path.realpath(__file__), "size",
+                "--lut", lut45_path, "--dev", "nmos", "--gm", "0.001", "--gm-id", "15", "--l", "90e-9",
+                "--vds", "0.5", "--w-finger-min", "100e-6", "--w-finger-max", "200e-6",
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        out_wmin, _ = proc_wmin.communicate()
+        parsed_wmin = json.loads(out_wmin.decode("utf-8"))
+        if (
+            proc_wmin.returncode != 1
+            or parsed_wmin.get("ok") is not False
+            or parsed_wmin.get("feasible") is not False
+            or parsed_wmin.get("target_within_tol") is not False
+            or parsed_wmin.get("spectre_params") is not None
+        ):
+            raise AssertionError("CLI size violating target_tol due to w_finger_min clamp must fail closed: %r" % parsed_wmin)
+
         return {
             "ok": True,
             "release": RELEASE,
@@ -1300,6 +1443,7 @@ def run_self_test():
             "nan_inf_rejection_verified": True,
             "soa_pareto_and_strict_cli_verified": True,
             "spectre_dim_formatter_verified": True,
+            "positive_bounds_headroom_and_tol_gate_verified": True,
             "sample_nmos_size": {
                 "id_ua": round(s_n["id_a"] * 1e6, 3),
                 "w_total_um": round(s_n["w_total_m"] * 1e6, 3),
@@ -1346,6 +1490,8 @@ def build_parser():
                  help="Allow odd finger count nf (default enforces even nf>=2 for layout matching)")
     p.add_option("--vds-margin", dest="vds_margin", type="float", default=0.05,
                  help="Saturation headroom margin added to Vdsat for vds_min [default: %default]")
+    p.add_option("--target-tol", dest="target_tol", type="float", default=0.05,
+                 help="Max relative error tolerance on realized target gm/ID and gm/ID [default: %default]")
     p.add_option("--l-list", dest="l_list", default=None, help="Comma-separated L list in meters (for tradeoff)")
     p.add_option("--gm-id-range", dest="gm_id_range", default="8,22",
                  help="Min,max gm/ID range in V^-1 (for tradeoff) [default: %default]")
@@ -1432,6 +1578,7 @@ def main(argv=None):
                 grid=opts.grid,
                 even_nf=(not opts.allow_odd_nf),
                 vds_margin=opts.vds_margin,
+                target_tol=opts.target_tol,
                 method=opts.method,
                 allow_soa_violation=eff_allow_soa,
             )
@@ -1454,10 +1601,15 @@ def main(argv=None):
         else:
             raise LutError("Unknown command '%s'. Choose from: query, size, tradeoff, info" % cmd)
 
+        if (cmd in ("query", "size", "tradeoff")) and (res.get("soa_ok") is False) and (not opts.allow_soa_violation):
+            res["ok"] = False
+            if cmd == "size":
+                res["feasible"] = False
+                res["usable"] = False
+                res["spectre_params"] = None
+
         print(json.dumps(res, indent=2, sort_keys=True))
         if not res.get("ok", True):
-            return 1
-        if (cmd in ("query", "size", "tradeoff")) and (res.get("soa_ok") is False) and (not opts.allow_soa_violation):
             return 1
         return 0
     except Exception as exc:

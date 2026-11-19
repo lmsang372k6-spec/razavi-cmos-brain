@@ -514,11 +514,30 @@ def run_self_test():
     os.environ["RAZAVI_BRAIN_CACHE_DIR"] = outer_tmp_cache
     orig_outer_auto = ota_sync.maybe_auto_sync
     orig_outer_fetch = ota_sync.fetch_from_bases
+    orig_outer_resolve_bases = ota_sync.resolve_remote_bases
+    orig_outer_resolve_sha = ota_sync.resolve_latest_commit_sha
+    orig_outer_fetch_url = ota_sync.fetch_url_bytes
 
     def _hermetic_no_net(*_args, **_kwargs):
         raise IOError("hermetic_selftest_no_network")
 
+    def _fail_if_http_called(url, *_args, **_kwargs):
+        raise AssertionError("Hermetic self-test attempted HTTP network call: %r" % (url,))
+
     try:
+        ota_sync.resolve_remote_bases = (
+            lambda cfg, base_url_override=None: (
+                ([base_url_override], None, None)
+                if base_url_override
+                else ([], None, "hermetic_selftest_no_network")
+            )
+        )
+        ota_sync.resolve_latest_commit_sha = lambda *_a, **_kw: (None, "hermetic_selftest_no_network")
+        ota_sync.fetch_url_bytes = _fail_if_http_called
+
+        # Isolate SKILL_ANALOG_OFFLINE from caller's environment during self-test
+        os.environ.pop("SKILL_ANALOG_OFFLINE", None)
+
         # 1. --sync + --offline -> exit code 2
         rc1 = main(["--sync", "--offline", "--quiet-errors"])
         if rc1 != 2:
@@ -529,6 +548,7 @@ def run_self_test():
         rc2 = main(["--sync", "--quiet-errors"])
         if rc2 != 2:
             raise AssertionError("Expected exit 2 for SKILL_ANALOG_OFFLINE=1 --sync, got %s" % rc2)
+        os.environ.pop("SKILL_ANALOG_OFFLINE", None)
 
         # 3. Offline bundle card fetch with local SVG resolution
         card = fetch_card("topo-folded-cascode-ota", offline_only=True)
@@ -537,11 +557,6 @@ def run_self_test():
         d_info = card.get("diagram_info") or {}
         if not d_info.get("local_path") or not os.path.isfile(d_info["local_path"]):
             raise AssertionError("Local SVG path missing in offline card fetch: %r" % d_info)
-
-        if saved_env is None:
-            del os.environ["SKILL_ANALOG_OFFLINE"]
-        else:
-            os.environ["SKILL_ANALOG_OFFLINE"] = saved_env
 
         # 4. Default dual-layout fetch speed (hermetic: stub network/OTA so library/ is never mutated)
         ota_sync.maybe_auto_sync = lambda **_kw: {"ok": True, "action": "noop_test"}
@@ -703,6 +718,9 @@ def run_self_test():
     finally:
         ota_sync.maybe_auto_sync = orig_outer_auto
         ota_sync.fetch_from_bases = orig_outer_fetch
+        ota_sync.resolve_remote_bases = orig_outer_resolve_bases
+        ota_sync.resolve_latest_commit_sha = orig_outer_resolve_sha
+        ota_sync.fetch_url_bytes = orig_outer_fetch_url
         if saved_outer_cache is None:
             os.environ.pop("RAZAVI_BRAIN_CACHE_DIR", None)
         else:
