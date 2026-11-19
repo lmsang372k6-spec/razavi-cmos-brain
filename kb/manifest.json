@@ -31,8 +31,8 @@
     },
     {
       "path": "kb/checklists/cmfb.json",
-      "bytes": 6843,
-      "sha256": "ad17845afbb1b78c85927fa1586c95bf9e40f9e2d666be3135bde9ac51d4ef58"
+      "bytes": 6855,
+      "sha256": "43d9ad00c8c9b88c8d210f248cc3a95c006a049ea033a2ac439c52f0f2c1a0f7"
     },
     {
       "path": "kb/checklists/common-mos.json",
@@ -506,13 +506,13 @@
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 250375,
-      "sha256": "3158048b921fe085c3ee3a8ad3a09b8172deade03751820928d603226cf418d7"
+      "bytes": 250508,
+      "sha256": "6dd4f2ff2db3a199fb821f7ca9104362ee489e9fd117a4de7e304c94b1867ea4"
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1311223,
-      "sha256": "71ec27cc756af943d7bbdae8cc774f741c45c79359f681656eedf54b6c4e7fba"
+      "bytes": 1311469,
+      "sha256": "087c7f5f647ba450f7a4a2ca7e750517cec72b8b2e98d66ad4af601a4743fbdb"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -556,8 +556,8 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-instrumentation-amp-3opamp-and-chopper-cfia.md",
-      "bytes": 32874,
-      "sha256": "a9f6fb6e793ac245859a2f2dd5a2462922592304fd138a6cd392c71e9f7b3352"
+      "bytes": 33679,
+      "sha256": "4e5a615deea1995683fef94b446ed597483d00f58bdf8c0be792825020b41c7e"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-relaxation-rc-sawtooth-and-crystal-oscillators.md",
@@ -1016,8 +1016,8 @@
     },
     {
       "path": "kb/nodes/power-management-ic/law-boost-buckboost-rhp-zero-and-bandwidth-limit.md",
-      "bytes": 32337,
-      "sha256": "8599fc22b01ec0c7d290f4f0d192cef073a0ff346d787c26d169c413423e2f0e"
+      "bytes": 33107,
+      "sha256": "113fbdd018c4adee1b7497e548903ed6e5ad2820532491887a753c7d89f22a5f"
     },
     {
       "path": "kb/nodes/power-management-ic/law-dcdc-volt-second-ccm-dcm-and-state-space.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1762063,
-      "sha256": "46104cadc9a0083e5542ef04b31fba49e101da668b421bc6e537c4dfbfbbeaca"
+      "bytes": 1762700,
+      "sha256": "13c6e56f94bf4a4121163d2afa10da24d23d6334b6137db781d3d2b426579096"
     }
   ]
 }

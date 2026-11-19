@@ -266,10 +266,10 @@
       "sha256": "b03956817595398dd4e51f4529ba6834f85a7d9807653948f5b59553b740fdde"
     },
     {
-      "bytes": 84393,
+      "bytes": 96841,
       "path": "tools/kb_lookup.py",
       "repo_path": "runtime/tools/kb_lookup.py",
-      "sha256": "120e5f8c11d89de285b901dbf93d10c93f23108bb76d9a8e1e7d3eefadbfbc9d"
+      "sha256": "809efe0781578ea02f7ecf1787a752cd5b5ede70de8bb584e42e597f14e71156"
     },
     {
       "bytes": 65657,
@@ -290,10 +290,10 @@
       "sha256": "cf0ddbb6f629365e75a13413d0a741fa11ebbcb0b182d55a7d15c9ddabacfb80"
     },
     {
-      "bytes": 193316,
+      "bytes": 214546,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "ec49f9c68fb210964ade2b808849679ebc86e06dacabba814fdc0361cc274ba3"
+      "sha256": "179d72c428d22ba046d06d379b4686dc10703e90e0864d4520634192accecc88"
     },
     {
       "bytes": 82120,

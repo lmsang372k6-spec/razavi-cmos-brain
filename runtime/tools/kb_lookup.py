@@ -22,7 +22,7 @@ Commands:
   checklist [name]     Show a process-agnostic structural checklist (or list all 21)
   term <query>         Search the 2,280 bilingual CLB glossary terms (T001-T2280)
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import json
 import os
@@ -119,13 +119,22 @@ TOPIC_PRIORITY_RULES = (
         ),
     ),
     (
-        re.compile(r"\b(capless\s+ldo|capless|output\s+capacitor\s+less|fvf\s+ldo|dfc|damping\s+factor\s+control|ahuja|dynamic\s+sre)\b"),
+        re.compile(r"\b(capless\s+ldo|capless|capacitorless|cap\s+less|ocl\s+ldo|output\s+capacitor\s*less|fvf\s+ldo|dfc|damping\s+factor\s+control|ahuja|dynamic\s+sre)\b"),
         None,
         (
             "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
             "topo-cmos-ldo-regulator",
             "skill-ldo-stability-load-line-psrr-tb",
             "topo-regulated-cascode-super-source-follower",
+        ),
+    ),
+    (
+        re.compile(r"\bldo\b"),
+        re.compile(r"\b(capless|capacitorless|cap\s+less|ocl\s+ldo|output\s+capacitor\s*less|fvf\s+ldo|dfc|ahuja)\b"),
+        (
+            "topo-cmos-ldo-regulator",
+            "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+            "skill-ldo-stability-load-line-psrr-tb",
         ),
     ),
     (
@@ -178,10 +187,31 @@ TOPIC_PRIORITY_RULES = (
     ),
     (
         re.compile(r"\b(dickson|charge\s+pump\s+dcdc|switched\s+capacitor\s+dc\s+dc|voltage\s+doubler|ssl|fsl)\b"),
-        None,
+        re.compile(r"\b(pll|pfd|vco|cdr|dll|synthesizer|phase|jitter)\b"),
         (
             "topo-switched-capacitor-charge-pump-dcdc",
             "law-dcdc-volt-second-ccm-dcm-and-state-space",
+        ),
+    ),
+    (
+        re.compile(r"\b(?:(?:charge\s+pump).*\b(?:pll|pfd|vco|cdr|dll|synthesizer|phase|jitter)|(?:pll|pfd|vco|cdr|dll|synthesizer|phase|jitter).*\b(?:charge\s+pump)|pfd|phase\s+frequency\s+detector|type\s*2\s+pll|type\s*ii\s+pll|cp\s+pll)\b"),
+        None,
+        (
+            "topo-charge-pump-type2-pll",
+            "topo-pfd-deadzone-and-charge-pump-nonidealities",
+            "tech-cp-pll-third-order-loop-filter-synthesis",
+            "skill-pll-cp-loop-filter-lock-jitter-tb",
+            "concept-pll-nonidealities-spurs-jitter",
+        ),
+    ),
+    (
+        re.compile(r"\bcurrent\s+mirror\b"),
+        re.compile(r"\b(cascode|wide\s+swing|lvccml|wilson|regulated|diff\s*pair|differential\s+pair)\b"),
+        (
+            "topo-basic-current-mirror",
+            "topo-cascode-current-mirror",
+            "topo-lvccml-wide-swing-mirror",
+            "topo-wilson-and-regulated-current-mirrors",
         ),
     ),
     (
@@ -384,6 +414,18 @@ def fold_ascii(value):
     stripped = u"".join(ch for ch in decomp if not unicodedata.combining(ch)).lower()
     cleaned = re.sub(r"[^a-z0-9/+.]+", " ", stripped.replace("_", " ").replace("-", " "))
     return cleaned.strip()
+
+
+def _normalize_query_synonyms(q_fold):
+    if not q_fold:
+        return u""
+    s = to_text(q_fold)
+    s = re.sub(r"\boutput\s+capacitor\s*less\b", "capless", s)
+    s = re.sub(r"\bcapacitor\s*less\b", "capless", s)
+    s = re.sub(r"\bcap\s+less\b", "capless", s)
+    s = re.sub(r"\bocl\s+ldo\b", "capless ldo", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 
 def load_config():
@@ -687,7 +729,7 @@ def cmd_status():
 def cmd_search(query_str, limit=8):
     cfg = load_config()
     router = load_router(cfg)
-    q_fold = fold_ascii(query_str)
+    q_fold = _normalize_query_synonyms(fold_ascii(query_str))
     q_tokens = [t for t in q_fold.split() if t]
 
     scored = []
@@ -1799,10 +1841,163 @@ def cmd_domain(domain_arg):
     }
 
 
-def cmd_recipe(circuit_query):
-    search_res = cmd_search(circuit_query, limit=6)
+_RECIPE_STOPWORDS = set([
+    "a", "an", "the", "of", "in", "on", "to", "for", "with",
+    "and", "or", "by", "at", "from", "is", "are",
+])
+
+
+def _infer_recipe_lut_params(circuit_query):
+    """Infer PDK, flavor, corner, temperature tag, device, L, Vds matching gpdk_techsweep.py."""
+    raw_txt = to_text(circuit_query)
+    q_low = raw_txt.lower()
+    q_fold = fold_ascii(raw_txt)
+
+    if re.search(r"\b(gpdk045|gpdk\s*45|45\s*nm|g45|g45[np]\d\w*)\b", q_low):
+        pdk_key = "gpdk045"
+    else:
+        pdk_key = "gpdk090"
+
+    if pdk_key == "gpdk045":
+        if re.search(r"\b(io|1v8|1\.8\s*v|io_?1v8|g45[np]2svt)\b", q_low):
+            flavor_label = "io_1v8"
+            l_arg = "240e-9"
+            vds_arg = "0.9"
+        elif re.search(r"\b(lvt|core_1v_lvt|g45[np]1lvt)\b", q_low):
+            flavor_label = "core_1v_lvt"
+            l_arg = "90e-9"
+            vds_arg = "0.5"
+        elif re.search(r"\b(hvt|core_1v_hvt|g45[np]1hvt)\b", q_low):
+            flavor_label = "core_1v_hvt"
+            l_arg = "90e-9"
+            vds_arg = "0.5"
+        else:
+            flavor_label = "core_1v_svt"
+            l_arg = "90e-9"
+            vds_arg = "0.5"
+    else:
+        if re.search(r"\b(io|2v5|2\.5\s*v|io_?2v5|nmos2v|pmos2v)\b", q_low):
+            flavor_label = "io_2v5"
+            l_arg = "360e-9"
+            vds_arg = "1.2"
+        else:
+            flavor_label = "core_1v"
+            l_arg = "180e-9"
+            vds_arg = "0.6"
+
+    m_corner = re.search(r"\b(tt|nn|ss|ff|fs|sf)\b", q_fold)
+    if pdk_key == "gpdk045":
+        if m_corner:
+            c_tok = m_corner.group(1).lower()
+            corner = "tt" if c_tok == "nn" else c_tok
+        else:
+            corner = "tt"
+    else:
+        if m_corner:
+            c_tok = m_corner.group(1).lower()
+            corner = "NN" if c_tok in ("tt", "nn") else c_tok.upper()
+        else:
+            corner = "NN"
+
+    temp_val = 27.0
+    m_temp = re.search(u"(?<![a-z0-9])([+-]?\\d+(?:\\.\\d+)?)\\s*(?:deg\\s*c|\u00b0\\s*c|c)\\b", q_low)
+    if m_temp:
+        temp_val = float(m_temp.group(1))
+    else:
+        m_temp_m = re.search(r"(?<![a-z0-9])m(\d+(?:\.\d+)?)c\b", q_low)
+        if m_temp_m:
+            temp_val = -float(m_temp_m.group(1))
+        else:
+            m_temp_kw = re.search(r"(?<![a-z0-9])temp(?:erature)?\s*[:=]?\s*([+-]?\d+(?:\.\d+)?)\b", q_low)
+            if m_temp_kw:
+                temp_val = float(m_temp_kw.group(1))
+    temp_tag = ("%g" % float(temp_val)).replace("-", "m").replace(".", "p")
+
+    has_pmos = bool(re.search(r"\b(pmos|pfet)\b", q_fold))
+    has_nmos = bool(re.search(r"\b(nmos|nfet)\b", q_fold))
+    dev_type = "pmos" if (has_pmos and not has_nmos) else "nmos"
+
+    lut_filename = "%s_%s_%s_%sC.lut.json.gz" % (pdk_key, flavor_label, corner, temp_tag)
+    lut_path = "~/.cache/skill-analog/gmid-luts/" + lut_filename
+    return {
+        "pdk": pdk_key,
+        "flavor": flavor_label,
+        "corner": corner,
+        "temp_tag": temp_tag,
+        "dev": dev_type,
+        "l": l_arg,
+        "vds": vds_arg,
+        "lut_path": lut_path,
+    }
+
+
+_STRIP_PVT_PATTERNS = (
+    re.compile(u"(?<![a-z0-9])[+-]?\\d+(?:\\.\\d+)?\\s*(?:deg\\s*c|\u00b0\\s*c|c)\\b", re.IGNORECASE),
+    re.compile(r"(?<![a-z0-9])m\d+(?:\.\d+)?c\b", re.IGNORECASE),
+    re.compile(r"\b(gpdk045|gpdk090|gpdk\s*45|gpdk\s*90|45\s*nm|90\s*nm|g45|g90|g45[np]\d\w*)\b", re.IGNORECASE),
+    re.compile(r"\b(core_1v_svt|core_1v_lvt|core_1v_hvt|core_1v|io_1v8|io_2v5|1v8|2v5|svt|lvt|hvt)\b", re.IGNORECASE),
+    re.compile(r"\b(tt|nn|ss|ff|fs|sf)\b", re.IGNORECASE),
+)
+
+
+def _strip_recipe_pvt_qualifiers(circuit_query):
+    """Strip PDK/flavor/corner/temperature qualifiers so topology search stays clean."""
+    s = to_text(circuit_query)
+    for pat in _STRIP_PVT_PATTERNS:
+        s = pat.sub(" ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def cmd_recipe(circuit_query, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
+    offline_tail = " --offline" if eff_offline else ""
+
+    lut_info = _infer_recipe_lut_params(circuit_query)
+    topo_query = _strip_recipe_pvt_qualifiers(circuit_query)
+    eff_search_query = topo_query if topo_query else circuit_query
+    search_res = cmd_search(eff_search_query, limit=6)
     hits = search_res.get("results", [])
+
+    qf_norm = _normalize_query_synonyms(fold_ascii(eff_search_query))
+    q_tokens = [t for t in qf_norm.split() if t]
+    meaningful_tokens = [t for t in q_tokens if len(t) >= 2 and t not in _RECIPE_STOPWORDS]
+
+    valid_match = bool(hits)
+    if valid_match and hits[0].get("score", 0) < 80:
+        top_hay = fold_ascii(
+            "%s %s %s %s"
+            % (
+                hits[0].get("id", ""),
+                hits[0].get("title_en", ""),
+                hits[0].get("title_vi", ""),
+                hits[0].get("summary", ""),
+            )
+        )
+        if not meaningful_tokens or not any(tok in top_hay for tok in meaningful_tokens):
+            valid_match = False
+
+    if not valid_match:
+        return {
+            "ok": False,
+            "command": "recipe",
+            "circuit_query": to_text(circuit_query),
+            "offline": eff_offline,
+            "error": "No matching circuit topology found for query.",
+            "recommended_cards": [],
+            "steps": [],
+        }
+
+    if eff_offline:
+        for h in hits:
+            h["fetch_cmd"] = _fmt_tool_cmd("kb_fetch.py", h["id"] + offline_tail)
+
+    qf = _normalize_query_synonyms(fold_ascii(circuit_query))
+    is_ldo_query = bool(re.search(r"\b(ldo|capless|capacitorless)\b", qf))
     checklists = ["common-mos"]
+    if is_ldo_query:
+        checklists.append("ldo-regulator")
+
     theory_cards = []
     skill_cards = []
     for h in hits:
@@ -1816,36 +2011,44 @@ def cmd_recipe(circuit_query):
     if "closed-loop-sizing-and-signoff" not in checklists:
         checklists.append("closed-loop-sizing-and-signoff")
 
-    qf = fold_ascii(circuit_query)
-    is_switching_pmic = bool(re.search(r"\b(buck|boost|dcdc|dc\s+dc|pwm|charge\s+pump|cot|cmc|vmc)\b", qf))
+    is_pll_clock = bool(re.search(r"\b(pll|pfd|vco|cdr|dll|synthesizer|phase|jitter)\b", qf))
+    if is_pll_clock:
+        is_switching_pmic = bool(re.search(r"\b(buck|boost|dcdc|dc\s+dc|pwm|cot|cmc|vmc)\b", qf))
+    else:
+        is_switching_pmic = bool(re.search(r"\b(buck|boost|dcdc|dc\s+dc|pwm|charge\s+pump|cot|cmc|vmc)\b", qf))
     va_path = os.path.join(LIBRARY_ROOT, "models", "veriloga", "pwm_switch_avg_ccm_dcm.va")
     veriloga_note = (
         "%s (use for 0.3s .dc/.ac/.stb before transistor pss+pstb)" % va_path
         if is_switching_pmic
         else None
     )
+    primary_cl = checklists[1] if len(checklists) > 1 else "common-mos"
     steps = [
         {
             "stage": 1,
             "name": "Locate project & fetch primary Razavi/PMIC/AMS cards + checklists",
             "cmds": [
                 _fmt_tool_cmd("analogctl.py", "locate"),
-                _fmt_tool_cmd("kb_fetch.py", hits[0]["id"] if hits else "topo-folded-cascode-ota"),
-                _fmt_tool_cmd("kb_lookup.py", "checklist " + (checklists[1] if len(checklists) > 1 else "common-mos")),
+                _fmt_tool_cmd("kb_fetch.py", hits[0]["id"] + offline_tail),
+                _fmt_tool_cmd("kb_lookup.py", "checklist " + primary_cl + offline_tail),
             ],
         },
         {
             "stage": 2,
             "name": "Decompose multi-block hierarchy & interface contracts in project.json / spec.json",
             "cmds": [
-                _fmt_tool_cmd("kb_fetch.py", "tech-hierarchical-chip-spec-budgeting-and-interfaces"),
+                _fmt_tool_cmd("kb_fetch.py", "tech-hierarchical-chip-spec-budgeting-and-interfaces" + offline_tail),
             ],
         },
         {
             "stage": 3,
             "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
             "cmds": [
-                _fmt_tool_cmd("gmid_lut.py", "size --lut ~/.cache/skill-analog/gmid-luts/gpdk090_core_1v_NN_27C.lut.json.gz --dev nmos --gm 1e-3 --gm-id 15 --l 180e-9 --vds 0.6"),
+                _fmt_tool_cmd(
+                    "gmid_lut.py",
+                    "size --lut %s --dev %s --gm 1e-3 --gm-id 15 --l %s --vds %s"
+                    % (lut_info["lut_path"], lut_info["dev"], lut_info["l"], lut_info["vds"]),
+                ),
             ],
         },
         {
@@ -1876,8 +2079,8 @@ def cmd_recipe(circuit_query):
             "stage": 7,
             "name": "Worst-case PVT corners, Pelgrom Monte Carlo & Post-PEX Sign-off",
             "cmds": [
-                _fmt_tool_cmd("kb_lookup.py", "checklist layout-and-matching"),
-                _fmt_tool_cmd("kb_lookup.py", "checklist closed-loop-sizing-and-signoff"),
+                _fmt_tool_cmd("kb_lookup.py", "checklist layout-and-matching" + offline_tail),
+                _fmt_tool_cmd("kb_lookup.py", "checklist closed-loop-sizing-and-signoff" + offline_tail),
             ],
         },
     ]
@@ -1885,6 +2088,7 @@ def cmd_recipe(circuit_query):
         "ok": True,
         "command": "recipe",
         "circuit_query": to_text(circuit_query),
+        "offline": eff_offline,
         "switching_converter_veriloga_helper": veriloga_note,
         "recommended_cards": hits,
         "theory_cards": [c.get("id") for c in theory_cards],
@@ -1948,18 +2152,81 @@ def run_self_test():
         if not cf.get("ok") or not cf.get("figures") or cf["figures"][0].get("book_page") != 679:
             raise AssertionError("Unexpected coord('Fig. 16.43') result: %r" % cf)
 
-        # 5. Recipe Stage 3 & Stage 5 canonical LUT filename and fail-closed flags
+        # 5. Recipe Stage 3 & Stage 5 canonical LUT filename and fail-closed flags (online + offline)
+        if "SKILL_ANALOG_OFFLINE" in os.environ:
+            del os.environ["SKILL_ANALOG_OFFLINE"]
         rec = cmd_recipe("folded cascode")
         rec_blob = json.dumps(rec)
+        if not rec.get("ok") or rec.get("offline") is not False:
+            raise AssertionError("cmd_recipe('folded cascode') expected ok=True, offline=False: %r" % rec)
         if "gpdk090_core_1v_NN_27C.lut.json.gz" not in rec_blob or "--fail-on-violation" not in rec_blob or "--fail-on-spec" not in rec_blob:
             raise AssertionError("cmd_recipe missing canonical LUT or fail-closed psf_audit flags: %r" % rec)
+        if "--offline" in rec_blob:
+            raise AssertionError("Online cmd_recipe must NOT emit --offline flags: %r" % rec)
+
+        # 6. Dynamic PDK/Flavor/Corner/Temp/Device LUT generation (GPDK045)
+        rec_ldo45 = cmd_recipe("capless LDO GPDK045")
+        st3_ldo45 = rec_ldo45["closed_loop_7_stages"][2]["cmds"][0]
+        if not rec_ldo45.get("ok") or "gpdk045_core_1v_svt_tt_27C.lut.json.gz" not in st3_ldo45 or "--l 90e-9 --vds 0.5" not in st3_ldo45:
+            raise AssertionError("Unexpected GPDK045 capless LDO LUT cmd: %r" % st3_ldo45)
+
+        rec_cm45 = cmd_recipe("NMOS current mirror GPDK045 SS 125 C")
+        st3_cm45 = rec_cm45["closed_loop_7_stages"][2]["cmds"][0]
+        if not rec_cm45.get("ok") or "gpdk045_core_1v_svt_ss_125C.lut.json.gz" not in st3_cm45 or "--dev nmos" not in st3_cm45:
+            raise AssertionError("Unexpected GPDK045 SS 125C LUT cmd: %r" % st3_cm45)
+
+        rec_pmos45 = cmd_recipe("PMOS current mirror GPDK045 FF -40C")
+        st3_pmos45 = rec_pmos45["closed_loop_7_stages"][2]["cmds"][0]
+        if not rec_pmos45.get("ok") or "gpdk045_core_1v_svt_ff_m40C.lut.json.gz" not in st3_pmos45 or "--dev pmos" not in st3_pmos45:
+            raise AssertionError("Unexpected GPDK045 PMOS FF -40C LUT cmd: %r" % st3_pmos45)
+
+        # 7. Synonym normalization: capacitorless LDO leads with Capless LDO card & ldo-regulator checklist (never DC-DC)
+        rec_capless = cmd_recipe("capacitorless LDO")
+        if not rec_capless.get("ok") or rec_capless["recommended_cards"][0]["id"] != "topo-capless-ldo-fvf-ahuja-dfc-and-sre":
+            raise AssertionError("capacitorless LDO failed to route to Capless LDO card: %r" % rec_capless.get("recommended_cards"))
+        if rec_capless["mandatory_checklists"][1] != "ldo-regulator":
+            raise AssertionError("capacitorless LDO must prioritize ldo-regulator checklist: %r" % rec_capless.get("mandatory_checklists"))
+        if rec_capless.get("switching_converter_veriloga_helper") is not None:
+            raise AssertionError("capacitorless LDO must not attach DC-DC Verilog-A helper: %r" % rec_capless)
+
+        # 8. Charge pump PLL routing: NOT switching PMIC, boosts PLL cards over DC-DC charge-pump
+        rec_cppll = cmd_recipe("charge pump PLL")
+        top2_pll = [c["id"] for c in rec_cppll.get("recommended_cards", [])[:2]]
+        if not rec_cppll.get("ok") or rec_cppll.get("switching_converter_veriloga_helper") is not None:
+            raise AssertionError("charge pump PLL must NOT trigger switching PMIC Verilog-A helper: %r" % rec_cppll)
+        if "topo-charge-pump-type2-pll" not in top2_pll or "topo-pfd-deadzone-and-charge-pump-nonidealities" not in top2_pll:
+            raise AssertionError("charge pump PLL must rank PLL CP/PFD cards at top: %r" % top2_pll)
+
+        # 9. Gibberish rejection: unknown query returns ok=False, recommended_cards=[], steps=[]
+        rec_gib = cmd_recipe("xyzzy nonexistent topology 12345")
+        if rec_gib.get("ok") is not False or rec_gib.get("recommended_cards") != [] or rec_gib.get("steps") != []:
+            raise AssertionError("Gibberish query must fail closed with ok=False and empty cards/steps: %r" % rec_gib)
+
+        # 10. --offline propagation via explicit offline=True and SKILL_ANALOG_OFFLINE=1
+        for mode_label, use_env in (("explicit", False), ("env", True)):
+            if use_env:
+                os.environ["SKILL_ANALOG_OFFLINE"] = "1"
+                rec_off = cmd_recipe("capless LDO GPDK045")
+            else:
+                if "SKILL_ANALOG_OFFLINE" in os.environ:
+                    del os.environ["SKILL_ANALOG_OFFLINE"]
+                rec_off = cmd_recipe("capless LDO GPDK045", offline=True)
+            if not rec_off.get("ok") or rec_off.get("offline") is not True:
+                raise AssertionError("Offline recipe (%s) missing offline=True: %r" % (mode_label, rec_off))
+            for stg in rec_off.get("closed_loop_7_stages", []):
+                for cmd_s in stg.get("cmds", []):
+                    if ("kb_fetch.py" in cmd_s or "kb_lookup.py" in cmd_s) and "--offline" not in cmd_s:
+                        raise AssertionError("Offline recipe (%s) missing --offline in cmd: %r" % (mode_label, cmd_s))
+            for card in rec_off.get("recommended_cards", []):
+                if "--offline" not in card.get("fetch_cmd", ""):
+                    raise AssertionError("Offline recipe (%s) missing --offline in fetch_cmd: %r" % (mode_label, card))
 
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "lookup_ms": dt_ms,
-            "tests_passed": 6,
+            "tests_passed": 11,
         }
     finally:
         if saved_env is None:
@@ -2097,7 +2364,7 @@ def main(argv=None):
         elif cmd in ("recipe", "workflow", "plan"):
             if not rest:
                 raise ValueError("recipe requires a circuit query (e.g., 'buck', 'capless ldo', 'folded cascode')")
-            payload = cmd_recipe(rest)
+            payload = cmd_recipe(rest, offline=eff_offline)
         elif cmd == "search":
             if not rest:
                 raise ValueError("search requires a query string")

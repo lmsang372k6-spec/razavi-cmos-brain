@@ -12,7 +12,7 @@
   "process_agnostic": true,
   "checks": [
     {
-      "id": "CHK-CM-01",
+      "id": "CHK-CMFB-01",
       "name": "Explicit CMFB loop present for every high-impedance differential stage",
       "severity": "error",
       "method": "structural",
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "id": "CHK-CM-02",
+      "id": "CHK-CMFB-02",
       "name": "CM sensing network preserves differential open-loop gain and remains linear across full differential swing",
       "severity": "error",
       "method": "estimate",
@@ -40,7 +40,7 @@
       ]
     },
     {
-      "id": "CHK-CM-03",
+      "id": "CHK-CMFB-03",
       "name": "Independent Common-Mode loop stability (PM_CM >= 60 deg) and adequate CM bandwidth",
       "severity": "error",
       "method": "estimate",
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "id": "CHK-CM-04",
+      "id": "CHK-CMFB-04",
       "name": "Two-stage fully-differential op-amps avoid uncompensated 3-pole global CMFB loops",
       "severity": "warn",
       "method": "structural",
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "id": "CHK-CM-05",
+      "id": "CHK-CMFB-05",
       "name": "Split current-source control range prevents startup lock-up and limits CM loop gain-capacitance loading",
       "severity": "warn",
       "method": "structural",
@@ -80,7 +80,7 @@
       ]
     },
     {
-      "id": "CHK-CM-06",
+      "id": "CHK-CMFB-06",
       "name": "Auxiliary Gain-Boosting amplifiers in fully-differential OTAs have proper CM definition",
       "severity": "error",
       "method": "structural",

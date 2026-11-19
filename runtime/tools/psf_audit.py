@@ -907,6 +907,7 @@ def _extract_dc_power_single(parsed):
     def _eval_worst_across_sweep(rail_pairs):
         # rail_pairs: list of (rail_stem, v_key, v_arr, c_key, c_arr)
         # Signed power delivered by each voltage source under Spectre passive sign convention: P = -V * I
+        # Track max total power AND max total supply current independently across sweep points.
         n_pts = 1
         for _, _, v_arr, _, c_arr in rail_pairs:
             if len(v_arr) > n_pts:
@@ -914,8 +915,9 @@ def _extract_dc_power_single(parsed):
             if len(c_arr) > n_pts:
                 n_pts = len(c_arr)
         best_p = None
+        best_p_idx = 0
         best_i = None
-        best_idx = 0
+        best_i_idx = 0
         best_rails = None
         for idx in range(n_pts):
             tot_p = 0.0
@@ -938,10 +940,12 @@ def _extract_dc_power_single(parsed):
                 })
             if best_p is None or tot_p > best_p:
                 best_p = tot_p
-                best_i = tot_i
-                best_idx = idx
+                best_p_idx = idx
                 best_rails = rails_i
-        return best_p, best_i, best_idx, n_pts, best_rails
+            if best_i is None or tot_i > best_i:
+                best_i = tot_i
+                best_i_idx = idx
+        return best_p, best_i, best_p_idx, best_i_idx, n_pts, best_rails
 
     if num_supply_v > 0 and num_cand_i > 0:
         matched_pairs = []
@@ -963,7 +967,7 @@ def _extract_dc_power_single(parsed):
         unmatched_supply_v = [st for st in sorted(supply_voltage_nodes.keys()) if st not in matched_v_stems]
 
         if (not ambiguous) and matched_pairs and (not unmatched_probes) and (not unmatched_supply_v):
-            total_p, total_i, best_idx, n_pts, matched_rails = _eval_worst_across_sweep(matched_pairs)
+            total_p, total_i, max_power_idx, max_idd_idx, n_pts, matched_rails = _eval_worst_across_sweep(matched_pairs)
             out.update({
                 "vdd_v": matched_rails[0]["vdd_v"] if len(matched_rails) == 1 else None,
                 "idd_a": _round_clean(total_i),
@@ -976,7 +980,9 @@ def _extract_dc_power_single(parsed):
                 out["current_probe"] = matched_rails[0]["current_probe"]
             if n_pts > 1:
                 out["dc_sweep_points"] = n_pts
-                out["dc_worst_sweep_index"] = best_idx
+                out["dc_worst_sweep_index"] = max_power_idx
+                out["max_power_idx"] = max_power_idx
+                out["max_idd_idx"] = max_idd_idx
             return out
 
         # Single supply voltage node + single generic unnamed source probe (`vdd` + `V0:p`).
@@ -987,7 +993,7 @@ def _extract_dc_power_single(parsed):
             c_key, c_stem, c_arr = candidate_probes[0]
             if len(v_list) == 1 and (c_stem == only_v_stem or (not _is_supply_rail_stem(c_stem))):
                 v_key, v_arr = v_list[0]
-                total_p, total_i, best_idx, n_pts, matched_rails = _eval_worst_across_sweep(
+                total_p, total_i, max_power_idx, max_idd_idx, n_pts, matched_rails = _eval_worst_across_sweep(
                     [(only_v_stem, v_key, v_arr, c_key, c_arr)]
                 )
                 out.update({
@@ -1000,7 +1006,9 @@ def _extract_dc_power_single(parsed):
                 })
                 if n_pts > 1:
                     out["dc_sweep_points"] = n_pts
-                    out["dc_worst_sweep_index"] = best_idx
+                    out["dc_worst_sweep_index"] = max_power_idx
+                    out["max_power_idx"] = max_power_idx
+                    out["max_idd_idx"] = max_idd_idx
                 return out
 
         # Multiple rails / probes or cross-rail mismatch -> fail closed!
@@ -1022,10 +1030,10 @@ def _extract_dc_power_single(parsed):
 
 
 def _extract_dc_power(parsed_list):
-    """Compute worst-case static DC power across ALL DC files and ALL sweep points.
+    """Compute worst-case static DC power and supply current across ALL DC files and ALL sweep points.
 
     - Sums `|V_k * I_k|` across all matched supply rails (`VDD:p` * `VDD` + `VDD18:p` * `VDD18`, etc.).
-    - Evaluates EVERY sweep point in EVERY DC file and reports worst-case (`max`) power.
+    - Evaluates EVERY sweep point in EVERY DC file and reports worst-case (`max`) power and `max` supply current independently.
     - If ANY DC file has ambiguous / cross-rail supply matching, fails closed (`dc_power_w = None`).
     - MOS `sum(|Vds * Ids|)` fallback is stored ONLY in `mos_power_estimate_w`, NEVER in `dc_power_w`.
     """
@@ -1051,17 +1059,27 @@ def _extract_dc_power(parsed_list):
         return ambiguous_res
 
     if valid_results:
-        best = valid_results[0]
+        best_p_res = valid_results[0]
         for cand in valid_results[1:]:
-            if cand["dc_power_w"] > best["dc_power_w"]:
-                best = cand
-        out = dict(best)
-        idd_vals = [
-            r["idd_a"] for r in valid_results
-            if isinstance(r.get("idd_a"), _NUM_TYPES) and not isinstance(r.get("idd_a"), bool)
+            if cand["dc_power_w"] > best_p_res["dc_power_w"]:
+                best_p_res = cand
+        out = dict(best_p_res)
+        power_vals = [
+            r["dc_power_w"] for r in valid_results
+            if isinstance(r.get("dc_power_w"), _NUM_TYPES) and not isinstance(r.get("dc_power_w"), bool)
         ]
-        if idd_vals:
-            out["idd_a"] = _round_clean(max(idd_vals))
+        if power_vals:
+            out["dc_power_w"] = _round_clean(max(power_vals))
+        best_i_res = None
+        for cand in valid_results:
+            ci = cand.get("idd_a")
+            if isinstance(ci, _NUM_TYPES) and not isinstance(ci, bool):
+                if best_i_res is None or ci > best_i_res["idd_a"]:
+                    best_i_res = cand
+        if best_i_res is not None:
+            out["idd_a"] = _round_clean(best_i_res["idd_a"])
+            if "max_idd_idx" in best_i_res:
+                out["max_idd_idx"] = best_i_res["max_idd_idx"]
         if mos_est_max is not None:
             out["mos_power_estimate_w"] = mos_est_max
         return out
@@ -2121,6 +2139,181 @@ def _build_unique_file_keys(filepaths, base_dir=None):
     return out
 
 
+_MC_HEADER_KEYS = set([
+    "analysis type", "analysis", "analysis_type", "title", "psfversion",
+    "simulator", "run_mode", "mode", "sweep_type",
+])
+_MC_HEADER_VAL_RE = re.compile(
+    r'(?:^|[^a-z0-9])(?:montecarlo|monte[\s_-]?carlo|mc)(?:$|[^a-z0-9])',
+    re.IGNORECASE,
+)
+_MC_SWEEP_NAMES = set([
+    "iteration", "mc_iteration", "montecarlo", "monte_carlo",
+    "mc_iter", "mc_run", "mc_sample",
+])
+
+_PEX_HEADER_KEYS = set([
+    "netlist", "design", "circuit", "cellview", "title", "subckt",
+    "view", "viewname", "schematic", "extraction", "pex",
+])
+_PEX_HEADER_VAL_RE = re.compile(
+    r'(?:^|[^a-z0-9])(?:av_extracted|calibre|quantus|rcx|pex|post_?layout|postlayout)(?:$|[^a-z0-9])',
+    re.IGNORECASE,
+)
+_PARASITIC_RC_NAME_RE = re.compile(
+    r'(?:^|[./:])(?:'
+    r'(?:cpar|rpar|c_par|r_par|c_pex|r_pex|cpex|rpex|c_qrc|r_qrc|cqrc|rqrc|c_rcx|r_rcx|crcx|rrcx|c_ext|r_ext|avc|avr|parasitic_[rc])\w*'
+    r'|[rc]_(?:net|n)\d+\w*'
+    r'|[rc]_\d+_\d+'
+    r'|[rc]\d+[#$]\d+\w*'
+    r')(?:$|[./:])',
+    re.IGNORECASE,
+)
+_PARASITIC_RC_TYPE_RE = re.compile(
+    r'(?:^|[^a-z0-9])(?:cparasitic|rparasitic|parasitic_cap|parasitic_res|pex_[rc]|rcx_[rc]|qrc_[rc])(?:$|[^a-z0-9])',
+    re.IGNORECASE,
+)
+
+
+def _detect_mc_from_parsed(parsed):
+    """Detect genuine Monte Carlo evidence from parsed PSF HEADER or SWEEP."""
+    is_mc = False
+    mc_runs = 0
+    header = parsed.get("header") or {}
+    if isinstance(header, dict):
+        for hk_raw, hv_raw in header.items():
+            hk = str(hk_raw).strip().lower()
+            hv = str(hv_raw).strip().lower()
+            if hk in _MC_HEADER_KEYS and _MC_HEADER_VAL_RE.search(hv):
+                is_mc = True
+            elif hk in ("mc_iteration", "montecarlo", "monte_carlo", "mc_runs", "mc_run"):
+                if hv not in ("", "0", "false", "no", "off", "none"):
+                    is_mc = True
+                    if hk == "mc_runs" and isinstance(hv_raw, _INT_TYPES) and not isinstance(hv_raw, bool) and hv_raw > mc_runs:
+                        mc_runs = int(hv_raw)
+
+    sw_names = []
+    if parsed.get("sweep_name"):
+        sw_names.append(str(parsed.get("sweep_name")).strip().lower())
+    for sw in parsed.get("sweeps") or []:
+        if isinstance(sw, dict) and sw.get("name"):
+            sw_names.append(str(sw.get("name")).strip().lower())
+        elif isinstance(sw, TEXT_TYPES):
+            sw_names.append(str(sw).strip().lower())
+    for sn in sw_names:
+        if sn in _MC_SWEEP_NAMES:
+            is_mc = True
+            sw_vals = parsed.get("sweep_values") or []
+            if len(sw_vals) > mc_runs:
+                mc_runs = len(sw_vals)
+            break
+
+    return is_mc, mc_runs
+
+
+def _detect_pex_from_parsed(parsed):
+    """Detect genuine post-layout/PEX evidence from parsed PSF HEADER or parasitic RC elements."""
+    is_pex = False
+    header = parsed.get("header") or {}
+    if isinstance(header, dict):
+        for hk_raw, hv_raw in header.items():
+            hk = str(hk_raw).strip().lower()
+            hv = str(hv_raw).strip().lower()
+            if hk in _PEX_HEADER_KEYS and _PEX_HEADER_VAL_RE.search(hv):
+                is_pex = True
+                break
+
+    rc_elems = set()
+    instances = parsed.get("instances") or {}
+    if isinstance(instances, dict):
+        for inst_name, inst_obj in instances.items():
+            sname = str(inst_name)
+            stype = str(inst_obj.get("type", "")) if isinstance(inst_obj, dict) else ""
+            if _PARASITIC_RC_NAME_RE.search(sname) or _PARASITIC_RC_TYPE_RE.search(stype):
+                rc_elems.add(sname.lower())
+
+    values = parsed.get("values") or {}
+    if isinstance(values, dict):
+        for sig_name in values.keys():
+            sname = str(sig_name)
+            if _PARASITIC_RC_NAME_RE.search(sname):
+                rc_elems.add(sname.split(":", 1)[0].lower())
+
+    trace_types = parsed.get("trace_types") or {}
+    if isinstance(trace_types, dict):
+        for tname, ttype in trace_types.items():
+            if _PARASITIC_RC_TYPE_RE.search(str(ttype)):
+                rc_elems.add(str(tname).split(":", 1)[0].lower())
+
+    rc_cnt = len(rc_elems)
+    if rc_cnt > 0:
+        is_pex = True
+    return is_pex, rc_cnt
+
+
+def _detect_evidence_from_run_metadata(psf_files):
+    """Read verified run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files."""
+    mc_ev = False
+    mc_runs = 0
+    pex_ev = False
+    cand_dirs = []
+    seen_dirs = set()
+    for fp in psf_files:
+        if not fp:
+            continue
+        d = os.path.realpath(os.path.dirname(fp))
+        if d not in seen_dirs:
+            seen_dirs.add(d)
+            cand_dirs.append(d)
+        if os.path.basename(d).lower() in ("psf", "raw"):
+            parent_d = os.path.realpath(os.path.dirname(d))
+            if parent_d not in seen_dirs:
+                seen_dirs.add(parent_d)
+                cand_dirs.append(parent_d)
+
+    for d in cand_dirs:
+        for mf_name in ("run_manifest.json", "cadence_run.json"):
+            mf_path = os.path.join(d, mf_name)
+            if not os.path.isfile(mf_path):
+                continue
+            try:
+                fh = open(mf_path, "rb")
+                try:
+                    meta = json.loads(fh.read().decode("utf-8-sig"))
+                finally:
+                    fh.close()
+            except Exception:
+                continue
+            if not isinstance(meta, dict):
+                continue
+            mc_val = meta.get("monte_carlo")
+            if mc_val is True:
+                mc_ev = True
+            elif isinstance(mc_val, dict):
+                if mc_val.get("enabled") is True or mc_val.get("verified") is True:
+                    mc_ev = True
+                for rk in ("runs", "samples", "iterations", "count", "n"):
+                    rv = mc_val.get(rk)
+                    if isinstance(rv, _INT_TYPES) and not isinstance(rv, bool) and rv > 0:
+                        mc_ev = True
+                        if int(rv) > mc_runs:
+                            mc_runs = int(rv)
+            for rk in ("mc_runs_verified", "mc_runs", "monte_carlo_runs"):
+                rv = meta.get(rk)
+                if isinstance(rv, _INT_TYPES) and not isinstance(rv, bool) and rv > 0 and meta.get("monte_carlo") is not False:
+                    mc_ev = True
+                    if int(rv) > mc_runs:
+                        mc_runs = int(rv)
+            if meta.get("post_layout") is True or meta.get("pex_verified") is True or meta.get("pex") is True:
+                pex_ev = True
+            for pk in ("post_layout", "pex"):
+                pv = meta.get(pk)
+                if isinstance(pv, dict) and (pv.get("verified") is True or pv.get("enabled") is True):
+                    pex_ev = True
+
+    return mc_ev, mc_runs, pex_ev
+
+
 def _extract_point_metrics(
     psf_files_by_kind,
     vout_hint=None,
@@ -2151,14 +2344,35 @@ def _extract_point_metrics(
         "integrated_rms_noise_a": None,
     }
     analyses_present = []
+    mc_flag = [False]
+    mc_runs_box = [0]
+    pex_flag = [False]
+    rc_count_box = [0]
 
     def _add_analysis(tag):
         if tag not in analyses_present:
             analyses_present.append(tag)
 
+    def _inspect_parsed_evidence(parsed_obj):
+        if not isinstance(parsed_obj, dict):
+            return
+        is_mc, mc_n = _detect_mc_from_parsed(parsed_obj)
+        if is_mc:
+            mc_flag[0] = True
+            if mc_n > mc_runs_box[0]:
+                mc_runs_box[0] = mc_n
+        is_pex, rc_cnt = _detect_pex_from_parsed(parsed_obj)
+        if is_pex:
+            pex_flag[0] = True
+        if rc_cnt > 0:
+            rc_count_box[0] += rc_cnt
+            pex_flag[0] = True
+
     parsed_dc = []
     for p in psf_files_by_kind.get("dc", []):
-        parsed_dc.append(parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True))
+        dc_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(dc_parsed)
+        parsed_dc.append(dc_parsed)
     if parsed_dc:
         _add_analysis("dc")
         metrics.update(_extract_dc_power(parsed_dc))
@@ -2171,8 +2385,10 @@ def _extract_point_metrics(
     for p in ac_files:
         if os.path.basename(p).lower().endswith(".pac"):
             has_pac = True
+        ac_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(ac_parsed)
         ac_res = _extract_ac_metrics(
-            parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True),
+            ac_parsed,
             vout_hint=vout_hint,
             vin_hint=vin_hint,
         )
@@ -2214,6 +2430,7 @@ def _extract_point_metrics(
         m_stem = _stb_loop_stem(mp)
         m_dir = os.path.realpath(os.path.dirname(mp))
         m_parsed = parse_psf_file(mp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(m_parsed)
         entry = (mp, m_dir, m_stem, m_parsed)
         margin_entries.append(entry)
         margin_by_dir_stem[(m_dir, m_stem)] = entry
@@ -2242,6 +2459,7 @@ def _extract_point_metrics(
             used_margin_paths.add(m_entry[0])
             m_parsed = m_entry[3]
         s_parsed = parse_psf_file(sp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(s_parsed)
         s_res = _extract_stb_metrics(s_parsed, margin_parsed=m_parsed)
         if s_res:
             stb_loops[all_stb_keys[sp]] = s_res
@@ -2289,7 +2507,8 @@ def _extract_point_metrics(
 
     # Process `.pss` files if present so `pss` analysis coverage can be verified distinctly
     for pss_p in psf_files_by_kind.get("pss", []):
-        parse_psf_file(pss_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        pss_parsed = parse_psf_file(pss_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(pss_parsed)
         _add_analysis("pss")
 
     # Process ALL `.tran` files with collision-free keys and aggregate worst-case; fail-closed on unsettled step
@@ -2297,8 +2516,10 @@ def _extract_point_metrics(
     tran_keys = _build_unique_file_keys(tran_files, base_dir=base_dir)
     tran_runs = {}
     for tp in tran_files:
+        tp_parsed = parse_psf_file(tp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(tp_parsed)
         tr_res = _extract_tran_metrics(
-            parse_psf_file(tp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True),
+            tp_parsed,
             vout_hint=vout_hint,
             settling_tol_ratio=settling_tol_ratio,
             target_v=target_v,
@@ -2339,8 +2560,10 @@ def _extract_point_metrics(
     for np_file in noise_files:
         if os.path.basename(np_file).lower().endswith(".pnoise"):
             has_pnoise = True
+        np_parsed = parse_psf_file(np_file, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(np_parsed)
         ns_res, curve_info = _extract_noise_metrics(
-            parse_psf_file(np_file, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True),
+            np_parsed,
             return_curve=True,
         )
         if ns_res:
@@ -2370,6 +2593,43 @@ def _extract_point_metrics(
         if aux_out is not None and noise_curves:
             aux_out["noise_curves"] = noise_curves
 
+    # Process dedicated Monte Carlo PSF analysis files (`mc*.psf`, `mcdata*`, `montecarlo*`)
+    for mc_p in psf_files_by_kind.get("mc", []):
+        mc_parsed = parse_psf_file(mc_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        mc_flag[0] = True
+        _inspect_parsed_evidence(mc_parsed)
+        sw_vals = mc_parsed.get("sweep_values") or []
+        if len(sw_vals) > mc_runs_box[0]:
+            mc_runs_box[0] = len(sw_vals)
+
+    # Check verified run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files
+    all_psf_files = []
+    for kind_files in psf_files_by_kind.values():
+        all_psf_files.extend(kind_files)
+    meta_mc, meta_mc_runs, meta_pex = _detect_evidence_from_run_metadata(all_psf_files)
+    if meta_mc:
+        mc_flag[0] = True
+        if meta_mc_runs > mc_runs_box[0]:
+            mc_runs_box[0] = meta_mc_runs
+    if meta_pex:
+        pex_flag[0] = True
+
+    if mc_flag[0]:
+        _add_analysis("mc")
+        metrics["mc_evidence"] = True
+        if mc_runs_box[0] > 0:
+            metrics["mc_runs_verified"] = mc_runs_box[0]
+    else:
+        metrics["mc_evidence"] = False
+
+    if pex_flag[0]:
+        _add_analysis("pex")
+        metrics["pex_evidence"] = True
+        if rc_count_box[0] > 0:
+            metrics["parasitic_rc_count"] = rc_count_box[0]
+    else:
+        metrics["pex_evidence"] = False
+
     metrics["analyses_present"] = analyses_present
     return metrics
 
@@ -2392,6 +2652,14 @@ def _classify_psf_filename(filename):
         return "pss"
     if low.endswith(".dc") or (low.endswith(".info") and ("op" in low or "dcop" in low)):
         return "dc"
+    if (
+        re.match(r'^mc[^/]*\.psf$', low)
+        or low.startswith("mcdata")
+        or low.endswith(".mcdata")
+        or low.startswith("montecarlo")
+        or low.endswith(".mc")
+    ):
+        return "mc"
     return None
 
 
@@ -2757,23 +3025,39 @@ def _match_temp_covered(t_req, points_metrics):
 
 
 def _count_mc_points(points_metrics):
+    """Count verified Monte Carlo runs/points from genuine MC artifact evidence only (never bare filenames)."""
     cnt = 0
     for pt_label, pm in points_metrics.items():
-        if "mc" in pm.get("analyses_present", []):
-            cnt += 1
+        if not isinstance(pm, dict):
             continue
-        lbl = str(pt_label).lower()
-        if re.search(r'(?:^|[/_\-\s])(?:mc\d*|montecarlo|monte_carlo)(?:$|[/_\-\s])', lbl):
+        mc_runs = pm.get("mc_runs_verified", 0)
+        if isinstance(mc_runs, _INT_TYPES) and not isinstance(mc_runs, bool) and mc_runs > 0:
+            cnt += int(mc_runs)
+            continue
+        if pm.get("mc_evidence") is True or "mc" in pm.get("analyses_present", []):
             cnt += 1
     return cnt
 
 
 def _has_pex_point(points_metrics):
-    for pt_label in points_metrics.keys():
-        lbl = str(pt_label).lower()
-        if re.search(r'(?:^|[/_\-\s])(?:pex|postlayout|post_layout|extracted|av_extracted|rcx|quantus|calibre)(?:$|[/_\-\s])', lbl):
+    """Return True only when at least one point carries genuine post-layout/PEX artifact evidence."""
+    for pt_label, pm in points_metrics.items():
+        if not isinstance(pm, dict):
+            continue
+        if pm.get("pex_evidence") is True or "pex" in pm.get("analyses_present", []):
             return True
     return False
+
+
+def _format_pvt_combo(corner, supply_v, temp_c):
+    parts = []
+    if corner is not None:
+        parts.append(str(corner))
+    if supply_v is not None:
+        parts.append("%gV" % float(supply_v))
+    if temp_c is not None:
+        parts.append("%gC" % float(temp_c))
+    return " @ ".join(parts)
 
 
 def _is_spec_approval_pending(spec_obj):
@@ -3183,6 +3467,31 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
     missing_global_supplies = [v for v in global_supplies if not _match_supply_covered(v, points_metrics)]
     missing_global_temps = [t for t in global_temps if not _match_temp_covered(t, points_metrics)]
+
+    # Full Cartesian PVT product coverage whenever >= 2 of (corners, supplies, temps) are specified
+    missing_pvt_combinations = []
+    active_pvt_axes = (1 if global_conds else 0) + (1 if global_supplies else 0) + (1 if global_temps else 0)
+    if active_pvt_axes >= 2:
+        c_list = global_conds if global_conds else [None]
+        v_list = global_supplies if global_supplies else [None]
+        t_list = global_temps if global_temps else [None]
+        for c_req in c_list:
+            for v_req in v_list:
+                for t_req in t_list:
+                    combo_covered = False
+                    for pt_label in available_keys:
+                        pm = points_metrics[pt_label]
+                        if c_req is not None and not _match_condition_keys(c_req, [pt_label]):
+                            continue
+                        if v_req is not None and not _match_supply_covered(v_req, {pt_label: pm}):
+                            continue
+                        if t_req is not None and not _match_temp_covered(t_req, {pt_label: pm}):
+                            continue
+                        combo_covered = True
+                        break
+                    if not combo_covered:
+                        missing_pvt_combinations.append(_format_pvt_combo(c_req, v_req, t_req))
+
     missing_coverage_flags = []
     if mc_req_runs > 0 and _count_mc_points(points_metrics) < mc_req_runs:
         missing_coverage_flags.append("monte_carlo")
@@ -3424,6 +3733,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         or missing_global_analyses
         or missing_global_supplies
         or missing_global_temps
+        or missing_pvt_combinations
         or missing_coverage_flags
     )
     if fail_n > 0:
@@ -3465,6 +3775,8 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         summary_out["missing_supplies_V"] = missing_global_supplies
     if missing_global_temps:
         summary_out["missing_temperatures_C"] = missing_global_temps
+    if missing_pvt_combinations:
+        summary_out["missing_pvt_combinations"] = missing_pvt_combinations
     if missing_coverage_flags:
         summary_out["missing_coverage"] = missing_coverage_flags
     return summary_out
@@ -4071,7 +4383,12 @@ def run_self_test():
         assert _match_condition_keys("SS_-40C", ["SS_40C"]) == [], "SS_-40C condition must NEVER match SS_40C!"
         assert _match_condition_keys("SS_-40C", ["SS_-40C_1p62V"]) == ["SS_-40C_1p62V"]
         assert _count_mc_points({"iter1": {}, "iter2": {}}) == 0, "Generic iterN must NOT count as Monte Carlo!"
-        assert _count_mc_points({"mc1": {}, "monte_carlo_2": {}}) == 2
+        assert _count_mc_points({"mc1": {}, "monte_carlo_2": {}}) == 0, "Bare filename labels must NOT count as Monte Carlo!"
+        assert _count_mc_points({"pt1": {"mc_evidence": True}, "pt2": {"analyses_present": ["mc"]}}) == 2
+        assert _count_mc_points({"pt1": {"mc_evidence": True, "mc_runs_verified": 25}}) == 25
+        assert not _has_pex_point({"tt_mc1_pex": {}, "av_extracted": {}}), "Bare filename labels must NOT count as PEX!"
+        assert _has_pex_point({"pt1": {"pex_evidence": True}})
+        assert _has_pex_point({"pt1": {"analyses_present": ["pex"]}})
 
         # 21. #7 MOS op-audit: Cutoff PMOS with vgs > 0, Unknown Region Code, --expect-triode Missing OP Fields
         pmos_cut_psf = os.path.join(tmp_root, "pmos_cutoff.info")
@@ -4220,6 +4537,138 @@ def run_self_test():
         )
         assert ev_c_rng_fail["verdict"] == "FAIL", ev_c_rng_fail
 
+        # 26. Independent Max Power & Max Supply Current (Sweep + Multi-DC File)
+        indep_dir = os.path.join(tmp_root, "dc_indep_sweep")
+        _write_utf8(os.path.join(indep_dir, "dcSweep.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"s_t" FLOAT DOUBLE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"vdd_sw" "s_t"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+            '"vdd_sw" 0.0\n"VDD" 1.1\n"VDD:p" -1.0e-3\n'
+            '"vdd_sw" 1.0\n"VDD" 0.9\n"VDD:p" -1.2e-3\n'
+            'END\n'
+        ))
+        spec_idd_path = os.path.join(tmp_root, "spec_idd.json")
+        _write_utf8(spec_idd_path, json.dumps({
+            "requirements": [
+                {"id": "P1", "quantity": "dc_power_w", "operator": "<=", "target": 1.2, "unit": "mW"},
+                {"id": "I1", "quantity": "idd_a", "operator": "<=", "target": 1.1, "unit": "mA"},
+            ]
+        }))
+        res_indep = run_metrics(indep_dir, spec_path=spec_idd_path)
+        assert abs(res_indep["metrics"]["dc_power_w"] - 0.0011) < 1e-9, res_indep["metrics"]
+        assert abs(res_indep["metrics"]["idd_a"] - 0.0012) < 1e-9, res_indep["metrics"]
+        assert res_indep["metrics"]["max_power_idx"] == 0, res_indep["metrics"]
+        assert res_indep["metrics"]["max_idd_idx"] == 1, res_indep["metrics"]
+        assert res_indep["verdict"] == "FAIL", res_indep
+
+        indep_mf_dir = os.path.join(tmp_root, "dc_indep_multifile")
+        _write_utf8(os.path.join(indep_mf_dir, "dc1.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 1.1\n"VDD:p" "i_t" -1.0e-3\nEND\n'
+        ))
+        _write_utf8(os.path.join(indep_mf_dir, "dc2.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 0.9\n"VDD:p" "i_t" -1.2e-3\nEND\n'
+        ))
+        res_indep_mf = run_metrics(indep_mf_dir, spec_path=spec_idd_path)
+        assert abs(res_indep_mf["metrics"]["dc_power_w"] - 0.0011) < 1e-9, res_indep_mf["metrics"]
+        assert abs(res_indep_mf["metrics"]["idd_a"] - 0.0012) < 1e-9, res_indep_mf["metrics"]
+        assert res_indep_mf["verdict"] == "FAIL", res_indep_mf
+
+        # 27. Full Cartesian PVT Product Coverage (2x2x2 with only diagonal 2 points -> 6 missing combos -> NOT_VERIFIED)
+        pvt_spec = {
+            "coverage": {
+                "corners": ["TT", "SS"],
+                "supplies_V": [0.90, 1.10],
+                "temperatures_C": [-40, 125],
+            },
+            "requirements": [{"id": "G1", "quantity": "dc_gain_db", "operator": ">=", "target": 50.0, "unit": "dB"}],
+        }
+        ev_pvt_sparse = evaluate_spec(
+            {
+                "TT_0p90V_-40C": {"dc_gain_db": 60.0, "vdd_v": 0.90, "analyses_present": ["ac"]},
+                "SS_1p10V_125C": {"dc_gain_db": 58.0, "vdd_v": 1.10, "analyses_present": ["ac"]},
+            },
+            pvt_spec,
+        )
+        assert ev_pvt_sparse["verdict"] == "NOT_VERIFIED", ev_pvt_sparse
+        assert not ev_pvt_sparse.get("missing_corners"), ev_pvt_sparse
+        assert not ev_pvt_sparse.get("missing_supplies_V"), ev_pvt_sparse
+        assert not ev_pvt_sparse.get("missing_temperatures_C"), ev_pvt_sparse
+        assert len(ev_pvt_sparse.get("missing_pvt_combinations", [])) == 6, ev_pvt_sparse
+        assert "TT @ 1.1V @ 125C" in ev_pvt_sparse["missing_pvt_combinations"], ev_pvt_sparse
+
+        full_pvt_pts = {}
+        for c_k in ("TT", "SS"):
+            for v_k, v_lbl in ((0.90, "0p90V"), (1.10, "1p10V")):
+                for t_k, t_lbl in ((-40, "-40C"), (125, "125C")):
+                    full_pvt_pts["%s_%s_%s" % (c_k, v_lbl, t_lbl)] = {
+                        "dc_gain_db": 60.0,
+                        "vdd_v": v_k,
+                        "analyses_present": ["ac"],
+                    }
+        ev_pvt_full = evaluate_spec(full_pvt_pts, pvt_spec)
+        assert ev_pvt_full["verdict"] == "PASS", ev_pvt_full
+        assert "missing_pvt_combinations" not in ev_pvt_full, ev_pvt_full
+
+        # 28. Genuine MC & PEX Evidence (Spoofed `tt_mc1_pex`/`tt_mc2_pex` MUST fail closed; real artifacts pass)
+        spoof_dir = os.path.join(tmp_root, "spoof_mc_pex")
+        for s_name in ("tt_mc1_pex", "tt_mc2_pex"):
+            _write_utf8(os.path.join(spoof_dir, s_name, "dcOp.dc"), (
+                'HEADER\n"PSFversion" "1.00"\n'
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+                'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -1.0e-4\nEND\n'
+            ))
+        spec_mc_pex_path = os.path.join(tmp_root, "spec_mc_pex.json")
+        _write_utf8(spec_mc_pex_path, json.dumps({
+            "coverage": {"monte_carlo": 2, "post_layout": True},
+            "requirements": [{"id": "P_MC", "quantity": "dc_power_w", "operator": "<=", "target": 1.0, "unit": "mW"}],
+        }))
+        res_spoof = run_metrics(spoof_dir, spec_path=spec_mc_pex_path)
+        assert res_spoof["verdict"] == "NOT_VERIFIED", res_spoof
+        assert _count_mc_points(res_spoof["points"]) == 0, res_spoof["points"]
+        assert res_spoof["points"]["tt_mc1_pex"]["pex_evidence"] is False, res_spoof["points"]
+        assert res_spoof["points"]["tt_mc2_pex"]["pex_evidence"] is False, res_spoof["points"]
+        assert "monte_carlo" in res_spoof["spec_evaluation"].get("missing_coverage", []), res_spoof
+        assert "post_layout" in res_spoof["spec_evaluation"].get("missing_coverage", []), res_spoof
+
+        # Genuine MC (iteration sweep + header) & Genuine PEX (av_extracted header + parasitic RC + manifest JSON)
+        real_mc_pex_dir = os.path.join(tmp_root, "real_mc_pex")
+        _write_utf8(os.path.join(real_mc_pex_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n"cellview" "av_extracted"\n'
+            'TYPE\n"i_sw" INT LONG\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"iteration" "i_sw"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\n"cpar_out:i" "i_t"\nVALUE\n'
+            '"iteration" 1\n"VDD" 1.0\n"VDD:p" -1.0e-4\n"cpar_out:i" 1.0e-9\n'
+            '"iteration" 2\n"VDD" 1.0\n"VDD:p" -1.1e-4\n"cpar_out:i" 1.1e-9\n'
+            '"iteration" 3\n"VDD" 1.0\n"VDD:p" -1.2e-4\n"cpar_out:i" 1.2e-9\n'
+            'END\n'
+        ))
+        res_real_mp = run_metrics(real_mc_pex_dir, spec_path=spec_mc_pex_path)
+        assert res_real_mp["verdict"] == "PASS", res_real_mp
+        assert res_real_mp["metrics"]["mc_evidence"] is True, res_real_mp["metrics"]
+        assert res_real_mp["metrics"]["mc_runs_verified"] == 3, res_real_mp["metrics"]
+        assert res_real_mp["metrics"]["pex_evidence"] is True, res_real_mp["metrics"]
+        assert res_real_mp["metrics"]["parasitic_rc_count"] >= 1, res_real_mp["metrics"]
+
+        meta_mc_pex_dir = os.path.join(tmp_root, "meta_mc_pex")
+        _write_utf8(os.path.join(meta_mc_pex_dir, "psf", "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -1.0e-4\nEND\n'
+        ))
+        _write_utf8(os.path.join(meta_mc_pex_dir, "run_manifest.json"), json.dumps({
+            "monte_carlo": True,
+            "mc_runs": 50,
+            "pex_verified": True,
+        }))
+        res_meta_mp = run_metrics(meta_mc_pex_dir, spec_path=spec_mc_pex_path)
+        assert res_meta_mp["verdict"] == "PASS", res_meta_mp
+        assert res_meta_mp["metrics"]["mc_evidence"] is True, res_meta_mp["metrics"]
+        assert res_meta_mp["metrics"]["mc_runs_verified"] == 50, res_meta_mp["metrics"]
+        assert res_meta_mp["metrics"]["pex_evidence"] is True, res_meta_mp["metrics"]
+
         return {
             "command": "self-test",
             "ok": True,
@@ -4255,6 +4704,9 @@ def run_self_test():
                 "ac_descending_sweep_and_zero_vin_fail_closed",
                 "noise_si_prefix_asd_psd_and_zero_width_band_rejected",
                 "nonfinite_spec_targets_and_constraints_range_list",
+                "independent_dc_max_power_and_max_idd_sweep_and_multifile",
+                "cartesian_pvt_product_coverage_enforcement",
+                "genuine_mc_and_pex_evidence_anti_spoofing",
             ],
         }
     finally:

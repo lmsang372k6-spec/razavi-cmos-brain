@@ -76,7 +76,7 @@
   "roles": {
     "non_inverting_cross_coupled_input_stage_a1_a2": "Hai Op-Amp đầu vào không đảo A1, A2 nối chung điện trở đặt độ lợi R_G ở nhánh âm: đón tín hiệu bằng cực cổng MOS trở kháng GOhm, nhân tín hiệu vi sai lên (1 + 2*R1/RG) lần nhưng giữ nguyên tín hiệu đồng pha ở hệ số truyền bằng 1.",
     "four_resistor_subtractor_stage_a3": "Tầng khuếch đại trừ 4 điện trở R2-R3 dùng Op-Amp A3 loại bỏ thành phần đồng pha V_CM đi qua từ tầng 1 và chuyển đổi tín hiệu vi sai sang đơn đầu (hoặc vi sai đối xứng).",
-    "capacitive_chopper_bridge_cin_cfb": "Mạng tụ tỷ số chính xác C_in / C_fb đặt sau cầu băm đầu vào CH_in trong kiến trúc CFIA: thiết lập độ lợi đóng vòng C_in / C_fb không sinh nhiễu nhiệt điện trở và đẩy 1/f + V_OS ra khỏi băng gốc.",
+    "capacitive_chopper_bridge_cin_cfb": "Mạng tụ tỷ số chính xác C_in / C_fb đặt sau cầu băm đầu vào CH_in trong kiến trúc CFIA: thiết lập độ lợi đóng vòng C_in / C_fb không sinh nhiễu nhiệt điện trở, đồng thời băm lý tưởng đẩy V_OS và nhiễu 1/f của các tầng khuếch đại nằm giữa cầu băm vào và cầu băm ra lên hài lẻ f_chop (mọi nhiễu 1/f xuất hiện trước CH_in vẫn xuyên qua cả hai cầu băm quay về băng gốc, còn công tắc thực để lại độ lệch dư và gập nhiễu do sai lệch công tắc cùng phun điện tích).",
     "dc_servo_loop_dsl_integrator": "Vòng tích phân hằng số thời gian siêu lớn nối hồi tiếp âm từ ngõ ra quay về tụ trung hòa C_hp tại đầu vào, tạo cực thông cao 0.1-0.5 Hz triệt tiêu tới +-300 mV điện áp phân cực DC của điện cực sinh học.",
     "positive_feedback_impedance_booster_cpf": "Nhánh tụ nhỏ C_pf hồi tiếp dương cùng pha từ ngõ ra về trước cầu băm đầu vào để cấp bù gói điện tích nạp/xả cho C_in, nâng trở kháng vào hiệu dụng từ vài MOhm vọt lên hàng trăm MOhm - GOhm.",
     "ripple_reduction_loop_rrl": "Mạch cảm biến xoay chiều và giải điều chế đồng bộ sóng gợn tại f_chop để bơm dòng triệt tiêu trực tiếp V_OS của tầng đầu mà không cần bộ lọc thông thấp cồng kềnh."
@@ -154,7 +154,7 @@ Trong bộ khuếch đại băm hồi tiếp tụ (`CFIA`), tín hiệu vi sai �
 $$
 \overline{V_{n,\text{in}}^2}(f) = \left(\frac{C_{\text{in}} + C_{\text{fb}} + C_{gs,1}}{C_{\text{in}}}\right)^2 \cdot \frac{8 k T \gamma}{g_{m1}} \left(1 + \frac{g_{m,\text{load}}}{g_{m1}}\right)
 $$
-(Không có nhiễu $1/f$ ở băng gốc vì `tech-chopper-stabilization-vs-autozeroing` đã dời toàn bộ $V_{OS1}$ và nhiễu $1/f$ lên hài lẻ $f_{\text{chop}}$!).
+(Về lý tưởng, kỹ thuật băm `tech-chopper-stabilization-vs-autozeroing` chỉ điều biến $V_{OS}$ và nhiễu $1/f$ của **các tầng khuếch đại nằm giữa cầu băm đầu vào `CH_in` và cầu băm đầu ra `CH_out`** lên các hài lẻ của $f_{\text{chop}}$; mọi nhiễu $1/f$ hiện diện *trước* cầu băm đầu vào sẽ bị điều biến hai lần đi xuyên qua cả hai cầu băm quay trở lại băng gốc, đồng thời công tắc CMOS thực tế vẫn sinh ra độ lệch dư và gập nhiễu băng cao do sai lệch công tắc và phun điện tích chuyển mạch.)
 - **Vòng 1 — DC Servo Loop (`DSL`) Chặn Phân cực Điện cực $\pm V_{\text{eo,max}}$**: Một bộ tích phân Miller hằng số thời gian cực lớn $\tau_{\text{DSL}} = R_{\text{pseudo}} C_{\text{int}}$ (hoặc tích phân tụ chuyển mạch duty-cycled) lấy mẫu $V_{\text{out}}$, điều biến lên $f_{\text{chop}}$ và lái vào cặp tụ nhỏ $C_{\text{hp}}$ nối tại nút đất ảo đầu vào. Khi $V_{\text{out}}$ của bộ tích phân DSL quét hết biên độ nguồn $\pm V_{\text{DSL,max}}$ (ví dụ $\pm 1.0\text{ V}$), lượng điện áp DC đầu vào tối đa mà nó triệt tiêu được và tần số cắt thông cao (`high-pass filter` — `T803`) tạo ra là:
 $$
 \left|V_{\text{eo,max}}\right| = \frac{C_{\text{hp}}}{C_{\text{in}}} V_{\text{DSL,max}}, \qquad

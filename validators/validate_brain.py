@@ -252,6 +252,7 @@ def validate(
     # 3. Checklists validation
     cl_dir = os.path.join(KB_ROOT, "checklists")
     checklists = {}
+    seen_check_ids = {}
     if not os.path.isdir(cl_dir):
         errors.append("Missing kb/checklists/ directory")
     else:
@@ -271,6 +272,18 @@ def validate(
                 checks = cdata.get("checks")
                 if not isinstance(checks, list) or len(checks) < 3:
                     errors.append(f"Checklist {fn}: expected >= 3 checks")
+                if isinstance(checks, list):
+                    for idx, chk in enumerate(checks):
+                        chk_id = chk.get("id") if isinstance(chk, dict) else None
+                        if not isinstance(chk_id, str) or not chk_id.strip():
+                            errors.append(f"Checklist {fn}: check[{idx}] missing non-empty 'id'")
+                            continue
+                        if chk_id in seen_check_ids:
+                            errors.append(
+                                f"Duplicate checklist check id {chk_id!r}: {seen_check_ids[chk_id]} vs {fn}"
+                            )
+                        else:
+                            seen_check_ids[chk_id] = fn
                 checklists[expected_cid] = cdata
             except Exception as exc:
                 errors.append(f"Checklist {fn} parse error: {exc}")

@@ -200,13 +200,13 @@ Ngược hẳn với Buck converter (nơi bạn có thể chọn $f_c \approx f_
 1. **Xác định góc vận hành khắc nghiệt nhất:** Lấy $V_{in,\min}$ (kể cả sụt áp dây nguồn $I_{in,\max} R_{\text{trace}}$), $I_{load,\max}$, ước lượng hiệu suất góc xấu nhất $\eta_{\min} \approx 0{,}85$ để tính hệ số lấp đầy thực tế $D_{\max} = 1 - \dfrac{\eta_{\min} V_{in,\min}}{V_{out}}$ (lớn hơn $D_{\text{ideal}}$ đáng kể!).
 2. **Chọn $L$ nhỏ nhất có thể chấp nhận được** (theo giới hạn dòng đỉnh MOSFET $I_{\text{pk}} \le I_{\text{SOA}}$ và gợn dòng $r_i \approx 0{,}4\text{–}0{,}6$): tính $f_{z,\text{RHP},\min}$ với $L_{\max} = 1{,}2\,L_{\text{nom}}$ và $R_{load,\min} = \frac{V_{out}}{I_{load,\max}}$.
 3. **Chốt tần số cắt mục tiêu $f_c$ tại góc xấu nhất:** Khóa cứng $f_c = 0{,}22\,f_{z,\text{RHP},\min}$ (chỉ mất $\arctan(0{,}22) = 12{,}4^\circ$ pha cho RHP zero!).
-4. **Định cỡ tụ ngõ ra thực tế $C_{\text{eff}}$ bù cho băng thông thấp và nhịp sụt ban đầu:** Vì vòng điều khiển bị khóa băng thông ở $f_c$ thấp và còn mất thêm thời gian chờ dòng $i_L$ vượt ngưỡng $\Delta I_L = \frac{\Delta I_{load}}{\eta_{\min}(1 - D_{\max})}$ (với $1 - D_{\max} = \frac{\eta_{\min} V_{in,\min}}{V_{out}}$ nhất quán hiệu suất $\eta_{\min}$), tụ lọc phải một mình gánh bước nhảy tải $\Delta I_{load}$ trong khoảng thời gian $\Delta t_{\text{resp}} \approx \frac{1}{2\pi f_c} + \frac{L\,\Delta I_{load}}{\eta_{\min}(1 - D_{\max}) V_{in,\min}}$, đòi hỏi:
+4. **Định cỡ tụ ngõ ra thực tế $C_{\text{eff}}$ bù cho băng thông thấp và nhịp sụt ban đầu:** Vì vòng điều khiển bị khóa băng thông ở $f_c$ thấp và còn mất thêm thời gian chờ dòng $i_L$ dốc lên đủ lượng $\Delta I_L = \frac{\Delta I_{load}}{1 - D_{\max}} = \frac{V_{out}\,\Delta I_{load}}{\eta_{\min} V_{in,\min}}$ (theo cân bằng điện tích qua chu kỳ với $1 - D_{\max} = \frac{\eta_{\min} V_{in,\min}}{V_{out}}$ đã bao hàm hiệu suất $\eta_{\min}$, không nhân lặp $\eta_{\min}$ thêm lần nữa), tụ lọc phải một mình gánh bước nhảy tải $\Delta I_{load}$ trong khoảng thời gian $\Delta t_{\text{resp}} \approx \frac{1}{2\pi f_c} + \Delta t_{\text{slew}}$ với $\Delta t_{\text{slew}} = \frac{L\,\Delta I_L}{V_{in,\min}} = \frac{L\,\Delta I_{load}}{(1 - D_{\max}) V_{in,\min}} = \frac{L\,\Delta I_{load}\,V_{out}}{\eta_{\min} V_{in,\min}^2} = \frac{\eta_{\min}\,L\,\Delta I_{load}}{(1 - D_{\max})^2 V_{out}}$, đòi hỏi:
 
 $$
-C_{\text{eff}}(V_{out}) \ge \frac{\Delta I_{load}}{\Delta V_{\text{droop,max}}} \left( \frac{1}{2\pi f_c} + \frac{L\,\Delta I_{load}}{\eta_{\min}\left(1 - D_{\max}\right) V_{in,\min}} \right) = \frac{\Delta I_{load}}{\Delta V_{\text{droop,max}}} \left( \frac{1}{2\pi f_c} + \frac{L\,\Delta I_{load}}{\left(1 - D_{\max}\right)^2 V_{out}} \right)
+C_{\text{eff}}(V_{out}) \ge \frac{\Delta I_{load}}{\Delta V_{\text{droop,max}}} \left( \frac{1}{2\pi f_c} + \frac{L\,\Delta I_{load}}{\left(1 - D_{\max}\right) V_{in,\min}} \right) = \frac{\Delta I_{load}}{\Delta V_{\text{droop,max}}} \left( \frac{1}{2\pi f_c} + \frac{L\,\Delta I_{load}\,V_{out}}{\eta_{\min} V_{in,\min}^2} \right) = \frac{\Delta I_{load}}{\Delta V_{\text{droop,max}}} \left( \frac{1}{2\pi f_c} + \frac{\eta_{\min}\,L\,\Delta I_{load}}{\left(1 - D_{\max}\right)^2 V_{out}} \right)
 $$
 
-   *(Lưu ý nhất quán hiệu suất: đẳng thức trên đúng tuyệt đối vì $\eta_{\min} V_{in,\min} = (1 - D_{\max}) V_{out}$ khi tính $\Delta I_L = \frac{\Delta I_{load}}{\eta_{\min}(1 - D_{\max})}$; nếu bỏ qua $\eta_{\min}$ ở $\Delta I_L$ thì chỉ được quy đổi hai vế khi giả sử lý tưởng $\eta = 1$.)*
+   *(Lưu ý nhất quán hiệu suất: cân bằng điện tích trên tụ ngõ ra cho chính xác $\Delta I_L = \frac{\Delta I_{load}}{1 - D_{\max}}$; vì $1 - D_{\max} = \frac{\eta_{\min} V_{in,\min}}{V_{out}}$ đã chứa $\eta_{\min}$ nên $V_{in,\min} = \frac{(1 - D_{\max}) V_{out}}{\eta_{\min}}$, suy ra trực tiếp $\frac{L\,\Delta I_{load}}{(1 - D_{\max}) V_{in,\min}} = \frac{L\,\Delta I_{load}\,V_{out}}{\eta_{\min} V_{in,\min}^2} = \frac{\eta_{\min}\,L\,\Delta I_{load}}{(1 - D_{\max})^2 V_{out}}$ mà không đếm trùng $\eta_{\min}$.)*
 
 5. **Đặt ngưỡng kẹp cứng $D_{\text{clamp}}$ trong bộ điều chế PWM:** Tính $R_{eq,\max}$ ở góc `SS, 125°C` (khi $R_{on,\text{MOS}}$ tăng gấp $1{,}6\text{–}2{,}0\times$ so với `TT, 27°C`!), đảm bảo $D_{\text{clamp}} \le 0{,}85 \times \left(1 - \sqrt{\frac{R_{eq,\max}}{R_{load,\min}}}\right)$ và luôn chừa thời gian xả tối thiểu $t_{\text{off},\min} \ge 80\text{–}150\text{ ns}$ để xả từ cuộn cảm.
 
@@ -221,7 +221,7 @@ $$
    [2] Dự trữ pha & Dự trữ biên:   PM_pstb >= 50 deg  AND  GM_pstb >= 10 dB across all PVT
    [3] Chống đảo dấu độ lợi DC:    D_max_operating <= D_clamp <= 0.85 * (1 - sqrt(R_eq_SS125 / R_load_min))
    [4] Phục hồi sụt áp ngược pha:  Vout_min_during_load_step >= Vout_nom - V_droop_spec (với C_eff đã trừ DC-bias)
-   [5] Chống bão hòa dòng vào:     I_in_pk = I_load_max / ((1 - D_max)*eta_min) + dI_L/2 <= 0.80 * I_sat_L
+   [5] Chống bão hòa dòng vào:     I_in_pk = I_load_max / (1 - D_max) + dI_L/2 = V_out*I_load_max / (eta_min*V_in_min) + dI_L/2 <= 0.80 * I_sat_L
    ```
 
 ---

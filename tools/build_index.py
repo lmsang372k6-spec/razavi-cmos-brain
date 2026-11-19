@@ -1144,8 +1144,7 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
         ssot_skill_dir = os.path.join(REPO_ROOT, "skills", "analog-design")
         rt_skill_dir = os.path.join(RUNTIME_ROOT, "skills", "analog-design")
         if os.path.isdir(ssot_skill_dir):
-            if os.path.isdir(rt_skill_dir):
-                shutil.rmtree(rt_skill_dir)
+            expected_skill_rels = set()
             for s_root, s_dirs, s_files in os.walk(ssot_skill_dir):
                 s_dirs[:] = sorted(d for d in s_dirs if d != "__pycache__")
                 rel_sub = os.path.relpath(s_root, ssot_skill_dir)
@@ -1156,9 +1155,23 @@ def build_indices(normalize_cards=False, merge_edges=False, cleanup_fragments=Tr
                         continue
                     src_fp = os.path.join(s_root, s_fn)
                     dst_fp = os.path.join(dst_dir, s_fn)
+                    rel_skill = os.path.relpath(src_fp, ssot_skill_dir).replace("\\", "/")
+                    expected_skill_rels.add(rel_skill)
                     raw_skill = open(src_fp, "rb").read().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-                    with open(dst_fp, "wb") as df:
-                        df.write(raw_skill)
+                    if (not os.path.isfile(dst_fp)) or open(dst_fp, "rb").read() != raw_skill:
+                        with open(dst_fp, "wb") as df:
+                            df.write(raw_skill)
+            if os.path.isdir(rt_skill_dir):
+                for d_root, d_dirs, d_files in os.walk(rt_skill_dir, topdown=False):
+                    for d_fn in d_files:
+                        full_dst = os.path.join(d_root, d_fn)
+                        rel_dst = os.path.relpath(full_dst, rt_skill_dir).replace("\\", "/")
+                        if rel_dst not in expected_skill_rels:
+                            os.unlink(full_dst)
+                    for d_dir in d_dirs:
+                        full_sub = os.path.join(d_root, d_dir)
+                        if os.path.isdir(full_sub) and not os.listdir(full_sub):
+                            os.rmdir(full_sub)
 
         rt_manifest_fp = os.path.join(RUNTIME_ROOT, "manifest.json")
         rt_entries = []
