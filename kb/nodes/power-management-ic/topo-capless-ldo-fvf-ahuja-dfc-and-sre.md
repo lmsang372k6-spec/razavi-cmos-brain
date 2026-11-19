@@ -191,7 +191,7 @@ $$
 ## 3. Bất biến Cấu trúc & Các Bẫy Lỗi Kinh điển trên Silicon (Invariants & Traps)
 
 - **[INV-CLDO-01] Kiểm Toán Bắt Buộc Đồ Thị Nyquist & `Gain Margin` Tại $I_{\text{load}} = 0\text{ A}$ (`CHK-LDO-07`):** Trong trình tính toán của ADE/Spectre, hàm `phaseMargin()` mặc định chỉ tìm tần số cắt $0\text{ dB}$ **đầu tiên** ($\omega_{u1}$) và đọc pha tại đó! Trong Capless LDO 3 tầng thiếu DFC ở không tải, tại $\omega_{u1} = 1\text{ MHz}$ pha vẫn ở $-120^\circ$ nên hàm tự động báo xanh giả tạo `PM = +60 deg`, nhưng ở $\omega_n = 8\text{ MHz}$ đỉnh cộng hưởng cặp cực phức nhô vọt qua $+6\text{ dB}$ tại pha $-185^\circ$ làm chip **dao động điên cuồng ngay khi vừa nhả tải**! Bắt buộc kiểm tra đồng thời `gainMargin() >= 10 dB` VÀ kiểm tra cực đại hàm truyền vòng kín `ymax(dB20(VF("/vout")/VF("/vref_ac"))) <= 2.5 dB`!
-- **[INV-CLDO-02] Cấm Tuyệt Đối Gắn Tụ Lọc Từ Cực Cổng `G_PASS` Của PMOS Xuống Đất `VSS` (`CHK-LDO-04`):** Nhiều người thấy nút cổng $M_{\text{pass}}$ có nhiễu hoặc muốn hạ cực liền mắc một tụ $C_g$ từ `G_PASS` xuống `VSS`. Việc này khóa cứng $A_{g,\text{sup}}(jf) \to 0$ ở cao tần, biến toàn bộ gợn sóng từ bộ Buck phía trước trên $V_{\text{IN}}$ thành điện áp điều khiển cổng–nguồn $\hat{v}_{sg} = \hat{v}_{\text{in}}$, khiến $M_{\text{pass}}$ khuếch đại nhiễu nguồn bơm thẳng xuống tải ($\text{PSRR}$ sụp về $< 0\text{ dB}$)! Mọi tụ Miller/lọc cổng của PMOS pass chỉ được phép nối tới `VIN` hoặc `VOUT` (qua nhánh bù)!
+- **[INV-CLDO-02] Hợp đồng Theo Dải Tần Cho Tham Chiếu & Tụ Lọc Cực Cổng `G_PASS` Của PMOS (`CHK-LDO-04`):** Trong dải DC và trung tần nơi $g_{m,\text{pass}} \gg \omega C_{GD,\text{pass}}$, bắt buộc giữ tầng lái cổng tham chiếu nguồn lên `VIN` sao cho $A_{g,\text{sup}} \approx 1$ ($\hat{v}_{sg} \approx 0$): nếu mắc tụ $C_g$ từ `G_PASS` xuống `VSS` trong vùng này, $A_{g,\text{sup}} \to 0$ sẽ biến toàn bộ gợn `VIN` thành điện áp điều khiển $\hat{v}_{sg} = \hat{v}_{\text{in}}$ khiến $M_{\text{pass}}$ khuếch đại nhiễu nguồn bơm thẳng xuống tải ($\text{PSRR}$ trung tần sụp đổ!). Ngược lại, trong vùng **siêu cao tần truyền thẳng điện dung** ($\omega C_{GD,\text{pass}} \gg g_{m,\text{pass}}$, ví dụ dải $\text{GHz}$, theo hàm truyền trên với $H \approx \frac{C_{SD} + A_{g,\text{sup}} C_{GD}}{C_{\text{OUT}} + C_{SD} + C_{GD}}$), việc kéo nút cổng về đất AC ($A_{g,\text{sup}} \to 0$) thực chất **làm giảm truyền thẳng điện dung qua $C_{GD,\text{pass}}$ và cải thiện HF PSRR**, đổi lại phải trả giá bằng **suy giảm PSRR trung tần và dịch chuyển cực nút cổng**! Do đó, bất kỳ chỉnh sửa nào trên mạng lọc/tham chiếu cực cổng bắt buộc phải qua kiểm toán đồng thời `PSRR(f)` toàn dải (DC tới $\text{GHz}$) và `stb` (`PM/GM`) trên toàn bộ dải tải.
 - **[TRAP-CLDO-01] Dao động Chu kỳ Giới hạn (`Limit-Cycle Ringing`) Do Mạch Động `SRE` Quá Nhạy:** Nếu đặt ngưỡng kích của SRE và $M_{\text{sink}}$ quá sát điểm cân bằng ($\pm 5\text{ mV}$) với độ lợi dòng xung quá lớn, cú giật kéo cổng của SRE làm $V_{\text{OUT}}$ vọt ngược qua ngưỡng dương, kích nổ tiếp nhánh $M_{\text{sink}}$ kéo sập $V_{\text{OUT}}$ xuống ngưỡng âm, tạo thành vòng tự kích qua lại không bao giờ tắt! Quy tắc an toàn: đặt vùng chết tĩnh (dead-zone) tối thiểu $\pm 25\text{–}40\text{ mV}$ quanh điểm cân bằng cho nhánh kẹp mạnh và giới hạn hằng số thời gian cao thông $\tau_{\text{SRE}} = R_{\text{SRE}} C_{\text{SRE}}$ nhỏ hơn $\dfrac{1}{3 \cdot 2\pi f_u}$!
 
 ---
@@ -208,30 +208,30 @@ $$
 
 ## 5. Quy trình Định cỡ 5 Bước Cho Capless Ahuja-DFC LDO & Testbench Spectre 15.1
 
-### 5.1. Quy trình Định cỡ Thiết kế ($V_{\text{IN}} = 1{,}2\text{ V} \to V_{\text{OUT}} = 1{,}0\text{ V}$, $I_{\max} = 50\text{ mA}$, $C_{\text{OUT}} = 100\text{ pF}$, $I_Q = 20\,\mu\text{A}$)
+### 5.1. Quy trình Định cỡ Thiết kế ($V_{\text{IN}} = 1{,}2\text{ V} \to V_{\text{OUT}} = 1{,}0\text{ V}$, $I_{\max} = 50\text{ mA}$, $C_{\text{OUT}} = 100\text{ pF}$, $I_Q = 20{,}0\,\mu\text{A}$)
 1. **Định cỡ PMOS truyền $M_{\text{pass}}$ tại góc chậm nhất (`SS, 125 °C`):** Ngân sách dropout $V_{\text{DO}} = 200\text{ mV}$. Dành $30\text{ mV}$ cho sụt áp kim loại định tuyến $\implies |V_{DS,\text{sat,pass}}| \le 170\text{ mV}$ ($\implies g_m/I_D \approx 11\text{–}12\text{ V}^{-1}$). Tra LUT `gmid_lut.py` tại $L = 100\text{ nm}$ (trên $90\text{ nm}$ CMOS) thu được $W_{\text{pass}} \approx 3{,}6\text{ mm}$ (chia $nf = 720$ ngón chẵn $5\,\mu\text{m}$ để giảm một nửa $C_{SD,\text{pass}} \approx 2{,}8\text{ pF}$, tổng $C_{G,\text{pass}} \approx 6{,}2\text{ pF}$).
-2. **Đặt dòng rỉ cầu chia tối thiểu (`Bleeder Floor`):** Chọn $R_{\text{FB1}} = 66{,}7\text{ k}\Omega, R_{\text{FB2}} = 100\text{ k}\Omega$ ($V_{\text{REF}} = 0{,}6\text{ V}$) tạo dòng rỉ nền cố định $I_{\text{bleed}} = \frac{1{,}0\text{ V}}{166{,}7\text{ k}\Omega} = 6{,}0\,\mu\text{A}$. Ở $I_{\text{load}} = 0$, $M_{\text{pass}}$ vẫn dẫn $6\,\mu\text{A}$ vùng dưới ngưỡng ($g_{m,\text{pass,min}} = \frac{6\,\mu\text{A}}{1{,}35 \times 26\text{ mV}} \approx 170\,\mu\text{S}$ — không bao giờ tụt về $0$, và vượt xa dòng rò tắt $I_{\text{off}} \approx 0{,}4\,\mu\text{A}$ ở `FF, 125 °C` theo `CHK-LDO-05`!).
-3. **Định cỡ Tầng 1 Folded-Cascode + Bù Ahuja $C_c$:** Chọn $C_c = 6\text{ pF}$ trả dòng về cực nguồn cascode NMOS ($g_{m,\text{cas}} = 220\,\mu\text{S}$). Để đạt tần số cắt $f_u = \frac{\beta G_{m1}}{2\pi C_c} = 4{,}5\text{ MHz}$ (với $\beta = 0{,}6$), suy ra $G_{m1} = \frac{2\pi \cdot 4{,}5\text{ MHz} \cdot 6\text{ pF}}{0{,}6} = 283\,\mu\text{S}$ (tốn $I_{\text{tail}} \approx 28\,\mu\text{A}$ hoặc $16\,\mu\text{A}$ với cặp vi sai dưới ngưỡng $g_m/I_D = 18\text{ V}^{-1}$!).
-4. **Định cỡ Tầng Đệm Cổng Tham chiếu `VIN` & Nhánh `DFC`:** Dùng bộ đệm Super Source Follower PMOS tham chiếu lên `VIN` ($R_{\text{buf}} \approx 600\,\Omega$) kèm nhánh giảm chấn $C_{\text{DFC}} = 2{,}5\text{ pF} + R_{\text{DFC}} = 12\text{ k}\Omega$ đảm bảo tại $I_{\text{load}} = 0$: $\zeta \approx 0{,}68$, $\text{PM} = 61^\circ$, $\text{GM} = 15\text{ dB}$!
-5. **Định cỡ Mạch Động `SRE` + Kẹp Hút `M_sink`:** Chọn $C_{\text{SRE}} = 1{,}5\text{ pF}$, hệ số gương dòng xung $K_{\text{SRE}} = 12$; transistor hút vọt lố NMOS $M_{\text{sink}}$ ($W/L = 40\,\mu\text{m}/100\text{ nm}$) đặt lệch ngưỡng $+45\text{ mV}$ giữ cả sụt áp lẫn vọt lố dưới $\pm 65\text{ mV}$ cho bước nhảy $0 \leftrightarrow 50\text{ mA}$ cạnh $1\text{ ns}$!
+2. **Đặt dòng rỉ cầu chia tối thiểu (`Bleeder Floor` — $4{,}0\,\mu\text{A}$):** Chọn $R_{\text{FB1}} = 100\text{ k}\Omega, R_{\text{FB2}} = 150\text{ k}\Omega$ ($V_{\text{REF}} = 0{,}6\text{ V}$, $\beta = \frac{150}{100 + 150} = 0{,}6$) tạo dòng rỉ nền cố định $I_{\text{bleed}} = \frac{1{,}0\text{ V}}{250\text{ k}\Omega} = \mathbf{4{,}0\,\mu\text{A}}$. Ở $I_{\text{load}} = 0$, $M_{\text{pass}}$ vẫn dẫn $4{,}0\,\mu\text{A}$ vùng dưới ngưỡng ($g_{m,\text{pass,min}} = \frac{4{,}0\,\mu\text{A}}{1{,}35 \times 26\text{ mV}} \approx 114\,\mu\text{S}$ — không bao giờ tụt về $0$, và lớn gấp $10\times$ dòng rò tắt $I_{\text{off}} \approx 0{,}4\,\mu\text{A}$ ở `FF, 125 °C` theo `CHK-LDO-05`!).
+3. **Định cỡ Tầng 1 Folded-Cascode + Bù Ahuja $C_c$ ($11{,}0\,\mu\text{A}$ tổng):** Chọn cặp vi sai đầu vào phân cực ở $g_m/I_D = 20\text{ V}^{-1}$ với gương dòng tải $1:1$ cho ngõ ra dòng vi sai cân bằng ($I_{\text{tail}} = 2 G_{m1} / (g_m/I_D)$): chọn $I_{\text{tail}} = \mathbf{6{,}0\,\mu\text{A}}$ ($3{,}0\,\mu\text{A}$ mỗi bên $\implies G_{m1} = g_{m1} = 20 \times 3{,}0\,\mu\text{A} = \mathbf{60\,\mu\text{S}}$) và hai nhánh gập ngõ ra $2 \times 2{,}5\,\mu\text{A} = \mathbf{5{,}0\,\mu\text{A}}$ ($g_{m,\text{cas}} = \mathbf{50\,\mu\text{S}}$), tổng dòng tầng Folded-Cascode $= 6{,}0 + 5{,}0 = \mathbf{11{,}0\,\mu\text{A}}$. Chọn tụ bù Ahuja $C_c = \mathbf{1{,}5\text{ pF}}$ trả về cực nguồn cascode NMOS để đạt tần số cắt $f_u = \frac{\beta G_{m1}}{2\pi C_c} = \frac{0{,}6 \times 60\,\mu\text{S}}{2\pi \times 1{,}5\text{ pF}} = \mathbf{3{,}82\text{ MHz}}$!
+4. **Định cỡ Tầng Đệm Cổng Tham chiếu `VIN` & Nhánh `DFC` ($4{,}0\,\mu\text{A}$):** Dùng bộ đệm Super Source Follower PMOS tham chiếu lên `VIN` ($R_{\text{buf}} \approx 600\,\Omega$) kèm nhánh giảm chấn $C_{\text{DFC}} = 2{,}5\text{ pF} + R_{\text{DFC}} = 12\text{ k}\Omega$ tiêu thụ $\mathbf{4{,}0\,\mu\text{A}}$, đảm bảo tại $I_{\text{load}} = 0$: $\zeta \ge 0{,}65$, $\text{PM} \ge 58^\circ$, $\text{GM} \ge 12\text{ dB}$!
+5. **Định cỡ Mạch Động `SRE` + Kẹp Hút `M_sink` ($1{,}0\,\mu\text{A}$ nền) & Tổng hợp KCL $I_Q$:** Phân bổ $\mathbf{1{,}0\,\mu\text{A}}$ cho mạch phân cực/tạo ngưỡng tĩnh `SRE` (nhánh kéo/hút chính giữ dưới ngưỡng $< 10\text{ nA}$), chọn $C_{\text{SRE}} = 1{,}5\text{ pF}$, hệ số gương dòng xung $K_{\text{SRE}} = 12$, và transistor hút vọt lố NMOS $M_{\text{sink}}$ ($W/L = 40\,\mu\text{m}/100\text{ nm}$) đặt lệch ngưỡng $+45\text{ mV}$ giữ cả sụt áp lẫn vọt lố dưới $\pm 65\text{ mV}$ cho bước nhảy $0 \leftrightarrow 50\text{ mA}$ cạnh $1\text{ ns}$. Tổng dòng tĩnh toàn chip khép kín đúng: $I_Q = 4{,}0\text{ (Bleeder)} + 11{,}0\text{ (Folded-Cascode)} + 4{,}0\text{ (Buffer+DFC)} + 1{,}0\text{ (Bias/SRE)} = \mathbf{20{,}0\,\mu\text{A}}$!
 
 ### 5.2. Deck Kiểm chứng Spectre 15.1 Quét Nền Tải $0 \to 50\text{ mA}$ (`STB + XF PSRR + 1ns Load-Step/Release`)
 ```scs
-// Spectre 15.1 Capless SoC LDO (Cout = 100 pF) Zero-Load Damping, PSRR & 1ns SRE Transient Suite
+// Spectre 15.1 Capless SoC LDO (Cout = 100 pF, IQ = 20.0 uA) Zero-Load Damping, PSRR & 1ns SRE Transient Suite
 simulator lang=spectre
 global 0
 
 parameters vin=1.2 vref=0.6 iload=0 c_out_soc=100p
-parameters gm1=280u ro1=2.5M gm_cas=240u r_buf=600 c_gpass=6.2p
-parameters c_ahuja=6p c_dfc=2.5p r_dfc=12k c_sre=1.5p
+parameters gm1=60u ro1=2.5M gm_cas=50u r_buf=600 c_gpass=6.2p
+parameters c_ahuja=1.5p c_dfc=2.5p r_dfc=12k c_sre=1.5p
 
 VIN_SRC  (vin 0)  vsource dc=vin mag=1
 VREF_SRC (vref 0) vsource dc=vref
 
 // Đầu dò STB kiểm định đồng thời Phase Margin, Gain Margin & Đỉnh cộng hưởng cực phức ở iload = 0!
 IPRB_CLDO (vout vout_fb) iprobe
-RFB1      (vout_fb fb) resistor r=66.7k
-RFB2      (fb 0)       resistor r=100k
+RFB1      (vout_fb fb) resistor r=100k
+RFB2      (fb 0)       resistor r=150k
 
 // Tầng 1 OTA + Nút nguồn Cascode nhận dòng bù Ahuja C_c từ VOUT (chặn 100% đường RHP zero!)
 G_IN1     (0 n_cas fb vref) vccs gm=gm1
@@ -247,9 +247,9 @@ C_G_PASS  (g_pass vin)             capacitor c=c_gpass
 R_DFC_NET (g_pass n_dfc)           resistor r=r_dfc
 C_DFC_NET (n_dfc vout)             capacitor c=c_dfc
 
-// Phần tử truyền PMOS M_pass (hỗ dẫn phụ thuộc dòng thực từ vùng dưới ngưỡng 6uA lên 50mA) + Ký sinh C_SD
+// Phần tử truyền PMOS M_pass (hỗ dẫn phụ thuộc dòng thực từ vùng dưới ngưỡng 4uA lên 50mA) + Ký sinh C_SD
 B_MPASS   (vin vout) bsource i=max(0.0, 22m*pow(max(v(vin, g_pass) - 0.32, 0.0) + 0.035*ln(1 + exp((v(vin, g_pass)-0.32)/0.035)), 1.6)) * tanh(8*v(vin, vout))
-R_RO_PASS (vin vout) resistor r=400/(iload + 6u + 0.1m)
+R_RO_PASS (vin vout) resistor r=400/(iload + 4u + 0.1m)
 C_SD_PASS (vin vout) capacitor c=2.8p
 
 // Mạch Tăng tốc Động Ghép Tụ SRE (0 A tĩnh) & Công tắc Hút Dòng Chống Vọt Lố Nhả Tải M_sink

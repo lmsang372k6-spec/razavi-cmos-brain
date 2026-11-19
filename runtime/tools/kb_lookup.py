@@ -149,7 +149,7 @@ TOPIC_PRIORITY_RULES = (
     ),
     (
         re.compile(r"\b(slope\s+compensation|slope\s+comp|subharmonic|cmc|current\s+mode\s+control|cot|constant\s+on\s+time)\b"),
-        None,
+        re.compile(r"\bsong\s+hai\s+duoi\b"),
         (
             "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
             "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
@@ -206,12 +206,57 @@ TOPIC_PRIORITY_RULES = (
     ),
     (
         re.compile(r"\bcurrent\s+mirror\b"),
-        re.compile(r"\b(cascode|wide\s+swing|lvccml|wilson|regulated|diff\s*pair|differential\s+pair)\b"),
+        re.compile(r"\b(cascode|wide\s+swing|lvccml|wilson|regulated|diff\s*pair|differential\s+pair|active\s+current\s+mirror\s+load|tai\s+guong\s+dong)\b"),
         (
             "topo-basic-current-mirror",
             "topo-cascode-current-mirror",
             "topo-lvccml-wide-swing-mirror",
             "topo-wilson-and-regulated-current-mirrors",
+        ),
+    ),
+    (
+        re.compile(r"\b(bo\s+khuech?\s+dai\s+vi\s+sai\s+tai\s+guong\s+dong|vi\s+sai\s+tai\s+guong\s+dong|tai\s+guong\s+dong|diff\s*pair\s+active\s+current\s+mirror\s+load|differential\s+pair\s+with\s+active\s+current\s+mirror\s+load|active\s+current\s+mirror\s+load)\b"),
+        None,
+        (
+            "topo-diff-pair-active-current-mirror-load",
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-five-transistor-ota",
+        ),
+    ),
+    (
+        re.compile(r"\b(gain\s+boosted\s+cascode|gain\s+boosted|gain\s+boost|gainboost)\b"),
+        None,
+        (
+            "topo-gain-boosted-cascode",
+            "topo-regulated-cascode-super-source-follower",
+            "skill-folded-cascode-and-gainboost-sizing-flow",
+        ),
+    ),
+    (
+        re.compile(r"\btelescopic(?:\s+(?:op\s*amp|opamp|cascode))?\b"),
+        None,
+        (
+            "topo-telescopic-cascode-opamp",
+            "topo-folded-cascode-ota",
+            "topo-gain-boosted-cascode",
+        ),
+    ),
+    (
+        re.compile(r"\bsong\s+hai\s+duoi\b.*\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai)\b|\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai)\b.*\bsong\s+hai\s+duoi\b"),
+        None,
+        (
+            "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        ),
+    ),
+    (
+        re.compile(r"\b(song\s+hai\s+duoi|cap\s+cuc\s+zero|doublet)\b"),
+        re.compile(r"\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai|slope\s+comp|slope\s+compensation|subharmonic|buck|boost|pwm|dcdc)\b"),
+        (
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-diff-pair-active-current-mirror-load",
+            "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
         ),
     ),
     (
@@ -416,15 +461,33 @@ def fold_ascii(value):
     return cleaned.strip()
 
 
+_SYNONYM_PATTERNS = (
+    (re.compile(r"\boutput\s+capacitor\s*less\b"), "capless"),
+    (re.compile(r"\bcapacitor\s*less\b"), "capless"),
+    (re.compile(r"\bcap\s+less\b"), "capless"),
+    (re.compile(r"\bocl\s+ldo\b"), "capless ldo"),
+    (re.compile(r"\bgainboosted\b"), "gain boosted"),
+    (re.compile(r"\bgainboost\b"), "gain boost"),
+    (re.compile(r"\bsub\s+harmonic\b"), "subharmonic"),
+    (re.compile(r"\bdiffpair\b"), "diff pair"),
+    (re.compile(r"\bbo\s+khuec\s+dai\b"), "bo khuech dai"),
+    (re.compile(r"\btelescopic\s+op\s+amp\b"), "telescopic opamp"),
+)
+_WS_RE = re.compile(r"\s+")
+_SUBWORD_SPLIT_RE = re.compile(r"[/+.\s]+")
+_QUERY_STOPWORDS = set([
+    "bo", "mach", "the", "a", "an", "of", "for", "with", "in", "on",
+    "to", "by", "at", "from", "and", "or", "is", "are", "va", "cho", "cua",
+])
+
+
 def _normalize_query_synonyms(q_fold):
     if not q_fold:
         return u""
     s = to_text(q_fold)
-    s = re.sub(r"\boutput\s+capacitor\s*less\b", "capless", s)
-    s = re.sub(r"\bcapacitor\s*less\b", "capless", s)
-    s = re.sub(r"\bcap\s+less\b", "capless", s)
-    s = re.sub(r"\bocl\s+ldo\b", "capless ldo", s)
-    s = re.sub(r"\s+", " ", s).strip()
+    for pat, repl in _SYNONYM_PATTERNS:
+        s = pat.sub(repl, s)
+    s = _WS_RE.sub(" ", s).strip()
     return s
 
 
@@ -594,24 +657,57 @@ def score_node_match(node, q_fold, q_tokens):
             )
         )
 
+    sig_tokens = [t for t in q_tokens if t not in _QUERY_STOPWORDS]
+    if not sig_tokens:
+        sig_tokens = list(q_tokens)
+    sig_cnt = len(sig_tokens)
+
+    id_words = set(nid_f.split()) | set(_SUBWORD_SPLIT_RE.split(nid_f))
+    title_f = vi_f + u" " + en_f
+    title_words = set(title_f.split()) | set(_SUBWORD_SPLIT_RE.split(title_f))
+    hay_words = set(hay.split()) | set(_SUBWORD_SPLIT_RE.split(hay))
+
+    id_tok_hits = 0
+    title_id_tok_hits = 0
+    hay_tok_hits = 0
+    exact_word_hits = 0
+    for tok in sig_tokens:
+        in_id = (tok in id_words) or (len(tok) >= 4 and tok in nid_f)
+        in_title = (tok in title_words) or (len(tok) >= 4 and (tok in vi_f or tok in en_f))
+        if in_id:
+            id_tok_hits += 1
+        if in_id or in_title:
+            title_id_tok_hits += 1
+        if (tok in hay_words) or (len(tok) >= 2 and tok in hay):
+            hay_tok_hits += 1
+        if tok in id_words or tok in title_words:
+            exact_word_hits += 1
+
     score = 0
     if nid_f == q_fold:
-        score = 300
-    elif q_fold in vi_f or q_fold in en_f:
-        score = 145
+        score = 400
+    elif q_fold == vi_f or q_fold == en_f:
+        score = 260
     elif q_fold in nid_f:
-        score = 130
+        score = 210
+    elif q_fold in vi_f or q_fold in en_f:
+        score = 180
     elif q_fold in hay:
-        score = 105
+        score = 115
     else:
-        matched = 0
-        for tok in q_tokens:
-            if tok in hay:
-                matched += 1
-        if q_tokens and matched == len(q_tokens):
-            score = 80 + matched * 5
-        elif matched > 0 and len(q_tokens) >= 2 and matched >= len(q_tokens) - 1:
-            score = 35 + matched * 5
+        if sig_tokens and hay_tok_hits == sig_cnt:
+            score = 80 + sig_cnt * 5
+        elif hay_tok_hits > 0 and sig_cnt >= 2 and hay_tok_hits >= sig_cnt - 1:
+            score = 35 + hay_tok_hits * 5
+
+    if score > 0 and sig_cnt > 0:
+        kind_bonus = 8 if node.get("kind") == "topology" else (4 if node.get("kind") == "technique" else 0)
+        score += (
+            (title_id_tok_hits * 40) // sig_cnt
+            + (id_tok_hits * 24) // sig_cnt
+            + (exact_word_hits * 12) // sig_cnt
+            + kind_bonus
+        )
 
     # Domain-specific priority boosts for PMIC, AMS, and Closed-Loop Cadence Tools
     for inc_re, exc_re, priority_ids in TOPIC_PRIORITY_RULES:
@@ -619,7 +715,7 @@ def score_node_match(node, q_fold, q_tokens):
             if exc_re is not None and exc_re.search(q_fold):
                 continue
             if nid in priority_ids:
-                rank_bonus = 240 - priority_ids.index(nid) * 8 + min(score, 25)
+                rank_bonus = 320 - priority_ids.index(nid) * 16 + min(score // 25, 10)
                 if rank_bonus > score:
                     score = rank_bonus
 
@@ -635,10 +731,12 @@ def score_node_match(node, q_fold, q_tokens):
     return score
 
 
-def compact_node_hit(node, cfg, score=None):
+def compact_node_hit(node, cfg, score=None, offline=False):
     base_url = get_base_url(cfg)
     raw_base = get_raw_base_url(cfg)
     nid = node.get("id", "")
+    eff_offline = bool(offline or ota_sync.is_offline_env())
+    fetch_args = nid + (" --offline" if eff_offline else "")
     out = {
         "id": nid,
         "kind": node.get("kind"),
@@ -656,7 +754,7 @@ def compact_node_hit(node, cfg, score=None):
         "limitations": node.get("limitations", []),
         "web_url": web_url_for_node(base_url, nid),
         "github_raw_url": raw_url_for_node(raw_base, node),
-        "fetch_cmd": _fmt_tool_cmd("kb_fetch.py", nid),
+        "fetch_cmd": _fmt_tool_cmd("kb_fetch.py", fetch_args),
     }
     if node.get("github_refs"):
         out["github_refs"] = node.get("github_refs", [])
@@ -669,7 +767,8 @@ def compact_node_hit(node, cfg, score=None):
     return out
 
 
-def cmd_status():
+def cmd_status(offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router_path, using_synced = resolve_data_file(cfg, "router-index.json", "router-index.json", "router-index.json")
     router = load_json_file(router_path)
@@ -694,6 +793,7 @@ def cmd_status():
     return {
         "ok": True,
         "command": "status",
+        "offline": eff_offline,
         "client_release": cfg.get("release", ota_sync.RELEASE_VERSION),
         "kb_release": router.get("release", ""),
         "index_source": idx_source,
@@ -726,7 +826,8 @@ def cmd_status():
     }
 
 
-def cmd_search(query_str, limit=8):
+def cmd_search(query_str, limit=8, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router = load_router(cfg)
     q_fold = _normalize_query_synonyms(fold_ascii(query_str))
@@ -739,7 +840,7 @@ def cmd_search(query_str, limit=8):
             scored.append((sc, node))
 
     scored.sort(key=lambda pair: (-pair[0], pair[1].get("id", "")))
-    hits = [compact_node_hit(n, cfg, sc) for sc, n in scored[:limit]]
+    hits = [compact_node_hit(n, cfg, sc, offline=eff_offline) for sc, n in scored[:limit]]
 
     cl_hits = []
     for cl in router.get("checklists", []):
@@ -758,9 +859,23 @@ def cmd_search(query_str, limit=8):
                 }
             )
 
+    if to_text(query_str).strip() and len(scored) == 0 and len(cl_hits) == 0:
+        return {
+            "ok": False,
+            "command": "search",
+            "offline": eff_offline,
+            "query": to_text(query_str),
+            "repo_url": cfg.get("repo_url", ""),
+            "error": "No matching cards or checklists found for query.",
+            "total_matches": 0,
+            "results": [],
+            "matching_checklists": [],
+        }
+
     return {
         "ok": True,
         "command": "search",
+        "offline": eff_offline,
         "query": to_text(query_str),
         "repo_url": cfg.get("repo_url", ""),
         "total_matches": len(scored),
@@ -834,7 +949,8 @@ def _enrich_figure_record(fig, base_url, ch_map=None):
     return out
 
 
-def cmd_coord(query_str, limit=12):
+def cmd_coord(query_str, limit=12, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     base_url = get_base_url(cfg)
     router = load_router(cfg)
@@ -843,6 +959,7 @@ def cmd_coord(query_str, limit=12):
         return {
             "ok": False,
             "command": "coord",
+            "offline": eff_offline,
             "error": "Missing kb/coordinates/book-coordinates.json; run kb_fetch.py --sync",
         }
 
@@ -1252,7 +1369,7 @@ def cmd_coord(query_str, limit=12):
             matched_figures.append(_enrich_figure_record(fg, base_url, ch_map))
             add_nids([fg.get("node_id")])
 
-    mapped_nodes = [compact_node_hit(node_map[nid], cfg) for nid in ordered_node_ids[:limit]]
+    mapped_nodes = [compact_node_hit(node_map[nid], cfg, offline=eff_offline) for nid in ordered_node_ids[:limit]]
     total_hits = (
         len(matched_sections)
         + len(matched_equations)
@@ -1264,6 +1381,7 @@ def cmd_coord(query_str, limit=12):
     return {
         "ok": total_hits > 0,
         "command": "coord",
+        "offline": eff_offline,
         "query": q_raw,
         "query_type": query_type,
         "chapters": [
@@ -1337,7 +1455,8 @@ def _compact_repo_entry(repo_entry, score=None):
     return out
 
 
-def cmd_skills(query_str="", limit=12):
+def cmd_skills(query_str="", limit=12, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     base_url = get_base_url(cfg)
     router = load_router(cfg)
@@ -1355,17 +1474,18 @@ def cmd_skills(query_str="", limit=12):
         return {
             "ok": True,
             "command": "skills",
+            "offline": eff_offline,
             "query": "",
             "release": catalog.get("release", router.get("release", "")),
             "vetted_repo_count": len(repos),
             "skill_card_count": len(skill_nodes),
             "categories": catalog.get("categories", []),
-            "skill_cards": [compact_node_hit(n, cfg) for n in skill_nodes[:cap]],
+            "skill_cards": [compact_node_hit(n, cfg, offline=eff_offline) for n in skill_nodes[:cap]],
             "repositories": [_compact_repo_entry(r) for r in repos[: max(limit, len(repos))]],
             "web_url": ("%s/#skills" % base_url) if base_url else "#skills",
         }
 
-    q_fold = fold_ascii(q_raw)
+    q_fold = _normalize_query_synonyms(fold_ascii(q_raw))
     q_tokens = [t for t in q_fold.split() if t]
 
     scored_cards = []
@@ -1418,16 +1538,18 @@ def cmd_skills(query_str="", limit=12):
     return {
         "ok": True,
         "command": "skills",
+        "offline": eff_offline,
         "query": q_raw,
         "skill_card_matches": len(scored_cards),
         "repo_matches": len(scored_repos),
-        "skill_cards": [compact_node_hit(n, cfg, sc) for sc, n in scored_cards[:limit]],
+        "skill_cards": [compact_node_hit(n, cfg, sc, offline=eff_offline) for sc, n in scored_cards[:limit]],
         "repositories": [_compact_repo_entry(r, sc) for sc, r in scored_repos[:limit]],
         "web_url": ("%s/#skills" % base_url) if base_url else "#skills",
     }
 
 
-def cmd_stage(stage_arg, limit=25):
+def cmd_stage(stage_arg, limit=25, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     base_url = get_base_url(cfg)
     router = load_router(cfg)
@@ -1436,17 +1558,18 @@ def cmd_stage(stage_arg, limit=25):
         for s_num, s_key, s_label in DESIGN_STAGE_INFO:
             cnt = len([n for n in router.get("nodes", []) if s_num in n.get("design_stages", [])])
             stages_out.append({"stage": s_num, "stage_key": s_key, "title_vi": s_label, "node_count": cnt})
-        return {"ok": True, "command": "stage", "stages": stages_out}
+        return {"ok": True, "command": "stage", "offline": eff_offline, "stages": stages_out}
 
     m = re.search(r"([1-7])", to_text(stage_arg))
     if not m:
-        return {"ok": False, "command": "stage", "error": "Stage must be between 1 and 7 (or 'list')"}
+        return {"ok": False, "command": "stage", "offline": eff_offline, "error": "Stage must be between 1 and 7 (or 'list')"}
     s_num = int(m.group(1))
     s_meta = DESIGN_STAGE_INFO[s_num - 1]
-    matched = [compact_node_hit(n, cfg) for n in router.get("nodes", []) if s_num in n.get("design_stages", [])]
+    matched = [compact_node_hit(n, cfg, offline=eff_offline) for n in router.get("nodes", []) if s_num in n.get("design_stages", [])]
     return {
         "ok": True,
         "command": "stage",
+        "offline": eff_offline,
         "stage": s_num,
         "stage_key": s_meta[1],
         "title_vi": s_meta[2],
@@ -1462,7 +1585,7 @@ def resolve_node_by_id_or_slug(router, raw_id):
     for n in nodes:
         if n.get("id") == target:
             return n
-    folded = fold_ascii(target)
+    folded = _normalize_query_synonyms(fold_ascii(target))
     best = None
     best_sc = 0
     toks = [t for t in folded.split() if t]
@@ -1474,13 +1597,14 @@ def resolve_node_by_id_or_slug(router, raw_id):
     return best
 
 
-def cmd_node(node_query):
+def cmd_node(node_query, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router = load_router(cfg)
     edges = load_edges(cfg)
     node = resolve_node_by_id_or_slug(router, node_query)
     if not node:
-        return {"ok": False, "command": "node", "error": "Node not found: " + to_text(node_query)}
+        return {"ok": False, "command": "node", "offline": eff_offline, "error": "Node not found: " + to_text(node_query)}
 
     nid = node.get("id")
     incoming = [e for e in edges if e.get("to") == nid]
@@ -1489,7 +1613,8 @@ def cmd_node(node_query):
     return {
         "ok": True,
         "command": "node",
-        "node": compact_node_hit(node, cfg),
+        "offline": eff_offline,
+        "node": compact_node_hit(node, cfg, offline=eff_offline),
         "section_coords": node.get("section_coords", []),
         "roles": node.get("roles", {}),
         "invariants": node.get("invariants", []),
@@ -1499,14 +1624,15 @@ def cmd_node(node_query):
     }
 
 
-def cmd_upgrades(node_query):
+def cmd_upgrades(node_query, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     base_url = get_base_url(cfg)
     router = load_router(cfg)
     edges = load_edges(cfg)
     node = resolve_node_by_id_or_slug(router, node_query)
     if not node:
-        return {"ok": False, "command": "upgrades", "error": "Node not found: " + to_text(node_query)}
+        return {"ok": False, "command": "upgrades", "offline": eff_offline, "error": "Node not found: " + to_text(node_query)}
 
     nid = node.get("id")
     node_map = dict((n.get("id"), n) for n in router.get("nodes", []))
@@ -1563,6 +1689,7 @@ def cmd_upgrades(node_query):
     return {
         "ok": True,
         "command": "upgrades",
+        "offline": eff_offline,
         "node_id": nid,
         "title_vi": node.get("title_vi"),
         "title_en": node.get("title_en"),
@@ -1575,21 +1702,73 @@ def cmd_upgrades(node_query):
     }
 
 
-def cmd_diagnose(symptom_query, limit=8):
+_DIAGNOSE_SYMPTOM_ALIASES = (
+    (
+        re.compile(r"\b(chong\s+dao\s+dong\s+song\s+hai\s+duoi|dao\s+dong\s+song\s+hai\s+duoi)\b"),
+        None,
+        ("period-doubling-subharmonic-alternating-wide-narrow-pwm-pulses-when-duty-cycle-exceeds-50-percent",),
+    ),
+    (
+        re.compile(r"\bsong\s+hai\s+duoi\b.*\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai)\b|\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai)\b.*\bsong\s+hai\s+duoi\b"),
+        None,
+        ("period-doubling-subharmonic-alternating-wide-narrow-pwm-pulses-when-duty-cycle-exceeds-50-percent",),
+    ),
+    (
+        re.compile(r"\bsong\s+hai\s+duoi\b"),
+        re.compile(r"\b(chong|dao\s+dong|bu\s+doc|cmc|can\s+hai)\b"),
+        (
+            "slow-settling-tail-from-pole-zero-doublet",
+            "period-doubling-subharmonic-alternating-wide-narrow-pwm-pulses-when-duty-cycle-exceeds-50-percent",
+        ),
+    ),
+    (
+        re.compile(r"\bcap\s+cuc\s+zero\b"),
+        None,
+        (
+            "slow-settling-tail-from-pole-zero-doublet",
+            "slow-settling-tail-caused-by-active-mirror-pole-zero-doublet",
+            "mirror-pole-doublet-in-single-ended-ota",
+        ),
+    ),
+    (
+        re.compile(r"\bduoi\s+xac\s+lap\b"),
+        None,
+        (
+            "slow-settling-tail-from-pole-zero-doublet",
+            "slow-settling-tail-caused-by-active-mirror-pole-zero-doublet",
+            "slow-settling-tail-caused-by-misplaced-gain-boost-doublet",
+            "mysterious-slow-settling-tail-despite-65-degree-phase-margin",
+        ),
+    ),
+)
+
+
+def cmd_diagnose(symptom_query, limit=8, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router = load_router(cfg)
     edges = load_edges(cfg)
-    q_fold = fold_ascii(symptom_query)
+    q_fold = _normalize_query_synonyms(fold_ascii(symptom_query))
     q_tokens = [t for t in q_fold.split() if t]
 
+    symptom_map = router.get("symptom_map", {})
     node_scores = {}
     matched_symptoms = []
-    for sym_key, nids in router.get("symptom_map", {}).items():
+    for sym_key, nids in symptom_map.items():
         sf = fold_ascii(sym_key)
-        if q_fold in sf or sf in q_fold or (q_tokens and all(t in sf for t in q_tokens)):
-            matched_symptoms.append(sym_key)
+        if q_fold and (q_fold in sf or sf in q_fold or (q_tokens and all(t in sf for t in q_tokens))):
+            if sym_key not in matched_symptoms:
+                matched_symptoms.append(sym_key)
             for nid in nids:
                 node_scores[nid] = node_scores.get(nid, 0) + 120
+
+    for inc_re, exc_re, alias_keys in _DIAGNOSE_SYMPTOM_ALIASES:
+        if q_fold and inc_re.search(q_fold) and (exc_re is None or not exc_re.search(q_fold)):
+            for sym_key in alias_keys:
+                if sym_key in symptom_map and sym_key not in matched_symptoms:
+                    matched_symptoms.append(sym_key)
+                    for nid in symptom_map[sym_key]:
+                        node_scores[nid] = node_scores.get(nid, 0) + 120
 
     for n in router.get("nodes", []):
         nid = n.get("id")
@@ -1618,14 +1797,27 @@ def cmd_diagnose(symptom_query, limit=8):
                 checklist_set.append(cid)
         recommendations.append(
             {
-                "node": compact_node_hit(n, cfg, node_scores[nid]),
+                "node": compact_node_hit(n, cfg, node_scores[nid], offline=eff_offline),
                 "actionable_edges": rel_edges[:6],
             }
         )
 
+    if len(recommendations) == 0 and len(matched_symptoms) == 0:
+        return {
+            "ok": False,
+            "command": "diagnose",
+            "offline": eff_offline,
+            "symptom_query": to_text(symptom_query),
+            "error": "No matching symptoms or circuit cards found for query.",
+            "matched_symptom_tags": [],
+            "recommended_checklists": [],
+            "recommendations": [],
+        }
+
     return {
         "ok": True,
         "command": "diagnose",
+        "offline": eff_offline,
         "symptom_query": to_text(symptom_query),
         "matched_symptom_tags": sorted(matched_symptoms),
         "recommended_checklists": checklist_set,
@@ -1633,17 +1825,18 @@ def cmd_diagnose(symptom_query, limit=8):
     }
 
 
-def cmd_chapter(chapter_arg):
+def cmd_chapter(chapter_arg, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     base_url = get_base_url(cfg)
     router = load_router(cfg)
     coords = load_coordinates(cfg)
     m = re.search(r"(\d+)", to_text(chapter_arg))
     if not m:
-        return {"ok": False, "command": "chapter", "error": "Invalid chapter number: " + to_text(chapter_arg)}
+        return {"ok": False, "command": "chapter", "offline": eff_offline, "error": "Invalid chapter number: " + to_text(chapter_arg)}
     ch_num = int(m.group(1))
     if ch_num < 1 or ch_num > 19:
-        return {"ok": False, "command": "chapter", "error": "Chapter must be between 1 and 19"}
+        return {"ok": False, "command": "chapter", "offline": eff_offline, "error": "Chapter must be between 1 and 19"}
 
     ch_info = None
     for c in router.get("chapters", []):
@@ -1658,7 +1851,7 @@ def cmd_chapter(chapter_arg):
             break
 
     nodes = [
-        compact_node_hit(n, cfg)
+        compact_node_hit(n, cfg, offline=eff_offline)
         for n in router.get("nodes", [])
         if ch_num in n.get("chapters", [])
     ]
@@ -1676,6 +1869,7 @@ def cmd_chapter(chapter_arg):
     return {
         "ok": True,
         "command": "chapter",
+        "offline": eff_offline,
         "chapter": ch_num,
         "title_en": ch_info.get("title_en", "") if ch_info else "",
         "title_vi": ch_info.get("title_vi", "") if ch_info else "",
@@ -1704,13 +1898,15 @@ def _resolve_checklist_path(cfg, cid):
     return os.path.join(KB_DIR, "checklists", cid + ".json")
 
 
-def cmd_checklist(name_arg):
+def cmd_checklist(name_arg, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router = load_router(cfg)
     if not name_arg or to_text(name_arg).strip().lower() in ("list", "all"):
         return {
             "ok": True,
             "command": "checklist",
+            "offline": eff_offline,
             "checklists": router.get("checklists", []),
         }
 
@@ -1731,6 +1927,7 @@ def cmd_checklist(name_arg):
         return {
             "ok": False,
             "command": "checklist",
+            "offline": eff_offline,
             "error": "Checklist not found: " + clean,
             "available": [c.get("checklist_id") for c in router.get("checklists", [])],
         }
@@ -1739,11 +1936,13 @@ def cmd_checklist(name_arg):
     return {
         "ok": True,
         "command": "checklist",
+        "offline": eff_offline,
         "checklist": data,
     }
 
 
-def cmd_term(query_str, limit=12):
+def cmd_term(query_str, limit=12, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     terms = load_glossary(cfg)
     q_raw = to_text(query_str).strip()
@@ -1789,13 +1988,15 @@ def cmd_term(query_str, limit=12):
     return {
         "ok": True,
         "command": "term",
+        "offline": eff_offline,
         "query": q_raw,
         "total_matches": len(scored),
         "results": results,
     }
 
 
-def cmd_domain(domain_arg):
+def cmd_domain(domain_arg, offline=False):
+    eff_offline = bool(offline or ota_sync.is_offline_env())
     cfg = load_config()
     router = load_router(cfg)
     domains = router.get("domains", [])
@@ -1814,6 +2015,7 @@ def cmd_domain(domain_arg):
         return {
             "ok": True,
             "command": "domain",
+            "offline": eff_offline,
             "total_domains": len(out_domains),
             "domains": out_domains,
         }
@@ -1827,14 +2029,16 @@ def cmd_domain(domain_arg):
         return {
             "ok": False,
             "command": "domain",
+            "offline": eff_offline,
             "error": "Unknown domain: " + to_text(domain_arg),
             "available": [d.get("id") for d in domains],
         }
     did = chosen.get("id")
-    matched = [compact_node_hit(n, cfg) for n in nodes if n.get("domain") == did]
+    matched = [compact_node_hit(n, cfg, offline=eff_offline) for n in nodes if n.get("domain") == did]
     return {
         "ok": True,
         "command": "domain",
+        "offline": eff_offline,
         "domain": chosen,
         "node_count": len(matched),
         "nodes": matched,
@@ -1845,6 +2049,16 @@ _RECIPE_STOPWORDS = set([
     "a", "an", "the", "of", "in", "on", "to", "for", "with",
     "and", "or", "by", "at", "from", "is", "are",
 ])
+
+
+_FLAVOR_TO_TECHSWEEP = {
+    "core_1v": "core",
+    "io_2v5": "io",
+    "core_1v_svt": "core",
+    "core_1v_lvt": "lvt",
+    "core_1v_hvt": "hvt",
+    "io_1v8": "io",
+}
 
 
 def _infer_recipe_lut_params(circuit_query):
@@ -1912,6 +2126,7 @@ def _infer_recipe_lut_params(circuit_query):
             if m_temp_kw:
                 temp_val = float(m_temp_kw.group(1))
     temp_tag = ("%g" % float(temp_val)).replace("-", "m").replace(".", "p")
+    temp_c_num = int(temp_val) if temp_val == int(temp_val) else temp_val
 
     has_pmos = bool(re.search(r"\b(pmos|pfet)\b", q_fold))
     has_nmos = bool(re.search(r"\b(nmos|nfet)\b", q_fold))
@@ -1922,8 +2137,10 @@ def _infer_recipe_lut_params(circuit_query):
     return {
         "pdk": pdk_key,
         "flavor": flavor_label,
+        "techsweep_flavor": _FLAVOR_TO_TECHSWEEP.get(flavor_label, "core"),
         "corner": corner,
         "temp_tag": temp_tag,
+        "temp_c": temp_c_num,
         "dev": dev_type,
         "l": l_arg,
         "vds": vds_arg,
@@ -1956,7 +2173,7 @@ def cmd_recipe(circuit_query, offline=False):
     lut_info = _infer_recipe_lut_params(circuit_query)
     topo_query = _strip_recipe_pvt_qualifiers(circuit_query)
     eff_search_query = topo_query if topo_query else circuit_query
-    search_res = cmd_search(eff_search_query, limit=6)
+    search_res = cmd_search(eff_search_query, limit=6, offline=eff_offline)
     hits = search_res.get("results", [])
 
     qf_norm = _normalize_query_synonyms(fold_ascii(eff_search_query))
@@ -1991,6 +2208,41 @@ def cmd_recipe(circuit_query, offline=False):
     if eff_offline:
         for h in hits:
             h["fetch_cmd"] = _fmt_tool_cmd("kb_fetch.py", h["id"] + offline_tail)
+
+    resolved_lut_path = os.path.expanduser(lut_info["lut_path"])
+    lut_exists = os.path.isfile(resolved_lut_path)
+    generate_cmd = _fmt_tool_cmd(
+        "gpdk_techsweep.py",
+        "--pdk %s --flavor %s --corner %s --temp %g --run --out %s"
+        % (
+            lut_info["pdk"],
+            lut_info["techsweep_flavor"],
+            lut_info["corner"],
+            float(lut_info["temp_c"]),
+            lut_info["lut_path"],
+        ),
+    )
+    gmid_cmd = _fmt_tool_cmd(
+        "gmid_lut.py",
+        "size --lut %s --dev %s --gm 1e-3 --gm-id 15 --l %s --vds %s"
+        % (lut_info["lut_path"], lut_info["dev"], lut_info["l"], lut_info["vds"]),
+    )
+    lut_status = {
+        "lut_path": lut_info["lut_path"],
+        "resolved_path": resolved_lut_path,
+        "lut_exists": lut_exists,
+        "ready": lut_exists,
+        "pdk": lut_info["pdk"],
+        "flavor": lut_info["flavor"],
+        "corner": lut_info["corner"],
+        "temp_c": lut_info["temp_c"],
+        "generate_cmd": generate_cmd,
+        "warning": (
+            None
+            if lut_exists
+            else "Target LUT not found on disk; generate it with gpdk_techsweep.py before running gmid_lut.py."
+        ),
+    }
 
     qf = _normalize_query_synonyms(fold_ascii(circuit_query))
     is_ldo_query = bool(re.search(r"\b(ldo|capless|capacitorless)\b", qf))
@@ -2043,13 +2295,10 @@ def cmd_recipe(circuit_query, offline=False):
         {
             "stage": 3,
             "name": "Physics-based gm/ID initial sizing (< 1 ms per transistor)",
-            "cmds": [
-                _fmt_tool_cmd(
-                    "gmid_lut.py",
-                    "size --lut %s --dev %s --gm 1e-3 --gm-id 15 --l %s --vds %s"
-                    % (lut_info["lut_path"], lut_info["dev"], lut_info["l"], lut_info["vds"]),
-                ),
-            ],
+            "lut_ready": lut_exists,
+            "prereq_cmds": ([] if lut_exists else [generate_cmd]),
+            "sizing_cmd": gmid_cmd,
+            "cmds": ([gmid_cmd] if lut_exists else [generate_cmd, gmid_cmd]),
         },
         {
             "stage": 4,
@@ -2089,6 +2338,8 @@ def cmd_recipe(circuit_query, offline=False):
         "command": "recipe",
         "circuit_query": to_text(circuit_query),
         "offline": eff_offline,
+        "recipe_ready": lut_exists,
+        "lut_status": lut_status,
         "switching_converter_veriloga_helper": veriloga_note,
         "recommended_cards": hits,
         "theory_cards": [c.get("id") for c in theory_cards],
@@ -2119,7 +2370,14 @@ Commands:
 
 
 def run_self_test():
+    import shutil
+    import tempfile
+
     saved_env = os.environ.get("SKILL_ANALOG_OFFLINE")
+    tmp_home = tempfile.mkdtemp(prefix="kb_lookup_test_")
+    orig_expanduser = os.path.expanduser
+    orig_auto_sync = ota_sync.maybe_auto_sync
+    orig_write_json = globals()["write_utf8_json"]
     try:
         # 1. --sync --offline -> exit code 2
         rc1 = main(["--sync", "--offline", "--quiet-errors"])
@@ -2152,33 +2410,80 @@ def run_self_test():
         if not cf.get("ok") or not cf.get("figures") or cf["figures"][0].get("book_page") != 679:
             raise AssertionError("Unexpected coord('Fig. 16.43') result: %r" % cf)
 
-        # 5. Recipe Stage 3 & Stage 5 canonical LUT filename and fail-closed flags (online + offline)
+        # 5. Recipe Stage 3 & Stage 5 canonical LUT readiness (isolated empty cache -> not ready)
         if "SKILL_ANALOG_OFFLINE" in os.environ:
             del os.environ["SKILL_ANALOG_OFFLINE"]
+
+        def _fake_expanduser(p):
+            txt = to_text(p)
+            if txt.startswith("~/") or txt.startswith("~\\"):
+                return os.path.join(tmp_home, txt[2:].replace("/", os.sep))
+            return orig_expanduser(p)
+
+        os.path.expanduser = _fake_expanduser
         rec = cmd_recipe("folded cascode")
         rec_blob = json.dumps(rec)
+        st3_fc = rec["closed_loop_7_stages"][2]
         if not rec.get("ok") or rec.get("offline") is not False:
             raise AssertionError("cmd_recipe('folded cascode') expected ok=True, offline=False: %r" % rec)
+        if rec.get("recipe_ready") is not False or st3_fc.get("lut_ready") is not False:
+            raise AssertionError("Expected recipe_ready=False when LUT missing on disk: %r" % rec.get("lut_status"))
         if "gpdk090_core_1v_NN_27C.lut.json.gz" not in rec_blob or "--fail-on-violation" not in rec_blob or "--fail-on-spec" not in rec_blob:
             raise AssertionError("cmd_recipe missing canonical LUT or fail-closed psf_audit flags: %r" % rec)
         if "--offline" in rec_blob:
             raise AssertionError("Online cmd_recipe must NOT emit --offline flags: %r" % rec)
+        if len(st3_fc.get("cmds", [])) != 2 or "gpdk_techsweep.py" not in st3_fc["cmds"][0] or "gmid_lut.py" not in st3_fc["cmds"][1]:
+            raise AssertionError("Expected prereq gpdk_techsweep.py before gmid_lut.py in Stage 3 cmds: %r" % st3_fc)
+        if st3_fc.get("prereq_cmds") != [st3_fc["cmds"][0]] or st3_fc.get("sizing_cmd") != st3_fc["cmds"][1]:
+            raise AssertionError("Stage 3 prereq_cmds/sizing_cmd mismatch: %r" % st3_fc)
 
-        # 6. Dynamic PDK/Flavor/Corner/Temp/Device LUT generation (GPDK045)
+        # 6. Dynamic PDK/Flavor/Corner/Temp/Device LUT generation (GPDK045) + LUT present vs missing
         rec_ldo45 = cmd_recipe("capless LDO GPDK045")
-        st3_ldo45 = rec_ldo45["closed_loop_7_stages"][2]["cmds"][0]
-        if not rec_ldo45.get("ok") or "gpdk045_core_1v_svt_tt_27C.lut.json.gz" not in st3_ldo45 or "--l 90e-9 --vds 0.5" not in st3_ldo45:
+        st3_ldo45 = rec_ldo45["closed_loop_7_stages"][2]
+        if (
+            not rec_ldo45.get("ok")
+            or "gpdk045_core_1v_svt_tt_27C.lut.json.gz" not in st3_ldo45["sizing_cmd"]
+            or "--l 90e-9 --vds 0.5" not in st3_ldo45["sizing_cmd"]
+        ):
             raise AssertionError("Unexpected GPDK045 capless LDO LUT cmd: %r" % st3_ldo45)
 
         rec_cm45 = cmd_recipe("NMOS current mirror GPDK045 SS 125 C")
-        st3_cm45 = rec_cm45["closed_loop_7_stages"][2]["cmds"][0]
-        if not rec_cm45.get("ok") or "gpdk045_core_1v_svt_ss_125C.lut.json.gz" not in st3_cm45 or "--dev nmos" not in st3_cm45:
-            raise AssertionError("Unexpected GPDK045 SS 125C LUT cmd: %r" % st3_cm45)
+        st3_cm45 = rec_cm45["closed_loop_7_stages"][2]
+        if (
+            not rec_cm45.get("ok")
+            or rec_cm45.get("recipe_ready") is not False
+            or "gpdk045_core_1v_svt_ss_125C.lut.json.gz" not in st3_cm45["sizing_cmd"]
+            or "--dev nmos" not in st3_cm45["sizing_cmd"]
+            or "--flavor core" not in st3_cm45["prereq_cmds"][0]
+            or "--temp 125" not in st3_cm45["prereq_cmds"][0]
+        ):
+            raise AssertionError("Unexpected GPDK045 SS 125C LUT stage 3: %r" % st3_cm45)
 
         rec_pmos45 = cmd_recipe("PMOS current mirror GPDK045 FF -40C")
-        st3_pmos45 = rec_pmos45["closed_loop_7_stages"][2]["cmds"][0]
-        if not rec_pmos45.get("ok") or "gpdk045_core_1v_svt_ff_m40C.lut.json.gz" not in st3_pmos45 or "--dev pmos" not in st3_pmos45:
-            raise AssertionError("Unexpected GPDK045 PMOS FF -40C LUT cmd: %r" % st3_pmos45)
+        st3_pmos45 = rec_pmos45["closed_loop_7_stages"][2]
+        if (
+            not rec_pmos45.get("ok")
+            or "gpdk045_core_1v_svt_ff_m40C.lut.json.gz" not in st3_pmos45["sizing_cmd"]
+            or "--dev pmos" not in st3_pmos45["sizing_cmd"]
+            or "--temp -40" not in st3_pmos45["prereq_cmds"][0]
+        ):
+            raise AssertionError("Unexpected GPDK045 PMOS FF -40C LUT stage 3: %r" % st3_pmos45)
+
+        # Verify recipe_ready=True when LUT file exists on disk
+        dummy_lut = _fake_expanduser(rec_pmos45["lut_status"]["lut_path"])
+        ota_sync.mkdir_p(os.path.dirname(dummy_lut))
+        ota_sync.write_atomic_bytes(dummy_lut, b"DUMMY_LUT")
+        rec_ready = cmd_recipe("PMOS current mirror GPDK045 FF -40C")
+        st3_ready = rec_ready["closed_loop_7_stages"][2]
+        if (
+            rec_ready.get("recipe_ready") is not True
+            or rec_ready["lut_status"].get("lut_exists") is not True
+            or rec_ready["lut_status"].get("warning") is not None
+            or st3_ready.get("lut_ready") is not True
+            or st3_ready.get("prereq_cmds") != []
+            or st3_ready.get("cmds") != [st3_ready.get("sizing_cmd")]
+        ):
+            raise AssertionError("Expected recipe_ready=True and no prereq when LUT exists: %r" % rec_ready["lut_status"])
 
         # 7. Synonym normalization: capacitorless LDO leads with Capless LDO card & ldo-regulator checklist (never DC-DC)
         rec_capless = cmd_recipe("capacitorless LDO")
@@ -2221,19 +2526,201 @@ def run_self_test():
                 if "--offline" not in card.get("fetch_cmd", ""):
                     raise AssertionError("Offline recipe (%s) missing --offline in fetch_cmd: %r" % (mode_label, card))
 
+        if "SKILL_ANALOG_OFFLINE" in os.environ:
+            del os.environ["SKILL_ANALOG_OFFLINE"]
+
+        # 11. Finding #11 rankings, Vietnamese aliases, and diagnose symptom tags
+        sr_dp = cmd_search(u"bo khu\u1ebfch \u0111\u1ea1i vi sai t\u1ea3i g\u01b0\u01a1ng d\u00f2ng", limit=5)
+        if [x["id"] for x in sr_dp.get("results", [])[:3]] != [
+            "topo-diff-pair-active-current-mirror-load",
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-five-transistor-ota",
+        ]:
+            raise AssertionError("Diff-pair active current mirror ranking failed: %r" % [x["id"] for x in sr_dp.get("results", [])[:5]])
+
+        sr_gb = cmd_search("gain boosted cascode", limit=5)
+        if [x["id"] for x in sr_gb.get("results", [])[:3]] != [
+            "topo-gain-boosted-cascode",
+            "topo-regulated-cascode-super-source-follower",
+            "skill-folded-cascode-and-gainboost-sizing-flow",
+        ]:
+            raise AssertionError("Gain-boosted cascode ranking failed: %r" % [x["id"] for x in sr_gb.get("results", [])[:5]])
+
+        rec_tel = cmd_recipe("PMOS telescopic opamp GPDK090 FF -40C")
+        if (
+            not rec_tel.get("ok")
+            or rec_tel["recommended_cards"][0]["id"] != "topo-telescopic-cascode-opamp"
+            or "gpdk090_core_1v_FF_m40C.lut.json.gz" not in rec_tel["lut_status"]["lut_path"]
+            or "--dev pmos" not in rec_tel["closed_loop_7_stages"][2]["sizing_cmd"]
+        ):
+            raise AssertionError("PMOS telescopic opamp recipe ranking/LUT failed: %r" % rec_tel)
+
+        sr_sub = cmd_search("chong dao dong song hai duoi", limit=5)
+        if [x["id"] for x in sr_sub.get("results", [])[:3]] != [
+            "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks",
+        ]:
+            raise AssertionError("Subharmonic Vietnamese alias search failed: %r" % [x["id"] for x in sr_sub.get("results", [])[:5]])
+
+        sr_dbl = cmd_search(u"s\u00f3ng hai \u0111u\u00f4i", limit=5)
+        if [x["id"] for x in sr_dbl.get("results", [])[:3]] != [
+            "concept-diffpair-mirror-pole-doublet",
+            "topo-diff-pair-active-current-mirror-load",
+            "tech-dcdc-cmc-subharmonic-slope-comp-and-cot",
+        ]:
+            raise AssertionError("Doublet Vietnamese alias search failed: %r" % [x["id"] for x in sr_dbl.get("results", [])[:5]])
+
+        dg_sub = cmd_diagnose("chong dao dong song hai duoi", limit=5)
+        if (
+            not dg_sub.get("ok")
+            or "period-doubling-subharmonic-alternating-wide-narrow-pwm-pulses-when-duty-cycle-exceeds-50-percent" not in dg_sub.get("matched_symptom_tags", [])
+            or dg_sub["recommendations"][0]["node"]["id"] != "tech-dcdc-cmc-subharmonic-slope-comp-and-cot"
+        ):
+            raise AssertionError("Diagnose Vietnamese subharmonic failed: %r" % dg_sub)
+
+        for v_sym in (u"s\u00f3ng hai \u0111u\u00f4i", "cap cuc zero", "duoi xac lap"):
+            dg_v = cmd_diagnose(v_sym, limit=5)
+            if not dg_v.get("ok") or "slow-settling-tail-from-pole-zero-doublet" not in dg_v.get("matched_symptom_tags", []):
+                raise AssertionError("Diagnose Vietnamese doublet alias %r failed: %r" % (v_sym, dg_v))
+
+        # 12. Finding #12: Gibberish CLI exit 1 + ZERO maybe_auto_sync calls + --offline propagation + quoted --offline
+        sync_calls = []
+        captured_payloads = []
+
+        def _spy_auto_sync(**kwargs):
+            sync_calls.append(kwargs)
+            return {"ok": True, "action": "noop_spy"}
+
+        def _capture_json(obj):
+            captured_payloads.append(obj)
+
+        ota_sync.maybe_auto_sync = _spy_auto_sync
+        globals()["write_utf8_json"] = _capture_json
+
+        for gib_argv in (
+            ["search", "xyzzy qwerty blarg 9999"],
+            ["diagnose", "xyzzy qwerty blarg 9999"],
+            ["recipe", "xyzzy qwerty blarg 9999"],
+        ):
+            del sync_calls[:]
+            del captured_payloads[:]
+            rc_gib = main(gib_argv)
+            if rc_gib != 1 or len(sync_calls) != 0 or not captured_payloads or captured_payloads[0].get("ok") is not False:
+                raise AssertionError("Gibberish CLI %r must exit 1, ok=False, 0 sync calls: rc=%r sync=%r pay=%r" % (gib_argv, rc_gib, sync_calls, captured_payloads))
+
+        # search --offline and diagnose --offline carry --offline in every fetch_cmd and offline=True
+        for off_argv in (["search", "buck", "--offline"], ["diagnose", "rhp zero", "--offline"]):
+            del sync_calls[:]
+            del captured_payloads[:]
+            rc_off = main(off_argv)
+            if rc_off != 0 or len(sync_calls) != 0 or not captured_payloads or captured_payloads[0].get("offline") is not True:
+                raise AssertionError("Offline CLI %r failed: rc=%r sync=%r pay=%r" % (off_argv, rc_off, sync_calls, captured_payloads))
+            items = captured_payloads[0].get("results") if off_argv[0] == "search" else [r.get("node", {}) for r in captured_payloads[0].get("recommendations", [])]
+            if not items or any("--offline" not in it.get("fetch_cmd", "") for it in items):
+                raise AssertionError("Offline CLI %r missing --offline in fetch_cmd: %r" % (off_argv, items))
+
+        # Quoted --offline inside recipe query arg
+        del sync_calls[:]
+        del captured_payloads[:]
+        rc_qoff = main(["recipe", "capacitorless LDO --offline"])
+        if (
+            rc_qoff != 0
+            or len(sync_calls) != 0
+            or not captured_payloads
+            or captured_payloads[0].get("offline") is not True
+            or captured_payloads[0].get("circuit_query") != "capacitorless LDO"
+            or "--offline" not in captured_payloads[0]["recommended_cards"][0]["fetch_cmd"]
+            or "--offline" not in captured_payloads[0]["closed_loop_7_stages"][0]["cmds"][1]
+        ):
+            raise AssertionError("Quoted --offline failed: rc=%r sync=%r pay=%r" % (rc_qoff, sync_calls, captured_payloads))
+
+        # --sync + quoted --offline -> exit code 2
+        rc_qsync = main(["--sync", "foo --offline", "--quiet-errors"])
+        if rc_qsync != 2:
+            raise AssertionError("Expected exit 2 for --sync with quoted --offline, got %s" % rc_qsync)
+
+        # Valid online search calls maybe_auto_sync AFTER local lookup (1 call)
+        del sync_calls[:]
+        del captured_payloads[:]
+        rc_on = main(["search", "buck"])
+        if rc_on != 0 or len(sync_calls) != 1 or not captured_payloads or captured_payloads[0].get("ok") is not True:
+            raise AssertionError("Valid online search did not invoke post-lookup maybe_auto_sync cleanly: rc=%r sync=%r" % (rc_on, sync_calls))
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "lookup_ms": dt_ms,
-            "tests_passed": 11,
+            "tests_passed": 13,
         }
     finally:
+        os.path.expanduser = orig_expanduser
+        ota_sync.maybe_auto_sync = orig_auto_sync
+        globals()["write_utf8_json"] = orig_write_json
+        shutil.rmtree(tmp_home, ignore_errors=True)
         if saved_env is None:
             if "SKILL_ANALOG_OFFLINE" in os.environ:
                 del os.environ["SKILL_ANALOG_OFFLINE"]
         else:
             os.environ["SKILL_ANALOG_OFFLINE"] = saved_env
+
+
+_INLINE_OFFLINE_RE = re.compile(r"(?:^|\s)--offline(?=\s|$)")
+
+
+def _strip_inline_offline(raw_val):
+    txt = to_text(raw_val)
+    if not _INLINE_OFFLINE_RE.search(txt):
+        return txt, False
+    stripped = _WS_RE.sub(" ", _INLINE_OFFLINE_RE.sub(" ", txt)).strip()
+    return stripped, True
+
+
+def _dispatch_lookup_command(cmd, rest, cleaned, limit, eff_offline):
+    if cmd == "status":
+        return cmd_status(offline=eff_offline)
+    if cmd in ("domain", "domains"):
+        return cmd_domain(rest, offline=eff_offline)
+    if cmd in ("recipe", "workflow", "plan"):
+        if not rest:
+            raise ValueError("recipe requires a circuit query (e.g., 'buck', 'capless ldo', 'folded cascode')")
+        return cmd_recipe(rest, offline=eff_offline)
+    if cmd == "search":
+        if not rest:
+            raise ValueError("search requires a query string")
+        return cmd_search(rest, limit=limit, offline=eff_offline)
+    if cmd in ("coord", "coords", "coordinate", "coordinates"):
+        if not rest:
+            raise ValueError("coord requires a section, equation, page, or index query")
+        return cmd_coord(rest, limit=limit, offline=eff_offline)
+    if cmd in ("skills", "skill", "github-skills"):
+        return cmd_skills(rest, limit=limit, offline=eff_offline)
+    if cmd in ("stage", "stages"):
+        return cmd_stage(rest, limit=max(limit, 25), offline=eff_offline)
+    if cmd == "node":
+        if not rest:
+            raise ValueError("node requires a node_id")
+        return cmd_node(rest, offline=eff_offline)
+    if cmd in ("upgrades", "upgrade"):
+        if not rest:
+            raise ValueError("upgrades requires a node_id")
+        return cmd_upgrades(rest, offline=eff_offline)
+    if cmd == "diagnose":
+        if not rest:
+            raise ValueError("diagnose requires a symptom query")
+        return cmd_diagnose(rest, limit=limit, offline=eff_offline)
+    if cmd == "chapter":
+        if not rest:
+            raise ValueError("chapter requires a chapter number (1..19)")
+        return cmd_chapter(rest, offline=eff_offline)
+    if cmd in ("checklist", "checklists"):
+        return cmd_checklist(rest, offline=eff_offline)
+    if cmd in ("term", "terms", "glossary"):
+        if not rest:
+            raise ValueError("term requires a query string or T-code")
+        return cmd_term(rest, limit=limit, offline=eff_offline)
+    return cmd_search(" ".join(cleaned), limit=limit, offline=eff_offline)
 
 
 def main(argv=None):
@@ -2273,32 +2760,60 @@ def main(argv=None):
             i += 2
         elif tok in ("--query", "--topology") and i + 1 < len(args):
             flag_cmd = "search"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok in ("--coord", "--coordinate") and i + 1 < len(args):
             flag_cmd = "coord"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok in ("--skills", "--skill") and i + 1 < len(args):
             flag_cmd = "skills"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok in ("--stage",) and i + 1 < len(args):
             flag_cmd = "stage"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok in ("--symptom", "--goal") and i + 1 < len(args):
             flag_cmd = "diagnose"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok == "--chapter" and i + 1 < len(args):
             flag_cmd = "chapter"
-            cleaned.append(args[i + 1])
+            val_s, had_off = _strip_inline_offline(args[i + 1])
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 2
         elif tok in ("--json", "--text"):
             i += 1
         else:
-            cleaned.append(tok)
+            val_s, had_off = _strip_inline_offline(tok)
+            if had_off:
+                offline_flag = True
+            if val_s:
+                cleaned.append(val_s)
             i += 1
 
     if self_test_flag or (cleaned and cleaned[0].lower() == "self-test"):
@@ -2348,59 +2863,17 @@ def main(argv=None):
         cmd = cleaned[0].lower()
         rest = " ".join(cleaned[1:]).strip()
 
-    # Transparent background TTL auto-sync (0 ms on Windows SSOT, 0 ms when offline, 0 ms within 60s TTL)
-    ota_sync.maybe_auto_sync(
-        ttl_sec=60,
-        offline=eff_offline,
-        library_root=LIBRARY_ROOT,
-        base_url_override=base_url_override,
-    )
-
     try:
-        if cmd == "status":
-            payload = cmd_status()
-        elif cmd in ("domain", "domains"):
-            payload = cmd_domain(rest)
-        elif cmd in ("recipe", "workflow", "plan"):
-            if not rest:
-                raise ValueError("recipe requires a circuit query (e.g., 'buck', 'capless ldo', 'folded cascode')")
-            payload = cmd_recipe(rest, offline=eff_offline)
-        elif cmd == "search":
-            if not rest:
-                raise ValueError("search requires a query string")
-            payload = cmd_search(rest, limit=limit)
-        elif cmd in ("coord", "coords", "coordinate", "coordinates"):
-            if not rest:
-                raise ValueError("coord requires a section, equation, page, or index query")
-            payload = cmd_coord(rest, limit=limit)
-        elif cmd in ("skills", "skill", "github-skills"):
-            payload = cmd_skills(rest, limit=limit)
-        elif cmd in ("stage", "stages"):
-            payload = cmd_stage(rest, limit=max(limit, 25))
-        elif cmd == "node":
-            if not rest:
-                raise ValueError("node requires a node_id")
-            payload = cmd_node(rest)
-        elif cmd in ("upgrades", "upgrade"):
-            if not rest:
-                raise ValueError("upgrades requires a node_id")
-            payload = cmd_upgrades(rest)
-        elif cmd == "diagnose":
-            if not rest:
-                raise ValueError("diagnose requires a symptom query")
-            payload = cmd_diagnose(rest, limit=limit)
-        elif cmd == "chapter":
-            if not rest:
-                raise ValueError("chapter requires a chapter number (1..19)")
-            payload = cmd_chapter(rest)
-        elif cmd in ("checklist", "checklists"):
-            payload = cmd_checklist(rest)
-        elif cmd in ("term", "terms", "glossary"):
-            if not rest:
-                raise ValueError("term requires a query string or T-code")
-            payload = cmd_term(rest, limit=limit)
-        else:
-            payload = cmd_search(" ".join(cleaned), limit=limit)
+        payload = _dispatch_lookup_command(cmd, rest, cleaned, limit, eff_offline)
+        if (not eff_offline) and (cmd == "status" or payload.get("ok") is True):
+            sync_res = ota_sync.maybe_auto_sync(
+                ttl_sec=60,
+                offline=eff_offline,
+                library_root=LIBRARY_ROOT,
+                base_url_override=base_url_override,
+            )
+            if isinstance(sync_res, dict) and sync_res.get("action") in ("synced", "updated"):
+                payload = _dispatch_lookup_command(cmd, rest, cleaned, limit, eff_offline)
 
         write_utf8_json(payload)
         return 0 if payload.get("ok") else 1

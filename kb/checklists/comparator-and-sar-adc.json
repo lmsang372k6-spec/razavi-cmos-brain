@@ -84,7 +84,7 @@
       "name": "Độ tuyến tính công tắc lấy mẫu đầu vào (Bootstrapped Switch) vượt tối thiểu 10-12 dB trên mục tiêu SNDR ở tần số Nyquist",
       "severity": "error",
       "method": "estimate",
-      "invariant": "SFDR_sampler(f_in = f_s / 2) >= 6.02 * N_bits + 12 dB trên mọi góc PVT mà không vi phạm giới hạn điện áp đánh thủng oxit cổng SOA",
+      "invariant": "SFDR_sampler(f_in = (M / N_FFT) * f_s) >= 6.02 * N_bits + 12 dB tại tần số lấy mẫu mạch lạc cận Nyquist (M lẻ nguyên tố cùng nhau với N_FFT, ví dụ M ~ N_FFT/2 - 3, tránh đúng f_s/2 nơi hài bậc ba HD3 gập trùng lên chính bin tần số cơ bản!) trên mọi góc PVT mà không vi phạm giới hạn điện áp đánh thủng oxit cổng SOA",
       "why_vi": "Công tắc lấy mẫu đầu vào nhìn thấy toàn bộ biên độ tín hiệu liên tục tần số cao trước khi giữ mẫu: nếu Ron biến thiên theo Vin hoặc phun điện tích phụ thuộc tín hiệu, sóng hài HD3 sinh ra ngay trên tấm tụ không thể được khử bởi bất kỳ vòng hiệu chỉnh trọng số C-DAC nào phía sau!",
       "cadence_check": "Chạy `tran` riêng cho mạch lấy mẫu `Bootstrapped Switch + C-DAC` với tần số vào sát Nyquist `f_in = (N_FFT/2 - 3)/N_FFT * f_s` (`errpreset=conservative`), lấy FFT tại thời điểm kết thúc pha lấy mẫu xác nhận `THD < -(6.02*N + 12) dB`.",
       "related_nodes": [

@@ -15,7 +15,7 @@ Thư mục này kết nối trực tiếp Codex trên máy ảo RHEL 6.5 với *
 - `edges.jsonl`: đồ thị có hướng **482 cạnh** mô tả chuỗi nâng cấp mạch (`upgrades_to`), sửa lỗi (`fixes`), bù tần số (`compensated_by`), đánh đổi (`trades_off_with`), điều kiện bắt buộc (`requires`), quy luật chi phối (`governed_by`) và ràng buộc vật lý (`layout_constrained_by`).
 - `checklists/`: **21 bảng kiểm cấu trúc bất biến** áp dụng cho mọi tiến trình (`180nm`, `90nm`, `65nm`, `45nm`), bao gồm mới `dcdc-switching-converter` (`CHK-DCDC-01..10`), `ldo-regulator` mở rộng (`CHK-LDO-01..10`), `continuous-time-filters` (`CHK-CTF-01..09`), `dac-and-deltasigma-adc` (`CHK-CNV-01..09`), `system-integration-por-and-bias-bus` (`CHK-SYS-01..10`) và `closed-loop-sizing-and-signoff` (`CHK-OPT-01..08`).
 - `terms-vi-en.json`: **2.280 thuật ngữ song ngữ Anh–Việt chuẩn CLB** (`T001–T2280`, bổ sung 80 thuật ngữ chuyên sâu PMIC, AMS và Tối ưu hóa Khép kín Cadence).
-- `nodes-bundle.json.gz`: gói snapshot nén toàn bộ **162 thẻ 6 khối** giúp [kb_fetch.py](../tools/kb_fetch.py) trích xuất trọn vẹn trong `< 15 ms` ngay cả khi máy ảo RHEL 6.5 ngoại tuyến.
+- `nodes-bundle.json.gz`: gói snapshot nén toàn bộ **162 thẻ 6 khối** giúp [kb_fetch.py](../tools/kb_fetch.py) trích xuất trọn vẹn ngay cả khi máy ảo RHEL 6.5 ngoại tuyến (`< 15 ms` khi đọc trực tiếp SSOT / trong tiến trình ấm; `~150–220 ms` cho mỗi lần gọi CLI lạnh qua tiến trình con trên RHEL 6.5 Python 2.6.6 do khởi động trình thông dịch và giải nén gói gzip).
 
 ## Lệnh tra cứu tọa độ, PMIC/AMS, kỹ năng Cadence & đồng bộ OTA từ GitHub (Python 2.6.6 & Python 3)
 
@@ -44,7 +44,7 @@ python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py diagnose "rh
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py upgrades topo-cascode-current-mirror
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_lookup.py term "slope compensation"
 
-# 4. Đọc toàn bộ thẻ 6 khối trực tiếp từ GitHub + dự phòng offline tức thì (< 15 ms)
+# 4. Đọc toàn bộ thẻ 6 khối trực tiếp từ GitHub + dự phòng offline (< 15 ms trong tiến trình ấm / đọc trực tiếp SSOT; ~150–220 ms CLI lạnh trên RHEL 6.5 Python 2.6.6)
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py topo-boost-inverting-and-4switch-buckboost
 python -B /home/disk/eda/references/SKILL-ANALOG/tools/kb_fetch.py skill-closed-loop-sizing-and-pareto-optimization --offline
 ```

@@ -20,10 +20,11 @@ Guarantees:
     `.cdslck` locks via relative OA library segments (`<cell>/<view>/...`)
   - Propagates semantic `op_ok: false` when live bridge SKILL evaluation returns JSON `{"ok": false}`
 """
-from __future__ import print_function
+from __future__ import division, print_function
 
 import binascii
 import errno
+import hashlib
 import json
 import os
 from optparse import OptionParser
@@ -50,6 +51,27 @@ VALID_TOOLS = ("spectre", "ocean", "virtuoso-batch", "si")
 _RUN_ID_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$')
 _ENV_VAR_RE = re.compile(r'\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
 _READONLY_SYSTEM_PREFIXES = ("/opt/", "/home/disk/eda/apps/")
+_PARASITIC_RC_NAME_RE = re.compile(
+    r'(?:^|[./:\s(])(?:'
+    r'(?:cpar|rpar|c_par|r_par|c_pex|r_pex|cpex|rpex|c_qrc|r_qrc|cqrc|rqrc|c_rcx|r_rcx|crcx|rrcx|c_ext|r_ext|avc|avr|parasitic_[rc])\w*'
+    r'|[rc]_(?:net|n)\d+\w*'
+    r'|[rc]_\d+_\d+'
+    r'|[rc]\d+[#$]\d+\w*'
+    r')(?:$|[./:\s)])',
+    re.IGNORECASE,
+)
+_PEX_VIEW_MARKER_RE = re.compile(
+    r'(?:view(?:\s*name)?|cellview|extracted|extractor|simulator|tool|program|netlist|subckt|include|library)\b[^;\r\n]*\b(?:av_extracted|calibre|quantus|qrc|rcx|pex)\b',
+    re.IGNORECASE,
+)
+_PEX_TOKEN_RE = re.compile(r'(?:^|[^a-z0-9_])(?:av_extracted|calibre|quantus|qrc|rcx|pex)(?:$|[^a-z0-9_])', re.IGNORECASE)
+_MC_STMT_RE = re.compile(r'(?<![A-Za-z0-9_])montecarlo(?![A-Za-z0-9_])', re.IGNORECASE)
+_MC_NUMRUNS_RE = re.compile(r'(?<![A-Za-z0-9_])numruns\s*=\s*(\d+)', re.IGNORECASE)
+_NETLIST_SECTION_RE = re.compile(r'(?<![A-Za-z0-9_])section\s*=\s*["\']?([A-Za-z0-9_.-]+)["\']?', re.IGNORECASE)
+_NETLIST_TEMP_RE = re.compile(r'(?<![A-Za-z0-9_])temp\s*=\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)', re.IGNORECASE)
+_BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/', re.DOTALL)
+_LINE_CONT_RE = re.compile(r'\\\r?\n')
+_CORNER_PREFIX_RE = re.compile(r'^(tt|nn|ss|ff|fs|sf)(?:$|[_.\s-])', re.IGNORECASE)
 
 _RUN_SEQ_LOCK = threading.Lock()
 _RUN_SEQ = [0]
@@ -624,6 +646,241 @@ def build_tool_command(tool, run_dir, netlist=None, script=None, psf_ascii=True,
     }
 
 
+def _sha256_file(path):
+    """Compute lowercase SHA-256 hex digest of a file in Python 2.6.6+ compatible chunks."""
+    digest = hashlib.sha256()
+    fh = open(path, "rb")
+    try:
+        while True:
+            chunk = fh.read(65536)
+            if not chunk:
+                break
+            digest.update(chunk)
+    finally:
+        fh.close()
+    return digest.hexdigest().lower()
+
+
+def _strip_spectre_inline_comment(line):
+    """Strip `//` inline comments outside quoted strings."""
+    in_dq = False
+    in_sq = False
+    i = 0
+    n = len(line)
+    while i < n:
+        ch = line[i]
+        if ch == '"' and not in_sq:
+            in_dq = not in_dq
+        elif ch == "'" and not in_dq:
+            in_sq = not in_sq
+        elif not in_dq and not in_sq and ch == "/" and i + 1 < n and line[i + 1] == "/":
+            return line[:i]
+        i += 1
+    return line
+
+
+def _strip_spectre_comments(text):
+    """Return `(raw_lines, stripped_body)` with Spectre block/line comments removed."""
+    no_block = _BLOCK_COMMENT_RE.sub(" ", text)
+    joined = _LINE_CONT_RE.sub(" ", no_block)
+    raw_lines = joined.splitlines()
+    clean_lines = []
+    for raw_ln in raw_lines:
+        if raw_ln.lstrip().startswith("*"):
+            continue
+        cleaned = _strip_spectre_inline_comment(raw_ln).strip()
+        if cleaned:
+            clean_lines.append(cleaned)
+    return raw_lines, "\n".join(clean_lines)
+
+
+def _normalize_corner_token(raw_val):
+    s = str(raw_val or "").strip().strip('"').strip("'")
+    if not s:
+        return None
+    s_low = s.lower()
+    if s_low in ("tt", "nn", "ss", "ff", "fs", "sf"):
+        return s_low.upper()
+    m = _CORNER_PREFIX_RE.match(s_low)
+    if m:
+        return m.group(1).upper()
+    return s.upper()
+
+
+def _inspect_spectre_netlist_provenance(netlist_path):
+    """Extract corner, temperature, Monte Carlo, and post-layout provenance from a Spectre netlist."""
+    fh = open(netlist_path, "rb")
+    try:
+        raw_txt = fh.read().decode("utf-8", "replace")
+    finally:
+        fh.close()
+
+    raw_lines, body = _strip_spectre_comments(raw_txt)
+
+    # Extract section= corners
+    std_corners = []
+    other_sections = []
+    for m in _NETLIST_SECTION_RE.finditer(body):
+        raw_sec = m.group(1).strip()
+        norm_sec = _normalize_corner_token(raw_sec)
+        if norm_sec in ("TT", "NN", "SS", "FF", "FS", "SF"):
+            canon = "TT" if norm_sec == "NN" else norm_sec
+            if canon not in std_corners:
+                std_corners.append((norm_sec, canon))
+        elif raw_sec and raw_sec not in other_sections:
+            other_sections.append(raw_sec)
+
+    corner = None
+    if std_corners:
+        canon_set = set([c[1] for c in std_corners])
+        if len(canon_set) == 1:
+            corner = std_corners[0][0]
+    elif len(other_sections) == 1:
+        corner = other_sections[0]
+
+    # Extract temp= temperature_c (never matches tnom=)
+    temps = []
+    for m in _NETLIST_TEMP_RE.finditer(body):
+        try:
+            t_val = float(m.group(1))
+        except (TypeError, ValueError):
+            continue
+        if not any([abs(t_val - x) <= 0.01 for x in temps]):
+            temps.append(t_val)
+    temperature_c = temps[0] if len(temps) == 1 else None
+
+    # Monte Carlo statement outside comments
+    has_mc = bool(_MC_STMT_RE.search(body))
+    mc_numruns = None
+    if has_mc:
+        m_nr = _MC_NUMRUNS_RE.search(body)
+        if m_nr:
+            try:
+                mc_numruns = int(m_nr.group(1))
+            except (TypeError, ValueError):
+                mc_numruns = None
+
+    # Post-layout / PEX markers (parasitic RC elements outside comments OR view/extractor markers)
+    has_pex = False
+    if _PARASITIC_RC_NAME_RE.search(body) or _PEX_TOKEN_RE.search(body):
+        has_pex = True
+    if not has_pex:
+        for raw_ln in raw_lines:
+            if _PEX_VIEW_MARKER_RE.search(raw_ln):
+                has_pex = True
+                break
+
+    return {
+        "corner": corner,
+        "temperature_c": temperature_c,
+        "has_mc": has_mc,
+        "mc_numruns": mc_numruns,
+        "has_pex": has_pex,
+    }
+
+
+def _is_ascii_mc_psf_file(fpath):
+    """Best-effort check whether an ASCII PSF file contains Monte Carlo sweep/header metadata."""
+    low = os.path.basename(fpath).lower()
+    if (
+        (low.startswith("mc") and (low.endswith(".psf") or low.endswith(".dc") or low.endswith(".ac") or low.endswith(".tran")))
+        or low.startswith("mcdata")
+        or low.endswith(".mcdata")
+        or low.startswith("montecarlo")
+        or low.endswith(".mc")
+    ):
+        return True
+    try:
+        fh = open(fpath, "rb")
+        try:
+            head = fh.read(2048).decode("latin1", "replace")
+        finally:
+            fh.close()
+        if "HEADER" not in head:
+            return False
+        import psf_ascii_reader
+        parsed = psf_ascii_reader.parse_psf_file(fpath, reject_nonfinite=False, reject_truncated=True)
+        sw = str(parsed.get("sweep_name") or "").strip().lower()
+        if sw in ("iteration", "mc_iteration", "montecarlo", "monte_carlo", "mc_iter", "mc_run", "mc_sample"):
+            return True
+        hdr = parsed.get("header") or {}
+        if isinstance(hdr, dict):
+            for hk, hv in hdr.items():
+                hkl = str(hk).strip().lower()
+                hvl = str(hv).strip().lower()
+                if hkl in ("analysis", "analysis type", "analysis_type") and "montecarlo" in hvl:
+                    return True
+    except Exception:
+        return False
+    return False
+
+
+def _write_spectre_run_manifest(run_dir, resolved_run_id, netlist_path, psf_dir, psf_ascii=True):
+    """Write a cryptographically bound `run_manifest.json` inside `run_dir` after clean Spectre exit."""
+    abs_net = os.path.realpath(netlist_path)
+    netlist_sha256 = _sha256_file(abs_net)
+    if _inside_path(abs_net, run_dir):
+        manifest_net = os.path.relpath(abs_net, run_dir).replace(os.sep, "/")
+    else:
+        manifest_net = abs_net
+
+    prov = _inspect_spectre_netlist_provenance(abs_net)
+
+    psf_files_map = {}
+    mc_psf_files = []
+    if psf_dir and os.path.isdir(psf_dir):
+        for root, dirs, files in os.walk(psf_dir):
+            dirs.sort()
+            for fn in sorted(files):
+                fn_low = fn.lower()
+                if _is_cdslck_filename(fn) or fn_low.endswith(".lck") or fn_low.endswith(".rslk") or fn_low.endswith(".lock"):
+                    continue
+                full_p = os.path.join(root, fn)
+                if not os.path.isfile(full_p):
+                    continue
+                rel_p = os.path.relpath(full_p, run_dir).replace(os.sep, "/")
+                psf_files_map[rel_p] = _sha256_file(full_p)
+                if prov["has_mc"] and psf_ascii and _is_ascii_mc_psf_file(full_p):
+                    mc_psf_files.append(rel_p)
+
+    manifest = {
+        "schema": "skill-analog.run-manifest.v1",
+        "run_id": resolved_run_id,
+        "tool": "spectre",
+        "exit_code": 0,
+        "netlist_path": manifest_net,
+        "netlist_sha256": netlist_sha256,
+        "psf_files": psf_files_map,
+    }
+    if prov["corner"] is not None:
+        manifest["corner"] = prov["corner"]
+    if prov["temperature_c"] is not None:
+        manifest["temperature_c"] = prov["temperature_c"]
+    if prov["has_mc"]:
+        mc_obj = {
+            "enabled": True,
+            "netlist_backed": True,
+            "mc_psf_files": mc_psf_files,
+        }
+        if prov["mc_numruns"] is not None:
+            mc_obj["numruns_declared"] = prov["mc_numruns"]
+        manifest["monte_carlo"] = mc_obj
+    else:
+        manifest["monte_carlo"] = {"enabled": False}
+    if prov["has_pex"]:
+        manifest["post_layout"] = {"enabled": True, "netlist_backed": True}
+    else:
+        manifest["post_layout"] = {"enabled": False}
+
+    manifest_path = os.path.join(run_dir, "run_manifest.json")
+    mf = open(manifest_path, "wb")
+    try:
+        mf.write((json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8"))
+    finally:
+        mf.close()
+    return manifest_path
+
+
 def execute_cadence_job(
     tool,
     project_dir=None,
@@ -828,6 +1085,16 @@ def execute_cadence_job(
     log_errors = _scan_subprocess_fatal_errors(spec["log_file"], stdout_txt, stderr_txt)
     sub_ok = (proc.returncode == 0) and (len(log_errors) == 0)
 
+    manifest_path = None
+    if tool == "spectre" and sub_ok and netlist:
+        manifest_path = _write_spectre_run_manifest(
+            run_dir=run_dir,
+            resolved_run_id=resolved_run_id,
+            netlist_path=netlist,
+            psf_dir=spec["psf_dir"],
+            psf_ascii=psf_ascii,
+        )
+
     ret = {
         "ok": sub_ok,
         "op_ok": sub_ok,
@@ -848,6 +1115,8 @@ def execute_cadence_job(
         "stdout_tail": stdout_txt[-4000:],
         "stderr_tail": stderr_txt[-4000:],
     }
+    if manifest_path is not None:
+        ret["run_manifest"] = manifest_path
     if not sub_ok and log_errors:
         ret["error"] = "Fatal/error marker detected in %s log: %s" % (tool, log_errors[0])
     return ret
@@ -1152,6 +1421,77 @@ def run_self_test():
         if _format_cds_lib_path("/home/disk/eda/my proj/cds.lib") != '"/home/disk/eda/my proj/cds.lib"':
             raise AssertionError("Expected quoted cds.lib path when spaces exist")
         checks.append("cds_lib_conditional_quoting_ok")
+
+        # 8. Cryptographically bound `run_manifest.json` on clean Spectre exit (and absent on failure)
+        fail_manifest = os.path.join(proj_dir, "sim", "runs", "silent_sfe_fail", "run_manifest.json")
+        if os.path.exists(fail_manifest):
+            raise AssertionError("Failed Spectre run must NOT write run_manifest.json")
+        if not ow_res.get("run_manifest") or not os.path.isfile(ow_res["run_manifest"]):
+            raise AssertionError("Expected clean Spectre run to write run_manifest.json: %r" % ow_res)
+
+        mc_pex_net = os.path.join(proj_dir, "tb_mc_pex.scs")
+        _write_text_utf8(
+            mc_pex_net,
+            "// View name: av_extracted\n"
+            "simulator lang=spectre\n"
+            "include \"/models/gpdk090.scs\" section=ss\n"
+            "options1 options tnom=27 temp=125\n"
+            "cpar_out (vout 0) capacitor c=5f\n"
+            "mc1 montecarlo variations=all numruns=2 {\n"
+            "  dcOp dc\n"
+            "}\n",
+        )
+
+        def _mock_popen_with_psf(cmd, cwd=None, env=None, stdout=None, stderr=None):
+            psf_d = os.path.join(cwd, "psf")
+            _mkdir_p(psf_d)
+            _write_text_utf8(
+                os.path.join(psf_d, "dcOp.dc"),
+                'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n'
+                'TYPE\n"i_sw" INT LONG\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+                'SWEEP\n"iteration" "i_sw"\nTRACE\n"VDD" "v_t"\n"VDD:p" "i_t"\nVALUE\n'
+                '"iteration" 1\n"VDD" 0.9\n"VDD:p" -1.0e-4\n'
+                '"iteration" 2\n"VDD" 0.9\n"VDD:p" -1.1e-4\nEND\n',
+            )
+            _write_text_utf8(os.path.join(psf_d, "dcOp.dc.cdslck"), "LOCK\n")
+            return _DummyProc()
+
+        subprocess.Popen = _mock_popen_with_psf
+        try:
+            mf_res = execute_cadence_job(
+                "spectre",
+                project_dir=proj_dir,
+                run_id="bound_manifest_run",
+                netlist=mc_pex_net,
+                overwrite_run=True,
+                dry_run=False,
+            )
+        finally:
+            subprocess.Popen = orig_popen
+
+        mf_path = mf_res.get("run_manifest")
+        if not mf_res.get("ok") or not mf_path or not os.path.isfile(mf_path):
+            raise AssertionError("Expected bound manifest run_manifest.json, got %r" % mf_res)
+        mf_fh = open(mf_path, "rb")
+        try:
+            mf_obj = json.loads(mf_fh.read().decode("utf-8"))
+        finally:
+            mf_fh.close()
+        if mf_obj.get("schema") != "skill-analog.run-manifest.v1" or mf_obj.get("exit_code") != 0:
+            raise AssertionError("Unexpected manifest schema/exit_code: %r" % mf_obj)
+        if mf_obj.get("netlist_sha256") != _sha256_file(mc_pex_net):
+            raise AssertionError("Manifest netlist_sha256 mismatch")
+        if mf_obj.get("corner") != "SS" or mf_obj.get("temperature_c") != 125.0:
+            raise AssertionError("Expected SS / 125.0 from netlist, got %r" % mf_obj)
+        if "psf/dcOp.dc" not in mf_obj.get("psf_files", {}) or "psf/dcOp.dc.cdslck" in mf_obj.get("psf_files", {}):
+            raise AssertionError("Manifest psf_files must include psf/dcOp.dc and exclude lock files: %r" % mf_obj)
+        if mf_obj["psf_files"]["psf/dcOp.dc"] != _sha256_file(os.path.join(mf_res["psf_dir"], "dcOp.dc")):
+            raise AssertionError("Manifest PSF SHA-256 mismatch")
+        if not mf_obj.get("monte_carlo", {}).get("enabled") or "psf/dcOp.dc" not in mf_obj["monte_carlo"].get("mc_psf_files", []):
+            raise AssertionError("Expected netlist-backed monte_carlo provenance: %r" % mf_obj)
+        if not mf_obj.get("post_layout", {}).get("enabled"):
+            raise AssertionError("Expected netlist-backed post_layout provenance: %r" % mf_obj)
+        checks.append("cryptographically_bound_run_manifest_ok")
 
         return {
             "ok": True,

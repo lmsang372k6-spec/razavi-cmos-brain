@@ -9,6 +9,12 @@
   "diagram": "../../diagrams/common-centroid-multifinger.svg",
   "razavi_refs": [
     {
+      "chapter": 18,
+      "section": "18.7.3",
+      "pages": "727-730",
+      "equations": ["18.10"]
+    },
+    {
       "chapter": 19,
       "section": "19.2.1-19.2.4",
       "pages": "737-744",

@@ -10,10 +10,14 @@
   when running outside the live Windows Git SSOT checkout.
 - Dual-layout path resolution:
   * Layout A (Windows Git SSOT: runtime/tools/kb_fetch.py -> ../../kb/): reads live
-    cards, checklists, edges, and 72 SVG diagrams directly in < 15 ms (0 ms network).
+    cards, checklists, edges, and 72 SVG diagrams directly (< 15 ms warm in-process
+    / direct SSOT lookup; cold CLI subprocess ~150-220 ms on RHEL 6.5 Python 2.6.6
+    including interpreter startup; 0 ms network).
   * Layout B (RHEL 6.5 SKILL-ANALOG: tools/kb_fetch.py -> ../kb/ + ~/.cache/razavi-cmos-brain/synced):
-    serves synced cache / HTTPS live cards with < 15 ms offline fallback from nodes-bundle.json.gz
-    and local SVG resolution across all 72 diagrams.
+    serves synced cache / HTTPS live cards with offline fallback from nodes-bundle.json.gz
+    (< 15 ms warm in-process once loaded; ~150-220 ms cold CLI subprocess on RHEL 6.5
+    Python 2.6.6 including interpreter startup and gzip bundle decompression) and
+    local SVG resolution across all 72 diagrams.
 """
 from __future__ import print_function
 
@@ -227,15 +231,37 @@ def resolve_local_diagram_path(cfg, diag_filename):
     return None
 
 
+class AmbiguousNodeError(ValueError):
+    def __init__(self, message, candidates=None):
+        ValueError.__init__(self, message)
+        self.candidates = list(candidates or [])
+
+
 def resolve_node_entry(router, query_id):
     target = to_text(query_id).strip()
-    for n in router.get("nodes", []):
+    if not target:
+        return None
+    nodes = router.get("nodes", [])
+    for n in nodes:
         if n.get("id") == target:
             return n
     lower = target.lower()
-    for n in router.get("nodes", []):
-        if lower in to_text(n.get("id", "")).lower():
+    for n in nodes:
+        if to_text(n.get("id", "")).lower() == lower:
             return n
+    matches = []
+    for n in nodes:
+        if lower in to_text(n.get("id", "")).lower():
+            matches.append(n)
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        cand_ids = sorted([to_text(m.get("id", "")) for m in matches])
+        raise AmbiguousNodeError(
+            "Ambiguous Razavi Knowledge Brain node %r matches %d candidates: %s"
+            % (target, len(cand_ids), ", ".join(cand_ids)),
+            candidates=cand_ids,
+        )
     return None
 
 
@@ -244,20 +270,28 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
     if refresh and eff_offline:
         raise ota_sync.OtaConflictError("--refresh cannot be used when offline mode is active.")
 
-    # Transparent background TTL auto-sync (0 ms on Windows SSOT, 0 ms when offline, 0 ms within 60s TTL)
-    ota_sync.maybe_auto_sync(
-        ttl_sec=60,
-        offline=eff_offline,
-        library_root=LIBRARY_ROOT,
-        base_url_override=base_url_override,
-        update_library=bool(update_library),
-    )
-
+    # Resolve locally FIRST so unknown/ambiguous queries fail immediately with zero network sync
     cfg = load_config()
     router = load_active_router(cfg)
     node_meta = resolve_node_entry(router, node_query)
     if not node_meta:
         raise KeyError("Unknown Razavi Knowledge Brain node: " + to_text(node_query))
+
+    # Transparent background TTL auto-sync ONLY after resolving a valid node (0 ms on SSOT / offline / 60s TTL)
+    if not eff_offline:
+        sync_res = ota_sync.maybe_auto_sync(
+            ttl_sec=60,
+            offline=eff_offline,
+            library_root=LIBRARY_ROOT,
+            base_url_override=base_url_override,
+            update_library=bool(update_library),
+        )
+        if isinstance(sync_res, dict) and sync_res.get("action") in ("synced", "updated"):
+            cfg = load_config()
+            router = load_active_router(cfg)
+            node_meta = resolve_node_entry(router, node_meta.get("id") or node_query)
+            if not node_meta:
+                raise KeyError("Unknown Razavi Knowledge Brain node: " + to_text(node_query))
 
     nid = node_meta["id"]
     rel_path = to_text(node_meta.get("raw_rel_path") or node_meta.get("path") or "").lstrip("/")
@@ -270,7 +304,7 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
     online_note = None
     diagram_info = None
 
-    # Fast Path 1: Windows Git SSOT live card file (< 2 ms, zero network) when not forcing --offline or --base-url
+    # Fast Path 1: Windows Git SSOT live card file (< 2 ms warm in-process, zero network) when not forcing --offline or --base-url
     if SSOT_REPO_ROOT and not eff_offline and not base_url_override and rel_path:
         ssot_md_path = os.path.join(*([SSOT_REPO_ROOT] + rel_path.split("/")))
         if os.path.isfile(ssot_md_path):
@@ -326,7 +360,7 @@ def fetch_card(node_query, base_url_override=None, offline_only=False, refresh=F
                 else:
                     online_note = "HTTPS GitHub fetch rejected/unavailable (%s); served from local nodes-bundle.json.gz." % str(exc)
 
-    # Path 3: Offline bundle fallback (< 15 ms, guaranteed zero network)
+    # Path 3: Offline bundle fallback (< 15 ms warm in-process once loaded / ~150-220 ms cold CLI with gzip decompression, guaranteed zero network)
     if markdown_text is None:
         bundle, bundle_path = load_bundle(cfg)
         nodes_dict = bundle.get("nodes", {})
@@ -475,6 +509,15 @@ def format_markdown_report(result, include_checklists=True):
 
 def run_self_test():
     saved_env = os.environ.get("SKILL_ANALOG_OFFLINE")
+    saved_outer_cache = os.environ.get("RAZAVI_BRAIN_CACHE_DIR")
+    outer_tmp_cache = tempfile.mkdtemp(prefix="kb_fetch_selftest_cache_")
+    os.environ["RAZAVI_BRAIN_CACHE_DIR"] = outer_tmp_cache
+    orig_outer_auto = ota_sync.maybe_auto_sync
+    orig_outer_fetch = ota_sync.fetch_from_bases
+
+    def _hermetic_no_net(*_args, **_kwargs):
+        raise IOError("hermetic_selftest_no_network")
+
     try:
         # 1. --sync + --offline -> exit code 2
         rc1 = main(["--sync", "--offline", "--quiet-errors"])
@@ -500,10 +543,20 @@ def run_self_test():
         else:
             os.environ["SKILL_ANALOG_OFFLINE"] = saved_env
 
-        # 4. Default dual-layout fetch speed
-        t0 = time.time()
-        card2 = fetch_card("topo-synchronous-buck-converter-architecture", offline_only=False)
-        dt_ms = round((time.time() - t0) * 1000.0, 2)
+        # 4. Default dual-layout fetch speed (hermetic: stub network/OTA so library/ is never mutated)
+        ota_sync.maybe_auto_sync = lambda **_kw: {"ok": True, "action": "noop_test"}
+        ota_sync.fetch_from_bases = _hermetic_no_net
+        try:
+            t0 = time.time()
+            card2 = fetch_card(
+                "topo-synchronous-buck-converter-architecture",
+                offline_only=False,
+                update_library=False,
+            )
+            dt_ms = round((time.time() - t0) * 1000.0, 2)
+        finally:
+            ota_sync.maybe_auto_sync = orig_outer_auto
+            ota_sync.fetch_from_bases = orig_outer_fetch
         if not card2.get("ok") or len(card2.get("markdown", "")) < 500:
             raise AssertionError("Default fetch returned invalid card")
 
@@ -561,14 +614,100 @@ def run_self_test():
                 os.environ["RAZAVI_BRAIN_CACHE_DIR"] = saved_cache_env
             shutil.rmtree(tmp_tamp, ignore_errors=True)
 
+        # 7. Finding #12 + #16: Gibberish & ambiguous IDs fail closed with ZERO calls to maybe_auto_sync
+        sync_spy_calls = []
+        captured_out = []
+        orig_auto2 = ota_sync.maybe_auto_sync
+        orig_fetch2 = ota_sync.fetch_from_bases
+        orig_write = globals()["write_utf8"]
+        orig_stderr = sys.stderr
+
+        def _spy_auto2(**kwargs):
+            sync_spy_calls.append(kwargs)
+            return {"ok": True, "action": "noop_spy"}
+
+        def _cap_write(txt):
+            captured_out.append(to_text(txt))
+
+        class _BufStderr(object):
+            def __init__(self):
+                self.chunks = []
+
+            def write(self, s):
+                self.chunks.append(to_text(s))
+
+            def flush(self):
+                pass
+
+        ota_sync.maybe_auto_sync = _spy_auto2
+        ota_sync.fetch_from_bases = _hermetic_no_net
+        try:
+            # 7a. Unknown query -> KeyError, 0 maybe_auto_sync calls
+            unknown_caught = False
+            try:
+                fetch_card("xyzzy-nonexistent-card-9999", offline_only=False)
+            except KeyError:
+                unknown_caught = True
+            if not unknown_caught or len(sync_spy_calls) != 0:
+                raise AssertionError("Unknown query must fail with KeyError and 0 sync calls: caught=%r calls=%r" % (unknown_caught, sync_spy_calls))
+
+            # 7b. Ambiguous substring 'charge-pump' -> AmbiguousNodeError with 3 candidates, 0 maybe_auto_sync calls
+            ambig_exc = None
+            try:
+                fetch_card("charge-pump", offline_only=False)
+            except AmbiguousNodeError as exc:
+                ambig_exc = exc
+            expected_cp = [
+                "topo-charge-pump-type2-pll",
+                "topo-pfd-deadzone-and-charge-pump-nonidealities",
+                "topo-switched-capacitor-charge-pump-dcdc",
+            ]
+            if ambig_exc is None or ambig_exc.candidates != expected_cp or len(sync_spy_calls) != 0:
+                raise AssertionError("Ambiguous charge-pump failed: exc=%r calls=%r" % (ambig_exc, sync_spy_calls))
+
+            # 7c. CLI --offline --json charge-pump -> rc=1, ok=False, 3 candidates in JSON
+            globals()["write_utf8"] = _cap_write
+            del captured_out[:]
+            rc_cp_json = main(["--offline", "--json", "charge-pump"])
+            cp_payload = json.loads(captured_out[0]) if captured_out else {}
+            if rc_cp_json != 1 or cp_payload.get("ok") is not False or cp_payload.get("candidates") != expected_cp or len(sync_spy_calls) != 0:
+                raise AssertionError("CLI json charge-pump failed: rc=%r pay=%r calls=%r" % (rc_cp_json, cp_payload, sync_spy_calls))
+
+            # 7d. CLI --offline charge-pump (text stderr) -> rc=1, lists all 3 candidates
+            err_buf = _BufStderr()
+            sys.stderr = err_buf
+            rc_cp_txt = main(["--offline", "charge-pump"])
+            sys.stderr = orig_stderr
+            err_txt = u"".join(err_buf.chunks)
+            if rc_cp_txt != 1 or any(cid not in err_txt for cid in expected_cp) or len(sync_spy_calls) != 0:
+                raise AssertionError("CLI text charge-pump failed: rc=%r err=%r" % (rc_cp_txt, err_txt))
+
+            # 7e. Valid fetch with offline_only=False invokes maybe_auto_sync AFTER resolving node (hermetic)
+            del sync_spy_calls[:]
+            ok_card = fetch_card("topo-charge-pump-type2-pll", offline_only=False, update_library=False)
+            if not ok_card.get("ok") or len(sync_spy_calls) != 1:
+                raise AssertionError("Valid fetch should invoke maybe_auto_sync once after resolution: calls=%r" % sync_spy_calls)
+        finally:
+            sys.stderr = orig_stderr
+            globals()["write_utf8"] = orig_write
+            ota_sync.maybe_auto_sync = orig_auto2
+            ota_sync.fetch_from_bases = orig_fetch2
+
         return {
             "ok": True,
             "command": "self-test",
             "release": ota_sync.RELEASE_VERSION,
             "fetch_ms": dt_ms,
-            "tests_passed": 6,
+            "tests_passed": 11,
         }
     finally:
+        ota_sync.maybe_auto_sync = orig_outer_auto
+        ota_sync.fetch_from_bases = orig_outer_fetch
+        if saved_outer_cache is None:
+            os.environ.pop("RAZAVI_BRAIN_CACHE_DIR", None)
+        else:
+            os.environ["RAZAVI_BRAIN_CACHE_DIR"] = saved_outer_cache
+        shutil.rmtree(outer_tmp_cache, ignore_errors=True)
         if saved_env is None:
             if "SKILL_ANALOG_OFFLINE" in os.environ:
                 del os.environ["SKILL_ANALOG_OFFLINE"]
@@ -687,6 +826,25 @@ def main(argv=None):
         else:
             write_utf8(format_markdown_report(result, include_checklists=(not opts.no_checklists)))
         return 0
+    except AmbiguousNodeError as exc:
+        if not opts.quiet_errors:
+            if opts.as_json:
+                write_utf8(
+                    json.dumps(
+                        {
+                            "ok": False,
+                            "node_id": node_id,
+                            "error": str(exc),
+                            "candidates": exc.candidates,
+                        },
+                        ensure_ascii=False,
+                        indent=2,
+                        sort_keys=True,
+                    )
+                )
+            else:
+                sys.stderr.write("kb_fetch error: %s\n" % str(exc))
+        return 1
     except ota_sync.OtaConflictError as exc:
         if not opts.quiet_errors:
             write_utf8(json.dumps({"ok": False, "node_id": node_id, "error": str(exc)}, indent=2, sort_keys=True))

@@ -210,10 +210,10 @@ $$
    Sau khi trừ khoảng chết không chồng lấp $t_{\text{nonov}}$ và thời gian slewing $t_{\text{slew}}$ (`law-slewing-vs-linear-settling-time-budget`), phần thời gian xác lập hàm mũ còn lại $t_{\text{lin}} = \frac{T_s}{2} - t_{\text{nonov}} - t_{\text{slew}}$ phải nén sai số động xuống dưới $2^{-(N_{\text{rem}} + 1)}$:
 
 $$
-e^{-t_{\text{lin}} / \tau_{\text{CL}}} < \frac{1}{2^{N_{\text{rem}} + 1}} \;\implies\; f_{u,\text{OTA1}} = \frac{\text{GBW}}{\beta_{\text{flip}}} > \frac{(N_{\text{rem}} + 1)\,\ln 2}{2\pi \, \beta_{\text{flip}} \, t_{\text{lin}}}
+e^{-t_{\text{lin}} / \tau_{\text{CL}}} < \frac{1}{2^{N_{\text{rem}} + 1}} \;\implies\; f_{\text{cl}} = \beta_{\text{flip}} f_u = \beta_{\text{flip}}\,\text{GBW} > f_{\text{cl},\min} = \frac{(N_{\text{rem}} + 1)\,\ln 2}{2\pi \, t_{\text{lin}}}, \qquad f_{u,\min} = \text{GBW}_{\min} = \frac{f_{\text{cl},\min}}{\beta_{\text{flip}}}
 $$
 
-   *(Ví dụ $12\text{-bit}$, $f_s = 100\text{ MS/s} \implies T_s/2 = 5\text{ ns}$, $t_{\text{lin}} = 3.2\text{ ns}$, $\beta_{\text{flip}} = 0.45$: cần $(12 \ln 2) = 8.32$ hằng số thời gian $\implies \tau_{\text{CL}} < 385\text{ ps} \implies f_{u,\text{OTA1}} > \mathbf{918\text{ MHz}}$!).*
+   *(Ví dụ $12\text{-bit}$ với $N_{\text{rem}} = 11$, $f_s = 100\text{ MS/s} \implies T_s/2 = 5\text{ ns}$, $t_{\text{lin}} = 3.2\text{ ns}$, $\beta_{\text{flip}} = 0.45$: cần $(N_{\text{rem}} + 1)\ln 2 = 12\ln 2 \approx 8.318$ hằng số thời gian $\implies \tau_{\text{CL}} < 384.7\text{ ps} \implies f_{\text{cl},\min} = \frac{12\ln 2}{2\pi \times 3.2\text{ ns}} = \mathbf{413.69\text{ MHz}}$ và $f_{u,\min} = \text{GBW}_{\min} = \frac{f_{\text{cl},\min}}{\beta_{\text{flip}}} = \mathbf{919.32\text{ MHz}}$!).*
 3. **Độ khớp Tụ $C_1$ và $C_2$:** Lệch tụ $\Delta C / C$ gây bước nhảy gián đoạn $\Delta V_{\text{jump,in}} = \frac{1}{2}\left(\frac{\Delta C}{C}\right) V_{\text{REF}}$ **quy về ngõ vào** (tương ứng bước nhảy $\Delta V_{\text{jump,out}} = \left(\frac{\Delta C}{C}\right) V_{\text{REF}}$ tại ngõ ra $V_{\text{res}}$ do $G = 2$) tại $\pm V_{\text{REF}}/4$; ở $\ge 12\text{–}14\text{ bit}$ cần ghép tâm chung kỹ lưỡng kèm hiệu chuẩn số trọng số bit (`Arcadia-1/ADCToolbox`).
 
 ---

@@ -790,6 +790,20 @@ def validate(
         else:
             degree = defaultdict(int)
             upgrades_adj = defaultdict(list)
+            requires_adj = defaultdict(list)
+            combined_dag_adj = defaultdict(list)
+            physical_constraint_nodes = {
+                "tech-common-centroid-sti-wpe-layout",
+                "law-cmos-wells-and-latchup-guard-rings",
+                "tech-esd-protection-padring-and-package-parasitics",
+                "tech-interconnect-rc-electromigration-and-ir-drop",
+                "tech-substrate-noise-coupling-and-shielding",
+            }
+            forbidden_fixes_sources = {
+                "law-short-channel-effects",
+                "concept-diffpair-mirror-pole-doublet",
+                "law-differential-imbalance-hd2-and-cm-nonlinearity",
+            }
             seen_edges = set()
             with open(edges_fp, "r", encoding="utf-8-sig") as f:
                 for line_no, line in enumerate(f, 1):
@@ -822,14 +836,34 @@ def validate(
                     degree[v] += 1
                     if rel == "upgrades_to":
                         upgrades_adj[u].append(v)
+                        combined_dag_adj[u].append(v)
+                    elif rel == "requires":
+                        requires_adj[u].append(v)
+                        combined_dag_adj[u].append(v)
+                    elif rel == "layout_constrained_by" and v not in physical_constraint_nodes:
+                        errors.append(
+                            f"edges.jsonl:{line_no}: layout_constrained_by target {v!r} is not a canonical physical constraint node"
+                        )
+                    elif rel == "fixes" and u in forbidden_fixes_sources:
+                        errors.append(
+                            f"edges.jsonl:{line_no}: inverted 'fixes' polarity: problem/law node {u!r} cannot be outgoing 'fixes' source"
+                        )
 
             orphans = sorted(nid for nid in node_ids if degree[nid] == 0)
             if orphans:
                 errors.append(f"Orphan nodes with 0 graph edges ({len(orphans)}): {orphans}")
 
-            cyc = has_cycle(upgrades_adj)
-            if cyc:
-                errors.append(f"Cycle detected in 'upgrades_to' subgraph: {' -> '.join(cyc)}")
+            cyc_up = has_cycle(upgrades_adj)
+            if cyc_up:
+                errors.append(f"Cycle detected in 'upgrades_to' subgraph: {' -> '.join(cyc_up)}")
+            cyc_req = has_cycle(requires_adj)
+            if cyc_req:
+                errors.append(f"Cycle detected in 'requires' subgraph: {' -> '.join(cyc_req)}")
+            cyc_comb = has_cycle(combined_dag_adj)
+            if cyc_comb:
+                errors.append(
+                    f"Cycle detected in combined 'upgrades_to + requires' subgraph: {' -> '.join(cyc_comb)}"
+                )
 
     # 8. Router Index & Manifest SHA-256 validation
     router_fp = os.path.join(KB_ROOT, "router-index.json")

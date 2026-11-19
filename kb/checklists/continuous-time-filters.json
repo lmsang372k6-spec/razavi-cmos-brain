@@ -16,7 +16,7 @@
       "name": "Dự trữ băng thông Op-Amp chống vọt đỉnh hệ số phẩm chất (Q-Enhancement) và tự kích trong bộ lọc Active-RC / Tow-Thomas",
       "severity": "error",
       "method": "estimate",
-      "invariant": "omega_u = 2*pi*GBW >= (25 .. 40) * Q * omega_0 trên mọi góc PVT (sao cho 2*Q*omega_0 / omega_u <= 0.05..0.08), HOẶC bắt buộc gắn tụ bù sớm pha thụ động C_lead = 2 / (omega_u * R) song song nhánh tích phân",
+      "invariant": "omega_u = 2*pi*GBW > 42 * Q * omega_0 trên mọi góc PVT để giữ |Delta_Q / Q| < 5% (do 2*Q*omega_0 / omega_u < 1/21 = 0.0476; lưu ý mức 30..40 * Q * omega_0 vẫn gây sai số Q tới 7.14%..5.26%), HOẶC bắt buộc gắn tụ bù sớm pha thụ động C_lead = 2 / (omega_u * R) song song nhánh tích phân",
       "why_vi": "Trong vòng hai bộ tích phân Active-RC (như Tow-Thomas hay KHN biquad), băng thông đơn vị hữu hạn omega_u của mỗi Op-Amp tạo độ trễ pha ký sinh -omega/omega_u quanh tần số cực omega_0. Hai bộ tích phân nối vòng cộng dồn độ trễ -2*omega_0/omega_u làm mẫu số hệ số phẩm chất thực tế sụt thành 1/Q_eff = 1/Q - 2*omega_0/omega_u: khi omega_u <= 2*Q*omega_0 ở góc SS/125°C, Q_eff vọt ra vô cùng rồi đổi dấu âm biến bộ lọc thành mạch dao động hình sin!",
       "cadence_check": "Chạy Spectre `ac` và `pz` trên toàn bộ các góc `SS/125C`, `SS/-40C`, `TT/27C`, `FF/-40C`; đo đỉnh biên độ tại `f_0` đối chiếu hàm truyền lý tưởng (`|Delta_Q / Q| < 5%`) và xác nhận mọi cặp cực phức đều nằm sâu bên trái trục ảo (`Re{p_k} < 0`).",
       "related_nodes": [

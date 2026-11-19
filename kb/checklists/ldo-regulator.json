@@ -54,12 +54,12 @@
     },
     {
       "id": "CHK-LDO-04",
-      "name": "Tham chiếu AC nút cổng PMOS Pass bám theo VIN để bảo vệ PSRR (Cấm gắn tụ từ cổng PMOS xuống đất)",
+      "name": "Hợp đồng Tham chiếu AC Cổng PMOS Pass Theo Dải Tần (DC/Trung tần bám VIN A_g,sup ~ 1; Kiểm soát Truyền thẳng C_GD Siêu cao tần & Ổn định)",
       "severity": "error",
       "method": "structural",
-      "invariant": "Không tồn tại tụ bù hay tụ lọc nối trực tiếp từ cực cổng M_pass (PMOS) xuống GND; tầng lái cổng M_pass phải tham chiếu nguồn lên chính VIN để delta_v_G ≈ delta_v_IN",
-      "why_vi": "Cực nguồn PMOS pass gắn vào VIN nên dòng ra bị điều khiển bởi v_SG = v_IN - v_G. Nếu nút cổng bị ghim AC xuống đất, toàn bộ gợn nhiễu trên VIN biến trực tiếp thành v_SG và được khuếch đại thẳng xuống VOUT phá hủy PSRR.",
-      "cadence_check": "Chạy mô phỏng `xf` hoặc `ac` với nguồn nhiễu `v_in_ac = 1` từ `10 Hz` đến `100 MHz`; kiểm tra biên độ truyền sang `V(G_pass)` bám sát `1 V/V` (đồng pha) trong dải băng thông.",
+      "invariant": "Trong dải DC và trung tần nơi g_m,pass >> omega * C_GD (hỗ dẫn thống trị truyền thẳng điện dung): giữ tầng lái cổng M_pass (PMOS) tham chiếu nguồn lên chính VIN để A_g,sup = dv_G/dv_IN ~ 1 (v_sg ~ 0), không mắc tụ nối cổng M_pass xuống GND làm sập PSRR trung tần; ở miền siêu cao tần truyền thẳng điện dung (omega * C_GD >> g_m,pass, vd dải GHz), nối đất AC nút cổng (A_g,sup -> 0) làm giảm truyền thẳng qua C_GD và cải thiện HF PSRR nhưng đánh đổi bằng suy giảm PSRR trung tần và dịch chuyển cực cổng — mọi thay đổi mạng lọc/tham chiếu cổng bắt buộc kiểm tra đồng thời PSRR(f) toàn dải và stb (PM/GM)",
+      "why_vi": "Cực nguồn PMOS pass gắn vào VIN nên trong DC và trung tần dòng ra bị điều khiển bởi v_SG = v_IN - v_G = (1 - A_g,sup)*v_IN; nếu ghim nút cổng xuống đất AC (A_g,sup -> 0), toàn bộ gợn VIN biến thành v_SG khuếch đại thẳng xuống VOUT phá hủy PSRR trung tần. Ngược lại ở miền siêu cao tần (omega * C_GD >> g_m,pass), ghép nhiễu tiệm cận (C_SD + A_g,sup * C_GD)/(C_OUT + C_SD + C_GD), nên kéo A_g,sup -> 0 thực chất giảm ghép C_GD và nâng HF PSRR nhưng sẽ hạ PSRR trung tần và kéo tụt cực cổng gây nguy cơ mất ổn định nếu không kiểm định đủ dải.",
+      "cadence_check": "Chạy mô phỏng `xf` hoặc `ac` đo đồng thời `A_g,sup(f) = v(G_pass)/v(VIN)` và `PSRR(f)` toàn dải từ `10 Hz` đến `>= 1 GHz` (bao trùm cả vùng trung tần `g_m,pass > omega*C_GD` lẫn vùng siêu cao tần `omega*C_GD >> g_m,pass`), kết hợp chạy `stb` (`PM >= 50 deg, GM >= 10 dB`) trên toàn dải tải mỗi khi điều chỉnh mạng lọc hoặc tham chiếu nút cổng.",
       "related_nodes": [
         "topo-cmos-ldo-regulator",
         "concept-opamp-psrr-and-noise"

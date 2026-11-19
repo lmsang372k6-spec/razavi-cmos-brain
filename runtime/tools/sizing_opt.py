@@ -727,11 +727,14 @@ def normalize_constraints(problem):
 
 def check_constraints(metrics, constraints, target_shifts=None):
     """Evaluate margins and violations against constraints (+ optional PVT guard shifts)."""
+    metrics_map = metrics if isinstance(metrics, dict) else {}
     shifts = target_shifts or {}
     details = []
     total_viol = 0.0
     all_pass = True
     all_guarded_pass = True
+    any_fail = False
+    any_not_verified = False
 
     for c in constraints:
         mname = c["metric"]
@@ -752,7 +755,8 @@ def check_constraints(metrics, constraints, target_shifts=None):
         if op not in (">=", ">", "<=", "<"):
             raise SizingOptError("Unsupported constraint operator '%s' on %s" % (op, c["id"]))
 
-        if mname not in metrics or metrics[mname] is None:
+        if mname not in metrics_map or metrics_map[mname] is None:
+            any_not_verified = True
             all_pass = False
             all_guarded_pass = False
             total_viol += 2.0
@@ -771,10 +775,11 @@ def check_constraints(metrics, constraints, target_shifts=None):
             })
             continue
 
-        raw_mval = metrics[mname]
+        raw_mval = metrics_map[mname]
         val = _safe_finite_float(raw_mval)
         if val is None:
             passed = False
+            any_fail = True
             all_pass = False
             all_guarded_pass = False
             viol = 10.0
@@ -811,6 +816,7 @@ def check_constraints(metrics, constraints, target_shifts=None):
             guarded_passed = passed and (margin >= -1e-12 * max(abs(eff_tgt), abs(tgt), 1e-30))
 
         if not passed:
+            any_fail = True
             all_pass = False
         if not guarded_passed:
             all_guarded_pass = False
@@ -834,13 +840,22 @@ def check_constraints(metrics, constraints, target_shifts=None):
             "status": "PASS" if passed else "FAIL",
         })
 
-    toc_cnt = _safe_finite_float(metrics.get("triode_or_cutoff_count", 0))
+    toc_cnt = _safe_finite_float(metrics_map.get("triode_or_cutoff_count", 0))
     if toc_cnt is not None and toc_cnt > 0:
+        any_fail = True
         all_pass = False
         all_guarded_pass = False
         total_viol += 0.5 * toc_cnt
 
+    if any_fail:
+        chk_status = "FAIL"
+    elif any_not_verified or not all_pass:
+        chk_status = "NOT_VERIFIED"
+    else:
+        chk_status = "PASS"
+
     return {
+        "status": chk_status,
         "all_pass": all_pass,
         "all_guarded_pass": all_guarded_pass,
         "total_violation": total_viol,
@@ -1361,14 +1376,20 @@ def optimize_problem(problem, sensitivity_only=False):
                 corner_status[c_name] = "NOT_VERIFIED"
                 continue
             cc = check_constraints(mc, constraints)
-            c_stat = "PASS" if cc["all_pass"] else "FAIL"
+            c_stat = cc.get("status")
+            if c_stat not in ("PASS", "FAIL", "NOT_VERIFIED"):
+                c_stat = "PASS" if cc["all_pass"] else "FAIL"
             cc["status"] = c_stat
             corner_metrics[c_name] = mc
             corner_checks[c_name] = cc
             corner_status[c_name] = c_stat
-            verified_list.append(c_name)
-            if not cc["all_pass"]:
+            if c_stat == "NOT_VERIFIED":
+                unverified_list.append(c_name)
                 all_ok = False
+            else:
+                verified_list.append(c_name)
+                if c_stat != "PASS":
+                    all_ok = False
         if unverified_list or len(verified_list) < len(corners):
             all_ok = False
         return all_ok, corner_metrics, corner_checks, corner_status, verified_list, unverified_list
@@ -1509,6 +1530,7 @@ def optimize_problem(problem, sensitivity_only=False):
         },
         "initial_constraints_tt": s1["initial_check"],
         "worst_case_pvt_summary": worst_case_summary,
+        "pvt_corner_checks": pvt_checks,
         "pvt_corner_metrics": pvt_metrics,
         "elapsed_ms": round((TIMER() - t_start) * 1000.0, 3),
     }
@@ -1855,6 +1877,45 @@ def run_self_test():
         if abs((w_snap / 0.1) - round(w_snap / 0.1)) > 1e-6:
             raise AssertionError("Legacy step_grid_m=0.1 was not snapped: w=%r" % w_snap)
 
+        # 14. 3-state NOT_VERIFIED preservation on None corner metrics (Finding #13)
+        nv_cons = [{"id": "g1", "metric": "gain_db", "op": ">=", "target": 50.0, "scale": 5.0}]
+        chk_nv = check_constraints({"gain_db": None}, nv_cons)
+        if chk_nv.get("status") != "NOT_VERIFIED" or chk_nv["all_pass"] is not False or chk_nv["details"][0]["status"] != "NOT_VERIFIED":
+            raise AssertionError("Expected NOT_VERIFIED from check_constraints on None metric, got %r" % chk_nv)
+        chk_mixed = check_constraints(
+            {"gain_db": None, "bw_hz": 1.0},
+            nv_cons + [{"id": "b1", "metric": "bw_hz", "op": ">=", "target": 10.0, "scale": 2.0}],
+        )
+        if chk_mixed.get("status") != "FAIL":
+            raise AssertionError("Expected FAIL precedence when one metric fails and another is None, got %r" % chk_mixed)
+
+        nv_prob = {
+            "enforce_mos_sat_margin": False,
+            "corners": ["TT", "SS"],
+            "max_evaluations": 10,
+            "evaluator": {
+                "type": "callable",
+                "fn": lambda params, corner="TT": {
+                    "power_w": float(params["w"]) * 1e-3,
+                    "gain_db": 60.0 if corner == "TT" else None,
+                },
+            },
+            "objective": {"metric": "power_w", "goal": "minimize"},
+            "variables": [{"name": "w", "init": 1.0, "min": 0.5, "max": 2.0, "scale": "lin"}],
+            "hard_constraints": [{"id": "g1", "metric": "gain_db", "op": ">=", "target": 50.0, "unit": "dB"}],
+        }
+        nv_res = optimize_problem(nv_prob)
+        if nv_res["all_specs_pass_pvt"] is not False:
+            raise AssertionError("all_specs_pass_pvt MUST be False when SS gain_db is None: %r" % nv_res)
+        if nv_res["pvt_corner_status"].get("TT") != "PASS" or nv_res["pvt_corner_status"].get("SS") != "NOT_VERIFIED":
+            raise AssertionError("Expected TT=PASS and SS=NOT_VERIFIED, got %r" % nv_res["pvt_corner_status"])
+        if nv_res["pvt_corner_checks"]["SS"]["status"] != "NOT_VERIFIED":
+            raise AssertionError("Expected corner_checks[SS][status] == NOT_VERIFIED, got %r" % nv_res["pvt_corner_checks"]["SS"])
+        if "SS" not in nv_res["unverified_corners"] or "SS" in nv_res["corners_verified"]:
+            raise AssertionError("SS must be in unverified_corners and NOT in corners_verified: %r" % nv_res)
+        if nv_res["worst_case_pvt_summary"][0]["status"] != "NOT_VERIFIED":
+            raise AssertionError("Expected worst_case_pvt_summary NOT_VERIFIED, got %r" % nv_res["worst_case_pvt_summary"])
+
         return {
             "ok": True,
             "release": RELEASE,
@@ -1881,6 +1942,7 @@ def run_self_test():
                 "none_metric_stage1_tr_broyden_guarded",
                 "nonfinite_and_bool_targets_rejected",
                 "template_canonical_and_legacy_aliases_verified",
+                "three_state_not_verified_on_none_corner_metric",
             ],
             "elapsed_ms": res["elapsed_ms"],
         }

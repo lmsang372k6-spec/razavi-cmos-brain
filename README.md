@@ -7,7 +7,7 @@
 **Nguồn Chân lý Duy nhất (Unified Single-Source-of-Truth v4.0)** hợp nhất trọn vẹn **Bộ não Tri thức Toàn Chip CMOS, PMIC & AMS** (`162` thẻ chuyên sâu 6 khối xuyên suốt **10 tầng kiến trúc**: `112` thẻ lý thuyết & cấu trúc mạch bao phủ trọn vẹn **19 chương** *Design of Analog CMOS Integrated Circuits, 2nd Ed.* của Behzad Razavi + `12` thẻ Quản lý Nguồn **PMIC** + `12` thẻ Bộ lọc Liên tục / Chuyển đổi Dữ liệu / Kiến trúc Hệ thống **AMS** + `26` Playbook thực chiến **Cadence Virtuoso IC617 / Spectre 15.1 / Tối ưu Pareto**), **72 sơ đồ nguyên lý vector SVG offline**, **482 cạnh đồ thị có hướng**, **21 bảng kiểm bất biến đa tiến trình**, **chỉ mục tọa độ sách đầy đủ (`311` mục, `1.504` phương trình & `1.163` hình vẽ Razavi, `423` mục `20_Index`)**, **52 kho GitHub đã kiểm định**, **2.280 thuật ngữ chuẩn CLB (`T001–T2280`)**, cùng **trọn bộ Runtime Engine `SKILL-ANALOG` (`runtime/`)** tương thích kép Python 2.6.6 (RHEL 6.5) & Python 3.x!
 
 Kiến trúc đa tác tử đồng bộ tức thì không cần remount `.iso`:
-- **Windows (`Codex Desktop` + `Antigravity Desktop`):** Kết nối trực tiếp `0 ms` qua NTFS Directory Junctions (`setup_windows_agents.py --install`), tra cứu NVMe `< 20 ms`, biên soạn & xuất bản 1 lệnh (`manage_kb.py publish`).
+- **Windows (`Codex Desktop` + `Antigravity Desktop`):** Kết nối trực tiếp `0 ms` qua NTFS Directory Junctions (`setup_windows_agents.py --install`), tra cứu SSOT trực tiếp / trong tiến trình ấm `< 15–20 ms` (gọi CLI lạnh qua tiến trình con gồm khởi động Python & giải nén gzip `~150–220 ms` trên RHEL 6.5 Python 2.6.6), biên soạn & xuất bản 1 lệnh (`manage_kb.py publish`).
 - **Linux RHEL 6.5 VM (`Codex Linux` + `Cadence IC617` + `Spectre 15.1`):** Tự động đồng bộ nền **60s TTL** qua GitHub Commit SHA (`ota_sync.py`, hoán đổi thư mục nguyên tử kiểm định SHA-256, bảo toàn `sources/`), tự khóa mạng tuyệt đối khi đặt `--offline` hoặc `SKILL_ANALOG_OFFLINE=1`, và khởi tạo/nâng cấp toàn bộ máy ảo + biên dịch lại bảng tra `GPDK090`/`GPDK045` chỉ bằng 1 dòng lệnh `curl | python -B -` (`runtime/bootstrap_rhel6_ota.py`).
 
 ---
@@ -50,7 +50,7 @@ razavi-cmos-brain/
 ├── kb/
 │   ├── manifest.json                     # Phiên bản 2026.11.19.1, thống kê 10 miền & SHA-256 toàn bộ tệp trong kb/
 │   ├── router-index.json                 # Chỉ mục định tuyến tức thì (162 Nodes + 22-col coord_2d + design_cycle + Symptoms)
-│   ├── nodes-bundle.json.gz              # Gói nén tất định 162 thẻ phục vụ tra cứu offline < 15 ms
+│   ├── nodes-bundle.json.gz              # Gói nén tất định 162 thẻ (offline < 15 ms trong tiến trình ấm; ~150–220 ms CLI lạnh RHEL 6.5 gồm khởi động Python & giải nén gzip)
 │   ├── coordinates/
 │   │   └── book-coordinates.json         # Tọa độ chính xác 19 chương, 311 mục, 1.504 phương trình, 1.163 hình & 423 mục 20_Index
 │   ├── github-skills/

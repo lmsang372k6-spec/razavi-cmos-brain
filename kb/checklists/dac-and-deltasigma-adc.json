@@ -71,9 +71,9 @@
       "name": "Tầng tích phân đầu tiên quyết định ngân sách nhiễu nhiệt quy về ngõ vào (kT/C_s1 trong SC-ΔΣ hoặc 4kT*R_in trong CT-ΔΣ) và méo phi tuyến",
       "severity": "error",
       "method": "estimate",
-      "invariant": "SC-ΔΣ (vi sai 2 pha): (4 * k * T) / (OSR * C_s1) + V_n_OTA1_inband^2 <= 0.65 * V_n_budget^2; CT-ΔΣ: 8 * k * T * (R_in + R_DAC_eq) * f_B <= 0.65 * V_n_budget^2, cho phép thu nhỏ công suất các tầng 2..L đi 3x-5x",
+      "invariant": "SC-ΔΣ (vi sai 2 pha): (4 * k * T) / (OSR * C_s1) + V_n_OTA1_inband^2 <= 0.50 * V_n_budget^2 (-3.0 dB dưới tổng ngân sách nhiễu ADC); CT-ΔΣ (nút cộng Active-RC vi sai với DAC điện trở): 8 * k * T * (R_in + R_in^2 / R_DAC_eq) * f_B + V_n_OTA1_inband^2 = 8 * k * T * R_in * (1 + R_in / R_DAC_eq) * f_B + V_n_OTA1_inband^2 <= 0.50 * V_n_budget^2 (-3.0 dB dưới tổng ngân sách nhiễu ADC; với biến thể IDAC hồi tiếp thay đóng góp DAC bằng 2 * S_i,IDAC * R_in^2 * f_B), cho phép thu nhỏ công suất các tầng 2..L đi 3x-5x",
       "why_vi": "Mọi nhiễu nhiệt và méo hài sinh ra tại đầu vào bộ tích phân số 1 cùng nhánh DAC hồi tiếp ngoài cùng cộng trực tiếp vào tín hiệu đầu vào mà KHÔNG hề được định dạng nhiễu (unshaped), trong khi nhiễu của tầng thứ hai bị nén đi |A_int1(f_B)|^2 ~ (OSR / pi)^2 lần! Đặt tụ C_s1 quá nhỏ khiến SNR bị chặn cứng bởi sàn nhiễu trắng bất chấp bậc L cao tới đâu.",
-      "cadence_check": "Chạy SpectreRF `pss + pnoise` (cho SC-ΔΣ) hoặc `ac noise` / `tran noise` (cho CT-ΔΣ) trên riêng tầng tích phân 1 + DAC hồi tiếp, tích phân mật độ nhiễu từ `f_min` tới `f_B` xác nhận đóng góp `< -3 dB` dưới tổng ngân sách nhiễu toàn bộ ADC.",
+      "cadence_check": "Chạy SpectreRF `pss + pnoise` (cho SC-ΔΣ) hoặc `ac noise` / `tran noise` (cho CT-ΔΣ) trên riêng tầng tích phân 1 + DAC hồi tiếp, tích phân mật độ nhiễu từ `f_min` tới `f_B` xác nhận tổng phương sai nhiễu đóng góp `<= 0.50 * V_n_budget^2` (`-3.0 dB` dưới tổng ngân sách nhiễu toàn bộ ADC).",
       "related_nodes": [
         "topo-deltasigma-modulator-sc-and-ct-architectures",
         "topo-switched-capacitor-integrator-parasitic-insensitive",

@@ -11,6 +11,7 @@ Subcommands:
 """
 from __future__ import division, print_function
 
+import hashlib
 import json
 import math
 import os
@@ -1286,6 +1287,238 @@ def _phase_margin_from_unwrapped(phi_deg):
     return 180.0 + phi_deg
 
 
+def _compute_nyquist_encirclements(freqs, lg):
+    """Compute clockwise encirclements N of (-1+0j) on mirrored closed Nyquist contour L(jw).
+
+    Returns `(nyquist_cw_encirclements, nyquist_contour_closed)`.
+    """
+    n_pts = len(freqs)
+    if n_pts < 2 or len(lg) != n_pts:
+        return None, False
+
+    z = [complex(c.real + 1.0, c.imag) for c in lg]
+    for zk in z:
+        if abs(zk) <= 1e-9:
+            return None, False
+
+    span_ok = (n_pts >= 5) and (
+        freqs[0] == 0.0 or (freqs[0] > 0.0 and (freqs[-1] / freqs[0]) >= 100.0)
+    )
+
+    abs_dc = abs(lg[0])
+    dc_near_real = abs(lg[0].imag) <= 0.35 * max(1.0, abs_dc)
+    dc_rhp_indented = (
+        (lg[0].real > -0.5)
+        and (abs_dc > 2.0)
+        and (freqs[0] == 0.0 or (freqs[-1] / max(freqs[0], 1e-12)) >= 1000.0)
+    )
+    dc_bad_left = (lg[0].real <= -0.8) and (abs(lg[0].imag) > 0.25 * abs_dc)
+    dc_ok = (dc_near_real or dc_rhp_indented) and (not dc_bad_left) and (abs(z[0]) > 1e-6)
+
+    abs_hf = abs(lg[-1])
+    hf_ok = (abs_hf < 0.5) or (
+        abs(lg[-1].imag) <= 0.25 * max(1.0, abs_hf) and abs(z[-1]) > 0.5
+    )
+
+    sum_pos = 0.0
+    coarse_jump = False
+    max_step_rad = 2.0 * math.pi / 3.0
+    for k in range(n_pts - 1):
+        z0 = z[k]
+        z1 = z[k + 1]
+        cross = z0.real * z1.imag - z0.imag * z1.real
+        dot = z0.real * z1.real + z0.imag * z1.imag
+        dtheta = math.atan2(cross, dot)
+        sum_pos += dtheta
+        if (abs(z0) < 0.5 or abs(z1) < 0.5) and abs(dtheta) > max_step_rad:
+            coarse_jump = True
+
+    z_last = z[-1]
+    z_last_c = complex(z_last.real, -z_last.imag)
+    dtheta_hf = math.atan2(
+        z_last.real * z_last_c.imag - z_last.imag * z_last_c.real,
+        z_last.real * z_last_c.real + z_last.imag * z_last_c.imag,
+    )
+
+    z_first = z[0]
+    z_first_c = complex(z_first.real, -z_first.imag)
+    dtheta_dc = math.atan2(
+        z_first_c.real * z_first.imag - z_first_c.imag * z_first.real,
+        z_first_c.real * z_first.real + z_first_c.imag * z_first.imag,
+    )
+
+    n_float = -(2.0 * sum_pos + dtheta_hf + dtheta_dc) / (2.0 * math.pi)
+    n_int = int(round(n_float))
+    winding_valid = abs(n_float - n_int) < 1e-4
+    contour_closed = bool(span_ok and dc_ok and hf_ok and (not coarse_jump) and winding_valid)
+    return (n_int if winding_valid else None), contour_closed
+
+
+_PZ_OPEN_LOOP_RE = re.compile(r'open[\s_-]?loop', re.IGNORECASE)
+_PZ_CLOSED_LOOP_RE = re.compile(r'closed[\s_-]?loop', re.IGNORECASE)
+_PZ_ZERO_RE = re.compile(r'(?:^|[./:_])(?:zeros?_?\d*|z_?\d+)(?:$|[./:_])', re.IGNORECASE)
+_PZ_POLE_RE = re.compile(r'(?:^|[./:_])(?:poles?_?\d*|p_?\d+|(?:complex|real)_poles?_?\d*)(?:$|[./:_])', re.IGNORECASE)
+_PZ_METADATA_KEYS = set([
+    "numpoles", "numzeros", "num_poles", "num_zeros",
+    "dcgain", "dc_gain", "gain", "freq", "frequency", "q", "qf", "zeta",
+])
+
+
+def _is_finite_num(val):
+    if isinstance(val, bool) or not isinstance(val, _NUM_TYPES):
+        return False
+    f = float(val)
+    return not (math.isnan(f) or math.isinf(f))
+
+
+def _extract_pz_metrics(parsed, path=""):
+    """Extract open-loop or closed-loop pole-zero metrics from a parsed `.pz` PSF ASCII file."""
+    if not isinstance(parsed, dict):
+        return {"pz_mode": "closed_loop", "pz_parsed_ok": False, "poles_count": 0, "zeros_count": 0, "rhp_poles": 0}
+
+    pz_mode = None
+    header = parsed.get("header") or {}
+    if isinstance(header, dict):
+        for hk in ("pz_mode", "pz_type", "loop", "loop_mode", "mode", "analysis", "analysis type", "analysis_type", "title", "description"):
+            for orig_k, hv in header.items():
+                if str(orig_k).strip().lower() == hk:
+                    s_hv = str(hv)
+                    if _PZ_OPEN_LOOP_RE.search(s_hv):
+                        pz_mode = "open_loop"
+                        break
+                    if _PZ_CLOSED_LOOP_RE.search(s_hv):
+                        pz_mode = "closed_loop"
+                        break
+            if pz_mode is not None:
+                break
+    if pz_mode is None and path:
+        bn_low = os.path.basename(path).lower()
+        if _PZ_OPEN_LOOP_RE.search(bn_low):
+            pz_mode = "open_loop"
+        elif _PZ_CLOSED_LOOP_RE.search(bn_low):
+            pz_mode = "closed_loop"
+    if pz_mode is None:
+        pz_mode = "closed_loop"
+
+    poles = []
+    zeros_count = 0
+    handled_insts = set()
+
+    instances = parsed.get("instances") or {}
+    if isinstance(instances, dict):
+        for inst_name in sorted(instances.keys()):
+            inst_obj = instances[inst_name]
+            if not isinstance(inst_obj, dict):
+                continue
+            inst_low = str(inst_name).lower()
+            fields = inst_obj.get("fields") or {}
+            flc = dict([(str(fk).strip().lower(), fv) for fk, fv in fields.items()])
+            if _PZ_ZERO_RE.search(inst_low):
+                zeros_count += 1
+                handled_insts.add(inst_name)
+                continue
+            itype_low = str(inst_obj.get("type", "")).lower()
+            if _PZ_POLE_RE.search(inst_low) or ("pole" in itype_low):
+                re_v = None
+                im_v = None
+                for rk in ("real", "re", "sigma", "real_part", "r", "field_0"):
+                    if rk in flc and _is_finite_num(flc[rk]):
+                        re_v = float(flc[rk])
+                        break
+                for ik in ("imag", "im", "omega", "imag_part", "i", "field_1"):
+                    if ik in flc and _is_finite_num(flc[ik]):
+                        im_v = float(flc[ik])
+                        break
+                if re_v is not None:
+                    poles.append(complex(re_v, im_v if im_v is not None else 0.0))
+                handled_insts.add(inst_name)
+
+    values = parsed.get("values") or {}
+    sweep_name = parsed.get("sweep_name")
+    flat_pairs = {}
+    handled_flat_keys = set()
+    if isinstance(values, dict):
+        for k in sorted(values.keys()):
+            if sweep_name and k == sweep_name:
+                continue
+            if any([k.startswith(ih + ":") for ih in handled_insts]):
+                continue
+            if ":" in k:
+                inst_p, fld_p = k.rsplit(":", 1)
+                fl = fld_p.strip().lower()
+                if fl in ("real", "re", "sigma", "real_part", "r"):
+                    flat_pairs.setdefault(inst_p, {})["re"] = (k, values[k])
+                elif fl in ("imag", "im", "omega", "imag_part", "i"):
+                    flat_pairs.setdefault(inst_p, {})["im"] = (k, values[k])
+
+        for inst_p, pair in sorted(flat_pairs.items()):
+            if "re" not in pair:
+                continue
+            k_re, arr_re = pair["re"]
+            arr_im = pair["im"][1] if "im" in pair else None
+            inst_low = inst_p.lower()
+            if _PZ_ZERO_RE.search(inst_low):
+                zeros_count += len(arr_re)
+                handled_flat_keys.add(k_re)
+                if "im" in pair:
+                    handled_flat_keys.add(pair["im"][0])
+                continue
+            if _PZ_POLE_RE.search(inst_low):
+                for idx_p, rv in enumerate(arr_re):
+                    if _is_finite_num(rv):
+                        iv = 0.0
+                        if arr_im is not None and idx_p < len(arr_im) and _is_finite_num(arr_im[idx_p]):
+                            iv = float(arr_im[idx_p])
+                        poles.append(complex(float(rv), iv))
+                handled_flat_keys.add(k_re)
+                if "im" in pair:
+                    handled_flat_keys.add(pair["im"][0])
+
+        for k in sorted(values.keys()):
+            if sweep_name and k == sweep_name:
+                continue
+            if k in handled_flat_keys or any([k.startswith(ih + ":") for ih in handled_insts]):
+                continue
+            kl = k.lower()
+            if kl in _PZ_METADATA_KEYS:
+                continue
+            arr = values[k]
+            if _PZ_ZERO_RE.search(kl):
+                for elem in arr:
+                    if isinstance(elem, complex):
+                        if not (math.isnan(elem.real) or math.isinf(elem.real) or math.isnan(elem.imag) or math.isinf(elem.imag)):
+                            zeros_count += 1
+                    elif _is_finite_num(elem):
+                        zeros_count += 1
+                continue
+            if _PZ_POLE_RE.search(kl):
+                for elem in arr:
+                    if isinstance(elem, complex):
+                        if not (math.isnan(elem.real) or math.isinf(elem.real) or math.isnan(elem.imag) or math.isinf(elem.imag)):
+                            poles.append(elem)
+                    elif _is_finite_num(elem):
+                        poles.append(complex(float(elem), 0.0))
+
+    rhp_poles = sum([1 for p in poles if p.real > 1e-12])
+    pz_ok = (len(poles) >= 1)
+    out_pz = {
+        "pz_mode": pz_mode,
+        "pz_parsed_ok": pz_ok,
+        "poles_count": len(poles),
+        "zeros_count": zeros_count,
+        "rhp_poles": rhp_poles,
+    }
+    if poles:
+        out_pz["max_pole_real"] = _round_clean(max([p.real for p in poles]))
+    if pz_mode == "closed_loop":
+        out_pz["closed_loop_poles"] = len(poles)
+        out_pz["closed_loop_rhp_poles"] = rhp_poles
+    else:
+        out_pz["open_loop_poles"] = len(poles)
+        out_pz["open_loop_rhp_poles"] = rhp_poles
+    return out_pz
+
+
 def _extract_stb_metrics(stb_parsed, margin_parsed=None):
     vals, rejected_bf = _usable_waveform_values(stb_parsed) if stb_parsed else ({}, [])
     freq_key = (stb_parsed.get("sweep_name") if stb_parsed else None) or _pick_signal_key(
@@ -1312,6 +1545,7 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
         mag_db = [20.0 * math.log10(m) if m > 1e-300 else -600.0 for m in mags]
         raw_phase = [math.degrees(math.atan2(c.imag, c.real)) for c in lg]
         unwrapped = _unwrap_phase_deg(raw_phase)
+        nyq_n, nyq_closed = _compute_nyquist_encirclements(freqs, lg)
 
         dc_pos_fb = (lg[0].real < 0.0 and mags[0] > 1.0)
         loop_dc_gain_db = mag_db[0] if mags[0] > 0.0 else None
@@ -1451,6 +1685,8 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
                 "stb_bode_valid": False,
                 "raw_bode_phase_margin_deg": _round_clean(worst_pm),
                 "ugf_crossing_count": len(ugf_crossings),
+                "nyquist_cw_encirclements": nyq_n,
+                "nyquist_contour_closed": nyq_closed,
                 "stb_notes": (
                     "Bode gain-phase anomaly indicates suspected RHP open-loop pole(s) (P > 0); "
                     "Bode-only phase/gain margins cannot certify closed-loop stability when P > 0 "
@@ -1469,6 +1705,8 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
                 "rhp_open_loop_pole_suspected": False,
                 "stb_bode_valid": True,
                 "ugf_crossing_count": len(ugf_crossings),
+                "nyquist_cw_encirclements": nyq_n,
+                "nyquist_contour_closed": nyq_closed,
             })
         if len(ugf_crossings) > 1:
             out["all_ugf_crossings"] = ugf_crossings
@@ -2251,11 +2489,365 @@ def _detect_pex_from_parsed(parsed):
     return is_pex, rc_cnt
 
 
-def _detect_evidence_from_run_metadata(psf_files):
-    """Read verified run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files."""
+_SHA256_HEX_RE = re.compile(r'^[0-9a-fA-F]{64}$')
+_BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/', re.DOTALL)
+_LINE_CONT_RE = re.compile(r'\\\r?\n')
+_MC_STMT_RE = re.compile(r'(?<![A-Za-z0-9_])montecarlo(?![A-Za-z0-9_])', re.IGNORECASE)
+_PEX_VIEW_MARKER_RE = re.compile(
+    r'(?:view(?:\s*name)?|cellview|extracted|extractor|simulator|tool|program|netlist|subckt|include|library)\b[^;\r\n]*\b(?:av_extracted|calibre|quantus|qrc|rcx|pex)\b',
+    re.IGNORECASE,
+)
+_PEX_TOKEN_RE = re.compile(r'(?:^|[^a-z0-9_])(?:av_extracted|calibre|quantus|qrc|rcx|pex)(?:$|[^a-z0-9_])', re.IGNORECASE)
+_NETLIST_SECTION_RE = re.compile(r'(?<![A-Za-z0-9_])section\s*=\s*["\']?([A-Za-z0-9_.-]+)["\']?', re.IGNORECASE)
+_NETLIST_TEMP_RE = re.compile(r'(?<![A-Za-z0-9_])temp\s*=\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)', re.IGNORECASE)
+_CORNER_PREFIX_RE = re.compile(r'^(tt|nn|ss|ff|fs|sf)(?:$|[_.\s-])', re.IGNORECASE)
+_LABEL_CORNER_RE = re.compile(r'(?:^|[^a-z0-9])(tt|nn|ss|ff|fs|sf)(?:$|[^a-z0-9])', re.IGNORECASE)
+_PSF_CORNER_HDR_KEYS = set([
+    "corner", "process", "process_corner", "section",
+    "model_section", "model section", "pvt_corner", "mos_corner",
+])
+_PSF_TEMP_HDR_KEYS = set([
+    "temperature", "temp", "temp_c", "sim_temp", "analysis_temp",
+])
+_TEMP_VAL_RE = re.compile(r'^\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*(deg\s*c|degc|c|k)?\s*$', re.IGNORECASE)
+_STABILITY_METRICS = set(["phase_margin_deg", "gain_margin_db", "pm_ac_deg"])
+
+_LBL_V_DEC_RE = re.compile(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)v(?:$|[^a-z0-9])')
+_LBL_V_INT_RE = re.compile(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)v(?:$|[^a-z0-9])')
+_LBL_MV_DEC_RE = re.compile(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)mv(?:$|[^a-z0-9])')
+_LBL_MV_INT_RE = re.compile(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)mv(?:$|[^a-z0-9])')
+_LBL_TEMP_NEG_RE = re.compile(r'(?<![a-z0-9-])(?:t-|tm|tn|neg|m|n|-)(\d+(?:\.\d+)?)(?:degc|c)(?=$|[^a-z0-9])')
+_LBL_TEMP_POS_RE = re.compile(r'(?:^|[/_\s+]|(?<=[a-z])-)(?:t|temp)?(\d+(?:\.\d+)?)(?:degc|c)(?=$|[^a-z0-9])')
+_LBL_TEMP_TOK_NEG_RE = re.compile(r'^(?:t-|tm|tn|neg|m|n|-)(\d+(?:\.\d+)?)(?:degc|c)$')
+_LBL_TEMP_TOK_POS_RE = re.compile(r'^(?:t|temp|\+)?(\d+(?:\.\d+)?)(?:degc|c)$')
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    fh = open(path, "rb")
+    try:
+        while True:
+            chunk = fh.read(65536)
+            if not chunk:
+                break
+            digest.update(chunk)
+    finally:
+        fh.close()
+    return digest.hexdigest().lower()
+
+
+def _inside_dir(path, base_dir):
+    rp = os.path.normcase(os.path.realpath(path))
+    rb = os.path.normcase(os.path.realpath(base_dir))
+    return rp == rb or rp.startswith(rb.rstrip(os.sep) + os.sep)
+
+
+def _strip_spectre_inline_comment(line):
+    in_dq = False
+    in_sq = False
+    i = 0
+    n = len(line)
+    while i < n:
+        ch = line[i]
+        if ch == '"' and not in_sq:
+            in_dq = not in_dq
+        elif ch == "'" and not in_dq:
+            in_sq = not in_sq
+        elif not in_dq and not in_sq and ch == "/" and i + 1 < n and line[i + 1] == "/":
+            return line[:i]
+        i += 1
+    return line
+
+
+def _strip_spectre_comments(text):
+    no_block = _BLOCK_COMMENT_RE.sub(" ", text)
+    joined = _LINE_CONT_RE.sub(" ", no_block)
+    raw_lines = joined.splitlines()
+    clean_lines = []
+    for raw_ln in raw_lines:
+        if raw_ln.lstrip().startswith("*"):
+            continue
+        cleaned = _strip_spectre_inline_comment(raw_ln).strip()
+        if cleaned:
+            clean_lines.append(cleaned)
+    return raw_lines, "\n".join(clean_lines)
+
+
+def _netlist_has_pex_markers(raw_lines, net_body):
+    if _PARASITIC_RC_NAME_RE.search(net_body) or _PEX_TOKEN_RE.search(net_body):
+        return True
+    for raw_ln in raw_lines:
+        if _PEX_VIEW_MARKER_RE.search(raw_ln):
+            return True
+    return False
+
+
+def _normalize_corner_token(raw_val):
+    if raw_val is None or isinstance(raw_val, bool):
+        return None
+    s = str(raw_val).strip().strip('"').strip("'")
+    if not s:
+        return None
+    s_low = s.lower()
+    if s_low in ("tt", "nn", "ss", "ff", "fs", "sf"):
+        return s_low.upper()
+    m = _CORNER_PREFIX_RE.match(s_low)
+    if m:
+        return m.group(1).upper()
+    return s.upper()
+
+
+def _corners_match(c1, c2):
+    n1 = _normalize_corner_token(c1)
+    n2 = _normalize_corner_token(c2)
+    if n1 is None or n2 is None:
+        return False
+    if n1 == n2:
+        return True
+    if set([n1, n2]) == set(["TT", "NN"]):
+        return True
+    return False
+
+
+def _parse_temp_c(raw_val):
+    if raw_val is None or isinstance(raw_val, bool):
+        return None
+    if isinstance(raw_val, _NUM_TYPES):
+        f = float(raw_val)
+        return None if (math.isnan(f) or math.isinf(f)) else f
+    if isinstance(raw_val, TEXT_TYPES):
+        m = _TEMP_VAL_RE.match(str(raw_val))
+        if not m:
+            return None
+        try:
+            val = float(m.group(1))
+        except (TypeError, ValueError):
+            return None
+        if math.isnan(val) or math.isinf(val):
+            return None
+        unit = (m.group(2) or "").strip().lower()
+        if unit == "k":
+            return val - 273.15
+        return val
+    return None
+
+
+def _extract_psf_pvt_header(parsed):
+    """Extract `(corner, temp_c, corner_conflict, temp_conflict)` from a parsed PSF HEADER."""
+    header = parsed.get("header") if isinstance(parsed, dict) else None
+    if not isinstance(header, dict):
+        return None, None, False, False
+    corners = []
+    temps = []
+    for hk_raw, hv_raw in header.items():
+        hk = str(hk_raw).strip().lower()
+        if hk in _PSF_CORNER_HDR_KEYS:
+            c_norm = _normalize_corner_token(hv_raw)
+            if c_norm:
+                corners.append(c_norm)
+        elif hk in _PSF_TEMP_HDR_KEYS:
+            t_val = _parse_temp_c(hv_raw)
+            if t_val is not None:
+                temps.append(t_val)
+
+    corner_conflict = False
+    corner_out = corners[0] if corners else None
+    if len(corners) > 1:
+        for ck in corners[1:]:
+            if not _corners_match(ck, corner_out):
+                corner_conflict = True
+                break
+
+    temp_conflict = False
+    temp_out = temps[0] if temps else None
+    if len(temps) > 1:
+        if (max(temps) - min(temps)) > 0.5:
+            temp_conflict = True
+
+    return corner_out, temp_out, corner_conflict, temp_conflict
+
+
+def _extract_label_corners(label):
+    out = []
+    lbl = str(label or "").lower()
+    for m in _LABEL_CORNER_RE.finditer(lbl):
+        c_norm = _normalize_corner_token(m.group(1))
+        if c_norm and not any([_corners_match(c_norm, existing) for existing in out]):
+            out.append(c_norm)
+    return out
+
+
+def _extract_label_temps(label):
+    out = []
+    lbl = str(label or "").lower()
+    tokens = [t for t in re.split(r'[/_\s]+', lbl) if t]
+    for tok in tokens:
+        m_n = _LBL_TEMP_TOK_NEG_RE.match(tok)
+        if m_n:
+            tv = -float(m_n.group(1))
+            if not any([abs(tv - ex) <= 1e-6 for ex in out]):
+                out.append(tv)
+            continue
+        m_p = _LBL_TEMP_TOK_POS_RE.match(tok)
+        if m_p:
+            tv = float(m_p.group(1))
+            if not any([abs(tv - ex) <= 1e-6 for ex in out]):
+                out.append(tv)
+            continue
+    for m in _LBL_TEMP_NEG_RE.finditer(lbl):
+        tv = -float(m.group(1))
+        if not any([abs(tv - ex) <= 1e-6 for ex in out]):
+            out.append(tv)
+    for m in _LBL_TEMP_POS_RE.finditer(lbl):
+        tv = float(m.group(1))
+        if not any([abs(tv - ex) <= 1e-6 for ex in out]):
+            out.append(tv)
+    return out
+
+
+def _extract_label_voltages(label):
+    out = []
+    lbl = str(label or "").lower()
+    for m in _LBL_V_DEC_RE.finditer(lbl):
+        v = float("%s.%s" % (m.group(1), m.group(2)))
+        if not any([abs(v - ex) <= 1e-6 for ex in out]):
+            out.append(v)
+    for m in _LBL_V_INT_RE.finditer(lbl):
+        v = float(m.group(1))
+        if not any([abs(v - ex) <= 1e-6 for ex in out]):
+            out.append(v)
+    for m in _LBL_MV_DEC_RE.finditer(lbl):
+        v = float("%s.%s" % (m.group(1), m.group(2))) * 1e-3
+        if not any([abs(v - ex) <= 1e-6 for ex in out]):
+            out.append(v)
+    for m in _LBL_MV_INT_RE.finditer(lbl):
+        v = float(m.group(1)) * 1e-3
+        if not any([abs(v - ex) <= 1e-6 for ex in out]):
+            out.append(v)
+    return out
+
+
+def _resolve_manifest_psf_path(mf_dir, rel_k):
+    if not isinstance(rel_k, TEXT_TYPES):
+        return None
+    s_k = str(rel_k).strip()
+    if not s_k:
+        return None
+    cand = os.path.realpath(os.path.join(mf_dir, s_k))
+    if os.path.isfile(cand) and _inside_dir(cand, mf_dir):
+        return cand
+    if "/" not in s_k.replace("\\", "/"):
+        hits = []
+        for sub in ("psf", "raw"):
+            cand_sub = os.path.realpath(os.path.join(mf_dir, sub, s_k))
+            if os.path.isfile(cand_sub) and _inside_dir(cand_sub, mf_dir):
+                hits.append(cand_sub)
+        if len(hits) == 1:
+            return hits[0]
+    return None
+
+
+def _verify_bound_manifest(mf_path, audited_psf_files):
+    """Cryptographically verify `run_manifest.json` / `cadence_run.json` against netlist & PSF SHA-256s."""
+    mf_dir = os.path.realpath(os.path.dirname(mf_path))
+    try:
+        fh = open(mf_path, "rb")
+        try:
+            meta = json.loads(fh.read().decode("utf-8-sig"))
+        finally:
+            fh.close()
+    except Exception:
+        return None, "invalid_manifest_json"
+
+    if not isinstance(meta, dict):
+        return None, "invalid_manifest_object"
+
+    run_id = meta.get("run_id")
+    if not isinstance(run_id, TEXT_TYPES) or not str(run_id).strip():
+        return None, "missing_or_invalid_run_id"
+
+    exit_code = meta.get("exit_code")
+    if isinstance(exit_code, bool) or not isinstance(exit_code, _INT_TYPES) or exit_code != 0:
+        return None, "missing_or_nonzero_exit_code"
+
+    np_raw = meta.get("netlist_path")
+    nsha_raw = meta.get("netlist_sha256")
+    if (
+        not isinstance(np_raw, TEXT_TYPES) or not str(np_raw).strip()
+        or not isinstance(nsha_raw, TEXT_TYPES) or not _SHA256_HEX_RE.match(str(nsha_raw).strip())
+    ):
+        return None, "missing_netlist_binding"
+    np_str = str(np_raw).strip()
+    np_abs = os.path.realpath(np_str if os.path.isabs(np_str) else os.path.join(mf_dir, np_str))
+    if not os.path.isfile(np_abs):
+        return None, "netlist_path_missing_on_disk"
+    if _sha256_file(np_abs) != str(nsha_raw).strip().lower():
+        return None, "netlist_sha256_mismatch"
+
+    psf_map = meta.get("psf_files")
+    if not isinstance(psf_map, dict) or not psf_map:
+        return None, "missing_psf_files_binding"
+
+    verified_psf = {}
+    for rel_k, exp_sha in psf_map.items():
+        if not isinstance(exp_sha, TEXT_TYPES) or not _SHA256_HEX_RE.match(str(exp_sha).strip()):
+            return None, "invalid_psf_sha256_entry"
+        resolved_p = _resolve_manifest_psf_path(mf_dir, rel_k)
+        if not resolved_p:
+            return None, "manifest_psf_missing_on_disk"
+        actual_sha = _sha256_file(resolved_p)
+        exp_l = str(exp_sha).strip().lower()
+        if actual_sha != exp_l:
+            return None, "psf_sha256_mismatch"
+        verified_psf[os.path.normcase(resolved_p)] = (resolved_p, exp_l)
+
+    if not audited_psf_files:
+        return None, "no_audited_psf_files"
+    for fp in audited_psf_files:
+        if not fp or not os.path.isfile(fp):
+            return None, "audited_psf_missing"
+        real_fp = os.path.realpath(fp)
+        norm_fp = os.path.normcase(real_fp)
+        if norm_fp not in verified_psf:
+            return None, "unaudited_psf_not_bound_in_manifest"
+        if _sha256_file(real_fp) != verified_psf[norm_fp][1]:
+            return None, "audited_psf_sha256_mismatch"
+
+    pex_net_abs = None
+    if "pex_netlist_path" in meta and meta.get("pex_netlist_path") is not None:
+        pn_raw = meta.get("pex_netlist_path")
+        psha_raw = meta.get("pex_netlist_sha256")
+        if (
+            not isinstance(pn_raw, TEXT_TYPES) or not str(pn_raw).strip()
+            or not isinstance(psha_raw, TEXT_TYPES) or not _SHA256_HEX_RE.match(str(psha_raw).strip())
+        ):
+            return None, "invalid_pex_netlist_binding"
+        pn_str = str(pn_raw).strip()
+        pex_net_abs = os.path.realpath(pn_str if os.path.isabs(pn_str) else os.path.join(mf_dir, pn_str))
+        if not os.path.isfile(pex_net_abs) or _sha256_file(pex_net_abs) != str(psha_raw).strip().lower():
+            return None, "pex_netlist_sha256_mismatch"
+
+    return {
+        "manifest_dir": mf_dir,
+        "meta": meta,
+        "netlist_path": np_abs,
+        "pex_netlist_path": pex_net_abs,
+        "verified_psf": verified_psf,
+    }, None
+
+
+def _detect_evidence_from_run_metadata(psf_files, return_details=False):
+    """Read cryptographically bound run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files."""
     mc_ev = False
     mc_runs = 0
     pex_ev = False
+    manifest_bound = False
+    rejected_reason = None
+    manifest_corner = None
+    manifest_temp_c = None
+    open_loop_rhp_poles = None
+    verified_mc_files_map = {}  # normcase_real_path -> count
+
     cand_dirs = []
     seen_dirs = set()
     for fp in psf_files:
@@ -2276,42 +2868,201 @@ def _detect_evidence_from_run_metadata(psf_files):
             mf_path = os.path.join(d, mf_name)
             if not os.path.isfile(mf_path):
                 continue
-            try:
-                fh = open(mf_path, "rb")
-                try:
-                    meta = json.loads(fh.read().decode("utf-8-sig"))
-                finally:
-                    fh.close()
-            except Exception:
+            bound, rej = _verify_bound_manifest(mf_path, psf_files)
+            if bound is None:
+                if rejected_reason is None:
+                    rejected_reason = rej
                 continue
-            if not isinstance(meta, dict):
-                continue
-            mc_val = meta.get("monte_carlo")
-            if mc_val is True:
-                mc_ev = True
-            elif isinstance(mc_val, dict):
-                if mc_val.get("enabled") is True or mc_val.get("verified") is True:
-                    mc_ev = True
-                for rk in ("runs", "samples", "iterations", "count", "n"):
-                    rv = mc_val.get(rk)
-                    if isinstance(rv, _INT_TYPES) and not isinstance(rv, bool) and rv > 0:
-                        mc_ev = True
-                        if int(rv) > mc_runs:
-                            mc_runs = int(rv)
-            for rk in ("mc_runs_verified", "mc_runs", "monte_carlo_runs"):
-                rv = meta.get(rk)
-                if isinstance(rv, _INT_TYPES) and not isinstance(rv, bool) and rv > 0 and meta.get("monte_carlo") is not False:
-                    mc_ev = True
-                    if int(rv) > mc_runs:
-                        mc_runs = int(rv)
-            if meta.get("post_layout") is True or meta.get("pex_verified") is True or meta.get("pex") is True:
-                pex_ev = True
-            for pk in ("post_layout", "pex"):
-                pv = meta.get(pk)
-                if isinstance(pv, dict) and (pv.get("verified") is True or pv.get("enabled") is True):
-                    pex_ev = True
 
+            manifest_bound = True
+            meta = bound["meta"]
+            mf_dir = bound["manifest_dir"]
+            verified_psf = bound["verified_psf"]
+
+            # Read bound netlist
+            fh = open(bound["netlist_path"], "rb")
+            try:
+                net_txt = fh.read().decode("utf-8", "replace")
+            finally:
+                fh.close()
+            raw_lines, net_body = _strip_spectre_comments(net_txt)
+
+            # Bound MC evidence: netlist must contain `montecarlo` outside comments AND counts come ONLY from verified disk PSF artifacts
+            if _MC_STMT_RE.search(net_body):
+                cand_mc_entries = []
+                if isinstance(meta.get("mc_psf_files"), list):
+                    cand_mc_entries.extend(meta["mc_psf_files"])
+                mc_obj = meta.get("monte_carlo")
+                if isinstance(mc_obj, dict):
+                    if isinstance(mc_obj.get("mc_psf_files"), list):
+                        cand_mc_entries.extend(mc_obj["mc_psf_files"])
+                    if isinstance(mc_obj.get("iterations"), list):
+                        cand_mc_entries.extend(mc_obj["iterations"])
+
+                resolved_mc_targets = []
+                for item in cand_mc_entries:
+                    item_path = None
+                    item_sha = None
+                    if isinstance(item, TEXT_TYPES):
+                        item_path = _resolve_manifest_psf_path(mf_dir, item)
+                    elif isinstance(item, dict):
+                        p_str = item.get("path") or item.get("file") or item.get("psf")
+                        item_path = _resolve_manifest_psf_path(mf_dir, p_str)
+                        s_raw = item.get("sha256")
+                        if s_raw is not None:
+                            if not isinstance(s_raw, TEXT_TYPES) or not _SHA256_HEX_RE.match(str(s_raw).strip()):
+                                continue
+                            item_sha = str(s_raw).strip().lower()
+                    if not item_path:
+                        continue
+                    norm_mc = os.path.normcase(item_path)
+                    if norm_mc not in verified_psf:
+                        continue
+                    if item_sha is not None and verified_psf[norm_mc][1] != item_sha:
+                        continue
+                    if norm_mc not in [x[0] for x in resolved_mc_targets]:
+                        resolved_mc_targets.append((norm_mc, item_path))
+
+                # Also inspect audited PSF files themselves for iteration sweeps or MC artifacts
+                for fp in psf_files:
+                    real_fp = os.path.realpath(fp)
+                    norm_fp = os.path.normcase(real_fp)
+                    if norm_fp not in [x[0] for x in resolved_mc_targets]:
+                        resolved_mc_targets.append((norm_fp, real_fp))
+
+                distinct_single_mc = 0
+                sweep_mc_total = 0
+                has_explicit_mc_list = len(cand_mc_entries) > 0
+                for norm_mc, mc_path in resolved_mc_targets:
+                    try:
+                        mc_parsed = parse_psf_file(
+                            mc_path,
+                            reject_nonfinite=True,
+                            reject_truncated=True,
+                            fill_leading_missing=True,
+                        )
+                    except Exception:
+                        continue
+                    is_p_mc, p_mc_runs = _detect_mc_from_parsed(mc_parsed)
+                    sw_vals = mc_parsed.get("sweep_values") or []
+                    sw_name = str(mc_parsed.get("sweep_name") or "").strip().lower()
+                    if sw_name in _MC_SWEEP_NAMES and len(sw_vals) > 0:
+                        sweep_mc_total += len(sw_vals)
+                        verified_mc_files_map[norm_mc] = len(sw_vals)
+                    elif is_p_mc and p_mc_runs > 0:
+                        sweep_mc_total += p_mc_runs
+                        verified_mc_files_map[norm_mc] = p_mc_runs
+                    else:
+                        bn_l = os.path.basename(mc_path).lower()
+                        is_mc_fn = (_classify_psf_filename(bn_l) == "mc") or ("mc" in bn_l) or ("iter" in bn_l)
+                        if is_p_mc or is_mc_fn or (has_explicit_mc_list and len(resolved_mc_targets) >= 2):
+                            distinct_single_mc += 1
+                            verified_mc_files_map[norm_mc] = 1
+
+                tot_verified_mc = sweep_mc_total + distinct_single_mc
+                if tot_verified_mc > 0:
+                    mc_ev = True
+                    if tot_verified_mc > mc_runs:
+                        mc_runs = tot_verified_mc
+
+            # Bound PEX evidence: requires genuine extracted markers in bound netlist or verified pex_netlist_path
+            pex_disabled = (meta.get("post_layout") is False or meta.get("pex") is False or meta.get("pex_verified") is False)
+            if not pex_disabled:
+                if _netlist_has_pex_markers(raw_lines, net_body):
+                    pex_ev = True
+                elif bound["pex_netlist_path"] is not None:
+                    pfh = open(bound["pex_netlist_path"], "rb")
+                    try:
+                        p_txt = pfh.read().decode("utf-8", "replace")
+                    finally:
+                        pfh.close()
+                    p_raw, p_body = _strip_spectre_comments(p_txt)
+                    if _netlist_has_pex_markers(p_raw, p_body):
+                        pex_ev = True
+
+            # Open-loop RHP pole count from bound manifest
+            ol_p = meta.get("open_loop_rhp_poles")
+            if isinstance(ol_p, _INT_TYPES) and not isinstance(ol_p, bool) and ol_p >= 0:
+                open_loop_rhp_poles = int(ol_p)
+
+            # Bound corner / temperature fallback
+            if meta.get("corner") is not None:
+                manifest_corner = _normalize_corner_token(meta.get("corner"))
+            if manifest_corner is None:
+                sec_corners = []
+                for m_s in _NETLIST_SECTION_RE.finditer(net_body):
+                    cn = _normalize_corner_token(m_s.group(1))
+                    if cn in ("TT", "NN", "SS", "FF", "FS", "SF"):
+                        if not any([_corners_match(cn, x) for x in sec_corners]):
+                            sec_corners.append(cn)
+                if len(sec_corners) == 1:
+                    manifest_corner = sec_corners[0]
+
+            if meta.get("temperature_c") is not None:
+                manifest_temp_c = _parse_temp_c(meta.get("temperature_c"))
+            if manifest_temp_c is None:
+                net_temps = []
+                for m_t in _NETLIST_TEMP_RE.finditer(net_body):
+                    try:
+                        tv = float(m_t.group(1))
+                    except (TypeError, ValueError):
+                        continue
+                    if not any([abs(tv - x) <= 0.01 for x in net_temps]):
+                        net_temps.append(tv)
+                if len(net_temps) == 1:
+                    manifest_temp_c = net_temps[0]
+
+    if return_details:
+        return mc_ev, mc_runs, pex_ev, {
+            "manifest_bound": manifest_bound,
+            "manifest_rejected_reason": rejected_reason if not manifest_bound else None,
+            "corner": manifest_corner,
+            "temperature_c": manifest_temp_c,
+            "open_loop_rhp_poles": open_loop_rhp_poles,
+        }
     return mc_ev, mc_runs, pex_ev
+
+
+def _check_point_label_vs_metadata(point_label, pm):
+    """Detect conflicts between directory/point label claims and simulator PVT metadata."""
+    conflicts = []
+    if not point_label or not isinstance(pm, dict):
+        return conflicts
+
+    lbl_corners = _extract_label_corners(point_label)
+    if len(lbl_corners) > 1:
+        conflicts.append("ambiguous_label_corners: %s" % ",".join(lbl_corners))
+    psf_corner = _normalize_corner_token(pm.get("psf_corner"))
+    if psf_corner is not None and lbl_corners:
+        for lc in lbl_corners:
+            if not _corners_match(lc, psf_corner):
+                conflicts.append("label corner %s != psf_corner %s" % (lc, psf_corner))
+
+    lbl_temps = _extract_label_temps(point_label)
+    if len(lbl_temps) > 1:
+        if (max(lbl_temps) - min(lbl_temps)) > 0.5:
+            conflicts.append("ambiguous_label_temps: %s" % ",".join([str(t) for t in lbl_temps]))
+    psf_temp = _parse_temp_c(pm.get("psf_temperature_c"))
+    if psf_temp is not None and lbl_temps:
+        for lt in lbl_temps:
+            if abs(lt - psf_temp) > 0.5:
+                conflicts.append("label temperature %gC != psf_temperature_c %gC" % (lt, psf_temp))
+
+    lbl_volts = _extract_label_voltages(point_label)
+    supply_vs = []
+    vdd = pm.get("vdd_v")
+    if _is_finite_num(vdd):
+        supply_vs.append(float(vdd))
+    for r in pm.get("supply_rails") or []:
+        if isinstance(r, dict) and _is_finite_num(r.get("vdd_v")):
+            supply_vs.append(float(r["vdd_v"]))
+    if supply_vs and lbl_volts:
+        for lv in lbl_volts:
+            tol_v = max(0.01, 0.02 * abs(lv))
+            if not any([abs(sv - lv) <= tol_v for sv in supply_vs]):
+                conflicts.append("label voltage %gV != measured supply_v %s" % (lv, repr(supply_vs)))
+
+    return conflicts
 
 
 def _extract_point_metrics(
@@ -2322,6 +3073,7 @@ def _extract_point_metrics(
     target_v=None,
     base_dir=None,
     aux_out=None,
+    point_label=None,
 ):
     metrics = {
         "dc_power_w": None,
@@ -2348,12 +3100,15 @@ def _extract_point_metrics(
     mc_runs_box = [0]
     pex_flag = [False]
     rc_count_box = [0]
+    hdr_corners = []
+    hdr_temps = []
+    hdr_conflicts = []
 
     def _add_analysis(tag):
         if tag not in analyses_present:
             analyses_present.append(tag)
 
-    def _inspect_parsed_evidence(parsed_obj):
+    def _inspect_parsed_evidence(parsed_obj, fpath=""):
         if not isinstance(parsed_obj, dict):
             return
         is_mc, mc_n = _detect_mc_from_parsed(parsed_obj)
@@ -2367,11 +3122,21 @@ def _extract_point_metrics(
         if rc_cnt > 0:
             rc_count_box[0] += rc_cnt
             pex_flag[0] = True
+        hc, ht, hc_conf, ht_conf = _extract_psf_pvt_header(parsed_obj)
+        src_bn = os.path.basename(fpath) if fpath else "psf"
+        if hc_conf:
+            hdr_conflicts.append("conflicting corner headers inside %s" % src_bn)
+        if ht_conf:
+            hdr_conflicts.append("conflicting temperature headers inside %s" % src_bn)
+        if hc is not None:
+            hdr_corners.append((src_bn, hc))
+        if ht is not None:
+            hdr_temps.append((src_bn, ht))
 
     parsed_dc = []
     for p in psf_files_by_kind.get("dc", []):
         dc_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(dc_parsed)
+        _inspect_parsed_evidence(dc_parsed, p)
         parsed_dc.append(dc_parsed)
     if parsed_dc:
         _add_analysis("dc")
@@ -2386,7 +3151,7 @@ def _extract_point_metrics(
         if os.path.basename(p).lower().endswith(".pac"):
             has_pac = True
         ac_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(ac_parsed)
+        _inspect_parsed_evidence(ac_parsed, p)
         ac_res = _extract_ac_metrics(
             ac_parsed,
             vout_hint=vout_hint,
@@ -2430,7 +3195,7 @@ def _extract_point_metrics(
         m_stem = _stb_loop_stem(mp)
         m_dir = os.path.realpath(os.path.dirname(mp))
         m_parsed = parse_psf_file(mp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(m_parsed)
+        _inspect_parsed_evidence(m_parsed, mp)
         entry = (mp, m_dir, m_stem, m_parsed)
         margin_entries.append(entry)
         margin_by_dir_stem[(m_dir, m_stem)] = entry
@@ -2438,6 +3203,7 @@ def _extract_point_metrics(
 
     generic_margin_stems = set(["stb", "pstb", "margin", "loop"])
     stb_loops = {}
+    stb_loop_stems = {}
     used_margin_paths = set()
     for sp in stb_files:
         if os.path.basename(sp).lower().endswith(".pstb"):
@@ -2459,16 +3225,20 @@ def _extract_point_metrics(
             used_margin_paths.add(m_entry[0])
             m_parsed = m_entry[3]
         s_parsed = parse_psf_file(sp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(s_parsed)
+        _inspect_parsed_evidence(s_parsed, sp)
         s_res = _extract_stb_metrics(s_parsed, margin_parsed=m_parsed)
         if s_res:
-            stb_loops[all_stb_keys[sp]] = s_res
+            skey = all_stb_keys[sp]
+            stb_loops[skey] = s_res
+            stb_loop_stems[skey] = stem.lower()
 
-    for mp, _, _, m_parsed in margin_entries:
+    for mp, _, m_stem, m_parsed in margin_entries:
         if mp not in used_margin_paths:
             s_res = _extract_stb_metrics(None, margin_parsed=m_parsed)
             if s_res:
-                stb_loops[all_stb_keys[mp]] = s_res
+                skey = all_stb_keys[mp]
+                stb_loops[skey] = s_res
+                stb_loop_stems[skey] = m_stem.lower()
 
     if stb_loops:
         _add_analysis("stb")
@@ -2499,16 +3269,53 @@ def _extract_point_metrics(
                     break
         if len(stb_loops) == 1:
             only_stb = stb_loops[list(stb_loops.keys())[0]]
-            for extra_k in ("stb_probe_signal", "gm_freq_hz", "ugf_crossing_count", "all_ugf_crossings", "all_gm_crossings", "stb_notes"):
+            for extra_k in (
+                "stb_probe_signal", "gm_freq_hz", "ugf_crossing_count",
+                "all_ugf_crossings", "all_gm_crossings", "stb_notes",
+                "nyquist_cw_encirclements", "nyquist_contour_closed",
+            ):
                 if extra_k in only_stb:
                     metrics[extra_k] = only_stb[extra_k]
         else:
             metrics["stb_loops"] = stb_loops
+            all_closed = all([bool(r.get("nyquist_contour_closed")) for r in stb_loops.values()])
+            metrics["nyquist_contour_closed"] = all_closed
+            nyq_vals = [
+                r["nyquist_cw_encirclements"] for r in stb_loops.values()
+                if r.get("nyquist_cw_encirclements") is not None
+            ]
+            if nyq_vals and len(nyq_vals) == len(stb_loops):
+                metrics["nyquist_cw_encirclements"] = max(nyq_vals) if any([v > 0 for v in nyq_vals]) else min(nyq_vals)
+
+    # Process `.pz` / `.pz.psf` / `pz.info` files (closed-loop and open-loop pole-zero analysis)
+    pz_files = psf_files_by_kind.get("pz", [])
+    pz_keys = _build_unique_file_keys(pz_files, base_dir=base_dir)
+    cl_pz_runs = []
+    ol_pz_runs = []
+    any_pz_parsed_ok = False
+    for pz_p in pz_files:
+        pz_parsed = parse_psf_file(pz_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
+        _inspect_parsed_evidence(pz_parsed, pz_p)
+        pz_res = _extract_pz_metrics(pz_parsed, path=pz_p)
+        _add_analysis("pz")
+        if pz_res.get("pz_parsed_ok"):
+            any_pz_parsed_ok = True
+        pz_bn = os.path.basename(pz_p).lower()
+        pz_stem = re.sub(r'(?:\.pz\.psf|\.pz|\.psf|\.info)$', '', pz_bn)
+        pz_stem = re.sub(r'(?:^|[_-])(?:open[\s_-]?loop|closed[\s_-]?loop)(?:$|[_-])', '', pz_stem)
+        pz_res["file_key"] = pz_keys[pz_p]
+        pz_res["stem"] = pz_stem
+        if pz_res.get("pz_mode") == "open_loop":
+            ol_pz_runs.append(pz_res)
+        else:
+            cl_pz_runs.append(pz_res)
+    if pz_files:
+        metrics["pz_parsed_ok"] = any_pz_parsed_ok
 
     # Process `.pss` files if present so `pss` analysis coverage can be verified distinctly
     for pss_p in psf_files_by_kind.get("pss", []):
         pss_parsed = parse_psf_file(pss_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(pss_parsed)
+        _inspect_parsed_evidence(pss_parsed, pss_p)
         _add_analysis("pss")
 
     # Process ALL `.tran` files with collision-free keys and aggregate worst-case; fail-closed on unsettled step
@@ -2517,7 +3324,7 @@ def _extract_point_metrics(
     tran_runs = {}
     for tp in tran_files:
         tp_parsed = parse_psf_file(tp, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(tp_parsed)
+        _inspect_parsed_evidence(tp_parsed, tp)
         tr_res = _extract_tran_metrics(
             tp_parsed,
             vout_hint=vout_hint,
@@ -2561,7 +3368,7 @@ def _extract_point_metrics(
         if os.path.basename(np_file).lower().endswith(".pnoise"):
             has_pnoise = True
         np_parsed = parse_psf_file(np_file, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
-        _inspect_parsed_evidence(np_parsed)
+        _inspect_parsed_evidence(np_parsed, np_file)
         ns_res, curve_info = _extract_noise_metrics(
             np_parsed,
             return_curve=True,
@@ -2597,22 +3404,166 @@ def _extract_point_metrics(
     for mc_p in psf_files_by_kind.get("mc", []):
         mc_parsed = parse_psf_file(mc_p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
         mc_flag[0] = True
-        _inspect_parsed_evidence(mc_parsed)
+        _inspect_parsed_evidence(mc_parsed, mc_p)
         sw_vals = mc_parsed.get("sweep_values") or []
         if len(sw_vals) > mc_runs_box[0]:
             mc_runs_box[0] = len(sw_vals)
 
-    # Check verified run metadata JSON (`run_manifest.json` / `cadence_run.json`) adjacent to point PSF files
+    # Check cryptographically bound run metadata JSON (`run_manifest.json` / `cadence_run.json`)
     all_psf_files = []
     for kind_files in psf_files_by_kind.values():
         all_psf_files.extend(kind_files)
-    meta_mc, meta_mc_runs, meta_pex = _detect_evidence_from_run_metadata(all_psf_files)
+    meta_mc, meta_mc_runs, meta_pex, meta_details = _detect_evidence_from_run_metadata(
+        all_psf_files, return_details=True
+    )
     if meta_mc:
         mc_flag[0] = True
         if meta_mc_runs > mc_runs_box[0]:
             mc_runs_box[0] = meta_mc_runs
     if meta_pex:
         pex_flag[0] = True
+    if meta_details.get("manifest_rejected_reason"):
+        metrics["manifest_rejected_reason"] = meta_details["manifest_rejected_reason"]
+
+    # Stability proof verification (Finding #1):
+    # Requires closed-loop .pz (RHP=0) OR (open-loop .pz / bound manifest P + closed Nyquist Z=N+P==0)
+    cl_valid = [r for r in cl_pz_runs if r.get("pz_parsed_ok")]
+    ol_valid = [r for r in ol_pz_runs if r.get("pz_parsed_ok")]
+    closed_loop_unstable = False
+    nyquist_unstable = False
+    nyquist_proved = False
+
+    if cl_valid:
+        tot_cl_poles = sum([r["closed_loop_poles"] for r in cl_valid])
+        tot_cl_rhp = sum([r["closed_loop_rhp_poles"] for r in cl_valid])
+        metrics["closed_loop_poles"] = tot_cl_poles
+        metrics["closed_loop_rhp_poles"] = tot_cl_rhp
+        if tot_cl_rhp > 0:
+            closed_loop_unstable = True
+
+    bound_ol_rhp = meta_details.get("open_loop_rhp_poles")
+    open_loop_p = None
+    open_loop_p_conflict = False
+    if ol_valid:
+        tot_ol_rhp = sum([r["open_loop_rhp_poles"] for r in ol_valid])
+        open_loop_p = tot_ol_rhp
+        metrics["open_loop_rhp_poles"] = open_loop_p
+        if bound_ol_rhp is not None and bound_ol_rhp != tot_ol_rhp:
+            open_loop_p_conflict = True
+    elif bound_ol_rhp is not None:
+        open_loop_p = bound_ol_rhp
+        metrics["open_loop_rhp_poles"] = open_loop_p
+
+    if stb_loops and open_loop_p is not None and (not open_loop_p_conflict):
+        if len(stb_loops) == 1:
+            lr = stb_loops[list(stb_loops.keys())[0]]
+            if lr.get("nyquist_contour_closed") is True and lr.get("nyquist_cw_encirclements") is not None:
+                z_val = int(lr["nyquist_cw_encirclements"]) + int(open_loop_p)
+                metrics["nyquist_closed_loop_rhp_poles"] = z_val
+                if z_val > 0:
+                    nyquist_unstable = True
+                elif z_val == 0:
+                    nyquist_proved = True
+        else:
+            # Multi-loop: verify each loop individually
+            all_loops_proved = True
+            ol_by_stem = dict([(r["stem"], r) for r in ol_valid if r.get("stem")])
+            max_z = 0
+            any_z_checked = False
+            for skey, lr in stb_loops.items():
+                if lr.get("nyquist_contour_closed") is not True or lr.get("nyquist_cw_encirclements") is None:
+                    all_loops_proved = False
+                    continue
+                loop_p = None
+                lstem = stb_loop_stems.get(skey, "")
+                if lstem in ol_by_stem:
+                    loop_p = ol_by_stem[lstem]["open_loop_rhp_poles"]
+                elif bound_ol_rhp is not None:
+                    loop_p = bound_ol_rhp
+                elif len(ol_valid) == 1 and len(stb_loops) == 1:
+                    loop_p = ol_valid[0]["open_loop_rhp_poles"]
+                if loop_p is None:
+                    all_loops_proved = False
+                    continue
+                z_l = int(lr["nyquist_cw_encirclements"]) + int(loop_p)
+                any_z_checked = True
+                if z_l > max_z:
+                    max_z = z_l
+                if z_l > 0:
+                    nyquist_unstable = True
+                    all_loops_proved = False
+                elif z_l < 0:
+                    all_loops_proved = False
+            if any_z_checked:
+                metrics["nyquist_closed_loop_rhp_poles"] = max_z
+            if all_loops_proved and any_z_checked:
+                nyquist_proved = True
+
+    if closed_loop_unstable:
+        metrics["closed_loop_unstable"] = True
+    if nyquist_unstable:
+        metrics["nyquist_unstable"] = True
+
+    if closed_loop_unstable or nyquist_unstable:
+        metrics["stability_proof_verified"] = False
+        metrics["stability_proof_method"] = "closed_loop_pz" if closed_loop_unstable else "open_loop_pz_plus_nyquist"
+        metrics["bode_measurement_only"] = False
+    elif cl_valid and metrics.get("closed_loop_rhp_poles") == 0:
+        metrics["stability_proof_verified"] = True
+        metrics["stability_proof_method"] = "closed_loop_pz"
+        metrics["bode_measurement_only"] = False
+    elif nyquist_proved:
+        metrics["stability_proof_verified"] = True
+        metrics["stability_proof_method"] = "open_loop_pz_plus_nyquist"
+        metrics["bode_measurement_only"] = False
+    elif stb_loops or ac_runs or pz_files:
+        metrics["stability_proof_verified"] = False
+        metrics["stability_proof_method"] = "none_bode_only"
+        metrics["bode_measurement_only"] = True
+
+    # PVT metadata resolution & conflict detection (Finding #3)
+    resolved_corner = None
+    if hdr_corners:
+        resolved_corner = hdr_corners[0][1]
+        for bn, hc in hdr_corners[1:]:
+            if not _corners_match(hc, resolved_corner):
+                hdr_conflicts.append(
+                    "PSF corner mismatch across files: %s=%s vs %s=%s" % (hdr_corners[0][0], resolved_corner, bn, hc)
+                )
+    if resolved_corner is None and meta_details.get("manifest_bound"):
+        resolved_corner = meta_details.get("corner")
+    elif resolved_corner is not None and meta_details.get("manifest_bound") and meta_details.get("corner"):
+        if not _corners_match(resolved_corner, meta_details["corner"]):
+            hdr_conflicts.append(
+                "PSF corner %s disagrees with bound manifest corner %s" % (resolved_corner, meta_details["corner"])
+            )
+
+    resolved_temp = None
+    if hdr_temps:
+        resolved_temp = hdr_temps[0][1]
+        for bn, ht in hdr_temps[1:]:
+            if abs(ht - resolved_temp) > 0.5:
+                hdr_conflicts.append(
+                    "PSF temperature mismatch across files: %s=%gC vs %s=%gC" % (hdr_temps[0][0], resolved_temp, bn, ht)
+                )
+    if resolved_temp is None and meta_details.get("manifest_bound"):
+        resolved_temp = meta_details.get("temperature_c")
+    elif resolved_temp is not None and meta_details.get("manifest_bound") and meta_details.get("temperature_c") is not None:
+        if abs(resolved_temp - meta_details["temperature_c"]) > 0.5:
+            hdr_conflicts.append(
+                "PSF temperature %gC disagrees with bound manifest temperature %gC" % (resolved_temp, meta_details["temperature_c"])
+            )
+
+    metrics["psf_corner"] = resolved_corner
+    metrics["psf_temperature_c"] = _round_clean(resolved_temp)
+    label_conflicts = _check_point_label_vs_metadata(point_label, metrics)
+    all_pvt_conflicts = hdr_conflicts + label_conflicts
+    metrics["pvt_metadata_conflict"] = bool(all_pvt_conflicts)
+    metrics["pvt_metadata_verified"] = bool(
+        (not all_pvt_conflicts) and (resolved_corner is not None) and (resolved_temp is not None)
+    )
+    if all_pvt_conflicts:
+        metrics["pvt_conflict_details"] = all_pvt_conflicts
 
     if mc_flag[0]:
         _add_analysis("mc")
@@ -2650,6 +3601,13 @@ def _classify_psf_filename(filename):
         return "noise"
     if low.endswith(".pss"):
         return "pss"
+    if (
+        low.endswith(".pz")
+        or low.endswith(".pz.psf")
+        or low == "pz.info"
+        or ("pz" in low and (low.endswith(".psf") or (low.endswith(".info") and "op" not in low and "dcop" not in low)))
+    ):
+        return "pz"
     if low.endswith(".dc") or (low.endswith(".info") and ("op" in low or "dcop" in low)):
         return "dc"
     if (
@@ -2963,64 +3921,33 @@ def _extract_pex_requirement(spec_obj):
 
 
 def _match_supply_covered(v_req, points_metrics):
+    """Require real numeric `vdd_v` / `supply_rails` simulator metadata (never bare folder labels)."""
     tol_v = max(0.01, 0.02 * abs(v_req))
     for pt_label, pm in points_metrics.items():
-        has_numeric_vdd = False
+        if not isinstance(pm, dict):
+            continue
         vdd = pm.get("vdd_v")
         if isinstance(vdd, _NUM_TYPES) and not isinstance(vdd, bool):
-            has_numeric_vdd = True
             if abs(float(vdd) - v_req) <= tol_v:
                 return True
         for r in pm.get("supply_rails", []):
+            if not isinstance(r, dict):
+                continue
             rv = r.get("vdd_v")
             if isinstance(rv, _NUM_TYPES) and not isinstance(rv, bool):
-                has_numeric_vdd = True
                 if abs(float(rv) - v_req) <= tol_v:
                     return True
-        # Prefer numeric PSF supply voltages when present; never let a filename token override real vdd_v.
-        if has_numeric_vdd:
-            continue
-        # Label fallback requires explicit voltage unit (`v` or `mv`), e.g. `1.62V`, `1p62V`, `VDD1p8V`, `1620mV`.
-        lbl = str(pt_label).lower()
-        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)v(?:$|[^a-z0-9])', lbl):
-            cand = float("%s.%s" % (m.group(1), m.group(2)))
-            if abs(cand - v_req) <= tol_v:
-                return True
-        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)v(?:$|[^a-z0-9])', lbl):
-            if abs(float(m.group(1)) - v_req) <= tol_v:
-                return True
-        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+)[p.](\d+)mv(?:$|[^a-z0-9])', lbl):
-            cand = float("%s.%s" % (m.group(1), m.group(2))) * 1e-3
-            if abs(cand - v_req) <= tol_v:
-                return True
-        for m in re.finditer(r'(?:^|[^a-z0-9])(?:vdd|vsup|v)?(\d+(?:\.\d+)?)mv(?:$|[^a-z0-9])', lbl):
-            if abs(float(m.group(1)) * 1e-3 - v_req) <= tol_v:
-                return True
     return False
 
 
 def _match_temp_covered(t_req, points_metrics):
-    t_int = int(round(t_req))
-    abs_i = abs(t_int)
-    for pt_label in points_metrics.keys():
-        lbl = str(pt_label).lower()
-        tokens = [t for t in re.split(r'[/_\s]+', lbl) if t]
-        for tok in tokens:
-            if t_int < 0:
-                if re.match(r'^(?:-|m|n|neg|t-|tm|tn)%d(?:c|degc)$' % abs_i, tok):
-                    return True
-            else:
-                if re.match(r'^(?:t|temp|\+)?%d(?:c|degc)$' % abs_i, tok):
-                    return True
-        # Handle hyphen-separated labels like `TT-125C`, `SS--40C`, `SS-m40C` while NEVER matching `SS_-40C` to `+40C`
-        if t_int < 0:
-            if re.search(r'(?:^|[^a-z0-9])(?:-|m|n|neg|t-|tm|tn)%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
-                return True
-        else:
-            if re.search(r'(?:^|[/_\s])(?:t|temp|\+)?%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
-                return True
-            if re.search(r'(?<=[a-z])-(?:t|temp|\+)?%d(?:c|degc)(?:$|[^a-z0-9])' % abs_i, lbl):
-                return True
+    """Require real numeric `psf_temperature_c` simulator metadata within 0.5 C (never bare folder labels)."""
+    for pt_label, pm in points_metrics.items():
+        if not isinstance(pm, dict):
+            continue
+        t_val = _parse_temp_c(pm.get("psf_temperature_c"))
+        if t_val is not None and abs(t_val - float(t_req)) <= 0.5:
+            return True
     return False
 
 
@@ -3231,6 +4158,54 @@ def _match_condition_keys(req_cond, available_keys):
         if all([rt in k_tokens for rt in rc_tokens]):
             matched.append(k)
     return matched
+
+
+def _point_matches_condition(req_cond, pt_label, pm, conflict_points=None):
+    """Match a required corner/condition against simulator PVT metadata (never bare folder labels for PVT)."""
+    if not isinstance(pm, dict):
+        return False
+    if conflict_points and pt_label in conflict_points:
+        return False
+    if pm.get("pvt_metadata_conflict"):
+        return False
+
+    req_corners = _extract_label_corners(req_cond)
+    req_temps = _extract_label_temps(req_cond)
+    req_volts = _extract_label_voltages(req_cond)
+
+    if req_corners or req_temps or req_volts:
+        if req_corners:
+            psf_c = pm.get("psf_corner")
+            if not psf_c or not all([_corners_match(rc, psf_c) for rc in req_corners]):
+                return False
+        if req_temps:
+            psf_t = _parse_temp_c(pm.get("psf_temperature_c"))
+            if psf_t is None or not all([abs(lt - psf_t) <= 0.5 for lt in req_temps]):
+                return False
+        if req_volts:
+            if not all([_match_supply_covered(lv, {pt_label: pm}) for lv in req_volts]):
+                return False
+
+        # Verify any additional non-PVT descriptor tokens if present
+        non_pvt_tokens = []
+        for tok in _tokenize_condition_label(req_cond):
+            if _extract_label_corners(tok) or _extract_label_temps(tok) or _extract_label_voltages(tok):
+                continue
+            non_pvt_tokens.append(tok)
+        if non_pvt_tokens:
+            pt_tokens = set(_tokenize_condition_label(pt_label))
+            if not all([t in pt_tokens for t in non_pvt_tokens]):
+                return False
+        return True
+
+    return bool(_match_condition_keys(req_cond, [pt_label]))
+
+
+def _match_condition_points(req_cond, available_keys, points_metrics, conflict_points=None):
+    return [
+        k for k in available_keys
+        if _point_matches_condition(req_cond, k, points_metrics.get(k), conflict_points=conflict_points)
+    ]
 
 
 def _normalize_spec_requirements(spec_obj):
@@ -3452,10 +4427,29 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
 
     available_keys = sorted(points_metrics.keys())
 
-    # Global coverage checks (enforced at spec level regardless of per-requirement condition scoping!)
+    pvt_metadata_conflicts = []
+    conflict_points = set()
+    for pt_label in available_keys:
+        pm = points_metrics.get(pt_label)
+        if not isinstance(pm, dict):
+            continue
+        pt_confs = list(pm.get("pvt_conflict_details") or [])
+        for lc in _check_point_label_vs_metadata(pt_label, pm):
+            if lc not in pt_confs:
+                pt_confs.append(lc)
+        if pm.get("pvt_metadata_conflict") or pt_confs:
+            conflict_points.add(pt_label)
+            pvt_metadata_conflicts.append({
+                "point": pt_label,
+                "psf_corner": pm.get("psf_corner"),
+                "psf_temperature_c": pm.get("psf_temperature_c"),
+                "details": pt_confs if pt_confs else ["pvt_metadata_conflict"],
+            })
+
+    # Global coverage checks (enforced against simulator metadata, never bare folder names)
     missing_global_corners = []
     for gc in global_conds:
-        if not _match_condition_keys(gc, available_keys):
+        if not _match_condition_points(gc, available_keys, points_metrics, conflict_points=conflict_points):
             missing_global_corners.append(gc)
 
     missing_global_analyses = []
@@ -3465,8 +4459,11 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
             if req_an not in present and req_an not in missing_global_analyses:
                 missing_global_analyses.append(req_an)
 
-    missing_global_supplies = [v for v in global_supplies if not _match_supply_covered(v, points_metrics)]
-    missing_global_temps = [t for t in global_temps if not _match_temp_covered(t, points_metrics)]
+    clean_points_metrics = dict([
+        (k, points_metrics[k]) for k in available_keys if k not in conflict_points
+    ])
+    missing_global_supplies = [v for v in global_supplies if not _match_supply_covered(v, clean_points_metrics)]
+    missing_global_temps = [t for t in global_temps if not _match_temp_covered(t, clean_points_metrics)]
 
     # Full Cartesian PVT product coverage whenever >= 2 of (corners, supplies, temps) are specified
     missing_pvt_combinations = []
@@ -3480,8 +4477,10 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                 for t_req in t_list:
                     combo_covered = False
                     for pt_label in available_keys:
+                        if pt_label in conflict_points:
+                            continue
                         pm = points_metrics[pt_label]
-                        if c_req is not None and not _match_condition_keys(c_req, [pt_label]):
+                        if c_req is not None and not _point_matches_condition(c_req, pt_label, pm, conflict_points=conflict_points):
                             continue
                         if v_req is not None and not _match_supply_covered(v_req, {pt_label: pm}):
                             continue
@@ -3547,7 +4546,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         if req_conds:
             seen_ek = set()
             for rc in req_conds:
-                matched_ks = _match_condition_keys(rc, available_keys)
+                matched_ks = _match_condition_points(rc, available_keys, points_metrics, conflict_points=conflict_points)
                 if not matched_ks:
                     missing_conds.append(rc)
                     per_cond[rc] = {"measured_si": None, "status": "NOT_VERIFIED", "reason": "missing_condition"}
@@ -3559,7 +4558,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         else:
             eval_keys = list(available_keys)
             for gc in global_conds:
-                matched_ks = _match_condition_keys(gc, available_keys)
+                matched_ks = _match_condition_points(gc, available_keys, points_metrics, conflict_points=conflict_points)
                 if not matched_ks:
                     missing_conds.append(gc)
                     per_cond[gc] = {"measured_si": None, "status": "NOT_VERIFIED", "reason": "missing_condition"}
@@ -3569,6 +4568,7 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
         any_missing = len(missing_conds) > 0
         any_failed = False
         req_reason = "missing_condition" if missing_conds else None
+        fail_reason = None
 
         for cond_name in eval_keys:
             m_dict = points_metrics[cond_name]
@@ -3657,6 +4657,26 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                     }
                     continue
 
+            if m_key in _STABILITY_METRICS:
+                if m_dict.get("closed_loop_unstable"):
+                    any_failed = True
+                    fail_reason = fail_reason or "closed_loop_rhp_pole"
+                    per_cond[cond_name] = {
+                        "measured_si": _round_clean(m_val) if m_val is not None else None,
+                        "status": "FAIL",
+                        "reason": "closed_loop_rhp_pole",
+                    }
+                    continue
+                if m_dict.get("nyquist_unstable"):
+                    any_failed = True
+                    fail_reason = fail_reason or "nyquist_unstable_encirclements"
+                    per_cond[cond_name] = {
+                        "measured_si": _round_clean(m_val) if m_val is not None else None,
+                        "status": "FAIL",
+                        "reason": "nyquist_unstable_encirclements",
+                    }
+                    continue
+
             if m_val is None:
                 any_missing = True
                 miss_r = "rhp_open_loop_pole_suspected" if (
@@ -3673,10 +4693,19 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
                 per_cond[cond_name] = {"measured_si": _round_clean(m_val), "status": "NOT_VERIFIED", "reason": "invalid_operator_or_range"}
                 continue
 
-            st = "PASS" if ok_cmp else "FAIL"
-            if not ok_cmp:
-                any_failed = True
-            per_cond[cond_name] = {"measured_si": _round_clean(m_val), "status": st}
+            if m_key in _STABILITY_METRICS and ok_cmp and (not m_dict.get("stability_proof_verified")):
+                any_missing = True
+                req_reason = req_reason or "bode_only_open_loop_rhp_unproven"
+                per_cond[cond_name] = {
+                    "measured_si": _round_clean(m_val),
+                    "status": "NOT_VERIFIED",
+                    "reason": "bode_only_open_loop_rhp_unproven",
+                }
+            else:
+                st = "PASS" if ok_cmp else "FAIL"
+                if not ok_cmp:
+                    any_failed = True
+                per_cond[cond_name] = {"measured_si": _round_clean(m_val), "status": st}
 
             if op in (">=", ">", "min", "ge", "gte", "gt"):
                 if worst_val is None or float(m_val) < worst_val:
@@ -3725,6 +4754,8 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
             entry["missing_conditions"] = missing_conds
         if req_status == "NOT_VERIFIED" and req_reason:
             entry["reason"] = req_reason
+        elif req_status == "FAIL" and fail_reason:
+            entry["reason"] = fail_reason
         results.append(entry)
 
     overall_reason = None
@@ -3738,6 +4769,9 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
     )
     if fail_n > 0:
         verdict = "FAIL"
+    elif pvt_metadata_conflicts:
+        verdict = "NOT_VERIFIED"
+        overall_reason = "pvt_metadata_conflict"
     elif approval_pending:
         verdict = "NOT_VERIFIED"
         overall_reason = "spec_approval_pending"
@@ -3767,6 +4801,8 @@ def evaluate_spec(points_metrics, spec_obj, aux_data=None):
     }
     if overall_reason:
         summary_out["reason"] = overall_reason
+    if pvt_metadata_conflicts:
+        summary_out["pvt_metadata_conflicts"] = pvt_metadata_conflicts
     if missing_global_corners:
         summary_out["missing_corners"] = missing_global_corners
     if missing_global_analyses:
@@ -3831,6 +4867,7 @@ def run_metrics(run_dir, spec_path=None, vout_hint=None, vin_hint=None, settling
             target_v=eff_target_v,
             base_dir=base_dir,
             aux_out=pt_aux,
+            point_label=pt_label,
         )
         if pt_aux:
             aux_data[pt_label] = pt_aux
@@ -4373,13 +5410,15 @@ def run_self_test():
         assert abs(res_gvss["metrics"]["dc_power_w"] - 0.0018) < 1e-9, res_gvss["metrics"]
         assert res_gvss["metrics"]["power_method"] == "supply_terminal", res_gvss["metrics"]
 
-        # 20. #6 Spec PVT/MC Coverage & SS_-40C vs SS_40C Regex Guards
+        # 20. #6 Spec PVT/MC Coverage & Fail-Closed Simulator Metadata Guards
         assert not _match_supply_covered(1.8, {"TT_1p8": {"analyses_present": ["ac"]}}), "Bare 1p8 without unit must not match!"
-        assert not _match_supply_covered(1.8, {"TT_1p8V": {"vdd_v": 1.0, "analyses_present": ["dc"]}}), "Numeric vdd_v=1.0 must override label 1p8V!"
-        assert _match_supply_covered(1.8, {"TT_1p8V": {"analyses_present": ["ac"]}}), "Explicit 1p8V label should match when no numeric vdd_v"
-        assert _match_temp_covered(-40.0, {"SS_-40C": {}}), "SS_-40C must match -40C"
-        assert not _match_temp_covered(40.0, {"SS_-40C": {}}), "SS_-40C must NEVER match +40C!"
-        assert not _match_temp_covered(40.0, {"SS_40": {}}), "SS_40 without C suffix must not match 40C!"
+        assert not _match_supply_covered(1.8, {"TT_1p8V": {"analyses_present": ["ac"]}}), "Bare 1p8V folder label without numeric vdd_v must not match!"
+        assert not _match_supply_covered(1.8, {"TT_1p8V": {"vdd_v": 1.0, "analyses_present": ["dc"]}}), "Numeric vdd_v=1.0 must reject 1.8V!"
+        assert _match_supply_covered(1.8, {"TT_1p8V": {"vdd_v": 1.8, "analyses_present": ["dc"]}}), "Numeric vdd_v=1.8 should match 1.8V!"
+        assert not _match_temp_covered(-40.0, {"SS_-40C": {}}), "Bare SS_-40C label without psf_temperature_c must not match!"
+        assert _match_temp_covered(-40.0, {"SS_-40C": {"psf_temperature_c": -40.0}}), "Simulator psf_temperature_c=-40 must match -40C"
+        assert not _match_temp_covered(40.0, {"SS_-40C": {"psf_temperature_c": -40.0}}), "SS_-40C must NEVER match +40C!"
+        assert not _match_temp_covered(40.0, {"SS_40": {}}), "SS_40 without psf_temperature_c must not match 40C!"
         assert _match_condition_keys("SS_-40C", ["SS_40C"]) == [], "SS_-40C condition must NEVER match SS_40C!"
         assert _match_condition_keys("SS_-40C", ["SS_-40C_1p62V"]) == ["SS_-40C_1p62V"]
         assert _count_mc_points({"iter1": {}, "iter2": {}}) == 0, "Generic iterN must NOT count as Monte Carlo!"
@@ -4588,8 +5627,8 @@ def run_self_test():
         }
         ev_pvt_sparse = evaluate_spec(
             {
-                "TT_0p90V_-40C": {"dc_gain_db": 60.0, "vdd_v": 0.90, "analyses_present": ["ac"]},
-                "SS_1p10V_125C": {"dc_gain_db": 58.0, "vdd_v": 1.10, "analyses_present": ["ac"]},
+                "TT_0p90V_-40C": {"dc_gain_db": 60.0, "vdd_v": 0.90, "psf_corner": "TT", "psf_temperature_c": -40.0, "analyses_present": ["ac"]},
+                "SS_1p10V_125C": {"dc_gain_db": 58.0, "vdd_v": 1.10, "psf_corner": "SS", "psf_temperature_c": 125.0, "analyses_present": ["ac"]},
             },
             pvt_spec,
         )
@@ -4600,20 +5639,32 @@ def run_self_test():
         assert len(ev_pvt_sparse.get("missing_pvt_combinations", [])) == 6, ev_pvt_sparse
         assert "TT @ 1.1V @ 125C" in ev_pvt_sparse["missing_pvt_combinations"], ev_pvt_sparse
 
+        full_pvt_no_hdr = {}
         full_pvt_pts = {}
         for c_k in ("TT", "SS"):
             for v_k, v_lbl in ((0.90, "0p90V"), (1.10, "1p10V")):
                 for t_k, t_lbl in ((-40, "-40C"), (125, "125C")):
-                    full_pvt_pts["%s_%s_%s" % (c_k, v_lbl, t_lbl)] = {
+                    lbl_k = "%s_%s_%s" % (c_k, v_lbl, t_lbl)
+                    full_pvt_no_hdr[lbl_k] = {
                         "dc_gain_db": 60.0,
                         "vdd_v": v_k,
                         "analyses_present": ["ac"],
                     }
+                    full_pvt_pts[lbl_k] = {
+                        "dc_gain_db": 60.0,
+                        "vdd_v": v_k,
+                        "psf_corner": c_k,
+                        "psf_temperature_c": float(t_k),
+                        "analyses_present": ["ac"],
+                    }
+        ev_pvt_no_hdr = evaluate_spec(full_pvt_no_hdr, pvt_spec)
+        assert ev_pvt_no_hdr["verdict"] == "NOT_VERIFIED", ev_pvt_no_hdr
+        assert ev_pvt_no_hdr.get("missing_corners") == ["TT", "SS"], ev_pvt_no_hdr
         ev_pvt_full = evaluate_spec(full_pvt_pts, pvt_spec)
         assert ev_pvt_full["verdict"] == "PASS", ev_pvt_full
         assert "missing_pvt_combinations" not in ev_pvt_full, ev_pvt_full
 
-        # 28. Genuine MC & PEX Evidence (Spoofed `tt_mc1_pex`/`tt_mc2_pex` MUST fail closed; real artifacts pass)
+        # 28. Genuine MC & PEX Evidence + Cryptographically Bound Manifest Anti-Spoofing (Finding #2)
         spoof_dir = os.path.join(tmp_root, "spoof_mc_pex")
         for s_name in ("tt_mc1_pex", "tt_mc2_pex"):
             _write_utf8(os.path.join(spoof_dir, s_name, "dcOp.dc"), (
@@ -4634,7 +5685,7 @@ def run_self_test():
         assert "monte_carlo" in res_spoof["spec_evaluation"].get("missing_coverage", []), res_spoof
         assert "post_layout" in res_spoof["spec_evaluation"].get("missing_coverage", []), res_spoof
 
-        # Genuine MC (iteration sweep + header) & Genuine PEX (av_extracted header + parasitic RC + manifest JSON)
+        # Genuine MC (iteration sweep + header) & Genuine PEX (av_extracted header + parasitic RC)
         real_mc_pex_dir = os.path.join(tmp_root, "real_mc_pex")
         _write_utf8(os.path.join(real_mc_pex_dir, "dcOp.dc"), (
             'HEADER\n"PSFversion" "1.00"\n"analysis type" "montecarlo"\n"cellview" "av_extracted"\n'
@@ -4652,6 +5703,7 @@ def run_self_test():
         assert res_real_mp["metrics"]["pex_evidence"] is True, res_real_mp["metrics"]
         assert res_real_mp["metrics"]["parasitic_rc_count"] >= 1, res_real_mp["metrics"]
 
+        # Loose unbacked run_manifest.json MUST fail closed (Finding #2 Codex repro)
         meta_mc_pex_dir = os.path.join(tmp_root, "meta_mc_pex")
         _write_utf8(os.path.join(meta_mc_pex_dir, "psf", "dcOp.dc"), (
             'HEADER\n"PSFversion" "1.00"\n'
@@ -4664,10 +5716,301 @@ def run_self_test():
             "pex_verified": True,
         }))
         res_meta_mp = run_metrics(meta_mc_pex_dir, spec_path=spec_mc_pex_path)
-        assert res_meta_mp["verdict"] == "PASS", res_meta_mp
-        assert res_meta_mp["metrics"]["mc_evidence"] is True, res_meta_mp["metrics"]
-        assert res_meta_mp["metrics"]["mc_runs_verified"] == 50, res_meta_mp["metrics"]
-        assert res_meta_mp["metrics"]["pex_evidence"] is True, res_meta_mp["metrics"]
+        assert res_meta_mp["verdict"] == "NOT_VERIFIED", res_meta_mp
+        assert res_meta_mp["metrics"]["mc_evidence"] is False, res_meta_mp["metrics"]
+        assert res_meta_mp["metrics"]["pex_evidence"] is False, res_meta_mp["metrics"]
+        assert res_meta_mp["metrics"].get("manifest_rejected_reason"), res_meta_mp["metrics"]
+        assert main(["metrics", meta_mc_pex_dir, "--spec", spec_mc_pex_path, "--fail-on-spec"], quiet=True) == 1
+
+        # Bound manifest claiming mc_runs=50 next to single non-MC dcOp.dc MUST STILL ignore mc_runs=50!
+        bound_unbacked_dir = os.path.join(tmp_root, "bound_unbacked_mc")
+        bu_net = os.path.join(bound_unbacked_dir, "tb.scs")
+        bu_dc = os.path.join(bound_unbacked_dir, "psf", "dcOp.dc")
+        _write_utf8(bu_net, "simulator lang=spectre\nmc1 montecarlo numruns=50 {\n dcOp dc\n}\n")
+        _write_utf8(bu_dc, (
+            'HEADER\n"PSFversion" "1.00"\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -1.0e-4\nEND\n'
+        ))
+        _write_utf8(os.path.join(bound_unbacked_dir, "run_manifest.json"), json.dumps({
+            "schema": "skill-analog.run-manifest.v1",
+            "run_id": "run_unbacked_50",
+            "exit_code": 0,
+            "netlist_path": "tb.scs",
+            "netlist_sha256": _sha256_file(bu_net),
+            "psf_files": {"psf/dcOp.dc": _sha256_file(bu_dc)},
+            "monte_carlo": True,
+            "mc_runs": 50,
+            "pex_verified": True,
+        }))
+        res_bu = run_metrics(bound_unbacked_dir, spec_path=spec_mc_pex_path)
+        assert res_bu["verdict"] == "NOT_VERIFIED", res_bu
+        assert res_bu["metrics"]["mc_evidence"] is False, res_bu["metrics"]
+        assert res_bu["metrics"]["pex_evidence"] is False, res_bu["metrics"]
+
+        # Positive bound manifest with real netlist (montecarlo + av_extracted/cpar_out) & verified MC PSF files PASSES
+        bound_ok_dir = os.path.join(tmp_root, "bound_ok_mc_pex")
+        bok_net = os.path.join(bound_ok_dir, "tb.scs")
+        bok_mc1 = os.path.join(bound_ok_dir, "psf", "mc1_001.dc")
+        bok_mc2 = os.path.join(bound_ok_dir, "psf", "mc1_002.dc")
+        _write_utf8(bok_net, (
+            "// View name: av_extracted\n"
+            "simulator lang=spectre\n"
+            "cpar_out (vout 0) capacitor c=5f\n"
+            "mc1 montecarlo numruns=2 {\n dcOp dc\n}\n"
+        ))
+        for mc_idx, mc_fp in enumerate((bok_mc1, bok_mc2), 1):
+            _write_utf8(mc_fp, (
+                'HEADER\n"PSFversion" "1.00"\n'
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+                'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" %.6e\nEND\n' % (-1.0e-4 * mc_idx)
+            ))
+        _write_utf8(os.path.join(bound_ok_dir, "run_manifest.json"), json.dumps({
+            "schema": "skill-analog.run-manifest.v1",
+            "run_id": "run_bound_ok_1",
+            "exit_code": 0,
+            "netlist_path": "tb.scs",
+            "netlist_sha256": _sha256_file(bok_net),
+            "psf_files": {
+                "psf/mc1_001.dc": _sha256_file(bok_mc1),
+                "psf/mc1_002.dc": _sha256_file(bok_mc2),
+            },
+            "monte_carlo": {"enabled": True, "mc_psf_files": ["psf/mc1_001.dc", "psf/mc1_002.dc"]},
+            "post_layout": {"enabled": True},
+        }))
+        res_bok = run_metrics(bound_ok_dir, spec_path=spec_mc_pex_path)
+        assert res_bok["verdict"] == "PASS", res_bok
+        assert res_bok["metrics"]["mc_evidence"] is True, res_bok["metrics"]
+        assert res_bok["metrics"]["mc_runs_verified"] == 2, res_bok["metrics"]
+        assert res_bok["metrics"]["pex_evidence"] is True, res_bok["metrics"]
+        assert main(["metrics", bound_ok_dir, "--spec", spec_mc_pex_path, "--fail-on-spec"], quiet=True) == 0
+
+        # 29. Codex STB RHP Pole-Zero Pair Repro + .pz / Nyquist Fail-Closed Proof (Finding #1)
+        # L(s) = 10(s - 1010) / [(s + 1)(s - 1000)] over w = 10^-3 .. 10^5 rad/s (321 pts)
+        codex_stb_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_i in range(321):
+            w_val = 10.0 ** (-3.0 + 8.0 * float(k_i) / 320.0)
+            s_c = complex(0.0, w_val)
+            l_val = 10.0 * (s_c - 1010.0) / ((s_c + 1.0) * (s_c - 1000.0))
+            codex_stb_lines.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        codex_stb_lines.append("END\n")
+        codex_stb_txt = "".join(codex_stb_lines)
+
+        spec_stb_pm_path = os.path.join(tmp_root, "spec_stb_pm.json")
+        _write_utf8(spec_stb_pm_path, json.dumps({
+            "requirements": [{"id": "PM_STB", "quantity": "phase_margin_deg", "operator": ">=", "target": 45.0, "unit": "deg"}]
+        }))
+
+        # 29a. Bode-only Codex repro (no .pz): preserves PM ~95.69 as measurement, verdict=NOT_VERIFIED, rc=1
+        codex_bode_dir = os.path.join(tmp_root, "codex_stb_bode_only")
+        _write_utf8(os.path.join(codex_bode_dir, "stb.stb"), codex_stb_txt)
+        res_cbode = run_metrics(codex_bode_dir, spec_path=spec_stb_pm_path)
+        assert abs(res_cbode["metrics"]["phase_margin_deg"] - 95.6886) < 0.05, res_cbode["metrics"]
+        assert res_cbode["metrics"]["stability_proof_verified"] is False, res_cbode["metrics"]
+        assert res_cbode["metrics"]["stability_proof_method"] == "none_bode_only", res_cbode["metrics"]
+        assert res_cbode["metrics"]["bode_measurement_only"] is True, res_cbode["metrics"]
+        assert res_cbode["metrics"]["nyquist_contour_closed"] is True, res_cbode["metrics"]
+        assert res_cbode["metrics"]["nyquist_cw_encirclements"] == 0, res_cbode["metrics"]
+        assert res_cbode["verdict"] == "NOT_VERIFIED", res_cbode
+        cb_cond = res_cbode["spec_evaluation"]["results"][0]["conditions"]["nominal"]
+        assert cb_cond["status"] == "NOT_VERIFIED", cb_cond
+        assert cb_cond["reason"] == "bode_only_open_loop_rhp_unproven", cb_cond
+        assert abs(cb_cond["measured_si"] - 95.6886) < 0.05, cb_cond
+        assert main(["metrics", codex_bode_dir, "--spec", spec_stb_pm_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 29b. Closed-loop .pz with RHP pole (+1000.0989 s^-1) -> FAIL (closed_loop_rhp_pole)
+        codex_clpz_dir = os.path.join(tmp_root, "codex_cl_pz_fail")
+        _write_utf8(os.path.join(codex_clpz_dir, "stb.stb"), codex_stb_txt)
+        _write_utf8(os.path.join(codex_clpz_dir, "pz.pz"), (
+            'HEADER\n"PSFversion" "1.00"\n"analysis type" "pz"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-11.0989 0.0)\n'
+            '"pole2" "c_t" (1000.0989 0.0)\n'
+            '"zero1" "c_t" (1010.0 0.0)\nEND\n'
+        ))
+        res_clpz = run_metrics(codex_clpz_dir, spec_path=spec_stb_pm_path)
+        assert res_clpz["metrics"]["closed_loop_rhp_poles"] == 1, res_clpz["metrics"]
+        assert res_clpz["metrics"]["closed_loop_unstable"] is True, res_clpz["metrics"]
+        assert res_clpz["verdict"] == "FAIL", res_clpz
+        assert res_clpz["spec_evaluation"]["results"][0]["conditions"]["nominal"]["reason"] == "closed_loop_rhp_pole", res_clpz
+        assert main(["metrics", codex_clpz_dir, "--spec", spec_stb_pm_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 29c. Open-loop .pz (P=1) + Nyquist (N=0) -> Z = N + P = 1 > 0 -> FAIL (nyquist_unstable_encirclements)
+        codex_olpz_dir = os.path.join(tmp_root, "codex_ol_pz_fail")
+        _write_utf8(os.path.join(codex_olpz_dir, "stb.stb"), codex_stb_txt)
+        _write_utf8(os.path.join(codex_olpz_dir, "open_loop.pz.psf"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-1.0 0.0)\n'
+            '"pole2" "c_t" (1000.0 0.0)\n'
+            '"zero1" "c_t" (1010.0 0.0)\nEND\n'
+        ))
+        res_olpz = run_metrics(codex_olpz_dir, spec_path=spec_stb_pm_path)
+        assert res_olpz["metrics"]["open_loop_rhp_poles"] == 1, res_olpz["metrics"]
+        assert res_olpz["metrics"]["nyquist_closed_loop_rhp_poles"] == 1, res_olpz["metrics"]
+        assert res_olpz["metrics"]["nyquist_unstable"] is True, res_olpz["metrics"]
+        assert res_olpz["verdict"] == "FAIL", res_olpz
+        assert res_olpz["spec_evaluation"]["results"][0]["conditions"]["nominal"]["reason"] == "nyquist_unstable_encirclements", res_olpz
+        assert main(["metrics", codex_olpz_dir, "--spec", spec_stb_pm_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 29d. Valid stable loop + closed-loop .pz (LHP poles only, plus RHP zero ignored) -> PASS
+        good_stb_lines = ['HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n']
+        for k_i in range(101):
+            w_val = 10.0 ** (-1.0 + 6.0 * float(k_i) / 100.0)
+            s_c = complex(0.0, w_val)
+            l_val = 100.0 / ((1.0 + s_c / 10.0) * (1.0 + s_c / 1000.0))
+            good_stb_lines.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (w_val / (2.0 * math.pi), l_val.real, l_val.imag))
+        good_stb_lines.append("END\n")
+        good_stb_txt = "".join(good_stb_lines)
+
+        valid_cl_dir = os.path.join(tmp_root, "valid_cl_pz")
+        _write_utf8(os.path.join(valid_cl_dir, "stb.stb"), good_stb_txt)
+        _write_utf8(os.path.join(valid_cl_dir, "pz.info"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"pz_t" STRUCT( "real" FLOAT DOUBLE "imag" FLOAT DOUBLE )\nVALUE\n'
+            '"pole1" "pz_t" ( -505.0 870.0 )\n'
+            '"pole2" "pz_t" ( -505.0 -870.0 )\n'
+            '"zero1" "pz_t" ( 5000.0 0.0 )\nEND\n'
+        ))
+        res_vcl = run_metrics(valid_cl_dir, spec_path=spec_stb_pm_path)
+        assert res_vcl["metrics"]["closed_loop_rhp_poles"] == 0, res_vcl["metrics"]
+        assert res_vcl["metrics"]["stability_proof_verified"] is True, res_vcl["metrics"]
+        assert res_vcl["metrics"]["stability_proof_method"] == "closed_loop_pz", res_vcl["metrics"]
+        assert res_vcl["verdict"] == "PASS", res_vcl
+        assert main(["metrics", valid_cl_dir, "--spec", spec_stb_pm_path, "--fail-on-spec"], quiet=True) == 0
+
+        # 29e. Valid stable loop + open-loop .pz (P=0) + closed Nyquist (N=0) -> PASS
+        valid_ol_dir = os.path.join(tmp_root, "valid_ol_pz")
+        _write_utf8(os.path.join(valid_ol_dir, "stb.stb"), good_stb_txt)
+        _write_utf8(os.path.join(valid_ol_dir, "openloop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n'
+            '"pole1" "c_t" (-10.0 0.0)\n'
+            '"pole2" "c_t" (-1000.0 0.0)\nEND\n'
+        ))
+        res_vol = run_metrics(valid_ol_dir, spec_path=spec_stb_pm_path)
+        assert res_vol["metrics"]["open_loop_rhp_poles"] == 0, res_vol["metrics"]
+        assert res_vol["metrics"]["nyquist_closed_loop_rhp_poles"] == 0, res_vol["metrics"]
+        assert res_vol["metrics"]["stability_proof_verified"] is True, res_vol["metrics"]
+        assert res_vol["metrics"]["stability_proof_method"] == "open_loop_pz_plus_nyquist", res_vol["metrics"]
+        assert res_vol["verdict"] == "PASS", res_vol
+
+        # 29f. Bound manifest open_loop_rhp_poles=0 + closed Nyquist -> PASS; unclosed Nyquist -> NOT_VERIFIED
+        bound_nyq_dir = os.path.join(tmp_root, "bound_nyq_pass")
+        bnyq_net = os.path.join(bound_nyq_dir, "tb.scs")
+        bnyq_stb = os.path.join(bound_nyq_dir, "psf", "stb.stb")
+        _write_utf8(bnyq_net, "simulator lang=spectre\nstb1 stb\n")
+        _write_utf8(bnyq_stb, good_stb_txt)
+        _write_utf8(os.path.join(bound_nyq_dir, "run_manifest.json"), json.dumps({
+            "schema": "skill-analog.run-manifest.v1",
+            "run_id": "nyq_bound_1",
+            "exit_code": 0,
+            "netlist_path": "tb.scs",
+            "netlist_sha256": _sha256_file(bnyq_net),
+            "psf_files": {"psf/stb.stb": _sha256_file(bnyq_stb)},
+            "open_loop_rhp_poles": 0,
+        }))
+        res_bnyq = run_metrics(bound_nyq_dir, spec_path=spec_stb_pm_path)
+        assert res_bnyq["metrics"]["stability_proof_verified"] is True, res_bnyq["metrics"]
+        assert res_bnyq["verdict"] == "PASS", res_bnyq
+
+        unclosed_nyq_dir = os.path.join(tmp_root, "unclosed_nyq")
+        _write_utf8(os.path.join(unclosed_nyq_dir, "stb.stb"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n'
+            '"freq" 1.0e5\n"loopGain" (1.5 -1.5)\n'
+            '"freq" 2.0e5\n"loopGain" (0.5 -1.0)\n'
+            '"freq" 3.0e5\n"loopGain" (0.2 -0.8)\nEND\n'
+        ))
+        _write_utf8(os.path.join(unclosed_nyq_dir, "open_loop.pz"), (
+            'HEADER\n"PSFversion" "1.00"\nTYPE\n"c_t" COMPLEX DOUBLE\nVALUE\n"pole1" "c_t" (-10.0 0.0)\nEND\n'
+        ))
+        res_unc = run_metrics(unclosed_nyq_dir, spec_path=spec_stb_pm_path)
+        assert res_unc["metrics"]["nyquist_contour_closed"] is False, res_unc["metrics"]
+        assert res_unc["metrics"]["stability_proof_verified"] is False, res_unc["metrics"]
+        assert res_unc["verdict"] == "NOT_VERIFIED", res_unc
+
+        # 30. Codex 8-Folder PVT Spoofing Repro + Missing Header + Internal Conflict + Genuine Matching Headers (Finding #3)
+        pvt_spec_path = os.path.join(tmp_root, "spec_pvt_8.json")
+        _write_utf8(pvt_spec_path, json.dumps(pvt_spec))
+
+        def _write_pvt_point(pt_dir, vdd_val, hdr_corner=None, hdr_temp=None, extra_hdr=""):
+            hdr_lines = ['HEADER\n"PSFversion" "1.00"\n']
+            if hdr_corner is not None:
+                hdr_lines.append('"corner" "%s"\n' % hdr_corner)
+            if hdr_temp is not None:
+                hdr_lines.append('"temperature" %s\n' % repr(hdr_temp))
+            if extra_hdr:
+                hdr_lines.append(extra_hdr)
+            hdr_str = "".join(hdr_lines)
+            _write_utf8(os.path.join(pt_dir, "dcOp.dc"), (
+                hdr_str +
+                'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+                'VALUE\n"VDD" "v_t" %.4f\n"VDD:p" "i_t" -1.0e-4\nEND\n' % vdd_val
+            ))
+            _write_utf8(os.path.join(pt_dir, "ac.ac"), (
+                hdr_str +
+                'TYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"Vout" "c_t"\nVALUE\n'
+                '"freq" 1.0\n"Vout" (1000.0 0.0)\n"freq" 1.0e6\n"Vout" (0.0 -1.0)\nEND\n'
+            ))
+
+        # 30a. Codex 8-folder spoofing repro: all 8 folders claim TT/SS x 0.9/1.1V x -40/125C, but HEADER says TT, 27
+        spoof_8_dir = os.path.join(tmp_root, "pvt_spoof_8")
+        for c_k in ("TT", "SS"):
+            for v_k, v_lbl in ((0.90, "0p90V"), (1.10, "1p10V")):
+                for t_k, t_lbl in ((-40, "-40C"), (125, "125C")):
+                    _write_pvt_point(os.path.join(spoof_8_dir, "%s_%s_%s" % (c_k, v_lbl, t_lbl)), v_k, "TT", 27)
+        res_sp8 = run_metrics(spoof_8_dir, spec_path=pvt_spec_path)
+        assert res_sp8["verdict"] == "NOT_VERIFIED", res_sp8
+        assert res_sp8["spec_evaluation"].get("reason") == "pvt_metadata_conflict", res_sp8["spec_evaluation"]
+        assert len(res_sp8["spec_evaluation"].get("pvt_metadata_conflicts", [])) == 8, res_sp8["spec_evaluation"]
+        assert main(["metrics", spoof_8_dir, "--spec", pvt_spec_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 30b. Missing-header 8-folder repro (no corner/temperature in HEADER) -> NOT_VERIFIED
+        nohdr_8_dir = os.path.join(tmp_root, "pvt_nohdr_8")
+        for c_k in ("TT", "SS"):
+            for v_k, v_lbl in ((0.90, "0p90V"), (1.10, "1p10V")):
+                for t_k, t_lbl in ((-40, "-40C"), (125, "125C")):
+                    _write_pvt_point(os.path.join(nohdr_8_dir, "%s_%s_%s" % (c_k, v_lbl, t_lbl)), v_k, None, None)
+        res_nh8 = run_metrics(nohdr_8_dir, spec_path=pvt_spec_path)
+        assert res_nh8["verdict"] == "NOT_VERIFIED", res_nh8
+        assert res_nh8["spec_evaluation"].get("missing_corners") == ["TT", "SS"], res_nh8["spec_evaluation"]
+        assert res_nh8["spec_evaluation"].get("missing_temperatures_C") == [-40.0, 125.0], res_nh8["spec_evaluation"]
+        assert len(res_nh8["spec_evaluation"].get("missing_pvt_combinations", [])) == 8, res_nh8["spec_evaluation"]
+        assert main(["metrics", nohdr_8_dir, "--spec", pvt_spec_path, "--fail-on-spec"], quiet=True) == 1
+
+        # 30c. Internal multi-PSF header conflict inside single point (dcOp=TT/27C vs ac=SS/125C)
+        int_conf_dir = os.path.join(tmp_root, "pvt_internal_conflict")
+        _write_utf8(os.path.join(int_conf_dir, "dcOp.dc"), (
+            'HEADER\n"PSFversion" "1.00"\n"corner" "TT"\n"temperature" 27\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'VALUE\n"VDD" "v_t" 1.0\n"VDD:p" "i_t" -1.0e-4\nEND\n'
+        ))
+        _write_utf8(os.path.join(int_conf_dir, "ac.ac"), (
+            'HEADER\n"PSFversion" "1.00"\n"corner" "SS"\n"temperature" 125\n'
+            'TYPE\n"f_t" FLOAT DOUBLE\n"c_t" COMPLEX DOUBLE\nSWEEP\n"freq" "f_t"\nTRACE\n"Vout" "c_t"\nVALUE\n'
+            '"freq" 1.0\n"Vout" (1000.0 0.0)\n"freq" 1.0e6\n"Vout" (0.0 -1.0)\nEND\n'
+        ))
+        spec_gain_path = os.path.join(tmp_root, "spec_gain_simple.json")
+        _write_utf8(spec_gain_path, json.dumps({
+            "requirements": [{"id": "G1", "quantity": "dc_gain_db", "operator": ">=", "target": 50.0, "unit": "dB"}]
+        }))
+        res_ic = run_metrics(int_conf_dir, spec_path=spec_gain_path)
+        assert res_ic["metrics"]["pvt_metadata_conflict"] is True, res_ic["metrics"]
+        assert res_ic["verdict"] == "NOT_VERIFIED", res_ic
+        assert res_ic["spec_evaluation"].get("reason") == "pvt_metadata_conflict", res_ic["spec_evaluation"]
+
+        # 30d. Genuine matching-header 8-folder repro (including `"tnom" 27` ignored) -> PASS, rc == 0
+        good_8_dir = os.path.join(tmp_root, "pvt_good_8")
+        for c_k in ("TT", "SS"):
+            for v_k, v_lbl in ((0.90, "0p90V"), (1.10, "1p10V")):
+                for t_k, t_lbl in ((-40, "-40C"), (125, "125C")):
+                    _write_pvt_point(
+                        os.path.join(good_8_dir, "%s_%s_%s" % (c_k, v_lbl, t_lbl)),
+                        v_k, c_k, t_k, extra_hdr='"tnom" 27\n',
+                    )
+        res_g8 = run_metrics(good_8_dir, spec_path=pvt_spec_path)
+        assert res_g8["verdict"] == "PASS", res_g8
+        for pt_k, pt_m in res_g8["points"].items():
+            assert pt_m["pvt_metadata_verified"] is True, (pt_k, pt_m)
+            assert pt_m["pvt_metadata_conflict"] is False, (pt_k, pt_m)
+        assert main(["metrics", good_8_dir, "--spec", pvt_spec_path, "--fail-on-spec"], quiet=True) == 0
 
         return {
             "command": "self-test",
@@ -4707,6 +6050,9 @@ def run_self_test():
                 "independent_dc_max_power_and_max_idd_sweep_and_multifile",
                 "cartesian_pvt_product_coverage_enforcement",
                 "genuine_mc_and_pex_evidence_anti_spoofing",
+                "cryptographically_bound_manifest_mc_and_pex",
+                "stb_bode_only_rhp_pole_zero_and_pz_nyquist_proof",
+                "pvt_header_metadata_enforcement_and_conflict_detection",
             ],
         }
     finally:

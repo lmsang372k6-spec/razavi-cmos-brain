@@ -104,12 +104,13 @@
       "name": "Khởi động mềm (Soft-Start) khống chế dòng xung kích I_inrush dưới ngưỡng bão hòa từ của lõi cuộn cảm I_sat",
       "severity": "error",
       "method": "estimate",
-      "invariant": "I_L_peak_startup = I_load_startup + Cout * (VOUT_nom / t_ss) + Delta_i_L / 2 <= 0.80 * I_sat_inductor(125C), kết hợp giới hạn dòng từng chu kỳ (Cycle-by-Cycle OCP) kích hoạt ngay từ chu kỳ xung đầu tiên",
-      "why_vi": "Lúc mới cấp nguồn (VOUT = 0, sai lệch VREF - VFB cực đại), nếu không có dốc khởi động mềm V_SS(t) tăng tuyến tính chậm (0.2-2 ms), bộ điều chế sẽ mở chu kỳ nhiệm vụ tối đa D_max liên tục làm dòng cuộn cảm vọt vượt dòng bão hòa từ I_sat. Khi lõi ferit bão hòa, độ tự cảm L sụp xuống 10 lần khiến di_L/dt nổ tung phá hủy công tắc High-Side chỉ trong vài chu kỳ!",
-      "cadence_check": "Mô phỏng `tran` khởi động toàn trình từ `V(vout) = 0` (và kịch bản khởi động trên nền tải đã có áp sẵn `Pre-Biased VOUT = 0.5 * VOUT_nom`): xác nhận `ymax(I(L))` nằm gọn dưới ngưỡng `OCP` và không hút dòng ngược làm sập áp sẵn có.",
+      "invariant": "Buck CCM: I_L_avg_ss = I_load_startup + Cout * (dV_out / dt), I_L_peak = I_L_avg_ss + Delta_i_L / 2 <= 0.80 * I_sat(125C); Boost & Inverting Buck-Boost CCM (sau pha tiền nạp tuyến tính VOUT >= VIN cho Boost): I_L_avg_ss = (I_load_startup + Cout * (dV_out / dt)) / (1 - D) nên I_L_peak = (I_load_startup + Cout * (dV_out / dt)) / (1 - D) + Delta_i_L / 2 <= 0.80 * I_sat(125C) (ví dụ Boost 1.1->3.3V, 0.5A, 10uF, dốc 3.3V/1ms, Delta_i_L=0.2A cho I_L_peak = 1.699 A chứ không phải 0.633 A!); 4-Switch Buck-Boost & Boost dùng kiểm tra chế độ tiền nạp tuyến tính khi khởi động, kết hợp giới hạn dòng từng chu kỳ (Cycle-by-Cycle OCP) kích hoạt ngay từ chu kỳ xung đầu tiên",
+      "why_vi": "Lúc mới cấp nguồn (VOUT = 0, sai lệch VREF - VFB cực đại), nếu thiếu giai đoạn tiền nạp tuyến tính (cho Boost và 4-Switch Buck-Boost khi VOUT < VIN) và dốc khởi động mềm V_SS(t) tăng tuyến tính chậm (0.2-2 ms), bộ điều chế sẽ mở chu kỳ nhiệm vụ tối đa D_max liên tục làm dòng cuộn cảm vọt vượt ngưỡng bão hòa từ I_sat. Đặc biệt trong Boost và Inverting Buck-Boost, cuộn cảm gánh dòng trung bình chia cho (1 - D) lớn gấp nhiều lần dòng nạp Cout + tải! Khi lõi ferit bão hòa, độ tự cảm L sụp xuống 10 lần khiến di_L/dt nổ tung phá hủy công tắc chính chỉ trong vài chu kỳ nếu thiếu Cycle-by-Cycle OCP từ chu kỳ 1.",
+      "cadence_check": "Mô phỏng `tran` khởi động toàn trình từ `V(vout) = 0` qua cả chế độ tiền nạp tuyến tính `Linear Pre-Charge` (`VOUT < VIN` ở Boost & 4-Switch Buck-Boost) lẫn dốc đóng cắt `PWM Soft-Start` (cùng kịch bản khởi động trên nền tải đã có áp sẵn `Pre-Biased VOUT = 0.5 * VOUT_nom`): xác nhận `ymax(I(L)) <= 0.80 * I_sat(125C)`, `Cycle-by-Cycle OCP` cắt xung ngay từ chu kỳ 1 khi kẹp quá tải, và không hút dòng ngược làm sập áp sẵn có.",
       "related_nodes": [
         "topo-pmic-protections-por-uvlo-softstart-ocp-tsd",
         "topo-synchronous-buck-converter-architecture",
+        "topo-boost-inverting-and-4switch-buckboost",
         "law-dcdc-volt-second-ccm-dcm-and-state-space"
       ]
     },

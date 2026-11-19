@@ -41,13 +41,13 @@
     },
     {
       "path": "kb/checklists/comparator-and-sar-adc.json",
-      "bytes": 13579,
-      "sha256": "0c9826301180ea7af02c9b241903257e73afe9413e24d248bf64634d7be7999d"
+      "bytes": 13811,
+      "sha256": "d16d1ebc0cc8cdffbb3751bf425be6aa935031e7e5e888069135a3e3797037ae"
     },
     {
       "path": "kb/checklists/continuous-time-filters.json",
-      "bytes": 15712,
-      "sha256": "782e4485db05c4229faf2209ce53c16edffaeefe1bd3fa654d433cea1c19db15"
+      "bytes": 15808,
+      "sha256": "1150d20662ddad97dba57ac7a99e819704e6b50fda346884236d781862e6bcee"
     },
     {
       "path": "kb/checklists/current-mirror.json",
@@ -56,13 +56,13 @@
     },
     {
       "path": "kb/checklists/dac-and-deltasigma-adc.json",
-      "bytes": 15554,
-      "sha256": "7a8db798679082f60133fa389ed3c230ae7df38ef390ce47b1a44a3a44520580"
+      "bytes": 15954,
+      "sha256": "88273b7d49c6a9cfda6f8b0cd499b444d263850ee666bbba1222311b2af0c8d0"
     },
     {
       "path": "kb/checklists/dcdc-switching-converter.json",
-      "bytes": 16424,
-      "sha256": "e6ac1d14b08e3d915d4a8dd83f3a7fdbdb496244d2a02ccbd9e9eef6c0ac3a6f"
+      "bytes": 17501,
+      "sha256": "c7ecd65c940c0771ecadd808ec364b03448b96982d590215906bf35f9002368a"
     },
     {
       "path": "kb/checklists/differential-pair.json",
@@ -91,8 +91,8 @@
     },
     {
       "path": "kb/checklists/ldo-regulator.json",
-      "bytes": 14483,
-      "sha256": "f46fb0549b4c111fa60536248ed9b865e92f25d990cda59c56af9d6c239c444a"
+      "bytes": 15638,
+      "sha256": "fd6f8d5f0d0fbe7ebc96c4118e32476015ffbbcfddedeb07300b2c0052ee9872"
     },
     {
       "path": "kb/checklists/oscillator-and-pll.json",
@@ -101,8 +101,8 @@
     },
     {
       "path": "kb/checklists/single-stage.json",
-      "bytes": 7034,
-      "sha256": "a4329496ba280884ed89907e19ca66cf3c19a33a3af22c76fd55126e266feb91"
+      "bytes": 7123,
+      "sha256": "26a9a14cc9fffe2079284ff17455c5a1a8fe6a224cb1870dbbc8185c921d5308"
     },
     {
       "path": "kb/checklists/spectre-pss-pnoise.json",
@@ -116,8 +116,8 @@
     },
     {
       "path": "kb/checklists/system-integration-por-and-bias-bus.json",
-      "bytes": 16472,
-      "sha256": "3e308c3abe918f055ac935eff54a894208c82573a639cb9172f76a917cbaef3b"
+      "bytes": 17239,
+      "sha256": "895f9092f4746d1b27ef5adf954e1213c835dad804df6d83cdcf68daa206e4b0"
     },
     {
       "path": "kb/checklists/two-stage-miller.json",
@@ -506,13 +506,13 @@
     },
     {
       "path": "kb/graph/edges.jsonl",
-      "bytes": 250508,
-      "sha256": "6dd4f2ff2db3a199fb821f7ca9104362ee489e9fd117a4de7e304c94b1867ea4"
+      "bytes": 251288,
+      "sha256": "d9d7b340b5d9d69af4b1818dae49580ade97f992f201491bd4991746ed5acfbb"
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1311469,
-      "sha256": "087c7f5f647ba450f7a4a2ca7e750517cec72b8b2e98d66ad4af601a4743fbdb"
+      "bytes": 1313250,
+      "sha256": "719f2df50783f9a75f93ebef2944d20e503b845004be496efbde02b7565ba965"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -521,8 +521,8 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-active-rc-sallen-key-and-tow-thomas-biquads.md",
-      "bytes": 33357,
-      "sha256": "dac8bf87cef4ed7900abdc5c4d5a91a166a115afe1dafc35af7d8db202d72e78"
+      "bytes": 33538,
+      "sha256": "ed135d4e81051496cc512219b8774be0499c78cd4a0901200b423fc3543fd7f1"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-analog-mux-and-adc-track-hold-drivers.md",
@@ -541,18 +541,18 @@
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-flash-and-pipelined-mdac-rsd-adcs.md",
-      "bytes": 32112,
-      "sha256": "d764786543abdfdfe7330227f036f6105ef29abe2e369a104f00d4fb7f5beb71"
+      "bytes": 32438,
+      "sha256": "d38e8946e7e0da291fcfdae5b77f8cf92356e691965001eabd362ef52ad76b4c"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-gm-c-filters-and-automatic-rc-gmc-tuning.md",
-      "bytes": 32808,
-      "sha256": "c458356eec77dda8f076f25606a8d6cf5d2a2ecebc2648152f6762ef8dd42210"
+      "bytes": 33347,
+      "sha256": "fc13395db94fdc72aeb104d7fc38c3c88678edf3ff5b99e9702c4ca2df77263c"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-high-speed-lvds-cml-ctle-and-cdr-basics.md",
-      "bytes": 33139,
-      "sha256": "56217bf408022bd94a2228e395ba3c4c492d3ebc5f3e3622278ca2077e6f9e37"
+      "bytes": 33885,
+      "sha256": "cf39f8695a000359f746c78c5e70db7d5ea6e9a1bac7e69e0b00ab97eb435f2d"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/topo-instrumentation-amp-3opamp-and-chopper-cfia.md",
@@ -886,8 +886,8 @@
     },
     {
       "path": "kb/nodes/nonideal-and-physical/tech-common-centroid-sti-wpe-layout.md",
-      "bytes": 34651,
-      "sha256": "daf384c24bd957440d57f993b4deeebef5fc7ea72a5c1a6dffe796d00eb15a6a"
+      "bytes": 34767,
+      "sha256": "ab4925bdfb938aa74c85d2c0ecc9ee0b607c7aac84e8ae4a774a20d12cda8477"
     },
     {
       "path": "kb/nodes/nonideal-and-physical/tech-dynamic-offset-cancellation-az-cds.md",
@@ -951,8 +951,8 @@
     },
     {
       "path": "kb/nodes/opamps-and-compensation/tech-miller-rhp-zero-nulling-and-cascode-comp.md",
-      "bytes": 22183,
-      "sha256": "2f38ff93c8b75fd0cace0f324f8931d64455aa7feb61d184e92a6938025bbf41"
+      "bytes": 22863,
+      "sha256": "5e55c9563a6fac9bb5c2859d05bd3555658471d3fafed38af99a72ecab9b688b"
     },
     {
       "path": "kb/nodes/opamps-and-compensation/tech-nested-miller-and-multipath-compensation.md",
@@ -1041,13 +1041,13 @@
     },
     {
       "path": "kb/nodes/power-management-ic/topo-boost-inverting-and-4switch-buckboost.md",
-      "bytes": 31815,
-      "sha256": "8b77e0c58adbab9506556e86f6f12a509c7c9849ad1560b11701c11d824f1fb3"
+      "bytes": 32047,
+      "sha256": "8bbcc47dcafd0033bab79fb38ca196d4041c81a38423a2bc7f4104167616b9be"
     },
     {
       "path": "kb/nodes/power-management-ic/topo-capless-ldo-fvf-ahuja-dfc-and-sre.md",
-      "bytes": 36502,
-      "sha256": "38eacebae6cc4545cedbac64514d0fa4bb69b946aa523ca41d21e67292eff5d7"
+      "bytes": 38208,
+      "sha256": "1e3a0cc8b1eb12655796196df6ed7438f1de13d44e400442d321c383bf66b78e"
     },
     {
       "path": "kb/nodes/power-management-ic/topo-dcdc-ramp-sensefet-dcr-and-zcd-blocks.md",
@@ -1136,8 +1136,8 @@
     },
     {
       "path": "kb/nodes/sampled-and-clocked/tech-dll-delay-locked-loop-vs-pll.md",
-      "bytes": 28845,
-      "sha256": "6eeaa7c2c1ee29acbcf738921b4f0dc77d3598306e168bb3b462fc80d3e31b2d"
+      "bytes": 30499,
+      "sha256": "54b50ac28b9abff23c666ed355718e88f1f2b37a9acc9aad6f6ced6ba381d747"
     },
     {
       "path": "kb/nodes/sampled-and-clocked/tech-switched-capacitor-cmfb.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1762700,
-      "sha256": "13c6e56f94bf4a4121163d2afa10da24d23d6334b6137db781d3d2b426579096"
+      "bytes": 1764041,
+      "sha256": "e8b0a9c54d615a6896dcc2defa13f923f4f84682d4c7016a0385abf71652bcaf"
     }
   ]
 }

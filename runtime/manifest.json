@@ -2,16 +2,16 @@
   "file_count": 50,
   "files": [
     {
-      "bytes": 5696,
+      "bytes": 6057,
       "path": "INSTALLATION.md",
       "repo_path": "runtime/INSTALLATION.md",
-      "sha256": "686e2fce0240205c0dbca1aa5b6670233581afdadd982e994fb539198be74052"
+      "sha256": "072af57768e2062c9fc2cbf04d95b95dbc1a48f0d6cc15ce0c30fef0a97fc5f4"
     },
     {
-      "bytes": 5320,
+      "bytes": 5506,
       "path": "README.md",
       "repo_path": "runtime/README.md",
-      "sha256": "0ab66a2200e5e8dde320aeec407bf56ad7fd5a19f9e8190a04c053baed7b71aa"
+      "sha256": "d4b86c36e196825bebc0154480a6af4500745e4976c1af86291a72bbec9e3ce8"
     },
     {
       "bytes": 43660,
@@ -38,10 +38,10 @@
       "sha256": "7702b77c0978880ed279a86dbaa93d2d19066d3016d014c90fd3ec4477be55fc"
     },
     {
-      "bytes": 3263,
+      "bytes": 3557,
       "path": "integration/codex-user-AGENTS.md",
       "repo_path": "runtime/integration/codex-user-AGENTS.md",
-      "sha256": "a939af9f20c125051e096c97b4a56c7105f08c1428fc23ab87497fd3fd8a9f1f"
+      "sha256": "cce9d570cb7214cbb07f4042239e007f27a755196f2622ab31b13202922b784a"
     },
     {
       "bytes": 14682,
@@ -62,10 +62,10 @@
       "sha256": "ad0ab9de3c08fda3fd0382b9dea94ba707c2523f162acf719f9ea5a4962ecf24"
     },
     {
-      "bytes": 6609,
+      "bytes": 6923,
       "path": "kb/README.md",
       "repo_path": "runtime/kb/README.md",
-      "sha256": "c22965062208d0ca129eb20eee85be3751888893523590eab869b552f6ced45e"
+      "sha256": "61367ec1df8f87515093f8c44cacf9cb382107aa525313520014b8a4527830d0"
     },
     {
       "bytes": 1504,
@@ -212,10 +212,10 @@
       "sha256": "a2113ae087f8e962ca196afb42c7c0a2efb8b697842efd9610cee5007689bada"
     },
     {
-      "bytes": 51127,
+      "bytes": 64754,
       "path": "tools/cadence_exec.py",
       "repo_path": "runtime/tools/cadence_exec.py",
-      "sha256": "6651b2ca3cf8e9fe83586dcf4889695a0c7e1edb8aacf81eb40777cf0132b5fe"
+      "sha256": "169165d0a9a78ad57c57d149d4c93caa246bcc75434ffbe87feb206e0829e968"
     },
     {
       "bytes": 598,
@@ -260,16 +260,16 @@
       "sha256": "0cec73a0bdab144b3b77b1e40701ba8286a9a205e1d25e789e4192b297866dec"
     },
     {
-      "bytes": 29021,
+      "bytes": 36358,
       "path": "tools/kb_fetch.py",
       "repo_path": "runtime/tools/kb_fetch.py",
-      "sha256": "b03956817595398dd4e51f4529ba6834f85a7d9807653948f5b59553b740fdde"
+      "sha256": "b5c38fbfa51aa03d3320285f8d49f70cfd0aac7c62e506d9abc17f5992038d1f"
     },
     {
-      "bytes": 96841,
+      "bytes": 118604,
       "path": "tools/kb_lookup.py",
       "repo_path": "runtime/tools/kb_lookup.py",
-      "sha256": "809efe0781578ea02f7ecf1787a752cd5b5ede70de8bb584e42e597f14e71156"
+      "sha256": "83c76fc1406775eb3397490e3930cd90487f3bd2bedbab1fbdcb3459790207e5"
     },
     {
       "bytes": 65657,
@@ -290,16 +290,16 @@
       "sha256": "cf0ddbb6f629365e75a13413d0a741fa11ebbcb0b182d55a7d15c9ddabacfb80"
     },
     {
-      "bytes": 214546,
+      "bytes": 277745,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "179d72c428d22ba046d06d379b4686dc10703e90e0864d4520634192accecc88"
+      "sha256": "03304300f4bfd7bbd94334308f1ab8c029dd559fa9150c60326dcae379ba0254"
     },
     {
-      "bytes": 82120,
+      "bytes": 85508,
       "path": "tools/sizing_opt.py",
       "repo_path": "runtime/tools/sizing_opt.py",
-      "sha256": "5fa4988ee6239e327ee2ddcfa280da829fcb688b52a28c48b53e31c5795a232e"
+      "sha256": "e997fd6d08d05e54410cbda940649b901c9fd8edcd0ac0487b6fb1d45e4e70df"
     }
   ],
   "release": "2026.11.19.1",

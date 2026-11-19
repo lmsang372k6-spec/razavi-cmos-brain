@@ -72,7 +72,7 @@
       "name": "Common-Gate input impedance blow-up under high-impedance current-source load",
       "severity": "warn",
       "method": "estimate",
-      "invariant": "Rin_CG = (RD + ro) / (1 + (gm + gmb)*ro) only equals ~1/(gm+gmb) when RD << (gm+gmb)*ro; with active current-source load RD ~ gm*ro^2, Rin rises dramatically to ~RD/(gm*ro)",
+      "invariant": "Rin_CG = (RD + ro) / (1 + (gm + gmb)*ro) only equals ~1/(gm + gmb) when BOTH RD << ro AND (gm + gmb)*ro >> 1 (note: already at RD = ro, Rin doubles to ~2/(gm + gmb)!); with active current-source load RD ~ gm*ro^2, Rin rises dramatically to ~RD / ((gm + gmb)*ro)",
       "why_vi": "Do điện trở rO hữu hạn nối phản hồi từ tải cực máng lớn ngược về cực nguồn đầu vào, tầng cổng chung mất đặc tính trở kháng vào thấp nếu tải cực máng có trở kháng cỡ cascode.",
       "cadence_check": "Chạy phân tích xf hoặc ac đo trực tiếp Zin(f) = V(in)/I(in) từ DC đến tần số làm việc thay vì giả định mù quáng Rin = 1/gm.",
       "related_nodes": [

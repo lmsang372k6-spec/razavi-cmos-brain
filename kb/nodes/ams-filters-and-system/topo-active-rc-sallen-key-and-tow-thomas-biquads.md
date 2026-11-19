@@ -102,7 +102,7 @@
     "premature-internal-stage-clipping-in-cascaded-high-order-chebyshev-filters"
   ],
   "limitations": [
-    "requires-opamp-gbw-20x-to-40x-higher-than-q-times-f0-consuming-significant-power",
+    "requires-opamp-gbw-above-42x-q-times-f0-for-under-5-percent-q-error-consuming-significant-power",
     "resistive-loading-demands-two-stage-or-class-ab-ota-output-stage",
     "raw-rc-time-constant-varies-plus-minus-30-percent-requiring-switched-cap-array-calibration"
   ],
@@ -153,7 +153,7 @@ Q_{\text{eff}} \approx \frac{Q}{1 - \frac{2\,Q\,\omega_0}{\omega_u}}, \qquad
 $$
 **Hãy nhìn kỹ tử huyệt trong mẫu số $1 - \frac{2 Q \omega_0}{\omega_u}$**:
 - Ví dụ thiết kế mắt lọc Chebyshev bậc 4 có $f_0 = 10\text{ MHz}$ và $Q = 4$: nếu kỹ sư ngây thơ chọn Op-Amp có $\text{GBW} = 100\text{ MHz}$ (tưởng rằng gấp $10\times f_0$ đã là rộng rãi!), thì $\frac{2 Q \omega_0}{\omega_u} = \frac{2 \times 4 \times 10}{100} = 0.80 \implies$ hệ số phẩm chất thực tế vọt tăng gấp $5$ lần lên **$Q_{\text{eff}} = \frac{4}{1 - 0.8} = 20$** (nhô đỉnh **tăng thêm $+14\text{ dB}$**, đẩy đỉnh cộng hưởng từ $+12\text{ dB}$ tại $Q=4$ lên đỉnh tuyệt đối $+26\text{ dB}$, biến dạng nát đáp ứng dải thông)! Tệ hơn nữa, khi sang góc chậm `SS, 125 °C` làm $\text{GBW}$ tụt xuống $75\text{ MHz} < 2 Q f_0 = 80\text{ MHz}$, mẫu số trở nên **âm ($Q_{\text{eff}} < 0$)** đẩy cặp cực nhảy sang nửa mặt phẳng phải — **bộ lọc tự phát dao động hình sin biên độ chạm nguồn**!
-- **Quy tắc định cỡ & Bù sớm pha thụ động (`Passive Phase-Lead Compensation`)**: Nếu không bù, bắt buộc ép $\omega_u \ge (30\dots 40)\,Q\,\omega_0$ (để sai số $\Delta Q / Q < 5\%$). Để tiết kiệm $3\text{--}5\times$ dòng phân cực Op-Amp ở tần số cao, ta mắc một **tụ bù sớm pha nhỏ $C_{\text{lead}}$ song song với điện trở tích phân $R_2$** (hoặc mắc một điện trở nhỏ $R_z$ nối tiếp tụ tích phân $C$):
+- **Quy tắc định cỡ & Bù sớm pha thụ động (`Passive Phase-Lead Compensation`)**: Nếu không bù, bắt buộc ép $\omega_u > 42\,Q\,\omega_0$ để giữ sai số $\Delta Q / Q < 5\%$ (ngưỡng $30\text{--}40\,Q\,\omega_0$ vẫn cho sai số nâng đỉnh $7{,}14\%\text{--}5{,}26\% > 5\%$). Để tiết kiệm $3\text{--}5\times$ dòng phân cực Op-Amp ở tần số cao, ta mắc một **tụ bù sớm pha nhỏ $C_{\text{lead}}$ song song với điện trở tích phân $R_2$** (hoặc mắc một điện trở nhỏ $R_z$ nối tiếp tụ tích phân $C$):
 $$
 C_{\text{lead}} = \frac{2}{\omega_u R_2} \quad (\text{bù trên 1 nhánh cho cả 2 OTA, hoặc } \frac{1}{\omega_u R} \text{ trên mỗi nhánh})
 $$
@@ -197,7 +197,7 @@ Khi tổng hợp bộ lọc bậc cao $N = 2 K$ bằng cách ghép nối tiếp 
   - **Bước 2 (Định cỡ tụ theo trần nhiễu $Q \cdot kT/C$ và chuẩn hóa dải động $L_\infty$)**: Chọn tụ đơn vị trung tâm $C = 4\text{ pF}$ (giàn tụ MOM 5-bit để hiệu chuẩn PVT $\pm 35\%$), suy ra $R = \frac{1}{\omega_0 C} = \frac{1}{12.566\times 10^6 \times 4\text{ pF}} = 19.89\text{ k}\Omega \approx 20\text{ k}\Omega$. Phép đổi thang nút nội $V_{\text{OTA1}} \leftarrow \frac{1}{k} V_{\text{OTA1}}$ giữ nguyên bất biến cả $\omega_0$, $Q$ lẫn $H_{\text{LP}}(s)$ khi và chỉ khi đổi thang đồng bộ **cả 3 linh kiện gắn với nút ra `OTA1`**: $C_1 \leftarrow k C$, $R_Q \leftarrow \frac{Q}{k} R$ và $R_2 \leftarrow \frac{R}{k}$!
     - Tại **Mắt 1 ($Q_1 = 0.5412$)**: Trước khi đổi thang ($R_{\text{in},1} = R_2 = R_3 = 20\text{ k}\Omega$, $R_{Q,1} = Q_1 R = 10.82\text{ k}\Omega$), đỉnh biên độ thông dải tại `OTA1_1` chỉ đạt $\max_\omega |H_{\text{BP},1}(j\omega)| = Q_1 = 0.5412$ ($-5.33\text{ dB}$). Áp dụng **chuẩn hóa $L_\infty$** với $k_1 = Q_1 = 0.5412$: đặt $C_{1,\text{stage1}} = Q_1 C = 2.165\text{ pF}$, **$R_{Q,1} = R = 20\text{ k}\Omega$** và $R_{2,\text{stage1}} = R / Q_1 = 36.95\text{ k}\Omega$ $\implies \max_\omega |V_{\text{OTA1,1}}/V_{\text{in}}| \equiv 1.00$ ($0\text{ dB}$) và $\max_\omega |V_{\text{OTA2,1}}/V_{\text{in}}| \equiv 1.00$ với đúng $Q_1 = 0.5412$!
     - Tại **Mắt 2 ($Q_2 = 1.3066$, nhận tín hiệu đã qua $H_1(j\omega)$)**: Đỉnh biên độ dây chuyền chưa đổi thang tại `OTA1_2` bằng $\max_\omega |H_1(j\omega)\cdot H_{\text{BP},2}(j\omega)| = k_2 = 0.755$ ($-2.44\text{ dB}$; trong khi xét riêng mắt 2 độc lập là $Q_2 = 1.3066 \equiv +2.32\text{ dB}$). Chọn $k_2 = 0.755$ cho dây chuyền chuẩn $L_\infty$ toàn tuyến: $C_{1,\text{stage2}} = k_2 C = 3.02\text{ pF}$, $R_{Q,2} = (Q_2 / k_2) R = 34.61\text{ k}\Omega$, $R_{2,\text{stage2}} = R / k_2 = 26.49\text{ k}\Omega$ (hoặc nếu chuẩn hóa độc lập từng mắt $k_2 = Q_2$: $C_{1,\text{stage2}} = 5.226\text{ pF}, R_{Q,2} = 20\text{ k}\Omega, R_{2,\text{stage2}} = 15.31\text{ k}\Omega$) để ghim mọi ngõ ra OTA đúng $\le 0\text{ dB}$!
-  - **Bước 3 (Ngân sách OTA)**: Tại Mắt 2 ($Q_2 = 1.31, f_0 = 2\text{ MHz}$), yêu cầu $\text{GBW}_{\text{OTA}} \ge 30 \times Q_2 \times f_0 \approx 79\text{ MHz}$ (hoặc chỉ cần $\text{GBW} = 35\text{ MHz}$ kèm tụ bù sớm pha $C_{\text{lead}} = \frac{2}{2\pi\times 35\text{M}\times 20\text{k}} \approx 455\text{ fF}$!).
+  - **Bước 3 (Ngân sách OTA)**: Tại Mắt 2 ($Q_2 = 1.31, f_0 = 2\text{ MHz}$), nếu không bù sớm pha yêu cầu $\text{GBW}_{\text{OTA}} > 42 \times Q_2 \times f_0 \approx 110\text{ MHz}$ để giữ sai số $\Delta Q/Q < 5\%$ (hoặc chỉ cần $\text{GBW} = 35\text{ MHz}$ kèm tụ bù sớm pha $C_{\text{lead}} = \frac{2}{2\pi\times 35\text{M}\times 20\text{k}} \approx 455\text{ fF}$!).
 
 ---
 
