@@ -16,6 +16,8 @@ Guarantees:
   - Automatically sources `$HOME/cadence/env.sh` and exports `CDS_Netlisting_Mode=Analog`
   - Enforces output isolation inside `<project>/sim/runs/<run-id>/` (`cwd=run_dir`, never inside `SKILL-ANALOG`)
   - Prevents stale PSF mixing: blocks reusing non-empty `run_dir` unless `--overwrite-run` is passed
+  - Enforces disk/PSF hygiene: blocks Spectre launch when free disk < `--min-free-mb`, warns on
+    unfiltered `save=all` waveform decks, and prunes old `psf/` directories via `prune-runs`
   - Recursively parses `cds.lib` (`INCLUDE`, `SOFTINCLUDE`, `DEFINE`, `UNDEFINE`, `ASSIGN`) and matches
     `.cdslck` locks via relative OA library segments (`<cell>/<view>/...`)
   - Propagates semantic `op_ok: false` when live bridge SKILL evaluation returns JSON `{"ok": false}`
@@ -23,6 +25,7 @@ Guarantees:
 from __future__ import division, print_function
 
 import binascii
+import ctypes
 import errno
 import hashlib
 import json
@@ -220,6 +223,250 @@ def _ensure_run_dir_cds_lib(project_root, run_dir):
             fh.close()
         return run_cds
     return run_cds if os.path.isfile(run_cds) else None
+
+
+_WAVEFORM_ANALYSIS_RE = re.compile(
+    r'^\s*[A-Za-z0-9_.$]+\s+(?:\([^)]*\)\s+)?\b(tran|ac|stb|pstb|noise|pnoise|pss|pac)\b',
+    re.IGNORECASE,
+)
+_OPTIONS_SAVE_RE = re.compile(r'(?<![A-Za-z0-9_])options\b[^\r\n]*?\bsave\s*=\s*([A-Za-z0-9_]+)', re.IGNORECASE)
+_SAVE_STMT_RE = re.compile(r'^\s*save\s+\S', re.IGNORECASE)
+
+
+def _get_free_disk_bytes(path):
+    """Return available free disk bytes for `path` (POSIX statvfs + Windows GetDiskFreeSpaceExW), or None."""
+    probe = os.path.abspath(path or os.getcwd())
+    while probe and (not os.path.exists(probe)):
+        parent = os.path.dirname(probe)
+        if parent == probe:
+            break
+        probe = parent
+    if not os.path.exists(probe):
+        return None
+    if hasattr(os, "statvfs"):
+        try:
+            st = os.statvfs(probe)
+            return int(st.f_bavail) * int(st.f_frsize)
+        except Exception:
+            return None
+    if os.name == "nt":
+        try:
+            free_avail = ctypes.c_ulonglong(0)
+            total_bytes = ctypes.c_ulonglong(0)
+            total_free = ctypes.c_ulonglong(0)
+            u_probe = probe if isinstance(probe, type(u"")) else probe.decode("utf-8", "replace")
+            ok = ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                ctypes.c_wchar_p(u_probe),
+                ctypes.byref(free_avail),
+                ctypes.byref(total_bytes),
+                ctypes.byref(total_free),
+            )
+            if ok:
+                return int(free_avail.value)
+        except Exception:
+            return None
+    return None
+
+
+def _dir_size_bytes(path):
+    """Return total byte size of regular files inside `path` without following symlinks."""
+    if not path or (not os.path.exists(path)) or os.path.islink(path):
+        return 0
+    if os.path.isfile(path):
+        try:
+            return int(os.path.getsize(path))
+        except Exception:
+            return 0
+    total = 0
+    for root, dirs, files in os.walk(path, followlinks=False):
+        dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
+        for fn in files:
+            fp = os.path.join(root, fn)
+            if os.path.islink(fp):
+                continue
+            try:
+                total += int(os.path.getsize(fp))
+            except Exception:
+                pass
+    return total
+
+
+def _inspect_spectre_netlist_disk_hygiene(netlist_path):
+    """Inspect a Spectre `.scs` deck for waveform analyses missing `options save=selected` / `save` filters."""
+    out = {
+        "has_waveform_analysis": False,
+        "waveform_analyses": [],
+        "has_save_selected": False,
+        "has_save_stmt": False,
+        "save_mode": None,
+        "warnings": [],
+    }
+    if not netlist_path or (not os.path.isfile(netlist_path)):
+        return out
+    try:
+        fh = open(netlist_path, "rb")
+        try:
+            raw = fh.read().decode("utf-8", "replace")
+        finally:
+            fh.close()
+    except Exception:
+        return out
+
+    no_block = _BLOCK_COMMENT_RE.sub(" ", raw)
+    joined = _LINE_CONT_RE.sub(" ", no_block)
+    cleaned_lines = []
+    found_wf = []
+    seen_wf = set()
+    for ln in joined.splitlines():
+        s_ln = _strip_spectre_inline_comment(ln).strip()
+        if not s_ln:
+            continue
+        cleaned_lines.append(s_ln)
+        m_wf = _WAVEFORM_ANALYSIS_RE.match(s_ln)
+        if m_wf:
+            tok = m_wf.group(1).lower()
+            if tok not in seen_wf:
+                seen_wf.add(tok)
+                found_wf.append(tok)
+        if _SAVE_STMT_RE.match(s_ln):
+            out["has_save_stmt"] = True
+
+    cleaned_txt = "\n".join(cleaned_lines)
+    last_save_mode = None
+    for m_opt in _OPTIONS_SAVE_RE.finditer(cleaned_txt):
+        last_save_mode = m_opt.group(1).strip().lower()
+
+    out["waveform_analyses"] = found_wf
+    out["has_waveform_analysis"] = bool(found_wf)
+    out["save_mode"] = last_save_mode
+    out["has_save_selected"] = bool(last_save_mode in ("selected", "lvl", "lvlpub"))
+
+    if out["has_waveform_analysis"] and (not out["has_save_selected"]):
+        out["warnings"].append(
+            "Spectre deck runs waveform/sweep analyses (%s) in psfascii mode without "
+            "`options save=selected`; unfiltered `save=all` waveforms can bloat PSF to 50-100 MB/point. "
+            "Add `saveOptions options save=selected` and explicit `save <signals>` "
+            "(MOS dcOpInfo still audits normally)." % ", ".join(found_wf)
+        )
+    elif out["has_waveform_analysis"] and out["has_save_selected"] and (not out["has_save_stmt"]):
+        out["warnings"].append(
+            "Spectre deck sets `options save=%s` without an explicit `save <signals>` statement; "
+            "verify required waveform nodes/currents are explicitly saved." % (last_save_mode or "selected")
+        )
+    return out
+
+
+def prune_project_runs(
+    project_dir=None,
+    keep=2,
+    keep_run_ids=None,
+    psf_only=True,
+    min_psf_mb=0.0,
+    dry_run=False,
+):
+    """Safely prune stale `psf/` data (or entire run dirs) under `<project>/sim/runs/`."""
+    project_root = discover_project_root(project_dir or os.getcwd())
+    runs_base = os.path.join(project_root, "sim", "runs")
+    keep_n = max(0, int(keep))
+    keep_set = set([str(k).strip() for k in (keep_run_ids or []) if str(k).strip()])
+    min_bytes = max(0, int(round(float(min_psf_mb or 0.0) * 1024.0 * 1024.0)))
+
+    if not os.path.isdir(runs_base):
+        return {
+            "ok": True,
+            "tool": "prune-runs",
+            "project_root": project_root,
+            "runs_root": runs_base,
+            "psf_only": bool(psf_only),
+            "dry_run": bool(dry_run),
+            "kept_runs": [],
+            "pruned_count": 0,
+            "freed_mb": 0.0,
+            "runs_root_mb_before": 0.0,
+            "runs_root_mb_after": 0.0,
+            "pruned": [],
+        }
+
+    if _inside_path(runs_base, _LIBRARY_ROOT):
+        raise ValueError("Refusing to prune inside SKILL-ANALOG library: " + runs_base)
+
+    runs_mb_before = round(float(_dir_size_bytes(runs_base)) / (1024.0 * 1024.0), 3)
+
+    run_entries = []
+    for name in os.listdir(runs_base):
+        full_p = os.path.join(runs_base, name)
+        if os.path.islink(full_p) or (not os.path.isdir(full_p)):
+            continue
+        if not _inside_path(full_p, runs_base):
+            continue
+        if os.path.normcase(os.path.realpath(full_p)) == os.path.normcase(os.path.realpath(runs_base)):
+            continue
+        try:
+            mtime = float(os.stat(full_p).st_mtime)
+        except Exception:
+            mtime = 0.0
+        psf_p = os.path.join(full_p, "psf")
+        if os.path.isdir(psf_p) and (not os.path.islink(psf_p)):
+            try:
+                p_mt = float(os.stat(psf_p).st_mtime)
+                if p_mt > mtime:
+                    mtime = p_mt
+            except Exception:
+                pass
+        run_entries.append((mtime, name, full_p))
+
+    run_entries.sort(key=lambda item: (item[0], item[1]))
+    run_entries.reverse()
+
+    kept_runs = []
+    pruned = []
+    freed_bytes = 0
+    for idx, (_, name, full_p) in enumerate(run_entries):
+        if idx < keep_n or (name in keep_set):
+            kept_runs.append(name)
+            continue
+        target = os.path.join(full_p, "psf") if psf_only else full_p
+        if not os.path.exists(target) or os.path.islink(target) or (not os.path.isdir(target)):
+            continue
+        if not _inside_path(target, runs_base) or _inside_path(target, _LIBRARY_ROOT):
+            raise ValueError("Refusing to prune unsafe target: " + target)
+        sz_bytes = _dir_size_bytes(target)
+        if sz_bytes < min_bytes:
+            kept_runs.append(name)
+            continue
+        if not dry_run:
+            shutil.rmtree(target)
+        freed_bytes += sz_bytes
+        pruned.append({
+            "run_id": name,
+            "target": target,
+            "freed_mb": round(float(sz_bytes) / (1024.0 * 1024.0), 3),
+            "mode": "psf_only" if psf_only else "full_dir",
+        })
+
+    runs_mb_after = (
+        round(max(0.0, runs_mb_before - float(freed_bytes) / (1024.0 * 1024.0)), 3)
+        if dry_run
+        else round(float(_dir_size_bytes(runs_base)) / (1024.0 * 1024.0), 3)
+    )
+    free_b = _get_free_disk_bytes(runs_base)
+    out = {
+        "ok": True,
+        "tool": "prune-runs",
+        "project_root": project_root,
+        "runs_root": runs_base,
+        "psf_only": bool(psf_only),
+        "dry_run": bool(dry_run),
+        "kept_runs": kept_runs,
+        "pruned_count": len(pruned),
+        "freed_mb": round(float(freed_bytes) / (1024.0 * 1024.0), 3),
+        "runs_root_mb_before": runs_mb_before,
+        "runs_root_mb_after": runs_mb_after,
+        "pruned": pruned,
+    }
+    if free_b is not None:
+        out["disk_free_mb"] = round(float(free_b) / (1024.0 * 1024.0), 1)
+    return out
 
 
 _FATAL_LOG_PATTERNS = (
@@ -895,6 +1142,10 @@ def execute_cadence_job(
     env_script=None,
     overwrite_run=False,
     dry_run=False,
+    min_free_mb=512.0,
+    require_save_selected=False,
+    warn_psf_mb=15.0,
+    warn_runs_mb=500.0,
     extra_args=None,
 ):
     if tool not in VALID_TOOLS:
@@ -1020,8 +1271,60 @@ def execute_cadence_job(
     if script and not os.path.isfile(script) and not dry_run:
         raise ValueError("Script file not found: " + str(script))
 
-    if dry_run:
+    disk_warnings = []
+    if tool == "spectre" and netlist and os.path.isfile(netlist) and psf_ascii:
+        hygiene = _inspect_spectre_netlist_disk_hygiene(netlist)
+        if hygiene.get("has_waveform_analysis") and (not hygiene.get("has_save_selected")):
+            if require_save_selected:
+                return {
+                    "ok": False,
+                    "status": "BLOCKED_MISSING_SAVE_SELECTED",
+                    "tool": tool,
+                    "execution_mode": "blocked",
+                    "project_root": project_root,
+                    "run_id": resolved_run_id,
+                    "run_dir": run_dir,
+                    "cwd": run_dir,
+                    "waveform_analyses": hygiene.get("waveform_analyses", []),
+                    "error": (
+                        hygiene["warnings"][0]
+                        if hygiene.get("warnings")
+                        else "Missing `options save=selected` with --require-save-selected active."
+                    ),
+                }
+        for wmsg in hygiene.get("warnings") or []:
+            disk_warnings.append(wmsg)
+
+    free_bytes_before = _get_free_disk_bytes(os.path.dirname(run_dir))
+    free_mb_before = round(float(free_bytes_before) / (1024.0 * 1024.0), 1) if free_bytes_before is not None else None
+    if (
+        tool == "spectre"
+        and (not dry_run)
+        and (min_free_mb is not None)
+        and float(min_free_mb) > 0.0
+        and (free_mb_before is not None)
+        and (free_mb_before < float(min_free_mb))
+    ):
         return {
+            "ok": False,
+            "status": "BLOCKED_LOW_DISK_SPACE",
+            "tool": tool,
+            "execution_mode": "blocked",
+            "project_root": project_root,
+            "run_id": resolved_run_id,
+            "run_dir": run_dir,
+            "cwd": run_dir,
+            "disk_free_mb": free_mb_before,
+            "min_free_mb": float(min_free_mb),
+            "error": (
+                "Insufficient free disk space to launch Spectre cleanly: %.1f MB free < %.1f MB minimum. "
+                "Run `python -B %s prune-runs --project %s --keep 2` or add `options save=selected` first."
+                % (free_mb_before, float(min_free_mb), os.path.join(_TOOLS_DIR, "cadence_exec.py"), project_root)
+            ),
+        }
+
+    if dry_run:
+        dry_ret = {
             "ok": True,
             "dry_run": True,
             "tool": tool,
@@ -1040,6 +1343,11 @@ def execute_cadence_job(
             "bash_command": spec["bash_command"],
             "log_file": spec["log_file"],
         }
+        if free_mb_before is not None:
+            dry_ret["disk_free_mb"] = free_mb_before
+        if disk_warnings:
+            dry_ret["disk_warnings"] = disk_warnings
+        return dry_ret
 
     if overwrite_run and os.path.isdir(run_dir):
         keep_list = [netlist, script]
@@ -1095,6 +1403,22 @@ def execute_cadence_job(
             psf_ascii=psf_ascii,
         )
 
+    runs_base = os.path.join(project_root, "sim", "runs")
+    psf_mb = round(float(_dir_size_bytes(spec["psf_dir"])) / (1024.0 * 1024.0), 3) if spec["psf_dir"] else None
+    runs_root_mb = round(float(_dir_size_bytes(runs_base)) / (1024.0 * 1024.0), 3) if os.path.isdir(runs_base) else 0.0
+    free_bytes_after = _get_free_disk_bytes(runs_base)
+    disk_free_mb = round(float(free_bytes_after) / (1024.0 * 1024.0), 1) if free_bytes_after is not None else free_mb_before
+    if psf_mb is not None and warn_psf_mb is not None and psf_mb > float(warn_psf_mb):
+        disk_warnings.append(
+            "Single run PSF size is %.2f MB (> %.1f MB budget); restrict `save` signals with `options save=selected`."
+            % (psf_mb, float(warn_psf_mb))
+        )
+    if warn_runs_mb is not None and runs_root_mb > float(warn_runs_mb):
+        disk_warnings.append(
+            "Project sim/runs total size is %.1f MB (> %.1f MB threshold); run `cadence_exec.py prune-runs --project %s --keep 2`."
+            % (runs_root_mb, float(warn_runs_mb), project_root)
+        )
+
     ret = {
         "ok": sub_ok,
         "op_ok": sub_ok,
@@ -1112,9 +1436,16 @@ def execute_cadence_job(
         "log_errors": log_errors,
         "wrapper_log": wrapper_log,
         "locks_detected": active_locks,
+        "runs_root_mb": runs_root_mb,
         "stdout_tail": stdout_txt[-4000:],
         "stderr_tail": stderr_txt[-4000:],
     }
+    if psf_mb is not None:
+        ret["psf_mb"] = psf_mb
+    if disk_free_mb is not None:
+        ret["disk_free_mb"] = disk_free_mb
+    if disk_warnings:
+        ret["disk_warnings"] = disk_warnings
     if manifest_path is not None:
         ret["run_manifest"] = manifest_path
     if not sub_ok and log_errors:
@@ -1493,6 +1824,81 @@ def run_self_test():
             raise AssertionError("Expected netlist-backed post_layout provenance: %r" % mf_obj)
         checks.append("cryptographically_bound_run_manifest_ok")
 
+        # 8. Disk / PSF budget hygiene, low-disk block, missing save=selected guard, and prune-runs
+        unfiltered_net = os.path.join(proj_dir, "tb_unfiltered_tran.scs")
+        _write_text_utf8(
+            unfiltered_net,
+            "simulator lang=spectre\n"
+            "dcOp dc\n"
+            "tr1 tran stop=5u\n",
+        )
+        hyg_bad = _inspect_spectre_netlist_disk_hygiene(unfiltered_net)
+        if not hyg_bad.get("has_waveform_analysis") or hyg_bad.get("has_save_selected") or not hyg_bad.get("warnings"):
+            raise AssertionError("Expected unfiltered tran deck warning: %r" % hyg_bad)
+
+        blk_save = execute_cadence_job(
+            "spectre",
+            project_dir=proj_dir,
+            run_id="blocked_save",
+            netlist=unfiltered_net,
+            overwrite_run=True,
+            require_save_selected=True,
+            dry_run=False,
+        )
+        if blk_save.get("ok") or blk_save.get("status") != "BLOCKED_MISSING_SAVE_SELECTED":
+            raise AssertionError("Expected BLOCKED_MISSING_SAVE_SELECTED, got %r" % blk_save)
+
+        filtered_net = os.path.join(proj_dir, "tb_filtered_tran.scs")
+        _write_text_utf8(
+            filtered_net,
+            "simulator lang=spectre\n"
+            "saveOptions options save=selected\n"
+            "save vout vin\n"
+            "dcOp dc\n"
+            "tr1 tran stop=5u\n",
+        )
+        hyg_ok = _inspect_spectre_netlist_disk_hygiene(filtered_net)
+        if not hyg_ok.get("has_save_selected") or not hyg_ok.get("has_save_stmt") or hyg_ok.get("warnings"):
+            raise AssertionError("Expected clean filtered deck, got %r" % hyg_ok)
+
+        blk_disk = execute_cadence_job(
+            "spectre",
+            project_dir=proj_dir,
+            run_id="blocked_low_disk",
+            netlist=filtered_net,
+            overwrite_run=True,
+            min_free_mb=999999999.0,
+            dry_run=False,
+        )
+        if blk_disk.get("ok") or blk_disk.get("status") != "BLOCKED_LOW_DISK_SPACE":
+            raise AssertionError("Expected BLOCKED_LOW_DISK_SPACE, got %r" % blk_disk)
+
+        prune_proj = os.path.join(tmp_root, "prune_ws")
+        _write_text_utf8(os.path.join(prune_proj, "project.json"), '{"name": "prune_test"}\n')
+        base_t = time.time() - 1000.0
+        for idx_r, rid in enumerate(("old_run_1", "old_run_2", "kept_pinned", "new_run_3")):
+            r_d = os.path.join(prune_proj, "sim", "runs", rid)
+            p_d = os.path.join(r_d, "psf")
+            _write_text_utf8(os.path.join(p_d, "tran.tran"), "X" * 4096)
+            _write_text_utf8(os.path.join(r_d, "spectre.log"), "OK\n")
+            ts_r = base_t + float(idx_r) * 100.0
+            os.utime(p_d, (ts_r, ts_r))
+            os.utime(r_d, (ts_r, ts_r))
+
+        pr_dry = prune_project_runs(project_dir=prune_proj, keep=1, keep_run_ids=["kept_pinned"], psf_only=True, dry_run=True)
+        if pr_dry.get("pruned_count") != 2 or not os.path.isdir(os.path.join(prune_proj, "sim", "runs", "old_run_1", "psf")):
+            raise AssertionError("Unexpected dry-run prune result: %r" % pr_dry)
+        pr_real = prune_project_runs(project_dir=prune_proj, keep=1, keep_run_ids=["kept_pinned"], psf_only=True, dry_run=False)
+        if (
+            pr_real.get("pruned_count") != 2
+            or os.path.exists(os.path.join(prune_proj, "sim", "runs", "old_run_1", "psf"))
+            or (not os.path.isfile(os.path.join(prune_proj, "sim", "runs", "old_run_1", "spectre.log")))
+            or (not os.path.isdir(os.path.join(prune_proj, "sim", "runs", "kept_pinned", "psf")))
+            or (not os.path.isdir(os.path.join(prune_proj, "sim", "runs", "new_run_3", "psf")))
+        ):
+            raise AssertionError("Unexpected psf-only prune result: %r" % pr_real)
+        checks.append("psf_disk_budget_guard_and_prune_runs_ok")
+
         return {
             "ok": True,
             "tool": "cadence_exec",
@@ -1519,27 +1925,34 @@ def run_self_test():
 
 
 HELP_TEXT = """Usage:
-  python tools/cadence_exec.py spectre --netlist <deck.scs> [--project DIR] [--run-id ID] [--overwrite-run] [--psf-ascii]
+  python tools/cadence_exec.py spectre --netlist <deck.scs> [--project DIR] [--run-id ID] [--overwrite-run] [--psf-ascii] [--min-free-mb MB] [--require-save-selected]
+  python tools/cadence_exec.py prune-runs [--project DIR] [--keep N] [--keep-run-id ID1,ID2] [--delete-dirs] [--min-psf-mb MB] [--dry-run]
   python tools/cadence_exec.py ocean --script <run.ocn> [--project DIR] [--run-id ID] [--overwrite-run]
   python tools/cadence_exec.py virtuoso-batch --script <job.il> [--project DIR] [--cell LIB/CELL] [--write-oa]
   python tools/cadence_exec.py si [--project DIR] [--run-id ID] [--overwrite-run]
   python tools/cadence_exec.py --self-test
 
 Options:
-  --project DIR         Cadence project root (auto-detected via project.json / cds.lib if omitted)
-  --run-id ID           Subdirectory name under <project>/sim/runs/<run-id>/
-  --overwrite-run       Cleanly wipe stale psf/ and logs in an existing run_dir before running
-  --netlist FILE        Spectre input netlist (.scs)
-  --script FILE         OCEAN (.ocn) or SKILL (.il) batch script
-  --cell LIB/CELL       Target OA cell for .cdslck lock filtering (`lib`, `lib/cell`, or `lib/cell/view`)
-  --write-oa            Enforce strict .cdslck write lock check (auto-routes via live bridge if active)
-  --psf-ascii           Pass `-format psfascii` to Spectre (default: enabled)
-  --no-psf-ascii        Allow binary PSF output from Spectre
-  --no-bridge           Disable automatic routing through `ic617_client.py` live bridge
-  --socket-dir DIR      Override bridge socket directory (`~/.cache/skill-analog` default)
-  --env-script FILE     Override `$HOME/cadence/env.sh` path
-  --dry-run             Validate paths/locks and emit planned command JSON without running EDA binary
-  --self-test           Run built-in adversarial self-test suite
+  --project DIR             Cadence project root (auto-detected via project.json / cds.lib if omitted)
+  --run-id ID               Subdirectory name under <project>/sim/runs/<run-id>/
+  --overwrite-run           Cleanly wipe stale psf/ and logs in an existing run_dir before running
+  --netlist FILE            Spectre input netlist (.scs)
+  --script FILE             OCEAN (.ocn) or SKILL (.il) batch script
+  --cell LIB/CELL           Target OA cell for .cdslck lock filtering (`lib`, `lib/cell`, or `lib/cell/view`)
+  --write-oa                Enforce strict .cdslck write lock check (auto-routes via live bridge if active)
+  --psf-ascii               Pass `-format psfascii` to Spectre (default: enabled)
+  --no-psf-ascii            Allow binary PSF output from Spectre
+  --min-free-mb MB          Minimum free disk MB before running Spectre (default: 512; 0 disables)
+  --require-save-selected   Fail closed if waveform analyses omit `options save=selected`
+  --keep N                  For `prune-runs`: newest N run dirs whose `psf/` is preserved (default: 2)
+  --keep-run-id LIST        For `prune-runs`: comma-separated run IDs to always preserve
+  --delete-dirs             For `prune-runs`: remove entire pruned run directories instead of only `psf/`
+  --min-psf-mb MB           For `prune-runs`: only prune targets >= MB (default: 0)
+  --no-bridge               Disable automatic routing through `ic617_client.py` live bridge
+  --socket-dir DIR          Override bridge socket directory (`~/.cache/skill-analog` default)
+  --env-script FILE         Override `$HOME/cadence/env.sh` path
+  --dry-run                 Validate paths/locks (or preview prune-runs) without mutating/launching
+  --self-test               Run built-in adversarial self-test suite
 """
 
 
@@ -1559,6 +1972,42 @@ def main(argv=None):
             return 1
 
     tool = args.pop(0)
+    if tool == "prune-runs":
+        p_prune = _SilentOptionParser(add_help_option=False)
+        p_prune.add_option("-h", "--help", action="store_true", dest="help", default=False)
+        p_prune.add_option("--project", type="string", dest="project", default=None)
+        p_prune.add_option("--keep", type="int", dest="keep", default=2)
+        p_prune.add_option("--keep-run-id", type="string", dest="keep_ids", default="")
+        p_prune.add_option("--delete-dirs", action="store_true", dest="delete_dirs", default=False)
+        p_prune.add_option("--min-psf-mb", type="float", dest="min_psf_mb", default=0.0)
+        p_prune.add_option("--dry-run", action="store_true", dest="dry_run", default=False)
+        try:
+            p_opts, _ = p_prune.parse_args(args)
+        except ValueError as err:
+            print(json.dumps({"tool": "prune-runs", "ok": False, "error": str(err)}, indent=2, sort_keys=True))
+            return 2
+        if p_opts.help:
+            print(HELP_TEXT)
+            return 0
+        try:
+            keep_list = [tok.strip() for tok in (p_opts.keep_ids or "").split(",") if tok.strip()]
+            res = prune_project_runs(
+                project_dir=p_opts.project,
+                keep=p_opts.keep,
+                keep_run_ids=keep_list,
+                psf_only=(not p_opts.delete_dirs),
+                min_psf_mb=p_opts.min_psf_mb,
+                dry_run=p_opts.dry_run,
+            )
+            print(json.dumps(res, indent=2, sort_keys=True))
+            return 0 if res.get("ok") else 1
+        except ValueError as verr:
+            print(json.dumps({"tool": "prune-runs", "ok": False, "error": str(verr)}, indent=2, sort_keys=True))
+            return 2
+        except Exception as exc:
+            print(json.dumps({"tool": "prune-runs", "ok": False, "error": str(exc)}, indent=2, sort_keys=True))
+            return 1
+
     parser = _SilentOptionParser(add_help_option=False)
     parser.add_option("-h", "--help", action="store_true", dest="help", default=False)
     parser.add_option("--project", type="string", dest="project", default=None)
@@ -1570,6 +2019,8 @@ def main(argv=None):
     parser.add_option("--write-oa", action="store_true", dest="write_oa", default=False)
     parser.add_option("--psf-ascii", action="store_true", dest="psf_ascii", default=True)
     parser.add_option("--no-psf-ascii", action="store_false", dest="psf_ascii")
+    parser.add_option("--min-free-mb", type="float", dest="min_free_mb", default=512.0)
+    parser.add_option("--require-save-selected", action="store_true", dest="require_save_selected", default=False)
     parser.add_option("--no-bridge", action="store_false", dest="prefer_bridge", default=True)
     parser.add_option("--socket-dir", type="string", dest="socket_dir", default=None)
     parser.add_option("--env-script", type="string", dest="env_script", default=None)
@@ -1608,6 +2059,8 @@ def main(argv=None):
             env_script=opts.env_script,
             overwrite_run=opts.overwrite_run,
             dry_run=opts.dry_run,
+            min_free_mb=opts.min_free_mb,
+            require_save_selected=opts.require_save_selected,
             extra_args=extra,
         )
         print(json.dumps(res, indent=2, sort_keys=True))

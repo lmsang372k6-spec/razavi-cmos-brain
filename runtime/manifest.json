@@ -116,10 +116,10 @@
       "sha256": "f430e63654cc792d3250afbac5153c45f057caa9bc4c2e56d541afb009e4a93f"
     },
     {
-      "bytes": 3308,
+      "bytes": 4568,
       "path": "references/cadence-operation.md",
       "repo_path": "runtime/references/cadence-operation.md",
-      "sha256": "1cd4028f85de4aa1a99881f04b749c5c307160e41af02356ee36cf608351cc38"
+      "sha256": "d138ee4c34da496cb75281643e0942ba816b46f46f007dcb4237e1bebf361e95"
     },
     {
       "bytes": 9016,
@@ -182,10 +182,10 @@
       "sha256": "8619a54e8c098122a7f3881394f84ca89b684366e848233a29ad18b6ec363935"
     },
     {
-      "bytes": 3318,
+      "bytes": 3977,
       "path": "templates/cadence-project/AGENTS.md",
       "repo_path": "runtime/templates/cadence-project/AGENTS.md",
-      "sha256": "cb3102edb0811ed8b2bbe279d8bf6f2295abbdd965e9375dd1aa769f905b6b7f"
+      "sha256": "704f02c82cec0dab5714ed43390e614321d96adb5cb2836a9069eb8d8697a501"
     },
     {
       "bytes": 1379,
@@ -212,10 +212,10 @@
       "sha256": "a2113ae087f8e962ca196afb42c7c0a2efb8b697842efd9610cee5007689bada"
     },
     {
-      "bytes": 64754,
+      "bytes": 84546,
       "path": "tools/cadence_exec.py",
       "repo_path": "runtime/tools/cadence_exec.py",
-      "sha256": "169165d0a9a78ad57c57d149d4c93caa246bcc75434ffbe87feb206e0829e968"
+      "sha256": "efa8d5f36993c42185f2b8490d990d8fd8e7d3f687754ed699507e414ae02578"
     },
     {
       "bytes": 598,

@@ -121,6 +121,7 @@ Sử dụng `sampling=lhs` (Latin Hypercube Sampling) hoặc `lds` (Sobol Low-Di
 - **[TRAP-SIM-01] Bẫy Chết Người Của Chế Độ Tăng Tốc `+preset=lx` / `+preset=vx` Làm Bay Mất 3–8 Bit ENOB:** Như tài liệu kiểm chứng thực nghiệm trong `Arcadia-1/virtuoso-bridge-lite` ghi nhận, chế độ `+preset=lx` nới lỏng `reltol` lên $\sim 10^{-3}$ còn `+preset=vx` tắt kiểm soát sai số cắt cụt cục bộ (LTE), làm hỏng hoàn toàn quyết định siêu bền cấp $\mu\text{V}$ của bộ so sánh và mạch lấy mẫu chính xác! Đối với mạch tương tự chính xác trong Spectre 15.1, luôn dùng chuẩn Spectre gốc hoặc `+aps` với `errpreset=conservative` (hoặc `moderate` khi quét sơ bộ kèm `reltol=1e-5`).
 - **[TRAP-SIM-02] Bẫy Kế Thừa `noiseruns=100` Trong Transient Noise Làm Treo Máy Gấp 100 Lần:** Khi bật nhiễu miền thời gian `tranNoise=yes` từ giao diện ADE/Maestro, Spectre rất hay điền mặc định `noiseruns=100` (lặp lại 100 quỹ đạo thời gian độc lập). Nếu bạn đang chạy một chuỗi FFT 256 chu kỳ để đo SNDR của SAR ADC hay ΔΣ Modulator, một quỹ đạo dài vốn đã đủ tích hợp trung bình thống kê theo thời gian — quên đặt `noiseruns=1` sẽ khiến thời gian chạy phình từ $3\text{ phút}$ thành **$5\text{ giờ}$** vô ích!
 - **[TRAP-SIM-03] Bẫy Đo Offset Hệ Thống Bằng Mạch Vòng Hở Thay Vì Hồi Tiếp Đơn Vị Đóng Kín:** Không bao giờ đo điện áp lệch $V_{OS}$ trong Monte Carlo bằng cách nối hai cổng `inp = inn = Vcm` ở vòng hở rồi lấy `(Vout - Vcm) / A0`! Chỉ cần $V_{OS} = 2\text{ mV}$ nhân với $A_0 = 10^4$ là ngõ ra kẹt cứng vào $V_{DD}$ hoặc $0\text{ V}$! Phải nối Op-Amp thành **bộ đệm độ lợi đơn vị đóng vòng âm** (hoặc dùng servo loop lý tưởng cho OTA vi sai) rồi đọc trực tiếp hiệu áp tĩnh `V(inp) - V(inn)` = $V_{OS}$ trong phân tích `dc` bên trong khối `montecarlo`!
+- **[INV-DISK-01] Kỷ luật Dung lượng PSF ASCII (`save=selected` + `prune-runs` Tránh Tràn Đĩa Ảo VM):** Vì Spectre `-format psfascii` có thể sinh `50–100 MB` cho **mỗi một góc PVT** nếu giữ mặc định `save=all` (đặc biệt khi quét `tran` mịn hoặc lưới hàng chục điểm tải × 18 góc sẽ dễ làm đầy hàng chục GB ổ đĩa ảo), mọi deck chạy sóng bắt buộc khai báo **`saveOptions options save=selected`** và chỉ `save` các nút/dòng cần đo (`dcOpInfo` vẫn tự lưu điểm OP cho `psf_audit.py op-audit`). Khi đang dò thông số chỉ quét 4–6 góc biên xấu nhất và ghi đè một thư mục nháp bằng `--overwrite-run`; sau khi xuất bảng kết quả cuối cùng, dọn các `psf/` cũ bằng `cadence_exec.py prune-runs --project . --keep 2`.
 
 ---
 
@@ -159,6 +160,8 @@ CL0       (out 0)   capacitor c=cload
 X_OTA     (inp inn out vdd 0) two_stage_miller_ota
 
 simOpts options temp=27.0 reltol=1e-5 vabstol=1e-7 iabstol=1e-13
+saveOptions options save=selected
+save out inp inn vdd VDD_SRC:p
 
 // 1. Phân tích danh định: DC OP, STB vòng kín và Phân tích Nhiễu (1 Hz -> 100 MHz)
 dc_nom  dc write="spectre.dc"

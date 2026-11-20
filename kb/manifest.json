@@ -511,8 +511,8 @@
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1314018,
-      "sha256": "397bf334043387a25bc374df67beeac18c358f7598bb9274f8e5ff6a39787e94"
+      "bytes": 1314692,
+      "sha256": "d6a3389e3b2c306ecadc7e918fd7ab918e97435c858b06f33f6e9713c90d967b"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -721,8 +721,8 @@
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-ic617-live-ipc-bridge-and-schematic-json.md",
-      "bytes": 25167,
-      "sha256": "966acdf49c46a54d923756afa8d62745b6fa4e92889cc424d4096d644c4fb084"
+      "bytes": 25940,
+      "sha256": "5c9d110326071afb99b9b988e207d6135cd4c5134b2bc8d95aa012d514dc5388"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-ic617-skill-sch-cdf-automation.md",
@@ -761,8 +761,8 @@
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-spectre-noise-dc-ac-tran-montecarlo.md",
-      "bytes": 22361,
-      "sha256": "324c1e92e5a4e995afdef8b0c92189ed2da170b1728fbe5fcf6b089b2a84f3d1"
+      "bytes": 23272,
+      "sha256": "d0f07d13a0c2ba4ada90a15b752d0cd5b1edce4fb3a399ed6fe3cb3eae3c41ec"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-spectre-pss-pac-pnoise-pstb.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1764198,
-      "sha256": "cd644779f47995d46595f8dee922f41989820ea7d83a959c901a00e9c4ca5d44"
+      "bytes": 1764266,
+      "sha256": "e5f4a609acb464de1ab9e79271e34f1f69d5c6610a37071e21b6372592870d01"
     }
   ]
 }
