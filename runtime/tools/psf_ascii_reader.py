@@ -57,6 +57,52 @@ def _unescape_psf_string(raw):
     return re.sub(r'\\(.)', r'\1', raw)
 
 
+def _safe_ascii_text(val):
+    """Convert any text/unicode/exception value safely to 7-bit ASCII without raising UnicodeEncodeError on Py 2.6."""
+    if sys.version_info[0] < 3:
+        try:
+            if isinstance(val, unicode):  # noqa: F821
+                return val.encode("ascii", "replace")
+            if isinstance(val, str):
+                return val.decode("latin1").encode("ascii", "replace")
+            return unicode(val).encode("ascii", "replace")  # noqa: F821
+        except Exception:
+            try:
+                return repr(val).decode("latin1").encode("ascii", "replace")
+            except Exception:
+                return "unprintable_error"
+    return str(val)
+
+
+def _safe_exc_text(exc):
+    if sys.version_info[0] < 3:
+        args = getattr(exc, "args", None)
+        if args:
+            return " ".join([_safe_ascii_text(a) for a in args])
+    return _safe_ascii_text(exc)
+
+
+def _detect_binary_psf(raw_bytes):
+    """Return human-readable reason if raw_bytes looks like Cadence binary PSF rather than PSF ASCII."""
+    if not raw_bytes:
+        return None
+    head = raw_bytes[:512]
+    if b"\x00" in head:
+        return "contains NUL bytes in header"
+    if len(raw_bytes) >= 16 and b"Clarissa" in raw_bytes[-64:]:
+        return "contains Cadence binary PSF Clarissa trailer"
+    stripped = head.lstrip()
+    if not stripped.startswith(b"HEADER"):
+        bad = 0
+        for b_ch in head[:128]:
+            code = ord(b_ch) if isinstance(b_ch, _TEXT_TYPES) else b_ch
+            if (code < 32 and code not in (9, 10, 13)) or code >= 127:
+                bad += 1
+                if bad >= 2:
+                    return "contains non-ASCII binary header bytes"
+    return None
+
+
 def _check_finite(scalar, name):
     if math.isnan(scalar) or math.isinf(scalar):
         raise ValueError("Non-finite PSF value for signal %s" % name)
@@ -74,9 +120,11 @@ def _tokenize_psf(content, path):
             break
         match = _TOKEN_RE.match(content, pos)
         if not match or match.end() == pos:
-            snippet = content[pos:pos + 40].splitlines()[0]
+            raw_lines = content[pos:pos + 40].splitlines()
+            raw_snip = raw_lines[0] if raw_lines else ""
+            safe_snip = "".join([ch if 32 <= ord(ch) < 127 else "?" for ch in raw_snip])
             raise ValueError(
-                "Unsupported PSF syntax in %s at offset %d: %s" % (path, pos, snippet)
+                "Unsupported PSF syntax in %s at offset %d: %r" % (_safe_ascii_text(path), pos, safe_snip)
             )
         s_tok, p_tok, n_tok, kw_tok = match.groups()
         if s_tok is not None:
@@ -171,7 +219,7 @@ def _parse_type_declarations(tokens, idx, stop_at_rparen=False, known_types=None
             if ktype == "KW" and kval in _SECTION_KEYWORDS and not stop_at_rparen:
                 break
             if ktype == "STR":
-                if not kinds and sub_struct is None and ref_type is None:
+                if ref_type is None and (kval in local_known or not kinds) and sub_struct is None:
                     ref_type = kval
                     idx += 1
                     if ref_type in local_known:
@@ -313,6 +361,21 @@ def _parse_struct_instance(tokens, idx, inst_name, struct_def, reject_nonfinite=
                 field_units.update(nested_obj.get("field_units", {}))
                 field_idx += 1
                 continue
+            want_complex = ("complex" in f_kind)
+            if want_complex and tokens[idx][0] == "NUM" and idx + 1 < n and tokens[idx + 1][0] == "NUM":
+                re_v = _parse_scalar_token(tokens[idx][1], as_int=False)
+                im_v = _parse_scalar_token(tokens[idx + 1][1], as_int=False)
+                if reject_nonfinite:
+                    _check_finite(float(re_v), full_name)
+                    _check_finite(float(im_v), full_name)
+                idx += 2
+                _, idx = _consume_trailing_props(tokens, idx)
+                cval = complex(float(re_v), float(im_v))
+                out_fields[f_name] = cval
+                field_order.append(f_name)
+                flat_scalars.append((full_name, cval))
+                field_idx += 1
+                continue
             want_int = ("int" in f_kind) and ("float" not in f_kind) and ("double" not in f_kind)
             atom, idx = _parse_value_atom(
                 tokens, idx, full_name, reject_nonfinite=reject_nonfinite, as_int=want_int
@@ -373,9 +436,18 @@ def parse_psf_file(
 
     stream = open(path, "rb")
     try:
-        content = stream.read().decode("latin1")
+        raw_bytes = stream.read()
     finally:
         stream.close()
+
+    bin_reason = _detect_binary_psf(raw_bytes)
+    if bin_reason:
+        raise ValueError(
+            "Binary PSF file detected (%s: %s); convert with Cadence 'psf <bin> <ascii>' "
+            "or run Spectre with '-format psfascii'." % (_safe_ascii_text(os.path.basename(path)), bin_reason)
+        )
+
+    content = raw_bytes.decode("latin1")
 
     tokens = _tokenize_psf(content, path)
     n = len(tokens)
@@ -628,7 +700,7 @@ def parse_psf_file(
                 if effective_type and effective_type in types and types[effective_type].get("props", {}).get("units"):
                     field_units.setdefault(raw_key, types[effective_type]["props"]["units"])
 
-                # Case 2: STRUCT instance (`"M1" "bsim4" ( ... )` or TRACE-typed `"mn.m1" ( ... )`)
+                # Case 2: STRUCT instance (`"M1" "bsim4" ( ... )` or TRACE-typed `"mn.m1" ( ... )`) or ARRAY of STRUCT
                 if (
                     effective_type is not None
                     and effective_type in types
@@ -636,6 +708,21 @@ def parse_psf_file(
                     and idx < n
                     and tokens[idx][0] == "LPAREN"
                 ):
+                    if types[effective_type].get("array") and idx + 1 < n and tokens[idx + 1][0] == "LPAREN":
+                        idx += 1
+                        elem_i = 0
+                        while idx < n and tokens[idx][0] == "LPAREN":
+                            elem_key = "%s[%d]" % (raw_key, elem_i)
+                            inst_obj, idx = _parse_struct_instance(
+                                tokens, idx, elem_key, types[effective_type], reject_nonfinite=reject_nonfinite
+                            )
+                            _record_struct(elem_key, inst_obj)
+                            elem_i += 1
+                        if idx >= n or tokens[idx][0] != "RPAREN":
+                            raise ValueError("Unclosed ARRAY STRUCT '(' for signal %s" % raw_key)
+                        idx += 1
+                        _, idx = _consume_trailing_props(tokens, idx)
+                        continue
                     inst_obj, idx = _parse_struct_instance(
                         tokens, idx, raw_key, types[effective_type], reject_nonfinite=reject_nonfinite
                     )
@@ -952,6 +1039,55 @@ def run_self_test():
         if p_uc.get("unit_conflicts", {}).get("VDD:p") != ["A", "mA"]:
             raise AssertionError("Expected mid-sweep unit_conflicts ['A', 'mA'], got %r" % p_uc.get("unit_conflicts"))
 
+        # 5. Binary PSF fail-closed guard (no UnicodeEncodeError on Python 2.6.6)
+        bin_p = os.path.join(tmp_d, "binary.psf")
+        f_bin = open(bin_p, "wb")
+        try:
+            f_bin.write(b"\x00\x00\x04\x00\xff\xfe\xfdHEADER_FAKE\x00\x00\x80Clarissa\x00")
+        finally:
+            f_bin.close()
+        got_bin_err = False
+        try:
+            parse_psf_file(bin_p)
+        except ValueError as bin_exc:
+            msg_bin = _safe_exc_text(bin_exc)
+            if "Binary PSF file detected" in msg_bin:
+                got_bin_err = True
+        if not got_bin_err:
+            raise AssertionError("Expected binary PSF rejection ValueError")
+
+        # 6. Spectre 15.1 PoleAndQ STRUCT (nested & flat COMPLEX DOUBLE fields) + ARRAY of STRUCT
+        pq_p = os.path.join(tmp_d, "spectre_pz.pz.ascii")
+        f_pq = open(pq_p, "wb")
+        try:
+            f_pq.write((
+                'HEADER\n"PSFversion" "1.00"\n'
+                'TYPE\n'
+                '"PoleAndQ" STRUCT(\n'
+                '  "pole" COMPLEX DOUBLE PROP( "units" "Hz" )\n'
+                '  "Q" FLOAT DOUBLE\n'
+                ')\n'
+                '"PoleArr" ARRAY( * ) "PoleAndQ"\n'
+                'TRACE\n'
+                '"p1" "PoleAndQ"\n'
+                '"p2" "PoleAndQ"\n'
+                '"poles" "PoleArr"\n'
+                'VALUE\n'
+                '"p1" "PoleAndQ" ( (-20933.0 0.0) 0.5 )\n'
+                '"p2" "PoleAndQ" ( -50000.0 80000.0 0.943 )\n'
+                '"poles" "PoleArr" ( ((-12000.0 0.0) 0.5) )\n'
+                'END\n'
+            ).encode("utf-8"))
+        finally:
+            f_pq.close()
+        p_pq = parse_psf_file(pq_p)
+        if p_pq["instances"].get("p1", {}).get("fields", {}).get("pole") != complex(-20933.0, 0.0):
+            raise AssertionError("Nested PoleAndQ complex field failed: %r" % p_pq["instances"])
+        if p_pq["instances"].get("p2", {}).get("fields", {}).get("pole") != complex(-50000.0, 80000.0):
+            raise AssertionError("Flat PoleAndQ complex field failed: %r" % p_pq["instances"])
+        if p_pq["instances"].get("poles[0]", {}).get("fields", {}).get("pole") != complex(-12000.0, 0.0):
+            raise AssertionError("ARRAY PoleAndQ complex field failed: %r" % p_pq["instances"])
+
         return {
             "ok": True,
             "self_test": "PASS",
@@ -960,6 +1096,8 @@ def run_self_test():
             "swept_struct_noise_verified": True,
             "string_type_tag_collision_verified": True,
             "mid_trace_unit_conflict_verified": True,
+            "binary_psf_guard_verified": True,
+            "complex_struct_field_verified": True,
             "int_num_types_defined": (int in _INT_TYPES and float in _NUM_TYPES),
         }
     finally:
@@ -987,7 +1125,7 @@ def main(argv=None):
     try:
         options, pos_args = parser.parse_args(args)
     except ValueError as err:
-        sys.stderr.write("%s\n" % str(err))
+        sys.stderr.write("%s\n" % _safe_exc_text(err))
         return 2
 
     if options.self_test:
@@ -1031,7 +1169,7 @@ def main(argv=None):
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
     except Exception as exc:
-        print(json.dumps({"ok": False, "path": path, "error": str(exc)}, indent=2, sort_keys=True))
+        print(json.dumps({"ok": False, "path": _safe_ascii_text(path), "error": _safe_exc_text(exc)}, indent=2, sort_keys=True))
         return 1
 
 

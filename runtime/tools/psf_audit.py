@@ -5,7 +5,7 @@
 100% Python 2.6.6+ and Python 3 standard-library compatible (`optparse` CLI, zero external deps).
 
 Subcommands:
-  op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--fail-on-violation]
+  op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--fail-on-violation]
   metrics   <run_dir> [--spec spec.json] [--fail-on-spec]
   self-test (or --self-test)
 """
@@ -27,7 +27,7 @@ _TOOLS_DIR = os.path.dirname(os.path.realpath(__file__))
 if _TOOLS_DIR not in sys.path:
     sys.path.insert(0, _TOOLS_DIR)
 
-from psf_ascii_reader import parse_psf_file  # noqa: E402
+from psf_ascii_reader import parse_psf_file, _safe_ascii_text, _safe_exc_text  # noqa: E402
 
 try:
     TEXT_TYPES = (basestring,)  # noqa: F821
@@ -247,6 +247,7 @@ METRIC_KEY_ALIASES = {
 
 SUPPLY_RAIL_PREFIXES = (
     "vdd", "avdd", "dvdd", "iovdd", "pvdd", "svdd", "tvdd", "rvdd", "cvdd",
+    "pvin", "avin", "dvin", "vin_sup", "vin_pwr",
     "vcc", "avcc", "dvcc", "vsup", "vpwr", "vbat", "vbatt", "vhv",
 )
 
@@ -387,6 +388,12 @@ def _leaf_inst_name(name):
     return parts[-1] if parts else name
 
 
+def _strip_ascii_ext(name_low):
+    if name_low.endswith(".ascii"):
+        return name_low[:len(name_low) - 6]
+    return name_low
+
+
 def _is_mos_struct(type_name, fields):
     t_low = (type_name or "").lower()
     f_keys = set([k.lower() for k in fields.keys()])
@@ -505,10 +512,12 @@ def _pick_scaled_mos_field(flc, units_lc, canonical, expected_dim, inst_name, un
     return None
 
 
-def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
+def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None, expect_cutoff=None):
     """Strict fail-closed MOS operating-point auditor."""
     expect_set = set(expect_triode or [])
     expect_lc = set([x.lower() for x in expect_set])
+    expect_cutoff_set = set(expect_cutoff or [])
+    expect_cutoff_lc = set([x.lower() for x in expect_cutoff_set])
     mos_raw = _extract_mos_devices_from_parsed(parsed)
 
     devices = {}
@@ -517,6 +526,7 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
     buckets = {
         "saturation": [],
         "cutoff": [],
+        "expected_cutoff": [],
         "unintended_triode": [],
         "expected_triode": [],
         "subthreshold": [],
@@ -585,6 +595,12 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
             or inst_name.lower() in expect_lc
             or leaf.lower() in expect_lc
         )
+        is_expected_cutoff = (
+            inst_name in expect_cutoff_set
+            or leaf in expect_cutoff_set
+            or inst_name.lower() in expect_cutoff_lc
+            or leaf.lower() in expect_cutoff_lc
+        )
 
         # Infer region when explicit `region` is absent ONLY if (vgs, vth, vds, vdsat) are all present
         effective_region = region
@@ -610,18 +626,23 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
             missing_fields.append("region_or_vgs_vth")
 
         if effective_region == 0:
-            buckets["cutoff"].append(inst_name)
-            dev_flags.append("CUTOFF")
-            status = "FAIL"
-            any_hard_fail = True
-            flags.append({
-                "device": inst_name,
-                "code": "CUTOFF",
-                "severity": "error",
-                "region": effective_region,
-                "sat_margin": _round_clean(sat_margin),
-                "message": "%s is in cutoff (region=0, ids=%s)" % (inst_name, repr(_round_clean(ids))),
-            })
+            if is_expected_cutoff:
+                buckets["expected_cutoff"].append(inst_name)
+                dev_flags.append("EXPECTED_CUTOFF")
+                status = "EXPECTED_CUTOFF"
+            else:
+                buckets["cutoff"].append(inst_name)
+                dev_flags.append("CUTOFF")
+                status = "FAIL"
+                any_hard_fail = True
+                flags.append({
+                    "device": inst_name,
+                    "code": "CUTOFF",
+                    "severity": "error",
+                    "region": effective_region,
+                    "sat_margin": _round_clean(sat_margin),
+                    "message": "%s is in cutoff (region=0, ids=%s)" % (inst_name, repr(_round_clean(ids))),
+                })
         elif effective_region == 1:
             if is_expected_triode:
                 buckets["expected_triode"].append(inst_name)
@@ -801,6 +822,7 @@ def audit_mos_op_parsed(parsed, vds_margin=0.05, expect_triode=None):
     summary_out = {
         "saturation": buckets["saturation"],
         "cutoff": buckets["cutoff"],
+        "expected_cutoff": buckets["expected_cutoff"],
         "unintended_triode": buckets["unintended_triode"],
         "expected_triode": buckets["expected_triode"],
         "subthreshold": buckets["subthreshold"],
@@ -831,7 +853,13 @@ def _find_op_psf_files(target_path):
         return []
 
     candidates = []
-    op_names = ("dcOpInfo.info", "oppoint.info", "op.info", "dcOp.dc", "op.dc")
+    op_names = (
+        "dcOpInfo.info.ascii", "dcOpInfo.info",
+        "oppoint.info.ascii", "oppoint.info",
+        "op.info.ascii", "op.info",
+        "dcOp.dc.ascii", "dcOp.dc",
+        "op.dc.ascii", "op.dc",
+    )
     for root, dirs, files in os.walk(target_path):
         dirs.sort()
         files_set = set(files)
@@ -843,7 +871,10 @@ def _find_op_psf_files(target_path):
         if picked is None:
             for fn in sorted(files):
                 low = fn.lower()
-                if low.endswith(".info") and ("op" in low or "dcop" in low):
+                if (not low.endswith(".ascii")) and ((fn + ".ascii") in files_set or (fn + ".ASCII") in files_set):
+                    continue
+                base_low = _strip_ascii_ext(low)
+                if base_low.endswith(".info") and ("op" in base_low or "dcop" in base_low):
                     picked = os.path.join(root, fn)
                     break
         if picked is not None:
@@ -854,7 +885,7 @@ def _find_op_psf_files(target_path):
     return candidates
 
 
-def run_op_audit(target_path, vds_margin=0.05, expect_triode=None):
+def run_op_audit(target_path, vds_margin=0.05, expect_triode=None, expect_cutoff=None):
     op_files = _find_op_psf_files(target_path)
     if not op_files:
         raise ValueError("No operating-point PSF ASCII file found at: " + str(target_path))
@@ -870,7 +901,12 @@ def run_op_audit(target_path, vds_margin=0.05, expect_triode=None):
             reject_truncated=True,
             fill_leading_missing=True,
         )
-        rep = audit_mos_op_parsed(parsed, vds_margin=vds_margin, expect_triode=expect_triode)
+        rep = audit_mos_op_parsed(
+            parsed,
+            vds_margin=vds_margin,
+            expect_triode=expect_triode,
+            expect_cutoff=expect_cutoff,
+        )
         rep["psf_path"] = os.path.realpath(fpath)
         pt_key = label
         if label_counts.get(label, 0) > 1:
@@ -885,6 +921,7 @@ def run_op_audit(target_path, vds_margin=0.05, expect_triode=None):
     primary["target"] = os.path.realpath(target_path)
     primary["vds_margin_target_v"] = vds_margin
     primary["expect_triode"] = sorted(list(expect_triode or []))
+    primary["expect_cutoff"] = sorted(list(expect_cutoff or []))
 
     if len(per_point) > 1:
         primary["points"] = per_point
@@ -1083,6 +1120,7 @@ def _extract_dc_power_single(parsed):
         if (cp[1] not in NON_SUPPLY_STIM_STEMS)
         and (not _is_supply_rail_stem(cp[1]))
         and (not _is_neg_supply_rail_stem(cp[1]))
+        and ("load" not in cp[1])
     ]
 
     out = {}
@@ -1113,6 +1151,24 @@ def _extract_dc_power_single(parsed):
             "dc_unit_errors": unit_errors,
         })
         return out
+
+    # PMIC / LDO supply fallback: ONLY when no explicit VDD/VCC/VBAT/PVIN rail exists,
+    # promote `vin` (+ matching `vin` current probe) as the sole power supply rail.
+    # Op-Amps/OTAs with VDD + VIN are completely unaffected because supply_voltage_nodes is non-empty.
+    pmic_vin_promoted = False
+    if (not supply_voltage_nodes) and ("vin" in voltage_nodes):
+        vin_v_list = voltage_nodes["vin"]
+        vin_probes = [cp for cp in current_probes if cp[1] == "vin"]
+        if len(vin_v_list) == 1 and max([abs(x) for x in vin_v_list[0][1]]) > 0.1:
+            if vin_probes:
+                supply_voltage_nodes["vin"] = vin_v_list
+                supply_named_probes = vin_probes
+                pmic_vin_promoted = True
+            elif len(vin_v_list[0][1]) == 1 and vin_v_list[0][1][0] >= 0.3 and (
+                ("vout" in voltage_nodes) or bool(mos_map) or (len(generic_src_probes) == 0)
+            ):
+                supply_voltage_nodes["vin"] = vin_v_list
+                pmic_vin_promoted = True
 
     # When named supply probes are present, do NOT merge generic 0V ammeters (`V_TAIL:p`, `V_MEAS:p`)!
     if supply_named_probes:
@@ -1189,11 +1245,15 @@ def _extract_dc_power_single(parsed):
             total_p, total_i, max_power_idx, max_idd_idx, n_pts, matched_rails = _eval_worst_across_sweep(matched_pairs)
             rail_volts = dict([(r["rail"], r["vdd_v"]) for r in matched_rails])
             prim_rail = "vdd" if "vdd" in rail_volts else (matched_rails[0]["rail"] if len(matched_rails) == 1 else None)
+            p_meth = (
+                "pmic_vin_supply_terminal" if (pmic_vin_promoted and len(matched_rails) == 1)
+                else ("supply_terminal" if len(matched_rails) == 1 else "multi_rail_supply_terminal")
+            )
             out.update({
                 "vdd_v": matched_rails[0]["vdd_v"] if len(matched_rails) == 1 else None,
                 "idd_a": _round_clean(total_i),
                 "dc_power_w": _round_clean(total_p),
-                "power_method": "supply_terminal" if len(matched_rails) == 1 else "multi_rail_supply_terminal",
+                "power_method": p_meth,
                 "supply_rails": matched_rails,
                 "rail_voltages": rail_volts,
                 "primary_supply_rail": prim_rail,
@@ -1223,7 +1283,7 @@ def _extract_dc_power_single(parsed):
                     "vdd_v": matched_rails[0]["vdd_v"],
                     "idd_a": _round_clean(total_i),
                     "dc_power_w": _round_clean(total_p),
-                    "power_method": "supply_terminal",
+                    "power_method": "pmic_vin_supply_terminal" if pmic_vin_promoted else "supply_terminal",
                     "supply_node": v_key,
                     "current_probe": c_key,
                     "supply_rails": matched_rails,
@@ -1247,6 +1307,24 @@ def _extract_dc_power_single(parsed):
         })
         return out
 
+    if num_supply_v > 0 and num_cand_i == 0:
+        rail_volts = {}
+        for r_st in sorted(supply_voltage_nodes.keys()):
+            v_list = supply_voltage_nodes[r_st]
+            if len(v_list) == 1 and v_list[0][1]:
+                rail_volts[r_st] = _round_clean(v_list[0][1][0])
+        if rail_volts:
+            prim_rail = "vdd" if "vdd" in rail_volts else (list(rail_volts.keys())[0] if len(rail_volts) == 1 else None)
+            out.update({
+                "vdd_v": rail_volts[prim_rail] if (prim_rail and len(rail_volts) == 1) else None,
+                "idd_a": None,
+                "dc_power_w": None,
+                "rail_voltages": rail_volts,
+                "primary_supply_rail": prim_rail,
+                "power_method": "pmic_vin_voltage_only" if pmic_vin_promoted else "supply_voltage_only",
+            })
+            return out
+
     if out:
         out["dc_power_w"] = None
         out["power_method"] = "mos_vds_ids_sum_estimate_only"
@@ -1264,6 +1342,7 @@ def _extract_dc_power(parsed_list):
     - MOS `sum(|Vds * Ids|)` fallback is stored ONLY in `mos_power_estimate_w`, NEVER in `dc_power_w`.
     """
     valid_results = []
+    voltage_only_res = None
     ambiguous_res = None
     unit_err_res = None
     mos_est_max = None
@@ -1279,6 +1358,9 @@ def _extract_dc_power(parsed_list):
             unit_err_res = res
         elif res.get("power_method") == "ambiguous_multi_rail":
             ambiguous_res = res
+        elif res.get("power_method") in ("supply_voltage_only", "pmic_vin_voltage_only"):
+            if voltage_only_res is None:
+                voltage_only_res = res
         elif isinstance(res.get("dc_power_w"), _NUM_TYPES) and not isinstance(res.get("dc_power_w"), bool):
             valid_results.append(res)
 
@@ -1317,6 +1399,12 @@ def _extract_dc_power(parsed_list):
         if mos_est_max is not None:
             out["mos_power_estimate_w"] = mos_est_max
         return out
+
+    if voltage_only_res is not None:
+        out_vo = dict(voltage_only_res)
+        if mos_est_max is not None:
+            out_vo["mos_power_estimate_w"] = mos_est_max
+        return out_vo
 
     if mos_est_max is not None:
         return {
@@ -1645,11 +1733,11 @@ def _compute_nyquist_encirclements(freqs, lg):
 
 _PZ_OPEN_LOOP_RE = re.compile(r'open[\s_-]?loop', re.IGNORECASE)
 _PZ_CLOSED_LOOP_RE = re.compile(r'closed[\s_-]?loop', re.IGNORECASE)
-_PZ_ZERO_RE = re.compile(r'(?:^|[./:_])(?:zeros?_?\d*|z_?\d+)(?:$|[./:_])', re.IGNORECASE)
-_PZ_POLE_RE = re.compile(r'(?:^|[./:_])(?:poles?_?\d*|p_?\d+|(?:complex|real)_poles?_?\d*)(?:$|[./:_])', re.IGNORECASE)
+_PZ_ZERO_RE = re.compile(r'(?:^|[./:_])(?:zeros?_?\d*|z_?\d+)(?:\[\d+\])?(?:$|[./:_])', re.IGNORECASE)
+_PZ_POLE_RE = re.compile(r'(?:^|[./:_])(?:poles?_?\d*|p_?\d+|(?:complex|real)_poles?_?\d*)(?:\[\d+\])?(?:$|[./:_])', re.IGNORECASE)
 _PZ_METADATA_KEYS = set([
     "numpoles", "numzeros", "num_poles", "num_zeros",
-    "dcgain", "dc_gain", "gain", "freq", "frequency", "q", "qf", "zeta",
+    "dcgain", "dc_gain", "gain", "freq", "frequency", "q", "qf", "qfactor", "damping", "zeta",
 ])
 
 
@@ -1658,6 +1746,52 @@ def _is_finite_num(val):
         return False
     f = float(val)
     return not (math.isnan(f) or math.isinf(f))
+
+
+def _is_finite_complex(val):
+    if isinstance(val, complex):
+        return not (math.isnan(val.real) or math.isinf(val.real) or math.isnan(val.imag) or math.isinf(val.imag))
+    return False
+
+
+def _extract_pz_complex_from_fields(flc):
+    """Extract a complex pole/zero coordinate from Spectre PoleAndQ/ZeroAndQ or legacy PSF STRUCT fields."""
+    if not isinstance(flc, dict) or not flc:
+        return None
+    preferred_complex_keys = (
+        "value", "pole", "zero", "root", "s", "freq", "frequency", "location", "loc", "complex", "field_0"
+    )
+    for ck in preferred_complex_keys:
+        if ck in flc:
+            fv = flc[ck]
+            if _is_finite_complex(fv):
+                return complex(fv.real, fv.imag)
+            if isinstance(fv, (list, tuple)) and len(fv) >= 2 and _is_finite_num(fv[0]) and _is_finite_num(fv[1]):
+                return complex(float(fv[0]), float(fv[1]))
+    for fk in sorted(flc.keys()):
+        if _is_finite_complex(flc[fk]):
+            fv = flc[fk]
+            return complex(fv.real, fv.imag)
+    for fk in sorted(flc.keys()):
+        fv = flc[fk]
+        if isinstance(fv, dict):
+            nested_lc = dict([(str(nk).strip().lower(), nv) for nk, nv in fv.items()])
+            sub_c = _extract_pz_complex_from_fields(nested_lc)
+            if sub_c is not None:
+                return sub_c
+    re_v = None
+    im_v = None
+    for rk in ("real", "re", "sigma", "real_part", "realpart", "freal", "sreal", "real_hz", "r", "field_0"):
+        if rk in flc and _is_finite_num(flc[rk]):
+            re_v = float(flc[rk])
+            break
+    for ik in ("imag", "im", "omega", "imag_part", "imagpart", "fimag", "simag", "imag_hz", "i", "field_1"):
+        if ik in flc and _is_finite_num(flc[ik]):
+            im_v = float(flc[ik])
+            break
+    if re_v is not None:
+        return complex(re_v, im_v if im_v is not None else 0.0)
+    return None
 
 
 def _extract_provenance_tags(parsed):
@@ -1690,7 +1824,7 @@ def _extract_provenance_tags(parsed):
 def _pz_loop_stem(path):
     if not path:
         return ""
-    bn = os.path.basename(path).lower()
+    bn = _strip_ascii_ext(os.path.basename(path).lower())
     st = re.sub(r'(?:\.pz\.psf|\.pz|\.psf|\.info)$', '', bn)
     st = re.sub(r'(?:^|[_.-])(?:open[\s_-]?loop|closed[\s_-]?loop|openloop|closedloop|periodic|floquet|ppz|pstb)(?:$|[_.-])', '_', st)
     st = st.strip('_.- ')
@@ -1782,26 +1916,17 @@ def _extract_pz_metrics(parsed, path=""):
             if not isinstance(inst_obj, dict):
                 continue
             inst_low = str(inst_name).lower()
+            itype_low = str(inst_obj.get("type", "")).lower()
             fields = inst_obj.get("fields") or {}
             flc = dict([(str(fk).strip().lower(), fv) for fk, fv in fields.items()])
-            if _PZ_ZERO_RE.search(inst_low):
+            if _PZ_ZERO_RE.search(inst_low) or ("zero" in itype_low):
                 zeros_count += 1
                 handled_insts.add(inst_name)
                 continue
-            itype_low = str(inst_obj.get("type", "")).lower()
             if _PZ_POLE_RE.search(inst_low) or ("pole" in itype_low):
-                re_v = None
-                im_v = None
-                for rk in ("real", "re", "sigma", "real_part", "r", "field_0"):
-                    if rk in flc and _is_finite_num(flc[rk]):
-                        re_v = float(flc[rk])
-                        break
-                for ik in ("imag", "im", "omega", "imag_part", "i", "field_1"):
-                    if ik in flc and _is_finite_num(flc[ik]):
-                        im_v = float(flc[ik])
-                        break
-                if re_v is not None:
-                    poles.append(complex(re_v, im_v if im_v is not None else 0.0))
+                c_pole = _extract_pz_complex_from_fields(flc)
+                if c_pole is not None:
+                    poles.append(c_pole)
                 handled_insts.add(inst_name)
 
     values = parsed.get("values") or {}
@@ -1817,9 +1942,9 @@ def _extract_pz_metrics(parsed, path=""):
             if ":" in k:
                 inst_p, fld_p = k.rsplit(":", 1)
                 fl = fld_p.strip().lower()
-                if fl in ("real", "re", "sigma", "real_part", "r"):
+                if fl in ("real", "re", "sigma", "real_part", "realpart", "freal", "sreal", "real_hz", "r"):
                     flat_pairs.setdefault(inst_p, {})["re"] = (k, values[k])
-                elif fl in ("imag", "im", "omega", "imag_part", "i"):
+                elif fl in ("imag", "im", "omega", "imag_part", "imagpart", "fimag", "simag", "imag_hz", "i"):
                     flat_pairs.setdefault(inst_p, {})["im"] = (k, values[k])
 
         for inst_p, pair in sorted(flat_pairs.items()):
@@ -1851,7 +1976,8 @@ def _extract_pz_metrics(parsed, path=""):
             if k in handled_flat_keys or any([k.startswith(ih + ":") for ih in handled_insts]):
                 continue
             kl = k.lower()
-            if kl in _PZ_METADATA_KEYS:
+            fl_sub = kl.rsplit(":", 1)[-1].strip() if ":" in kl else kl
+            if kl in _PZ_METADATA_KEYS or fl_sub in _PZ_METADATA_KEYS:
                 continue
             arr = values[k]
             if _PZ_ZERO_RE.search(kl):
@@ -1968,6 +2094,63 @@ def _extract_stb_metrics(stb_parsed, margin_parsed=None):
 
             mags = [abs(c) for c in lg]
             mag_db = [20.0 * math.log10(m) if m > 1e-300 else -600.0 for m in mags]
+
+            # Real Spectre 15.1 `stb` outputs `loopGain = -A*beta` (critical point at 0 deg / +1+0j),
+            # whereas textbook return ratio `L = +A*beta` places the critical point at -180 deg / -1+0j.
+            # Cross-check scalar `margin_parsed` phaseMargin OR native Spectre header on `loopGain`
+            # before computing Nyquist/Bode phase & RHP checks; genuine DC positive feedback still fails closed.
+            pm_scalar_deg = None
+            if margin_parsed:
+                mvals_pre, _ = _usable_waveform_values(margin_parsed)
+                if "phaseMargin" in mvals_pre and mvals_pre["phaseMargin"]:
+                    s_pm_pre, e_pm_pre = _resolve_trace_unit_scale(
+                        _get_parsed_signal_unit(margin_parsed, "phaseMargin"), expected_dim="angle"
+                    )
+                    if not e_pm_pre:
+                        pm_raw_pre = mvals_pre["phaseMargin"][0]
+                        pm_v_pre = float(pm_raw_pre.real) * s_pm_pre
+                        if not (math.isnan(pm_v_pre) or math.isinf(pm_v_pre)):
+                            pm_scalar_deg = pm_v_pre
+
+            def _quick_eff_pm(f_seq, mdb_seq, c_seq):
+                r_ph = [math.degrees(math.atan2(c.imag, c.real)) for c in c_seq]
+                unw = _unwrap_phase_deg(r_ph)
+                pms = []
+                for idx_c in range(len(f_seq) - 1):
+                    if (mdb_seq[idx_c] >= 0.0 and mdb_seq[idx_c + 1] < 0.0) or (mdb_seq[idx_c] < 0.0 and mdb_seq[idx_c + 1] >= 0.0):
+                        _, frac_c = _log_interp_x(f_seq[idx_c], f_seq[idx_c + 1], mdb_seq[idx_c], mdb_seq[idx_c + 1], 0.0)
+                        phi_u = unw[idx_c] + frac_c * (unw[idx_c + 1] - unw[idx_c])
+                        pms.append(_phase_margin_from_unwrapped(phi_u))
+                pm_u = min(pms) if pms else None
+                c0_pos_fb = (c_seq[0].real < 0.0 and abs(c_seq[0]) > 1.0)
+                if c0_pos_fb and (pm_u is None or pm_u > 0.0):
+                    pm_u = -abs(pm_u) if pm_u is not None else -180.0
+                return pm_u
+
+            stb_hdr = (stb_parsed.get("header") or {}) if stb_parsed else {}
+            is_spectre_sim = any([
+                "spectre" in str(stb_hdr.get(hk, "")).lower()
+                for hk in stb_hdr
+                if str(hk).strip().lower() in ("simulator", "tool", "program")
+            ])
+
+            invert_lg = False
+            if pm_scalar_deg is not None:
+                pm_pos = _quick_eff_pm(freqs, mag_db, lg)
+                pm_neg = _quick_eff_pm(freqs, mag_db, [-c for c in lg])
+                if (
+                    pm_neg is not None
+                    and abs(pm_neg - pm_scalar_deg) <= 15.0
+                    and (pm_pos is None or abs(pm_pos - pm_scalar_deg) > 90.0)
+                ):
+                    invert_lg = True
+            elif is_spectre_sim and lg_key.lower() == "loopgain" and lg[0].real < 0.0 and mags[0] > 1.0:
+                invert_lg = True
+
+            if invert_lg:
+                lg = [-c for c in lg]
+                out["stb_loop_gain_convention"] = "spectre_neg_return_ratio"
+
             raw_phase = [math.degrees(math.atan2(c.imag, c.real)) for c in lg]
             unwrapped = _unwrap_phase_deg(raw_phase)
             nyq_n, nyq_closed = _compute_nyquist_encirclements(freqs, lg)
@@ -2825,6 +3008,8 @@ def _extract_noise_metrics(parsed, return_curve=False):
 
 def _stb_loop_stem(filepath):
     bn = os.path.basename(filepath)
+    if bn.lower().endswith(".ascii"):
+        bn = bn[:len(bn) - 6]
     low = bn.lower()
     for suf in (".margin.pstb", ".margin.stb", ".pstb", ".stb"):
         if low.endswith(suf):
@@ -4122,7 +4307,7 @@ def _extract_point_metrics(
     pac_runs = {}
     has_pac = False
     for p in ac_files:
-        is_pac_file = os.path.basename(p).lower().endswith(".pac")
+        is_pac_file = _strip_ascii_ext(os.path.basename(p).lower()).endswith(".pac")
         if is_pac_file:
             has_pac = True
         ac_parsed = parse_psf_file(p, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
@@ -4163,10 +4348,10 @@ def _extract_point_metrics(
     stb_file_counts = {False: 0, True: 0}
     margin_file_counts = {False: 0, True: 0}
     for sp in stb_files:
-        is_p = os.path.basename(sp).lower().endswith(".pstb")
+        is_p = _strip_ascii_ext(os.path.basename(sp).lower()).endswith(".pstb")
         stb_file_counts[is_p] = stb_file_counts.get(is_p, 0) + 1
     for mp in margin_files:
-        is_p = os.path.basename(mp).lower().endswith(".pstb")
+        is_p = _strip_ascii_ext(os.path.basename(mp).lower()).endswith(".pstb")
         if is_p:
             has_pstb = True
         margin_file_counts[is_p] = margin_file_counts.get(is_p, 0) + 1
@@ -4186,7 +4371,7 @@ def _extract_point_metrics(
     stb_loop_stems = {}
     used_margin_paths = set()
     for sp in stb_files:
-        is_p = os.path.basename(sp).lower().endswith(".pstb")
+        is_p = _strip_ascii_ext(os.path.basename(sp).lower()).endswith(".pstb")
         if is_p:
             has_pstb = True
         stem = _stb_loop_stem(sp)
@@ -4381,7 +4566,7 @@ def _extract_point_metrics(
     pnoise_curves = []
     has_pnoise = False
     for np_file in noise_files:
-        is_pn_file = os.path.basename(np_file).lower().endswith(".pnoise")
+        is_pn_file = _strip_ascii_ext(os.path.basename(np_file).lower()).endswith(".pnoise")
         if is_pn_file:
             has_pnoise = True
         np_parsed = parse_psf_file(np_file, reject_nonfinite=True, reject_truncated=True, fill_leading_missing=True)
@@ -4627,33 +4812,34 @@ def _classify_psf_filename(filename):
     low = filename.lower()
     if low.endswith(".cdslck") or low.endswith(".log") or low.endswith(".json") or low.endswith(".scs"):
         return None
-    if "margin" in low and (low.endswith(".stb") or low.endswith(".pstb")):
+    base_low = _strip_ascii_ext(low)
+    if "margin" in base_low and (base_low.endswith(".stb") or base_low.endswith(".pstb")):
         return "stb_margin"
-    if low.endswith(".stb") or low.endswith(".pstb"):
+    if base_low.endswith(".stb") or base_low.endswith(".pstb"):
         return "stb"
-    if low.endswith(".ac") or low.endswith(".pac"):
+    if base_low.endswith(".ac") or base_low.endswith(".pac"):
         return "ac"
-    if low.endswith(".tran"):
+    if base_low.endswith(".tran"):
         return "tran"
-    if low.endswith(".noise") or low.endswith(".pnoise"):
+    if base_low.endswith(".noise") or base_low.endswith(".pnoise"):
         return "noise"
-    if low.endswith(".pss"):
+    if base_low.endswith(".pss"):
         return "pss"
     if (
-        low.endswith(".pz")
-        or low.endswith(".pz.psf")
-        or low == "pz.info"
-        or ("pz" in low and (low.endswith(".psf") or (low.endswith(".info") and "op" not in low and "dcop" not in low)))
+        base_low.endswith(".pz")
+        or base_low.endswith(".pz.psf")
+        or base_low == "pz.info"
+        or ("pz" in base_low and (base_low.endswith(".psf") or (base_low.endswith(".info") and "op" not in base_low and "dcop" not in base_low)))
     ):
         return "pz"
-    if low.endswith(".dc") or (low.endswith(".info") and ("op" in low or "dcop" in low)):
+    if base_low.endswith(".dc") or (base_low.endswith(".info") and ("op" in base_low or "dcop" in base_low)):
         return "dc"
     if (
-        re.match(r'^mc[^/]*\.psf$', low)
-        or low.startswith("mcdata")
-        or low.endswith(".mcdata")
-        or low.startswith("montecarlo")
-        or low.endswith(".mc")
+        re.match(r'^mc[^/]*\.psf$', base_low)
+        or base_low.startswith("mcdata")
+        or base_low.endswith(".mcdata")
+        or base_low.startswith("montecarlo")
+        or base_low.endswith(".mc")
     ):
         return "mc"
     return None
@@ -4669,11 +4855,14 @@ def _discover_run_points(run_dir):
     point_map = {}
     for root, dirs, files in os.walk(run_dir):
         dirs.sort()
+        files_set = set(files)
         rel = os.path.relpath(root, run_dir).replace(os.sep, "/")
         parts = [p for p in rel.split("/") if p not in (".", "psf", "raw")]
         base_label = "/".join(parts) if parts else "nominal"
 
         for fn in sorted(files):
+            if (not fn.lower().endswith(".ascii")) and ((fn + ".ascii") in files_set or (fn + ".ASCII") in files_set):
+                continue
             kind = _classify_psf_filename(fn)
             if not kind:
                 continue
@@ -7550,6 +7739,180 @@ def run_self_test():
         assert res_a05_ok["metrics"]["metrics_by_analysis"]["pstb"]["stability_proof_verified"] is True, res_a05_ok["metrics"]
         assert main(["metrics", a05_pstb_per_dir, "--spec", spec_a05_pstb, "--fail-on-spec"], quiet=True) == 0
 
+        # 33. Real Spectre 15.1 Compatibility (STB -A*beta loopGain, PoleAndQ/ZeroAndQ + .ascii,
+        #     PMIC VIN rail PVT binding + Op-Amp isolation, --expect-cutoff, binary PSF no UnicodeEncodeError)
+        # 33a. Spectre -A*beta (`loopGain` negated relative to +A*beta -> critical point 0 deg / +1)
+        #      plus `.stb.ascii` sibling preferred over raw binary `.stb`, and `PoleAndQ` / `ZeroAndQ`
+        sp_dir = os.path.join(tmp_root, "spectre151_ldo_pass")
+        _write_bytes_dir = os.path.join(sp_dir, "SS_1500mV_-40C", "psf")
+        os.makedirs(_write_bytes_dir)
+        f_bin_stb = open(os.path.join(_write_bytes_dir, "loads-000_loop.stb"), "wb")
+        try:
+            f_bin_stb.write(b"\x00\x00\x04\x00\xff\xfeBINARY_STB_PLACEHOLDERClarissa")
+        finally:
+            f_bin_stb.close()
+        # Closed-loop stable 2-pole LDO: L = 3100 / ((1 + s/2pi*2e4)(1 + s/2pi*2e8)) -> Spectre exports -L
+        stb_lines_sp = [
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n'
+        ]
+        f_grid_sp = [1.0, 1.0e2, 2.0e3, 2.0e4, 2.0e5, 2.0e6, 2.0e7, 6.2e7, 1.0e8, 2.0e8, 5.0e8, 2.0e9]
+        for f_hz in f_grid_sp:
+            s_jw = 1j * (2.0 * math.pi * f_hz)
+            l_pos = 3100.0 / ((1.0 + s_jw / (2.0 * math.pi * 2.0e4)) * (1.0 + s_jw / (2.0 * math.pi * 2.0e8)))
+            l_sp = -l_pos
+            stb_lines_sp.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (f_hz, l_sp.real, l_sp.imag))
+        stb_lines_sp.append("END\n")
+        _write_utf8(os.path.join(_write_bytes_dir, "loads-000_loop.stb.ascii"), "".join(stb_lines_sp))
+        _write_utf8(os.path.join(_write_bytes_dir, "loads-000_loop.margin.stb.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"ang_t" FLOAT DOUBLE PROP( "units" "deg" )\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n'
+            '"db_t" FLOAT DOUBLE PROP( "units" "dB" )\n'
+            'TRACE\n"phaseMargin" "ang_t"\n"phaseMarginFreq" "f_t"\n"gainMargin" "db_t"\n"gainMarginFreq" "f_t"\n'
+            'VALUE\n"phaseMargin" 68.6\n"phaseMarginFreq" 6.2e7\n"gainMargin" 12.0\n"gainMarginFreq" 2.5e8\nEND\n'
+        ))
+        # Closed-loop PoleAndQ (nested & flat COMPLEX DOUBLE + scalar real/imag) + ZeroAndQ + Q factor must not become RHP pole
+        _write_utf8(os.path.join(_write_bytes_dir, "closed_loop.pz.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"analysis type" "pz"\n"temperature" -40.0\n'
+            'TYPE\n'
+            '"PoleAndQ" STRUCT(\n'
+            '  "pole" COMPLEX DOUBLE PROP( "units" "Hz" )\n'
+            '  "Q" FLOAT DOUBLE\n'
+            ')\n'
+            '"ZeroAndQ" STRUCT(\n'
+            '  "zero" COMPLEX DOUBLE PROP( "units" "Hz" )\n'
+            '  "Q" FLOAT DOUBLE\n'
+            ')\n'
+            'TRACE\n"p1" "PoleAndQ"\n"p2" "PoleAndQ"\n"z1" "ZeroAndQ"\n'
+            'VALUE\n'
+            '"p1" "PoleAndQ" ( (-20933.0 0.0) 0.50 )\n'
+            '"p2" "PoleAndQ" ( (-1.2e8 1.5e8) 0.80 )\n'
+            '"z1" "ZeroAndQ" ( (-5.0e7 0.0) 0.50 )\nEND\n'
+        ))
+        _write_utf8(os.path.join(_write_bytes_dir, "dcOp.dc.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'TRACE\n"VIN" "v_t"\n"VIN:p" "i_t"\n"VOUT" "v_t"\n'
+            'VALUE\n"VIN" 1.50\n"VIN:p" -7.80e-5\n"VOUT" 1.201\nEND\n'
+        ))
+        _write_utf8(os.path.join(_write_bytes_dir, "dcOpInfo.info.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            '"s_t" FLOAT DOUBLE PROP( "units" "S" )\n"f_t" FLOAT DOUBLE PROP( "units" "F" )\n"int_t" INT LONG\n'
+            '"bsim4" STRUCT( "region" "int_t" "ids" "i_t" "vgs" "v_t" "vds" "v_t" "vth" "v_t" "vdsat" "v_t" "gm" "s_t" "gds" "s_t" "cgg" "f_t" )\n'
+            'TRACE\n"MPpass" "bsim4"\n"MNclprotect" "bsim4"\n"MNloadrelease" "bsim4"\n'
+            'VALUE\n'
+            '"MPpass" "bsim4" ( 2 -1.0e-2 -0.60 -0.273 -0.40 -0.18 8.0e-2 4.0e-4 5.0e-12 )\n'
+            '"MNclprotect" "bsim4" ( 0 1.0e-11 0.0 0.8 0.55 0.05 1.0e-12 1.0e-12 1.0e-15 )\n'
+            '"MNloadrelease" "bsim4" ( 0 4.0e-8 0.1 0.9 0.55 0.05 1.0e-9 1.0e-11 1.0e-14 )\nEND\n'
+        ))
+        # Second corner FF @ 1.8V, 125C for PVT coverage + PMIC VIN check
+        ff_dir = os.path.join(sp_dir, "FF_1800mV_125C", "psf")
+        os.makedirs(ff_dir)
+        _write_utf8(os.path.join(ff_dir, "loads-000_loop.stb.ascii"), "".join(stb_lines_sp).replace("-40.0", "125.0"))
+        _write_utf8(os.path.join(ff_dir, "loads-000_loop.margin.stb.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" 125.0\n'
+            'TYPE\n"ang_t" FLOAT DOUBLE PROP( "units" "deg" )\n'
+            'TRACE\n"phaseMargin" "ang_t"\nVALUE\n"phaseMargin" 68.6\nEND\n'
+        ))
+        _write_utf8(os.path.join(ff_dir, "closed_loop.pz.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" 125.0\n'
+            'TYPE\n"PoleAndQ" STRUCT( "real" FLOAT DOUBLE "imag" FLOAT DOUBLE "Q" FLOAT DOUBLE )\n'
+            'TRACE\n"p1" "PoleAndQ"\nVALUE\n"p1" "PoleAndQ" ( -25000.0 0.0 0.5 )\nEND\n'
+        ))
+        _write_utf8(os.path.join(ff_dir, "dcOp.dc.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" 125.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'TRACE\n"VIN" "v_t"\n"VIN:p" "i_t"\n"VOUT" "v_t"\n'
+            'VALUE\n"VIN" 1.80\n"VIN:p" -7.87e-5\n"VOUT" 1.207\nEND\n'
+        ))
+        spec_ldo151 = os.path.join(tmp_root, "spec_spectre151_ldo.json")
+        _write_utf8(spec_ldo151, json.dumps({
+            "approval": {"approved": True, "status": "approved"},
+            "pvt": {"corners": ["SS", "FF"], "supplies_V": [1.5, 1.8], "temps_C": [-40, 125]},
+            "requirements": [
+                {"id": "PM", "quantity": "phase_margin_deg", "operator": ">=", "target": 55.0, "unit": "deg", "analysis": "stb"},
+                {"id": "IQ", "quantity": "idd_a", "operator": "<=", "target": 80.0, "unit": "uA", "analysis": "dc"},
+                {"id": "GAIN", "quantity": "loop_dc_gain_db", "operator": ">=", "target": 55.0, "unit": "dB", "analysis": "stb"},
+            ],
+        }))
+        res_sp151 = run_metrics(sp_dir, spec_path=spec_ldo151)
+        assert res_sp151["verdict"] == "PASS", res_sp151
+        pm_sp151 = res_sp151["metrics"]["phase_margin_deg"]
+        assert pm_sp151 is not None and 60.0 < pm_sp151 < 75.0, res_sp151["metrics"]
+        assert res_sp151["metrics"]["dc_positive_feedback"] is False, res_sp151["metrics"]
+        assert res_sp151["metrics"]["pz_parsed_ok"] is True, res_sp151["metrics"]
+        assert res_sp151["metrics"]["closed_loop_poles"] >= 1, res_sp151["metrics"]
+        assert res_sp151["metrics"]["closed_loop_rhp_poles"] == 0, res_sp151["metrics"]
+        assert res_sp151["metrics"]["stability_proof_verified"] is True, res_sp151["metrics"]
+        assert res_sp151["metrics"]["vdd_v"] in (1.5, 1.8), res_sp151["metrics"]
+        assert abs(res_sp151["metrics"]["idd_a"] - 7.87e-5) < 1e-8, res_sp151["metrics"]
+        assert main(["metrics", sp_dir, "--spec", spec_ldo151, "--fail-on-spec"], quiet=True) == 0
+
+        # Standalone Spectre .stb.ascii (without margin file) still infers Spectre -A*beta on `loopGain`
+        sp_nomargin_dir = os.path.join(tmp_root, "spectre151_stb_nomargin")
+        _write_utf8(os.path.join(sp_nomargin_dir, "loop.stb.ascii"), "".join(stb_lines_sp))
+        res_sp_nm = run_metrics(sp_nomargin_dir)
+        assert res_sp_nm["metrics"]["dc_positive_feedback"] is False, res_sp_nm["metrics"]
+        assert 60.0 < res_sp_nm["metrics"]["phase_margin_deg"] < 75.0, res_sp_nm["metrics"]
+
+        # Genuine Spectre DC positive feedback (inverted sign + negative margin.stb) MUST still fail closed!
+        sp_posfb_dir = os.path.join(tmp_root, "spectre151_pos_fb")
+        pos_lines_sp = [
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n'
+            'TYPE\n"f_t" FLOAT DOUBLE PROP( "units" "Hz" )\n"c_t" COMPLEX DOUBLE\n'
+            'SWEEP\n"freq" "f_t"\nTRACE\n"loopGain" "c_t"\nVALUE\n'
+        ]
+        for f_hz in f_grid_sp:
+            s_jw = 1j * (2.0 * math.pi * f_hz)
+            l_pos = 3100.0 / ((1.0 + s_jw / (2.0 * math.pi * 2.0e4)) * (1.0 + s_jw / (2.0 * math.pi * 2.0e8)))
+            pos_lines_sp.append('"freq" %.8e\n"loopGain" (%.10e %.10e)\n' % (f_hz, l_pos.real, l_pos.imag))
+        pos_lines_sp.append("END\n")
+        _write_utf8(os.path.join(sp_posfb_dir, "loop.stb.ascii"), "".join(pos_lines_sp))
+        _write_utf8(os.path.join(sp_posfb_dir, "loop.margin.stb.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n'
+            'TYPE\n"ang_t" FLOAT DOUBLE PROP( "units" "deg" )\n'
+            'TRACE\n"phaseMargin" "ang_t"\nVALUE\n"phaseMargin" -111.4\nEND\n'
+        ))
+        res_sp_posfb = run_metrics(sp_posfb_dir, spec_path=spec_a05_stb)
+        assert res_sp_posfb["metrics"]["dc_positive_feedback"] is True, res_sp_posfb["metrics"]
+        assert res_sp_posfb["metrics"]["phase_margin_deg"] < 0.0, res_sp_posfb["metrics"]
+        assert res_sp_posfb["verdict"] == "FAIL", res_sp_posfb
+
+        # Op-Amp with VDD + VIN MUST still isolate VDD and ignore VIN for supply power!
+        oa_iso_parsed = parse_psf_file_res = {
+            "values": {"VDD": [1.8], "VDD:p": [-1.0e-4], "VIN": [0.9], "VIN:p": [-5.0e-5]},
+            "field_units": {"VDD": "V", "VDD:p": "A", "VIN": "V", "VIN:p": "A"},
+        }
+        dc_oa_iso = _extract_dc_power_single(oa_iso_parsed)
+        assert dc_oa_iso["vdd_v"] == 1.8 and abs(dc_oa_iso["idd_a"] - 1.0e-4) < 1e-12, dc_oa_iso
+        assert "vin" not in (dc_oa_iso.get("rail_voltages") or {}), dc_oa_iso
+
+        # 33b. op-audit --expect-cutoff fails without flag, passes with --expect-cutoff MNclprotect,MNloadrelease
+        op_fail_rep = run_op_audit(_write_bytes_dir, vds_margin=0.05)
+        assert op_fail_rep["audit_pass"] is False and op_fail_rep["status"] == "FAIL", op_fail_rep["summary"]
+        assert "MNclprotect" in op_fail_rep["summary"]["cutoff"], op_fail_rep["summary"]
+        op_ok_rep = run_op_audit(_write_bytes_dir, vds_margin=0.05, expect_cutoff=["MNclprotect", "MNloadrelease"])
+        assert op_ok_rep["audit_pass"] is True and op_ok_rep["status"] == "PASS", op_ok_rep["summary"]
+        assert op_ok_rep["summary"]["cutoff"] == [], op_ok_rep["summary"]
+        assert len(op_ok_rep["summary"]["expected_cutoff"]) == 2, op_ok_rep["summary"]
+        assert main([
+            "op-audit", _write_bytes_dir, "--expect-cutoff", "MNclprotect,MNloadrelease", "--fail-on-violation"
+        ], quiet=True) == 0
+        assert main(["op-audit", _write_bytes_dir, "--fail-on-violation"], quiet=True) == 1
+
+        # 33c. Binary PSF fails closed with clean exit code 1 (no UnicodeEncodeError)
+        bin_only_dir = os.path.join(tmp_root, "binary_only_psf")
+        os.makedirs(bin_only_dir)
+        f_bin_dc = open(os.path.join(bin_only_dir, "dcOp.dc"), "wb")
+        try:
+            f_bin_dc.write(b"\x00\x00\x04\x00\xff\xfe\xfd\x80BINARY_PSF_BODYClarissa\x00")
+        finally:
+            f_bin_dc.close()
+        assert main(["metrics", bin_only_dir, "--fail-on-spec"], quiet=True) == 1
+        assert main(["op-audit", os.path.join(bin_only_dir, "dcOp.dc"), "--fail-on-violation"], quiet=True) == 1
+
         return {
             "command": "self-test",
             "ok": True,
@@ -7593,6 +7956,7 @@ def run_self_test():
                 "pvt_header_metadata_enforcement_and_conflict_detection",
                 "codex_f01_to_f05_invariants_mc_multirail_pz_pstb_units",
                 "codex_a01_to_a05_invariants_mc_multirail_units_pz_domain",
+                "spectre151_compat_stb_sign_poleandq_vin_expect_cutoff_binary_guard",
             ],
         }
     finally:
@@ -7600,7 +7964,7 @@ def run_self_test():
 
 
 HELP_TEXT = """Usage:
-  python tools/psf_audit.py op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--no-relax-units] [--fail-on-violation]
+  python tools/psf_audit.py op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--no-relax-units] [--fail-on-violation]
   python tools/psf_audit.py metrics   <run_dir> [--spec spec.json] [--vout Vout] [--vin Vin] [--settling-tol 0.01] [--target-v 1.0] [--no-relax-units] [--fail-on-spec]
   python tools/psf_audit.py self-test (or --self-test)
 
@@ -7626,23 +7990,32 @@ def main(argv=None, quiet=False):
         parser.add_option("-h", "--help", action="store_true", dest="help", default=False)
         parser.add_option("--vds-margin", type="float", dest="vds_margin", default=0.05)
         parser.add_option("--expect-triode", type="string", dest="expect_triode", default="")
+        parser.add_option("--expect-cutoff", type="string", dest="expect_cutoff", default="")
         parser.add_option("--no-relax-units", action="store_true", dest="strict_units", default=True)
         parser.add_option("--fail-on-violation", action="store_true", dest="fail_on_violation", default=False)
         parser.add_option("--out", type="string", dest="out_path", default=None)
         try:
             opts, pos = parser.parse_args(args)
         except ValueError as err:
-            print(json.dumps({"command": "op-audit", "ok": False, "error": str(err)}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "op-audit", "ok": False, "error": _safe_exc_text(err)}, indent=2, sort_keys=True))
             return 2
         if opts.help:
             print(HELP_TEXT)
             return 0
         if len(pos) != 1:
-            print(json.dumps({"command": "op-audit", "ok": False, "error": "Expected <run_or_psf_path>"}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "op-audit", "ok": False, "error": "Expected <run_or_psf_path>"}, indent=2, sort_keys=True))
             return 2
         expect_list = [x.strip() for x in opts.expect_triode.split(",") if x.strip()]
+        expect_cutoff_list = [x.strip() for x in opts.expect_cutoff.split(",") if x.strip()]
         try:
-            res = run_op_audit(pos[0], vds_margin=opts.vds_margin, expect_triode=expect_list)
+            res = run_op_audit(
+                pos[0],
+                vds_margin=opts.vds_margin,
+                expect_triode=expect_list,
+                expect_cutoff=expect_cutoff_list,
+            )
             txt = json.dumps(res, indent=2, sort_keys=True)
             if opts.out_path:
                 out_f = open(opts.out_path, "wb")
@@ -7650,12 +8023,14 @@ def main(argv=None, quiet=False):
                     out_f.write((txt + "\n").encode("utf-8"))
                 finally:
                     out_f.close()
-            print(txt)
+            if not quiet:
+                print(txt)
             if opts.fail_on_violation and not res.get("audit_pass", False):
                 return 1
             return 0
         except Exception as exc:
-            print(json.dumps({"command": "op-audit", "ok": False, "error": str(exc)}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "op-audit", "ok": False, "error": _safe_exc_text(exc)}, indent=2, sort_keys=True))
             return 1
 
     if subcmd == "metrics":
@@ -7672,13 +8047,15 @@ def main(argv=None, quiet=False):
         try:
             opts, pos = parser.parse_args(args)
         except ValueError as err:
-            print(json.dumps({"command": "metrics", "ok": False, "error": str(err)}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "metrics", "ok": False, "error": _safe_exc_text(err)}, indent=2, sort_keys=True))
             return 2
         if opts.help:
             print(HELP_TEXT)
             return 0
         if len(pos) != 1:
-            print(json.dumps({"command": "metrics", "ok": False, "error": "Expected <run_dir>"}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "metrics", "ok": False, "error": "Expected <run_dir>"}, indent=2, sort_keys=True))
             return 2
         try:
             res = run_metrics(
@@ -7702,7 +8079,8 @@ def main(argv=None, quiet=False):
                 return 1
             return 0
         except Exception as exc:
-            print(json.dumps({"command": "metrics", "ok": False, "error": str(exc)}, indent=2, sort_keys=True))
+            if not quiet:
+                print(json.dumps({"command": "metrics", "ok": False, "error": _safe_exc_text(exc)}, indent=2, sort_keys=True))
             return 1
 
     print(json.dumps({"ok": False, "error": "Unknown subcommand: " + subcmd}, indent=2, sort_keys=True))
