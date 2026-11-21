@@ -26,8 +26,8 @@
     },
     {
       "path": "kb/checklists/closed-loop-sizing-and-signoff.json",
-      "bytes": 10864,
-      "sha256": "9abf2be5258c6e7aea7698240c93eea0b98b57ef76dfcd8fdac24ac033f42946"
+      "bytes": 13426,
+      "sha256": "0272237ceeb40f7d11149e80ac0ee02ecc70ec84f5b4dd3651416169c7dae53b"
     },
     {
       "path": "kb/checklists/cmfb.json",
@@ -91,8 +91,8 @@
     },
     {
       "path": "kb/checklists/ldo-regulator.json",
-      "bytes": 15638,
-      "sha256": "fd6f8d5f0d0fbe7ebc96c4118e32476015ffbbcfddedeb07300b2c0052ee9872"
+      "bytes": 17263,
+      "sha256": "c2d29d75b0618bac84e51e8a96d50cc909c4f38e500db00d23b8fa6238141f88"
     },
     {
       "path": "kb/checklists/oscillator-and-pll.json",
@@ -511,8 +511,8 @@
     },
     {
       "path": "kb/nodes-bundle.json.gz",
-      "bytes": 1314692,
-      "sha256": "d6a3389e3b2c306ecadc7e918fd7ab918e97435c858b06f33f6e9713c90d967b"
+      "bytes": 1316131,
+      "sha256": "9232aadf11c87c20b9813afc549f9621f9d6c3ccad02e7eb703e0ee5f727cbeb"
     },
     {
       "path": "kb/nodes/ams-filters-and-system/tech-hierarchical-chip-spec-budgeting-and-interfaces.md",
@@ -721,8 +721,8 @@
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-ic617-live-ipc-bridge-and-schematic-json.md",
-      "bytes": 25940,
-      "sha256": "5c9d110326071afb99b9b988e207d6135cd4c5134b2bc8d95aa012d514dc5388"
+      "bytes": 27791,
+      "sha256": "654d1c46db54685956f00aeadd4416a1a0584c9e681e7a5b1db897d65c7c6fde"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-ic617-skill-sch-cdf-automation.md",
@@ -751,8 +751,8 @@
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-psf-mos-op-waveform-and-spec-auditor.md",
-      "bytes": 23626,
-      "sha256": "a995911704c7a9e7f27934c27fa1f432fdad294025092508dc1de301094c7bd8"
+      "bytes": 25434,
+      "sha256": "1564abb7202cd544ef89289b1a280849044c1114c506eadd7c58f2b7f4c9f97d"
     },
     {
       "path": "kb/nodes/eda-and-github-skills/skill-sar-adc-cdac-coherent-fft-calibration.md",
@@ -1326,8 +1326,8 @@
     },
     {
       "path": "kb/router-index.json",
-      "bytes": 1764266,
-      "sha256": "e5f4a609acb464de1ab9e79271e34f1f69d5c6610a37071e21b6372592870d01"
+      "bytes": 1765327,
+      "sha256": "020ef079f9fe2d6be2eb840c16d937c454ca04916ac4452848284d5ea7a16220"
     }
   ]
 }

@@ -5,12 +5,14 @@
 100% Python 2.6.6+ and Python 3 standard-library compatible (`optparse` CLI, zero external deps).
 
 Subcommands:
-  op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--fail-on-violation]
-  metrics   <run_dir> [--spec spec.json] [--fail-on-spec]
-  self-test (or --self-test)
+  op-audit      <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--fail-on-violation]
+  metrics       <run_dir> [--spec spec.json] [--fail-on-spec]
+  design-audit  <netlist.scs_or_schematic.json> [--schematic dump.json] [--subckt NAME] [--fail-on-violation]
+  self-test     (or --self-test)
 """
 from __future__ import division, print_function
 
+import ast
 import hashlib
 import json
 import math
@@ -215,6 +217,7 @@ METRIC_DIMENSIONS = {
     "phase_margin_deg": "angle",
     "gain_margin_db": "db",
     "gm_freq_hz": "freq",
+    "max_pole_real_hz": "freq",
     "slew_rate_pos": "slew_rate",
     "slew_rate_neg": "slew_rate",
     "overshoot_pct": "percent",
@@ -236,6 +239,10 @@ METRIC_KEY_ALIASES = {
     "stb_ugf_hz": ("stb_ugf_hz", "loop_ugf_hz", "fc_hz", "crossover_freq_hz"),
     "phase_margin_deg": ("phase_margin_deg", "pm_deg", "pm", "phase_margin"),
     "gain_margin_db": ("gain_margin_db", "gm_db", "gain_margin"),
+    "max_pole_real_hz": (
+        "max_pole_real_hz", "max_pole_real", "rightmost_pole_hz",
+        "ldo_rightmost_pole_hz", "max_closed_loop_pole_real_hz",
+    ),
     "slew_rate_pos": ("slew_rate_pos", "sr_pos", "slew_rate", "sr_rising"),
     "slew_rate_neg": ("slew_rate_neg", "sr_neg", "sr_falling"),
     "overshoot_pct": ("overshoot_pct", "overshoot", "os_pct"),
@@ -1249,6 +1256,17 @@ def _extract_dc_power_single(parsed):
                 "pmic_vin_supply_terminal" if (pmic_vin_promoted and len(matched_rails) == 1)
                 else ("supply_terminal" if len(matched_rails) == 1 else "multi_rail_supply_terminal")
             )
+            sweep_ranges = {}
+            for r_stem, _, v_arr, _, _ in matched_pairs:
+                if len(v_arr) >= 2 and (max(v_arr) - min(v_arr)) > 0.02:
+                    sweep_ranges[r_stem] = [_round_clean(min(v_arr)), _round_clean(max(v_arr))]
+            if not sweep_ranges and sweep_name:
+                sw_stem = _normalize_rail_stem(sweep_name)
+                sw_vals = parsed.get("sweep_values") or []
+                if sw_stem in rail_volts and len(sw_vals) >= 2:
+                    num_sw = [float(x.real) if isinstance(x, complex) else float(x) for x in sw_vals if _is_finite_num(x)]
+                    if len(num_sw) >= 2 and (max(num_sw) - min(num_sw)) > 0.02:
+                        sweep_ranges[sw_stem] = [_round_clean(min(num_sw)), _round_clean(max(num_sw))]
             out.update({
                 "vdd_v": matched_rails[0]["vdd_v"] if len(matched_rails) == 1 else None,
                 "idd_a": _round_clean(total_i),
@@ -1258,6 +1276,9 @@ def _extract_dc_power_single(parsed):
                 "rail_voltages": rail_volts,
                 "primary_supply_rail": prim_rail,
             })
+            if sweep_ranges:
+                out["dc_supply_swept"] = True
+                out["supply_sweep_ranges"] = sweep_ranges
             if len(matched_rails) == 1:
                 out["supply_node"] = matched_rails[0]["voltage_node"]
                 out["current_probe"] = matched_rails[0]["current_probe"]
@@ -1290,6 +1311,9 @@ def _extract_dc_power_single(parsed):
                     "rail_voltages": {only_v_stem: matched_rails[0]["vdd_v"]},
                     "primary_supply_rail": only_v_stem,
                 })
+                if len(v_arr) >= 2 and (max(v_arr) - min(v_arr)) > 0.02:
+                    out["dc_supply_swept"] = True
+                    out["supply_sweep_ranges"] = {only_v_stem: [_round_clean(min(v_arr)), _round_clean(max(v_arr))]}
                 if n_pts > 1:
                     out["dc_sweep_points"] = n_pts
                     out["dc_worst_sweep_index"] = max_power_idx
@@ -1309,10 +1333,13 @@ def _extract_dc_power_single(parsed):
 
     if num_supply_v > 0 and num_cand_i == 0:
         rail_volts = {}
+        sweep_ranges_vo = {}
         for r_st in sorted(supply_voltage_nodes.keys()):
             v_list = supply_voltage_nodes[r_st]
             if len(v_list) == 1 and v_list[0][1]:
                 rail_volts[r_st] = _round_clean(v_list[0][1][0])
+                if len(v_list[0][1]) >= 2 and (max(v_list[0][1]) - min(v_list[0][1])) > 0.02:
+                    sweep_ranges_vo[r_st] = [_round_clean(min(v_list[0][1])), _round_clean(max(v_list[0][1]))]
         if rail_volts:
             prim_rail = "vdd" if "vdd" in rail_volts else (list(rail_volts.keys())[0] if len(rail_volts) == 1 else None)
             out.update({
@@ -1323,6 +1350,9 @@ def _extract_dc_power_single(parsed):
                 "primary_supply_rail": prim_rail,
                 "power_method": "pmic_vin_voltage_only" if pmic_vin_promoted else "supply_voltage_only",
             })
+            if sweep_ranges_vo:
+                out["dc_supply_swept"] = True
+                out["supply_sweep_ranges"] = sweep_ranges_vo
             return out
 
     if out:
@@ -1375,11 +1405,25 @@ def _extract_dc_power(parsed_list):
         return ambiguous_res
 
     if valid_results:
-        best_p_res = valid_results[0]
-        for cand in valid_results[1:]:
+        fixed_valid = [r for r in valid_results if not r.get("dc_supply_swept")]
+        anchor_pool = fixed_valid if fixed_valid else valid_results
+        best_p_res = anchor_pool[0]
+        for cand in anchor_pool[1:]:
             if cand["dc_power_w"] > best_p_res["dc_power_w"]:
                 best_p_res = cand
         out = dict(best_p_res)
+        merged_sweep_ranges = {}
+        for cand in valid_results:
+            for rk, rng in (cand.get("supply_sweep_ranges") or {}).items():
+                if rk in merged_sweep_ranges:
+                    merged_sweep_ranges[rk] = [
+                        _round_clean(min(merged_sweep_ranges[rk][0], rng[0])),
+                        _round_clean(max(merged_sweep_ranges[rk][1], rng[1])),
+                    ]
+                else:
+                    merged_sweep_ranges[rk] = list(rng)
+        if merged_sweep_ranges:
+            out["supply_sweep_ranges"] = merged_sweep_ranges
         power_vals = [
             r["dc_power_w"] for r in valid_results
             if isinstance(r.get("dc_power_w"), _NUM_TYPES) and not isinstance(r.get("dc_power_w"), bool)
@@ -3840,9 +3884,21 @@ def _check_point_label_vs_metadata(point_label, pm):
         )
 
     if supply_vs and lbl_volts:
+        sweep_ranges = pm.get("supply_sweep_ranges") or {}
+        prim_rn = str(pm.get("primary_supply_rail") or "").strip().lower()
         for lv in lbl_volts:
             tol_v = max(0.01, 0.02 * abs(lv))
-            if not any([abs(sv - lv) <= tol_v for sv in supply_vs]):
+            matched = any([abs(sv - lv) <= tol_v for sv in supply_vs])
+            if (not matched) and sweep_ranges:
+                if prim_rn and prim_rn in sweep_ranges:
+                    lo, hi = sweep_ranges[prim_rn]
+                    if (lo - tol_v) <= lv <= (hi + tol_v):
+                        matched = True
+                elif len(sweep_ranges) == 1:
+                    lo, hi = list(sweep_ranges.values())[0]
+                    if (lo - tol_v) <= lv <= (hi + tol_v):
+                        matched = True
+            if not matched:
                 conflicts.append("label voltage %gV != measured supply_v %s" % (lv, repr(supply_vs)))
 
     return conflicts
@@ -4486,6 +4542,26 @@ def _extract_point_metrics(
         unk_tot = unk_lti + unk_per
         if unk_tot:
             metrics["pz_unknown_mode_count"] = len(unk_tot)
+        valid_cl_all = [r for r in (cl_lti + cl_per) if r.get("pz_parsed_ok")]
+        valid_cl_max = [
+            float(r["max_pole_real"]) for r in valid_cl_all
+            if _is_finite_num(r.get("max_pole_real"))
+        ]
+        cl_conflicts = [
+            r for r in (cl_lti + cl_per)
+            if r.get("pz_mode_conflict") or r.get("pz_incomplete") or r.get("pz_unit_conflict")
+        ]
+        if valid_cl_max and (not cl_conflicts) and (not any([r.get("pz_mode_conflict") for r in all_pz_runs])):
+            cl_max_re = _round_clean(max(valid_cl_max))
+            metrics["max_pole_real_hz"] = cl_max_re
+            metrics_by_analysis["pz"] = {
+                "pz_parsed_ok": True,
+                "max_pole_real_hz": cl_max_re,
+                "closed_loop_poles": sum([int(r.get("poles_count", 0)) for r in valid_cl_all]),
+                "closed_loop_rhp_poles": sum([int(r.get("rhp_poles", 0)) for r in valid_cl_all]),
+                "closed_loop_jw_axis_poles": sum([int(r.get("jw_axis_poles", 0)) for r in valid_cl_all]),
+                "closed_loop_non_lhp_poles": sum([int(r.get("non_lhp_poles", 0)) for r in valid_cl_all]),
+            }
 
     # Process `.pss` files if present so `pss` analysis coverage can be verified distinctly
     for pss_p in psf_files_by_kind.get("pss", []):
@@ -6248,7 +6324,7 @@ def run_metrics(run_dir, spec_path=None, vout_hint=None, vin_hint=None, settling
         "slew_rate_pos", "slew_rate_neg",
     ])
     high_is_worse = set([
-        "dc_power_w", "idd_a", "overshoot_pct", "settling_time_s",
+        "dc_power_w", "idd_a", "max_pole_real_hz", "overshoot_pct", "settling_time_s",
         "ripple_pp", "integrated_rms_noise_v", "integrated_rms_noise_a",
     ])
 
@@ -6279,6 +6355,996 @@ def run_metrics(run_dir, spec_path=None, vout_hint=None, vin_hint=None, settling
         payload["verdict"] = "NOT_VERIFIED"
 
     return payload
+
+
+# ---------------------------------------------------------------------------
+# Silicon-Realistic Passive Budget & Textbook Schematic Auditor (`design-audit`)
+# ---------------------------------------------------------------------------
+
+_SPECTRE_ENG_SCALE = {
+    "a": 1e-18, "A": 1e-18,
+    "f": 1e-15, "F": 1e-15,
+    "p": 1e-12, "P": 1e-12,
+    "n": 1e-9,  "N": 1e-9,
+    "u": 1e-6,  "U": 1e-6,
+    "m": 1e-3,
+    "k": 1e3,   "K": 1e3,
+    "M": 1e6,   "meg": 1e6, "Meg": 1e6, "MEG": 1e6,
+    "g": 1e9,   "G": 1e9,
+    "t": 1e12,  "T": 1e12,
+}
+
+_ENG_TOKEN_RE = re.compile(
+    r'(?<![A-Za-z0-9_.])'
+    r'(\d+(?:\.\d+)?|\.\d+)'
+    r'(?:([eE][+-]?\d+))?'
+    r'(?:(meg|Meg|MEG)(?:[oO][hH][mM][sS]?|[hH][zZ])?'
+    r'|([aAfFpPnNuUmMkKMGgTt])(?:[oO][hH][mM][sS]?|[hH][zZ]|[fFhHvVaAmMsS])?'
+    r'|(?:[oO][hH][mM][sS]?|[hH][zZ]))?'
+    r'(?![A-Za-z0-9_])'
+)
+
+_IDEAL_CAP_NAMES = set(["capacitor", "cap", "pcapacitor", "ccap", "ideal_cap"])
+_IDEAL_RES_NAMES = set(["resistor", "res", "presistor", "ideal_res"])
+_TB_STIM_MODELS = set([
+    "vsource", "isource", "iprobe", "diffstbprobe", "port", "vcvs", "vccs",
+    "cccs", "ccvs", "switch", "relay", "psin", "vpulse", "vpwl",
+])
+_SKIP_SCH_CELLS = set([
+    "ipin", "opin", "iopin", "noconn", "gnd", "vdd", "vss", "vsource", "isource",
+    "iprobe", "diffstbprobe", "port", "vdc", "idc", "vac", "vpulse", "vsin", "vpwl",
+    "title", "asheet", "bsheet", "csheet", "dsheet", "frame",
+])
+_SPECTRE_CTRL_HEADS = set([
+    "simulator", "global", "include", "ahdl_include", "section", "endsection",
+    "options", "saveoptions", "save", "ic", "nodeset", "alter", "altergroup",
+    "model", "statistics", "process", "mismatch", "parameters", "subckt", "ends",
+    "inline", "library", "endlibrary", "info", "dc", "ac", "stb", "pstb", "pz",
+    "tran", "noise", "pnoise", "pss", "pac", "sp", "hb", "envlp", "xf", "sens",
+])
+
+
+def _safe_ast_eval(node, env):
+    if isinstance(node, ast.Expression):
+        return _safe_ast_eval(node.body, env)
+    if hasattr(ast, "Constant") and isinstance(node, ast.Constant):
+        if isinstance(node.value, _NUM_TYPES) and not isinstance(node.value, bool):
+            return float(node.value)
+        return None
+    if hasattr(ast, "Num") and isinstance(node, ast.Num):
+        return float(node.n)
+    if isinstance(node, ast.Name):
+        key = str(node.id)
+        if key in env:
+            return float(env[key])
+        if key.lower() in env:
+            return float(env[key.lower()])
+        return None
+    if isinstance(node, ast.UnaryOp):
+        v = _safe_ast_eval(node.operand, env)
+        if v is None:
+            return None
+        if isinstance(node.op, ast.USub):
+            return -v
+        if isinstance(node.op, ast.UAdd):
+            return v
+        return None
+    if isinstance(node, ast.BinOp):
+        lval = _safe_ast_eval(node.left, env)
+        rval = _safe_ast_eval(node.right, env)
+        if lval is None or rval is None:
+            return None
+        if isinstance(node.op, ast.Add):
+            return lval + rval
+        if isinstance(node.op, ast.Sub):
+            return lval - rval
+        if isinstance(node.op, ast.Mult):
+            return lval * rval
+        if isinstance(node.op, ast.Div):
+            return (lval / rval) if abs(rval) > 1e-300 else None
+        if isinstance(node.op, ast.Pow):
+            try:
+                return lval ** rval
+            except Exception:
+                return None
+    return None
+
+
+def _parse_spectre_eng_value(raw_val, params=None):
+    """Parse Spectre numeric/engineering/arithmetic value safely (without Python eval())."""
+    if raw_val is None or isinstance(raw_val, bool):
+        return None
+    if isinstance(raw_val, _NUM_TYPES):
+        f_num = float(raw_val)
+        return None if (math.isnan(f_num) or math.isinf(f_num)) else f_num
+    s = str(raw_val).strip()
+    if not s:
+        return None
+    if (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'")):
+        s = s[1:-1].strip()
+    if not s:
+        return None
+    env = dict(params or {})
+    if s in env:
+        return float(env[s])
+    if s.lower() in env:
+        return float(env[s.lower()])
+
+    def _repl_eng(m):
+        num_s = m.group(1)
+        exp_s = m.group(2) or ""
+        meg_s = m.group(3)
+        pref_s = m.group(4)
+        base_f = float(num_s + exp_s)
+        scale = 1.0
+        if meg_s:
+            scale = 1e6
+        elif pref_s:
+            if exp_s and pref_s in ("F", "H", "V", "A", "m", "s"):
+                scale = 1.0
+            else:
+                scale = _SPECTRE_ENG_SCALE.get(pref_s, 1.0)
+        return "(%.15g)" % (base_f * scale)
+
+    norm_expr = _ENG_TOKEN_RE.sub(_repl_eng, s).strip()
+    try:
+        tree = ast.parse(norm_expr, mode="eval")
+        res = _safe_ast_eval(tree, env)
+        if res is not None and not (math.isnan(res) or math.isinf(res)):
+            return float(res)
+    except Exception:
+        return None
+    return None
+
+
+def _classify_device_kind(inst_name, model_or_cell, lib_name=""):
+    m_low = str(model_or_cell or "").strip().lower()
+    l_low = str(lib_name or "").strip().lower()
+    i_low = str(inst_name or "").strip().lower()
+    if m_low in _TB_STIM_MODELS or (l_low == "analoglib" and m_low in _SKIP_SCH_CELLS):
+        return "stim_or_tb"
+    if m_low in _SKIP_SCH_CELLS:
+        return "stim_or_tb"
+    if any([tok in m_low for tok in ("pmos", "pch", "pfet", "g45p", "g90p")]):
+        return "pmos"
+    if any([tok in m_low for tok in ("nmos", "nch", "nfet", "g45n", "g90n")]):
+        return "nmos"
+    if m_low in _IDEAL_CAP_NAMES or (l_low == "analoglib" and "cap" in m_low):
+        return "ideal_cap"
+    if any([tok in m_low for tok in ("mimcap", "momcap", "cmim", "cmom", "cap", "varactor")]):
+        return "pdk_cap"
+    if m_low in _IDEAL_RES_NAMES or (l_low == "analoglib" and "res" in m_low):
+        return "ideal_res"
+    if any([tok in m_low for tok in ("rpoly", "resn", "resp", "rm1", "rm2", "rwell", "res", "rppoly", "rnpoly")]):
+        return "pdk_res"
+    if any([tok in m_low for tok in ("ind", "spiral", "xfmr")]):
+        return "inductor"
+    if "mos" in m_low or "bsim" in m_low:
+        if i_low.startswith("mp") or i_low.startswith("xp") or "p" in m_low:
+            return "pmos"
+        return "nmos"
+    return "other"
+
+
+_C_COMMENT_RE = re.compile(r'/\*.*?\*/', re.DOTALL)
+
+
+def _join_spectre_statements(text):
+    text = _C_COMMENT_RE.sub(' ', text)
+    out_lines = []
+    for raw_ln in text.splitlines():
+        no_cmt = re.sub(r'//.*$', '', raw_ln)
+        if no_cmt.lstrip().startswith("*"):
+            continue
+        out_lines.append(no_cmt)
+    joined = []
+    cur = ""
+    for ln in out_lines:
+        s = ln.rstrip()
+        if not s.strip():
+            if cur:
+                joined.append(cur)
+                cur = ""
+            continue
+        cont = False
+        if cur and (s.lstrip().startswith("+")):
+            cur = cur + " " + s.lstrip()[1:].strip()
+            continue
+        if s.endswith("\\"):
+            cur = (cur + " " + s[:-1].strip()).strip()
+            cont = True
+        else:
+            cur = (cur + " " + s.strip()).strip()
+        if not cont:
+            joined.append(cur)
+            cur = ""
+    if cur:
+        joined.append(cur)
+    return joined
+
+
+def _parse_kv_pairs(rest_str):
+    pairs = {}
+    i = 0
+    n = len(rest_str)
+    while i < n:
+        while i < n and rest_str[i].isspace():
+            i += 1
+        if i >= n:
+            break
+        eq_idx = rest_str.find("=", i)
+        if eq_idx < 0:
+            break
+        key = rest_str[i:eq_idx].strip().split()[-1] if rest_str[i:eq_idx].strip() else ""
+        j = eq_idx + 1
+        while j < n and rest_str[j].isspace():
+            j += 1
+        if j >= n:
+            break
+        if rest_str[j] in ('"', "'"):
+            q = rest_str[j]
+            k = j + 1
+            while k < n and rest_str[k] != q:
+                if rest_str[k] == "\\" and k + 1 < n:
+                    k += 2
+                else:
+                    k += 1
+            val = rest_str[j + 1:k]
+            i = k + 1
+        elif rest_str[j] == "(":
+            depth = 1
+            k = j + 1
+            while k < n and depth > 0:
+                if rest_str[k] == "(":
+                    depth += 1
+                elif rest_str[k] == ")":
+                    depth -= 1
+                k += 1
+            val = rest_str[j:k]
+            i = k
+        else:
+            k = j
+            while k < n and not rest_str[k].isspace():
+                k += 1
+            val = rest_str[j:k]
+            i = k
+        if key:
+            pairs[key.lower()] = val
+    return pairs
+
+
+def _resolve_param_table(raw_pairs, base_env=None):
+    env = dict(base_env or {})
+    for _ in range(4):
+        progressed = False
+        for k, raw_v in raw_pairs.items():
+            kl = k.lower()
+            if kl in env:
+                continue
+            v = _parse_spectre_eng_value(raw_v, params=env)
+            if v is not None:
+                env[k] = v
+                env[kl] = v
+                progressed = True
+        if not progressed:
+            break
+    return env
+
+
+def _build_device_record(inst_name, model_name, props_lc, params_env, lib_name=""):
+    kind = _classify_device_kind(inst_name, model_name, lib_name=lib_name)
+    m_raw = props_lc.get("simm", props_lc.get("m", "1"))
+    m_val = _parse_spectre_eng_value(m_raw, params=params_env)
+    if m_val is None or m_val <= 0:
+        m_val = 1.0
+
+    rec = {
+        "name": inst_name,
+        "model": str(model_name or ""),
+        "kind": kind,
+        "m": float(m_val),
+    }
+
+    if kind in ("pmos", "nmos"):
+        w_val = _parse_spectre_eng_value(props_lc.get("w"), params=params_env)
+        fw_val = _parse_spectre_eng_value(props_lc.get("fw"), params=params_env)
+        nf_val = _parse_spectre_eng_value(props_lc.get("nf", props_lc.get("fingers")), params=params_env)
+        l_val = _parse_spectre_eng_value(props_lc.get("l"), params=params_env)
+        if nf_val is None or nf_val <= 0:
+            nf_val = 1.0
+        eff_w_single = w_val
+        if eff_w_single is None and fw_val is not None:
+            eff_w_single = fw_val * nf_val
+        elif eff_w_single is not None and fw_val is not None and nf_val > 1.0:
+            if abs(eff_w_single - fw_val) <= 0.05 * max(eff_w_single, 1e-12):
+                eff_w_single = fw_val * nf_val
+        area_um2 = None
+        if eff_w_single is not None and l_val is not None and eff_w_single > 0 and l_val > 0:
+            area_um2 = (eff_w_single * m_val * 1e6) * (l_val * 1e6)
+        rec["w_um"] = _round_clean(eff_w_single * m_val * 1e6) if eff_w_single is not None else None
+        rec["l_um"] = _round_clean(l_val * 1e6) if l_val is not None else None
+        rec["gate_area_um2"] = _round_clean(area_um2)
+    elif kind in ("ideal_cap", "pdk_cap"):
+        c_raw = props_lc.get("c", props_lc.get("cval", props_lc.get("cap", props_lc.get("value"))))
+        c_val = _parse_spectre_eng_value(c_raw, params=params_env)
+        rec["c_pf"] = _round_clean(c_val * m_val * 1e12) if c_val is not None else None
+        rec["is_ideal"] = (kind == "ideal_cap")
+    elif kind in ("ideal_res", "pdk_res"):
+        r_raw = props_lc.get("r", props_lc.get("rval", props_lc.get("res", props_lc.get("value"))))
+        r_val = _parse_spectre_eng_value(r_raw, params=params_env)
+        # Parallel `m` reduces effective resistance R_eff = R/m, while physical layout still uses `m` resistors of value R!
+        rec["r_kohm"] = _round_clean((r_val / m_val) * 1e-3) if r_val is not None else None
+        rec["is_ideal"] = (kind == "ideal_res")
+
+    return rec
+
+
+def _parse_spectre_netlist_for_audit(scs_path, subckt_name=None):
+    fh = open(scs_path, "rb")
+    try:
+        raw_txt = fh.read().decode("utf-8", "replace")
+    finally:
+        fh.close()
+
+    stmts = _join_spectre_statements(raw_txt)
+    global_raw_params = {}
+    top_insts = []
+    subckts = {}
+    cur_subckt = None
+    inst_re = re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_$]*)\s*\(([^)]*)\)\s*([A-Za-z_][A-Za-z0-9_$.]*)(.*)$')
+
+    for st in stmts:
+        low = st.lstrip().lower()
+        parts = low.split(None, 2)
+        if not parts:
+            continue
+        head = parts[0]
+        if head in ("subckt", "inline"):
+            toks = st.split()
+            sc_idx = 2 if head == "inline" and len(toks) > 2 and toks[1].lower() == "subckt" else 1
+            if sc_idx < len(toks):
+                sc_name = toks[sc_idx].split("(", 1)[0]
+                cur_subckt = {"name": sc_name, "raw_params": {}, "insts": []}
+                subckts[sc_name] = cur_subckt
+            continue
+        if head == "ends":
+            cur_subckt = None
+            continue
+        if head == "parameters":
+            kv = _parse_kv_pairs(st.split(None, 1)[1] if len(st.split(None, 1)) > 1 else "")
+            if cur_subckt is not None:
+                cur_subckt["raw_params"].update(kv)
+            else:
+                global_raw_params.update(kv)
+            continue
+        if head in _SPECTRE_CTRL_HEADS:
+            continue
+
+        m_inst = inst_re.match(st)
+        if m_inst:
+            i_name = m_inst.group(1)
+            i_model = m_inst.group(3)
+            i_props = _parse_kv_pairs(m_inst.group(4))
+            entry = (i_name, i_model, i_props)
+            if cur_subckt is not None:
+                cur_subckt["insts"].append(entry)
+            else:
+                top_insts.append(entry)
+
+    global_env = _resolve_param_table(global_raw_params)
+    subckt_lc_map = dict([(k.lower(), k) for k in subckts.keys()])
+
+    def _expand_subckt(sc_key, prefix, parent_env, depth=0):
+        if depth > 8:
+            return []
+        sc = subckts[sc_key]
+        local_env = _resolve_param_table(sc["raw_params"], base_env=parent_env)
+        expanded = []
+        for i_name, i_model, i_props in sc["insts"]:
+            child_key = subckt_lc_map.get(i_model.lower())
+            if child_key:
+                child_env = dict(local_env)
+                for pk, pv in i_props.items():
+                    pv_num = _parse_spectre_eng_value(pv, params=local_env)
+                    if pv_num is not None:
+                        child_env[pk] = pv_num
+                        child_env[pk.lower()] = pv_num
+                m_sub = _parse_spectre_eng_value(i_props.get("m", "1"), params=local_env) or 1.0
+                child_devs = _expand_subckt(child_key, "%s.%s" % (prefix, i_name) if prefix else i_name, child_env, depth + 1)
+                for cd in child_devs:
+                    if m_sub != 1.0:
+                        cd["m"] = cd["m"] * m_sub
+                        if cd.get("c_pf") is not None:
+                            cd["c_pf"] = _round_clean(cd["c_pf"] * m_sub)
+                        if cd.get("gate_area_um2") is not None:
+                            cd["gate_area_um2"] = _round_clean(cd["gate_area_um2"] * m_sub)
+                    expanded.append(cd)
+            else:
+                full_n = "%s.%s" % (prefix, i_name) if prefix else i_name
+                expanded.append(_build_device_record(full_n, i_model, i_props, local_env))
+        return expanded
+
+    if subckt_name:
+        target_sc = subckt_lc_map.get(subckt_name.lower())
+        if not target_sc:
+            raise ValueError("Subckt '%s' not found in %s" % (subckt_name, scs_path))
+        return "subckt:%s" % target_sc, _expand_subckt(target_sc, "", global_env)
+
+    # Identify top-level DUT subckt(s) if any exist
+    if subckts:
+        non_tb_names = [
+            sn for sn in sorted(subckts.keys())
+            if not sn.lower().startswith("tb") and "testbench" not in sn.lower()
+        ]
+        cand_names = non_tb_names if non_tb_names else sorted(subckts.keys())
+        # Filter to roots not instantiated inside other candidate subckts
+        called_subckts = set()
+        for sn in cand_names:
+            for _, imod, _ in subckts[sn]["insts"]:
+                ck = subckt_lc_map.get(imod.lower())
+                if ck and ck != sn:
+                    called_subckts.add(ck)
+        roots = [sn for sn in cand_names if sn not in called_subckts]
+        pick_sc = roots[-1] if roots else cand_names[0]
+        return "subckt:%s" % pick_sc, _expand_subckt(pick_sc, "", global_env)
+
+    top_devs = [
+        _build_device_record(i_name, i_model, i_props, global_env)
+        for i_name, i_model, i_props in top_insts
+        if _classify_device_kind(i_name, i_model) != "stim_or_tb"
+    ]
+    return "top_level", top_devs
+
+
+def audit_passive_budget(
+    devices_list,
+    max_total_cap_pf=20.0,
+    max_single_cap_pf=10.0,
+    max_total_res_kohm=1000.0,
+    max_single_res_kohm=300.0,
+    max_cap_to_mos_area_ratio=50.0,
+    cap_density_ff_per_um2=2.0,
+    forbid_ideal_passives=False,
+):
+    """Fail-closed silicon passive budget audit rejecting bloated ideal caps and multi-MOhm resistors."""
+    mos_devs = [d for d in devices_list if d.get("kind") in ("pmos", "nmos")]
+    cap_devs = [d for d in devices_list if d.get("kind") in ("ideal_cap", "pdk_cap")]
+    res_devs = [d for d in devices_list if d.get("kind") in ("ideal_res", "pdk_res")]
+
+    nmos_cnt = len([d for d in mos_devs if d.get("kind") == "nmos"])
+    pmos_cnt = len([d for d in mos_devs if d.get("kind") == "pmos"])
+    tot_mos_area = sum([float(d["gate_area_um2"]) for d in mos_devs if _is_finite_num(d.get("gate_area_um2"))])
+
+    flags = []
+    any_fail = False
+    tot_cap_pf = 0.0
+    max_cap = 0.0
+    largest_cap_name = None
+    ideal_cap_cnt = 0
+    pdk_cap_cnt = 0
+    for cd in cap_devs:
+        if cd.get("is_ideal"):
+            ideal_cap_cnt += 1
+        else:
+            pdk_cap_cnt += 1
+        cp = cd.get("c_pf")
+        if not _is_finite_num(cp):
+            any_fail = True
+            flags.append({
+                "device": cd["name"],
+                "code": "UNPARSEABLE_PASSIVE_VALUE",
+                "severity": "error",
+                "message": "Capacitor %s has unparseable capacitance value" % cd["name"],
+            })
+            continue
+        cp_f = float(cp)
+        tot_cap_pf += cp_f
+        if cp_f > max_cap:
+            max_cap = cp_f
+            largest_cap_name = cd["name"]
+        if cp_f > max_single_cap_pf:
+            any_fail = True
+            flags.append({
+                "device": cd["name"],
+                "code": "SINGLE_CAP_OVER_BUDGET",
+                "severity": "error",
+                "value_pf": _round_clean(cp_f),
+                "limit_pf": _round_clean(max_single_cap_pf),
+                "message": "Capacitor %s = %.4g pF exceeds single on-chip limit %.4g pF" % (cd["name"], cp_f, max_single_cap_pf),
+            })
+
+    tot_res_kohm = 0.0
+    max_res = 0.0
+    largest_res_name = None
+    ideal_res_cnt = 0
+    pdk_res_cnt = 0
+    for rd in res_devs:
+        if rd.get("is_ideal"):
+            ideal_res_cnt += 1
+        else:
+            pdk_res_cnt += 1
+        rk = rd.get("r_kohm")
+        if not _is_finite_num(rk):
+            any_fail = True
+            flags.append({
+                "device": rd["name"],
+                "code": "UNPARSEABLE_PASSIVE_VALUE",
+                "severity": "error",
+                "message": "Resistor %s has unparseable resistance value" % rd["name"],
+            })
+            continue
+        rk_f = float(rk)
+        tot_res_kohm += rk_f
+        if rk_f > max_res:
+            max_res = rk_f
+            largest_res_name = rd["name"]
+        if rk_f > max_single_res_kohm:
+            any_fail = True
+            flags.append({
+                "device": rd["name"],
+                "code": "SINGLE_RES_OVER_BUDGET",
+                "severity": "error",
+                "value_kohm": _round_clean(rk_f),
+                "limit_kohm": _round_clean(max_single_res_kohm),
+                "message": "Resistor %s = %.4g kOhm exceeds single on-chip limit %.4g kOhm (use MOS/pseudoresistor instead)" % (
+                    rd["name"], rk_f, max_single_res_kohm
+                ),
+            })
+
+    if tot_cap_pf > max_total_cap_pf:
+        any_fail = True
+        flags.append({
+            "device": "__total_cap__",
+            "code": "TOTAL_CAP_OVER_BUDGET",
+            "severity": "error",
+            "value_pf": _round_clean(tot_cap_pf),
+            "limit_pf": _round_clean(max_total_cap_pf),
+            "message": "Total on-chip capacitance %.4g pF exceeds budget %.4g pF" % (tot_cap_pf, max_total_cap_pf),
+        })
+
+    if tot_res_kohm > max_total_res_kohm:
+        any_fail = True
+        flags.append({
+            "device": "__total_res__",
+            "code": "TOTAL_RES_OVER_BUDGET",
+            "severity": "error",
+            "value_kohm": _round_clean(tot_res_kohm),
+            "limit_kohm": _round_clean(max_total_res_kohm),
+            "message": "Total on-chip resistance %.4g kOhm exceeds budget %.4g kOhm" % (tot_res_kohm, max_total_res_kohm),
+        })
+
+    est_cap_area_um2 = (tot_cap_pf * 1000.0) / float(cap_density_ff_per_um2) if cap_density_ff_per_um2 > 0 else 0.0
+    cap_to_mos_ratio = (est_cap_area_um2 / tot_mos_area) if tot_mos_area > 1e-6 else None
+    if cap_to_mos_ratio is not None and cap_to_mos_ratio > max_cap_to_mos_area_ratio:
+        any_fail = True
+        flags.append({
+            "device": "__area_ratio__",
+            "code": "CAP_TO_MOS_AREA_BLOAT",
+            "severity": "error",
+            "ratio": _round_clean(cap_to_mos_ratio),
+            "limit": _round_clean(max_cap_to_mos_area_ratio),
+            "message": "Estimated capacitor silicon area (%.1f um^2) is %.1fx total MOS gate area (%.1f um^2 > %.1fx limit)" % (
+                est_cap_area_um2, cap_to_mos_ratio, tot_mos_area, max_cap_to_mos_area_ratio
+            ),
+        })
+
+    if (ideal_cap_cnt + ideal_res_cnt) > 0:
+        sev_id = "error" if forbid_ideal_passives else "warning"
+        if forbid_ideal_passives:
+            any_fail = True
+        flags.append({
+            "device": "__ideal_passives__",
+            "code": "IDEAL_PASSIVES_FORBIDDEN" if forbid_ideal_passives else "IDEAL_PASSIVES_PRESENT",
+            "severity": sev_id,
+            "ideal_capacitor_count": ideal_cap_cnt,
+            "ideal_resistor_count": ideal_res_cnt,
+            "message": "Circuit contains %d ideal capacitors and %d ideal resistors (replace with PDK MIM/MOM/poly primitives before final signoff)" % (
+                ideal_cap_cnt, ideal_res_cnt
+            ),
+        })
+
+    has_warn = any([f["severity"] == "warning" for f in flags])
+    status = "FAIL" if any_fail else ("WARN" if has_warn else "PASS")
+    return {
+        "audit_pass": not any_fail,
+        "status": status,
+        "summary": {
+            "mos_count": len(mos_devs),
+            "nmos_count": nmos_cnt,
+            "pmos_count": pmos_cnt,
+            "total_mos_gate_area_um2": _round_clean(tot_mos_area),
+            "capacitor_count": len(cap_devs),
+            "ideal_capacitor_count": ideal_cap_cnt,
+            "pdk_capacitor_count": pdk_cap_cnt,
+            "total_cap_pf": _round_clean(tot_cap_pf),
+            "max_single_cap_pf": _round_clean(max_cap),
+            "largest_cap": largest_cap_name,
+            "estimated_cap_area_um2": _round_clean(est_cap_area_um2),
+            "cap_to_mos_area_ratio": _round_clean(cap_to_mos_ratio),
+            "resistor_count": len(res_devs),
+            "ideal_resistor_count": ideal_res_cnt,
+            "pdk_resistor_count": pdk_res_cnt,
+            "total_res_kohm": _round_clean(tot_res_kohm),
+            "max_single_res_kohm": _round_clean(max_res),
+            "largest_res": largest_res_name,
+        },
+        "limits": {
+            "max_total_cap_pf": max_total_cap_pf,
+            "max_single_cap_pf": max_single_cap_pf,
+            "max_total_res_kohm": max_total_res_kohm,
+            "max_single_res_kohm": max_single_res_kohm,
+            "max_cap_to_mos_area_ratio": max_cap_to_mos_area_ratio,
+            "forbid_ideal_passives": bool(forbid_ideal_passives),
+        },
+        "flags": flags,
+    }
+
+
+def audit_schematic_json(
+    sch_obj,
+    expect_sideways=None,
+    max_flat_devices=35,
+    max_bbox_w=24.0,
+    max_bbox_h=14.0,
+    max_area_per_device=10.0,
+    max_crossovers=15,
+    max_total_cap_pf=20.0,
+    max_single_cap_pf=10.0,
+    max_total_res_kohm=1000.0,
+    max_single_res_kohm=300.0,
+    max_cap_to_mos_area_ratio=50.0,
+    forbid_ideal_passives=False,
+):
+    """Audit Virtuoso schematic JSON for ERC health, textbook MOS orientation, compactness, hierarchy, crossovers & passive budget."""
+    if not isinstance(sch_obj, dict) or "instances" not in sch_obj:
+        raise ValueError("Invalid schematic JSON object (missing 'instances')")
+
+    sideways_set = set(expect_sideways or [])
+    sideways_lc = set([x.lower() for x in sideways_set])
+
+    flags = []
+    any_fail = False
+
+    diag = sch_obj.get("diagnostics") or {}
+    chk_errs = int(diag.get("check_errors", 0) or 0)
+    chk_warns = int(diag.get("check_warnings", 0) or 0)
+    float_nets = diag.get("floating_nets") or []
+    single_nets = diag.get("single_term_nets") or []
+    if chk_errs > 0 or chk_warns > 0 or float_nets:
+        any_fail = True
+        flags.append({
+            "device": "__schematic_erc__",
+            "code": "SCHEMATIC_ERC_ERROR",
+            "severity": "error",
+            "check_errors": chk_errs,
+            "check_warnings": chk_warns,
+            "floating_nets": float_nets,
+            "message": "Schematic check failed: %d errors, %d warnings, %d floating nets" % (
+                chk_errs, chk_warns, len(float_nets)
+            ),
+        })
+
+    raw_insts = sch_obj.get("instances") or []
+    circuit_devs = []
+    orient_violations = []
+    mos_pin_pts = []
+    all_dev_xys = []
+
+    for inst in raw_insts:
+        if not isinstance(inst, dict):
+            continue
+        iname = str(inst.get("name", ""))
+        icell = str(inst.get("cell", ""))
+        ilib = str(inst.get("lib", ""))
+        kind = _classify_device_kind(iname, icell, lib_name=ilib)
+        if kind == "stim_or_tb":
+            continue
+
+        merged_props = {}
+        for k, v in (inst.get("stored_props") or {}).items():
+            merged_props[str(k).lower()] = v
+        for k, v in (inst.get("effective_cdf") or {}).items():
+            merged_props[str(k).lower()] = v
+        circuit_devs.append(_build_device_record(iname, icell, merged_props, {}, lib_name=ilib))
+
+        xy = inst.get("xy")
+        if isinstance(xy, (list, tuple)) and len(xy) >= 2 and _is_finite_num(xy[0]) and _is_finite_num(xy[1]):
+            all_dev_xys.append((iname, float(xy[0]), float(xy[1])))
+
+        if kind in ("pmos", "nmos"):
+            allow_sideways = (iname in sideways_set) or (iname.lower() in sideways_lc)
+            orient = str(inst.get("orient") or "R0").upper()
+            if (not allow_sideways) and (orient not in ("R0", "MY", "MX", "R180")):
+                any_fail = True
+                orient_violations.append(iname)
+                flags.append({
+                    "device": iname,
+                    "code": "MOS_SIDEWAYS_ORIENTATION",
+                    "severity": "error",
+                    "orient": orient,
+                    "message": "MOSFET %s uses sideways orientation '%s' (must use vertical channel R0/MY)" % (iname, orient),
+                })
+
+            p_raw = inst.get("pin_centers") or {}
+            p_map = dict([(str(pk).strip().upper(), pv) for pk, pv in p_raw.items()])
+            if "S" in p_map and "D" in p_map:
+                sy = p_map["S"][1] if isinstance(p_map["S"], (list, tuple)) and len(p_map["S"]) >= 2 else None
+                dy = p_map["D"][1] if isinstance(p_map["D"], (list, tuple)) and len(p_map["D"]) >= 2 else None
+                if _is_finite_num(sy) and _is_finite_num(dy):
+                    if kind == "pmos" and float(sy) <= float(dy) + 1e-6:
+                        any_fail = True
+                        orient_violations.append(iname)
+                        flags.append({
+                            "device": iname,
+                            "code": "PMOS_SOURCE_NOT_UP",
+                            "severity": "error",
+                            "orient": orient,
+                            "y_s": _round_clean(float(sy)),
+                            "y_d": _round_clean(float(dy)),
+                            "message": "PMOS %s source (y=%.3f) is NOT above drain (y=%.3f); flip so Source points to top supply rail" % (
+                                iname, float(sy), float(dy)
+                            ),
+                        })
+                    elif kind == "nmos" and float(dy) <= float(sy) + 1e-6:
+                        any_fail = True
+                        orient_violations.append(iname)
+                        flags.append({
+                            "device": iname,
+                            "code": "NMOS_SOURCE_NOT_DOWN",
+                            "severity": "error",
+                            "orient": orient,
+                            "y_s": _round_clean(float(sy)),
+                            "y_d": _round_clean(float(dy)),
+                            "message": "NMOS %s source (y=%.3f) is NOT below drain (y=%.3f); flip so Source points to bottom ground rail" % (
+                                iname, float(sy), float(dy)
+                            ),
+                        })
+            elif (not allow_sideways) and (orient in ("MX", "R180")):
+                any_fail = True
+                orient_violations.append(iname)
+                flags.append({
+                    "device": iname,
+                    "code": "MOS_INVERTED_ORIENTATION",
+                    "severity": "error",
+                    "orient": orient,
+                    "message": "MOSFET %s uses inverted orientation '%s' (must use R0/MY)" % (iname, orient),
+                })
+
+    # Overlap check between device origins
+    for i_idx in range(len(all_dev_xys)):
+        n1, x1, y1 = all_dev_xys[i_idx]
+        for j_idx in range(i_idx + 1, len(all_dev_xys)):
+            n2, x2, y2 = all_dev_xys[j_idx]
+            if abs(x1 - x2) < 0.06 and abs(y1 - y2) < 0.06:
+                any_fail = True
+                flags.append({
+                    "device": "%s,%s" % (n1, n2),
+                    "code": "OVERLAPPING_INSTANCES",
+                    "severity": "error",
+                    "message": "Devices %s and %s overlap at (%.3f, %.3f)" % (n1, n2, x1, y1),
+                })
+
+    dev_count = len(circuit_devs)
+    child_cells = sch_obj.get("child_cells") or []
+    is_hierarchical = len(child_cells) > 0
+    if (not is_hierarchical) and dev_count > max_flat_devices:
+        any_fail = True
+        flags.append({
+            "device": "__hierarchy__",
+            "code": "FLAT_SCHEMATIC_OVER_COMPLEXITY",
+            "severity": "error",
+            "device_count": dev_count,
+            "limit": max_flat_devices,
+            "message": "Flat schematic has %d devices > %d limit with 0 child subcells; decompose into hierarchical subcells" % (
+                dev_count, max_flat_devices
+            ),
+        })
+
+    bbox = sch_obj.get("bbox")
+    bbox_w = None
+    bbox_h = None
+    area_per_dev = None
+    if isinstance(bbox, (list, tuple)) and len(bbox) == 2:
+        try:
+            bbox_w = abs(float(bbox[1][0]) - float(bbox[0][0]))
+            bbox_h = abs(float(bbox[1][1]) - float(bbox[0][1]))
+            bbox_area = bbox_w * bbox_h
+            area_per_dev = bbox_area / max(1, dev_count)
+            eff_max_area = max(120.0, float(max_area_per_device) * float(max(1, dev_count)))
+            if (
+                bbox_w > max_bbox_w
+                or bbox_h > max_bbox_h
+                or bbox_area > eff_max_area
+            ):
+                any_fail = True
+                flags.append({
+                    "device": "__compactness__",
+                    "code": "SPARSE_SCHEMATIC_LAYOUT",
+                    "severity": "error",
+                    "bbox_w": _round_clean(bbox_w),
+                    "bbox_h": _round_clean(bbox_h),
+                    "area_per_device": _round_clean(area_per_dev),
+                    "message": "Schematic layout %.2f x %.2f (area %.1f, %.2f/dev) exceeds compact limit (max %.1f x %.1f, max area %.1f)" % (
+                        bbox_w, bbox_h, bbox_area, area_per_dev, max_bbox_w, max_bbox_h, eff_max_area
+                    ),
+                })
+        except (TypeError, ValueError, IndexError):
+            pass
+
+    nets = sch_obj.get("nets") or []
+    if dev_count >= 4 and len(nets) > 0 and len(single_nets) > 0.5 * len(nets):
+        any_fail = True
+        flags.append({
+            "device": "__stub_wiring__",
+            "code": "STUB_ONLY_SCHEMATIC",
+            "severity": "error",
+            "single_term_nets": len(single_nets),
+            "total_nets": len(nets),
+            "message": "%d of %d nets are single-terminal stubs; use real orthogonal intra-block wiring" % (
+                len(single_nets), len(nets)
+            ),
+        })
+
+    wg = sch_obj.get("wire_geometry_after") or sch_obj.get("wire_geometry") or {}
+    crossovers = wg.get("crossovers") if isinstance(wg, dict) else None
+    if _is_finite_num(crossovers) and int(crossovers) > max_crossovers:
+        any_fail = True
+        flags.append({
+            "device": "__wire_crossovers__",
+            "code": "EXCESSIVE_WIRE_CROSSOVERS",
+            "severity": "error",
+            "crossovers": int(crossovers),
+            "limit": int(max_crossovers),
+            "message": "Schematic has %d wire crossovers (> %d limit); group blocks left-to-right and use clean bus labels" % (
+                int(crossovers), int(max_crossovers)
+            ),
+        })
+
+    passive_rep = audit_passive_budget(
+        circuit_devs,
+        max_total_cap_pf=max_total_cap_pf,
+        max_single_cap_pf=max_single_cap_pf,
+        max_total_res_kohm=max_total_res_kohm,
+        max_single_res_kohm=max_single_res_kohm,
+        max_cap_to_mos_area_ratio=max_cap_to_mos_area_ratio,
+        forbid_ideal_passives=forbid_ideal_passives,
+    )
+    all_flags = flags + passive_rep["flags"]
+    combined_pass = (not any_fail) and passive_rep["audit_pass"]
+    has_warn = any([f["severity"] == "warning" for f in all_flags])
+    return {
+        "audit_pass": combined_pass,
+        "status": "FAIL" if (not combined_pass) else ("WARN" if has_warn else "PASS"),
+        "schematic_summary": {
+            "lib": sch_obj.get("lib"),
+            "cell": sch_obj.get("cell"),
+            "device_count": dev_count,
+            "hierarchical": is_hierarchical,
+            "child_cells": child_cells,
+            "bbox_w": _round_clean(bbox_w),
+            "bbox_h": _round_clean(bbox_h),
+            "area_per_device": _round_clean(area_per_dev),
+            "crossovers": int(crossovers) if _is_finite_num(crossovers) else None,
+            "orient_violations": sorted(list(set(orient_violations))),
+            "check_errors": chk_errs,
+            "check_warnings": chk_warns,
+        },
+        "passive_summary": passive_rep["summary"],
+        "flags": all_flags,
+    }
+
+
+def run_design_audit(
+    target_path,
+    schematic_path=None,
+    subckt=None,
+    expect_sideways=None,
+    max_total_cap_pf=20.0,
+    max_single_cap_pf=10.0,
+    max_total_res_kohm=1000.0,
+    max_single_res_kohm=300.0,
+    max_cap_to_mos_area_ratio=50.0,
+    max_flat_devices=35,
+    max_bbox_w=24.0,
+    max_bbox_h=14.0,
+    max_area_per_device=10.0,
+    max_crossovers=15,
+    forbid_ideal_passives=False,
+):
+    """Run unified silicon passive budget + textbook schematic audit on a Spectre netlist and/or Virtuoso JSON dump."""
+    if not os.path.isfile(target_path):
+        raise ValueError("Design file not found: " + str(target_path))
+
+    low = target_path.lower()
+    netlist_rep = None
+    sch_rep = None
+
+    if low.endswith(".json"):
+        fh = open(target_path, "rb")
+        try:
+            sch_obj = json.loads(fh.read().decode("utf-8"))
+        finally:
+            fh.close()
+        sch_rep = audit_schematic_json(
+            sch_obj,
+            expect_sideways=expect_sideways,
+            max_flat_devices=max_flat_devices,
+            max_bbox_w=max_bbox_w,
+            max_bbox_h=max_bbox_h,
+            max_area_per_device=max_area_per_device,
+            max_crossovers=max_crossovers,
+            max_total_cap_pf=max_total_cap_pf,
+            max_single_cap_pf=max_single_cap_pf,
+            max_total_res_kohm=max_total_res_kohm,
+            max_single_res_kohm=max_single_res_kohm,
+            max_cap_to_mos_area_ratio=max_cap_to_mos_area_ratio,
+            forbid_ideal_passives=forbid_ideal_passives,
+        )
+    else:
+        scope, devs = _parse_spectre_netlist_for_audit(target_path, subckt_name=subckt)
+        if not devs:
+            raise ValueError("No circuit devices parsed from Spectre netlist: " + str(target_path))
+        netlist_rep = audit_passive_budget(
+            devs,
+            max_total_cap_pf=max_total_cap_pf,
+            max_single_cap_pf=max_single_cap_pf,
+            max_total_res_kohm=max_total_res_kohm,
+            max_single_res_kohm=max_single_res_kohm,
+            max_cap_to_mos_area_ratio=max_cap_to_mos_area_ratio,
+            forbid_ideal_passives=forbid_ideal_passives,
+        )
+        netlist_rep["scope"] = scope
+
+    if schematic_path:
+        if not os.path.isfile(schematic_path):
+            raise ValueError("Schematic JSON file not found: " + str(schematic_path))
+        fh_s = open(schematic_path, "rb")
+        try:
+            sch_obj2 = json.loads(fh_s.read().decode("utf-8"))
+        finally:
+            fh_s.close()
+        sch_rep = audit_schematic_json(
+            sch_obj2,
+            expect_sideways=expect_sideways,
+            max_flat_devices=max_flat_devices,
+            max_bbox_w=max_bbox_w,
+            max_bbox_h=max_bbox_h,
+            max_area_per_device=max_area_per_device,
+            max_crossovers=max_crossovers,
+            max_total_cap_pf=max_total_cap_pf,
+            max_single_cap_pf=max_single_cap_pf,
+            max_total_res_kohm=max_total_res_kohm,
+            max_single_res_kohm=max_single_res_kohm,
+            max_cap_to_mos_area_ratio=max_cap_to_mos_area_ratio,
+            forbid_ideal_passives=forbid_ideal_passives,
+        )
+
+    flags_all = []
+    if netlist_rep:
+        flags_all.extend(netlist_rep["flags"])
+    if sch_rep:
+        flags_all.extend(sch_rep["flags"])
+
+    audit_pass = True
+    if netlist_rep is not None and not netlist_rep["audit_pass"]:
+        audit_pass = False
+    if sch_rep is not None and not sch_rep["audit_pass"]:
+        audit_pass = False
+    has_warn = any([f["severity"] == "warning" for f in flags_all])
+
+    out = {
+        "command": "design-audit",
+        "ok": True,
+        "target": os.path.realpath(target_path),
+        "audit_pass": audit_pass,
+        "status": "FAIL" if (not audit_pass) else ("WARN" if has_warn else "PASS"),
+        "flags": flags_all,
+    }
+    if netlist_rep is not None:
+        out["netlist_audit"] = netlist_rep
+    if sch_rep is not None:
+        out["schematic_audit"] = sch_rep
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -7913,6 +8979,171 @@ def run_self_test():
         assert main(["metrics", bin_only_dir, "--fail-on-spec"], quiet=True) == 1
         assert main(["op-audit", os.path.join(bin_only_dir, "dcOp.dc"), "--fail-on-violation"], quiet=True) == 1
 
+        # 34. Swept-VIN coexistence, max_pole_real_hz (ldo_rightmost_pole_hz), and design-audit guards
+        # 34a. Fixed dcOp + swept line_reg inside SS_1500mV_-40C must NOT trigger label conflict
+        vin_sw_dir = os.path.join(tmp_root, "vin_sweep_coexist")
+        vsw_ss = os.path.join(vin_sw_dir, "SS_1500mV_-40C", "psf")
+        os.makedirs(vsw_ss)
+        _write_utf8(os.path.join(vsw_ss, "dcOp.dc.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'TRACE\n"VIN" "v_t"\n"VIN:p" "i_t"\n"VOUT" "v_t"\n'
+            'VALUE\n"VIN" 1.50\n"VIN:p" -7.5e-5\n"VOUT" 1.201\nEND\n'
+        ))
+        _write_utf8(os.path.join(vsw_ss, "linereg.dc.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"vin" "v_t"\nTRACE\n"VIN" "v_t"\n"VIN:p" "i_t"\n'
+            'VALUE\n'
+            '"vin" 1.50\n"VIN" 1.50\n"VIN:p" -7.5e-5\n'
+            '"vin" 1.65\n"VIN" 1.65\n"VIN:p" -7.7e-5\n'
+            '"vin" 1.80\n"VIN" 1.80\n"VIN:p" -7.9e-5\nEND\n'
+        ))
+        _write_utf8(os.path.join(vsw_ss, "closed_loop.pz.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"PoleAndQ" STRUCT( "pole" COMPLEX DOUBLE PROP( "units" "Hz" ) "Q" FLOAT DOUBLE )\n'
+            'TRACE\n"p1" "PoleAndQ"\nVALUE\n"p1" "PoleAndQ" ( (-20933.0 0.0) 0.5 )\nEND\n'
+        ))
+        spec_34 = os.path.join(tmp_root, "spec_34.json")
+        _write_utf8(spec_34, json.dumps({
+            "approval": {"approved": True, "status": "approved"},
+            "requirements": [
+                {"id": "POLE", "quantity": "ldo_rightmost_pole_hz", "operator": "<", "target": 0.0, "unit": "Hz", "analysis": "pz"},
+                {"id": "IQ", "quantity": "idd_a", "operator": "<=", "target": 80.0, "unit": "uA", "analysis": "dc"},
+            ],
+        }))
+        res_vsw = run_metrics(vin_sw_dir, spec_path=spec_34)
+        assert res_vsw["verdict"] == "PASS", res_vsw
+        assert res_vsw["metrics"]["pvt_metadata_conflict"] is False, res_vsw["metrics"]
+        assert abs(res_vsw["metrics"]["vdd_v"] - 1.5) < 1e-6, res_vsw["metrics"]
+        assert abs(res_vsw["metrics"]["max_pole_real_hz"] - (-20933.0)) < 1e-6, res_vsw["metrics"]
+        # Out-of-range label on same sweep MUST still trigger conflict
+        vsw_bad = os.path.join(tmp_root, "vin_sweep_bad_lbl", "SS_3300mV_-40C", "psf")
+        os.makedirs(vsw_bad)
+        _write_utf8(os.path.join(vsw_bad, "linereg.dc.ascii"), (
+            'HEADER\n"PSFversion" "1.00"\n"simulator" "spectre"\n"temperature" -40.0\n'
+            'TYPE\n"v_t" FLOAT DOUBLE PROP( "units" "V" )\n"i_t" FLOAT DOUBLE PROP( "units" "A" )\n'
+            'SWEEP\n"vin" "v_t"\nTRACE\n"VIN" "v_t"\n"VIN:p" "i_t"\n'
+            'VALUE\n"vin" 1.50\n"VIN" 1.50\n"VIN:p" -7.5e-5\n"vin" 1.80\n"VIN" 1.80\n"VIN:p" -7.9e-5\nEND\n'
+        ))
+        res_vsw_bad = run_metrics(os.path.dirname(os.path.dirname(vsw_bad)))
+        assert res_vsw_bad["metrics"]["pvt_metadata_conflict"] is True, res_vsw_bad["metrics"]
+
+        # 34b. design-audit rejects bloated ideal-R/C LDO netlist (233 pF / 39 MOhm) & accepts silicon-realistic netlist
+        bloated_scs = os.path.join(tmp_root, "bloated_r4.scs")
+        _write_utf8(bloated_scs, (
+            "simulator lang=spectre\n"
+            "subckt cleanrail_v3_r4 (vin vref vout fb vss)\n"
+            "MPpass (vout pg vin vin) g45p2svt w=1260u l=150n nf=630 fw=2u m=1\n"
+            "MN1 (n1 fb tail vss) g45n2svt w=4u l=300n nf=2 m=1\n"
+            "Cservo (n1 vss) capacitor c=130p\n"
+            "Cnslew (vout s1) capacitor c=30p\n"
+            "Cpslew (vout s2) capacitor c=28p\n"
+            "Rline_vin (vin s1) resistor r=25M\n"
+            "Rnb (s1 vss) resistor r=4.3M\n"
+            "Rtop (vout fb) resistor r=37.5k\n"
+            "Rbot (fb vss) resistor r=37.5k\n"
+            "ends cleanrail_v3_r4\n"
+            "CL (vout 0) capacitor c=100p\n"
+            "VVIN (vin 0) vsource dc=1.5\n"
+        ))
+        rep_bloat = run_design_audit(bloated_scs)
+        assert rep_bloat["audit_pass"] is False, rep_bloat
+        bloat_codes = set([f["code"] for f in rep_bloat["flags"]])
+        assert "TOTAL_CAP_OVER_BUDGET" in bloat_codes, bloat_codes
+        assert "SINGLE_CAP_OVER_BUDGET" in bloat_codes, bloat_codes
+        assert "TOTAL_RES_OVER_BUDGET" in bloat_codes, bloat_codes
+        assert "SINGLE_RES_OVER_BUDGET" in bloat_codes, bloat_codes
+        assert "CAP_TO_MOS_AREA_BLOAT" in bloat_codes, bloat_codes
+        assert main(["design-audit", bloated_scs, "--fail-on-violation"], quiet=True) == 1
+
+        real_scs = os.path.join(tmp_root, "silicon_cleanrail_v4.scs")
+        _write_utf8(real_scs, (
+            "simulator lang=spectre\n"
+            "subckt cleanrail_v4 (vin vref vout fb vss)\n"
+            "MPpass (vout pg vin vin) g45p2svt w=1200u l=180n nf=300 fw=4u m=1\n"
+            "MN1 (n1 fb tail vss) g45n2svt w=8u l=400n nf=4 m=1\n"
+            "Cc (pg n2) mimcap c=6p\n"
+            "Cfvf (n1 n2) mimcap c=3p\n"
+            "Rnull (pg n2) resnspoly r=2.5k\n"
+            "Rtop (vout fb) resnspoly r=37.5k\n"
+            "Rbot (fb vss) resnspoly r=37.5k\n"
+            "ends cleanrail_v4\n"
+            "CL (vout 0) capacitor c=100p\n"
+        ))
+        rep_real = run_design_audit(real_scs, forbid_ideal_passives=True)
+        assert rep_real["audit_pass"] is True, rep_real
+        assert rep_real["netlist_audit"]["summary"]["total_cap_pf"] == 9.0, rep_real
+        assert rep_real["netlist_audit"]["summary"]["total_res_kohm"] == 77.5, rep_real
+        assert main(["design-audit", real_scs, "--forbid-ideal-passives", "--fail-on-violation"], quiet=True) == 0
+
+        # 34c. Schematic JSON audit: catches upside-down PMOS, sideways NMOS, >35 flat devs, sparse bbox, crossovers
+        bad_sch = os.path.join(tmp_root, "bad_sch.json")
+        bad_insts = [
+            {
+                "name": "MP_BAD", "lib": "gpdk045", "cell": "pmos2v", "xy": [1.0, 2.0], "orient": "MX",
+                "effective_cdf": {"w": "20u", "l": "200n", "fingers": "4", "m": "1"},
+                "pin_centers": {"S": [1.0, 1.8], "D": [1.0, 2.2], "G": [0.75, 2.0]},
+            },
+            {
+                "name": "MN_SIDE", "lib": "gpdk045", "cell": "nmos2v", "xy": [3.0, 2.0], "orient": "R90",
+                "effective_cdf": {"w": "4u", "l": "200n", "fingers": "2", "m": "1"},
+                "pin_centers": {"S": [2.8, 2.0], "D": [3.2, 2.0], "G": [3.0, 1.75]},
+            },
+        ]
+        for k_i in range(38):
+            bad_insts.append({
+                "name": "MN_E%d" % k_i, "lib": "gpdk045", "cell": "nmos2v", "xy": [5.0 + k_i * 0.5, 2.0], "orient": "R0",
+                "effective_cdf": {"w": "4u", "l": "200n", "fingers": "2", "m": "1"},
+                "pin_centers": {"S": [5.0 + k_i * 0.5, 1.8], "D": [5.0 + k_i * 0.5, 2.2]},
+            })
+        _write_utf8(bad_sch, json.dumps({
+            "lib": "ldo", "cell": "bad_top", "bbox": [[0.0, 0.0], [60.0, 25.0]],
+            "instances": bad_insts, "nets": ["a", "b"], "child_cells": [],
+            "wire_geometry_after": {"crossovers": 29},
+            "diagnostics": {"check_errors": 0, "check_warnings": 1, "floating_nets": [], "single_term_nets": []},
+        }))
+        rep_bsch = run_design_audit(bad_sch)
+        assert rep_bsch["audit_pass"] is False, rep_bsch
+        bs_codes = set([f["code"] for f in rep_bsch["flags"]])
+        for req_code in (
+            "SCHEMATIC_ERC_ERROR", "MOS_SIDEWAYS_ORIENTATION", "PMOS_SOURCE_NOT_UP",
+            "FLAT_SCHEMATIC_OVER_COMPLEXITY", "SPARSE_SCHEMATIC_LAYOUT", "EXCESSIVE_WIRE_CROSSOVERS",
+        ):
+            assert req_code in bs_codes, (req_code, bs_codes)
+        assert main(["design-audit", bad_sch, "--fail-on-violation"], quiet=True) == 1
+
+        good_sch = os.path.join(tmp_root, "good_sch.json")
+        _write_utf8(good_sch, json.dumps({
+            "lib": "ldo", "cell": "cleanrail_v4", "bbox": [[0.0, 0.0], [12.0, 6.0]],
+            "instances": [
+                {
+                    "name": "MPpass", "lib": "gpdk045", "cell": "pmos2v", "xy": [8.0, 4.5], "orient": "R0",
+                    "effective_cdf": {"w": "1200u", "l": "180n", "fingers": "300", "m": "1"},
+                    "pin_centers": {"S": [8.0, 4.7], "D": [8.0, 4.3], "G": [7.75, 4.5]},
+                },
+                {
+                    "name": "MN1", "lib": "gpdk045", "cell": "nmos2v", "xy": [4.0, 2.0], "orient": "MY",
+                    "effective_cdf": {"w": "8u", "l": "400n", "fingers": "4", "m": "1"},
+                    "pin_centers": {"S": [4.0, 1.8], "D": [4.0, 2.2], "G": [4.25, 2.0]},
+                },
+                {
+                    "name": "Cc", "lib": "gpdk045", "cell": "mimcap", "xy": [6.0, 3.0], "orient": "R0",
+                    "effective_cdf": {"c": "6p", "m": "1"},
+                },
+                {
+                    "name": "Rtop", "lib": "gpdk045", "cell": "resnspoly", "xy": [10.0, 3.5], "orient": "R0",
+                    "effective_cdf": {"r": "37.5k", "m": "1"},
+                },
+            ],
+            "nets": ["vin", "vref", "vout", "fb", "pg", "vss"], "child_cells": [],
+            "wire_geometry_after": {"crossovers": 4},
+            "diagnostics": {"check_errors": 0, "check_warnings": 0, "floating_nets": [], "single_term_nets": []},
+        }))
+        rep_gsch = run_design_audit(good_sch, forbid_ideal_passives=True)
+        assert rep_gsch["audit_pass"] is True, rep_gsch
+        assert main(["design-audit", real_scs, "--schematic", good_sch, "--forbid-ideal-passives", "--fail-on-violation"], quiet=True) == 0
+
         return {
             "command": "self-test",
             "ok": True,
@@ -7957,6 +9188,7 @@ def run_self_test():
                 "codex_f01_to_f05_invariants_mc_multirail_pz_pstb_units",
                 "codex_a01_to_a05_invariants_mc_multirail_units_pz_domain",
                 "spectre151_compat_stb_sign_poleandq_vin_expect_cutoff_binary_guard",
+                "spectre151_vinsweep_maxpole_and_design_audit_passive_schematic_guards",
             ],
         }
     finally:
@@ -7964,9 +9196,10 @@ def run_self_test():
 
 
 HELP_TEXT = """Usage:
-  python tools/psf_audit.py op-audit  <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--no-relax-units] [--fail-on-violation]
-  python tools/psf_audit.py metrics   <run_dir> [--spec spec.json] [--vout Vout] [--vin Vin] [--settling-tol 0.01] [--target-v 1.0] [--no-relax-units] [--fail-on-spec]
-  python tools/psf_audit.py self-test (or --self-test)
+  python tools/psf_audit.py op-audit      <run_or_psf_path> [--vds-margin 0.05] [--expect-triode M_R1,M_SW] [--expect-cutoff M_CLAMP,M_SRE] [--no-relax-units] [--fail-on-violation]
+  python tools/psf_audit.py metrics       <run_dir> [--spec spec.json] [--vout Vout] [--vin Vin] [--settling-tol 0.01] [--target-v 1.0] [--no-relax-units] [--fail-on-spec]
+  python tools/psf_audit.py design-audit  <netlist.scs_or_schematic.json> [--schematic dump.json] [--subckt NAME] [--max-total-cap-pf 20] [--max-single-cap-pf 10] [--max-total-res-kohm 1000] [--max-single-res-kohm 300] [--max-cap-to-mos-ratio 50] [--max-flat-devices 35] [--max-bbox-w 24] [--max-bbox-h 14] [--max-crossovers 15] [--expect-sideways M_SW] [--forbid-ideal-passives] [--fail-on-violation]
+  python tools/psf_audit.py self-test     (or --self-test)
 
 Notes:
   Strict trace and spec unit enforcement is enabled by default; `--no-relax-units` explicitly asserts strict unit scaling.
@@ -8081,6 +9314,74 @@ def main(argv=None, quiet=False):
         except Exception as exc:
             if not quiet:
                 print(json.dumps({"command": "metrics", "ok": False, "error": _safe_exc_text(exc)}, indent=2, sort_keys=True))
+            return 1
+
+    if subcmd == "design-audit":
+        parser = _SilentOptionParser(add_help_option=False)
+        parser.add_option("-h", "--help", action="store_true", dest="help", default=False)
+        parser.add_option("--schematic", type="string", dest="schematic_path", default=None)
+        parser.add_option("--subckt", type="string", dest="subckt", default=None)
+        parser.add_option("--expect-sideways", type="string", dest="expect_sideways", default="")
+        parser.add_option("--max-total-cap-pf", type="float", dest="max_total_cap_pf", default=20.0)
+        parser.add_option("--max-single-cap-pf", type="float", dest="max_single_cap_pf", default=10.0)
+        parser.add_option("--max-total-res-kohm", type="float", dest="max_total_res_kohm", default=1000.0)
+        parser.add_option("--max-single-res-kohm", type="float", dest="max_single_res_kohm", default=300.0)
+        parser.add_option("--max-cap-to-mos-ratio", type="float", dest="max_cap_to_mos_area_ratio", default=50.0)
+        parser.add_option("--max-flat-devices", type="int", dest="max_flat_devices", default=35)
+        parser.add_option("--max-bbox-w", type="float", dest="max_bbox_w", default=24.0)
+        parser.add_option("--max-bbox-h", type="float", dest="max_bbox_h", default=14.0)
+        parser.add_option("--max-area-per-dev", type="float", dest="max_area_per_device", default=10.0)
+        parser.add_option("--max-crossovers", type="int", dest="max_crossovers", default=15)
+        parser.add_option("--forbid-ideal-passives", action="store_true", dest="forbid_ideal_passives", default=False)
+        parser.add_option("--fail-on-violation", action="store_true", dest="fail_on_violation", default=False)
+        parser.add_option("--out", type="string", dest="out_path", default=None)
+        try:
+            opts, pos = parser.parse_args(args)
+        except ValueError as err:
+            if not quiet:
+                print(json.dumps({"command": "design-audit", "ok": False, "error": _safe_exc_text(err)}, indent=2, sort_keys=True))
+            return 2
+        if opts.help:
+            print(HELP_TEXT)
+            return 0
+        if len(pos) != 1:
+            if not quiet:
+                print(json.dumps({"command": "design-audit", "ok": False, "error": "Expected <netlist.scs_or_schematic.json>"}, indent=2, sort_keys=True))
+            return 2
+        side_list = [x.strip() for x in opts.expect_sideways.split(",") if x.strip()]
+        try:
+            res = run_design_audit(
+                pos[0],
+                schematic_path=opts.schematic_path,
+                subckt=opts.subckt,
+                expect_sideways=side_list,
+                max_total_cap_pf=opts.max_total_cap_pf,
+                max_single_cap_pf=opts.max_single_cap_pf,
+                max_total_res_kohm=opts.max_total_res_kohm,
+                max_single_res_kohm=opts.max_single_res_kohm,
+                max_cap_to_mos_area_ratio=opts.max_cap_to_mos_area_ratio,
+                max_flat_devices=opts.max_flat_devices,
+                max_bbox_w=opts.max_bbox_w,
+                max_bbox_h=opts.max_bbox_h,
+                max_area_per_device=opts.max_area_per_device,
+                max_crossovers=opts.max_crossovers,
+                forbid_ideal_passives=opts.forbid_ideal_passives,
+            )
+            txt = json.dumps(res, indent=2, sort_keys=True)
+            if opts.out_path:
+                out_f = open(opts.out_path, "wb")
+                try:
+                    out_f.write((txt + "\n").encode("utf-8"))
+                finally:
+                    out_f.close()
+            if not quiet:
+                print(txt)
+            if opts.fail_on_violation and not res.get("audit_pass", False):
+                return 1
+            return 0
+        except Exception as exc:
+            if not quiet:
+                print(json.dumps({"command": "design-audit", "ok": False, "error": _safe_exc_text(exc)}, indent=2, sort_keys=True))
             return 1
 
     print(json.dumps({"ok": False, "error": "Unknown subcommand: " + subcmd}, indent=2, sort_keys=True))

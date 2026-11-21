@@ -116,10 +116,10 @@
       "sha256": "f430e63654cc792d3250afbac5153c45f057caa9bc4c2e56d541afb009e4a93f"
     },
     {
-      "bytes": 4568,
+      "bytes": 8051,
       "path": "references/cadence-operation.md",
       "repo_path": "runtime/references/cadence-operation.md",
-      "sha256": "d138ee4c34da496cb75281643e0942ba816b46f46f007dcb4237e1bebf361e95"
+      "sha256": "32c0700e57129079c81ca0012fe2297ef525c0089301633fc82d0d1b81babbe8"
     },
     {
       "bytes": 9016,
@@ -170,10 +170,10 @@
       "sha256": "b9af464eb43738f85c0ac7c4ae9b2e99a2563c8b21deff8cf863dabf5af56a8c"
     },
     {
-      "bytes": 10566,
+      "bytes": 11638,
       "path": "skills/analog-design/SKILL.md",
       "repo_path": "runtime/skills/analog-design/SKILL.md",
-      "sha256": "b95bdc0d37ed5914fb59fc9e52bfa32e36a34e4353ad0881f460a065be7e6a65"
+      "sha256": "d38c2f78ea4a0479c3497c8184cab372ba990897e2be790b0aef03cbab2937fe"
     },
     {
       "bytes": 42,
@@ -182,10 +182,10 @@
       "sha256": "8619a54e8c098122a7f3881394f84ca89b684366e848233a29ad18b6ec363935"
     },
     {
-      "bytes": 3977,
+      "bytes": 4408,
       "path": "templates/cadence-project/AGENTS.md",
       "repo_path": "runtime/templates/cadence-project/AGENTS.md",
-      "sha256": "704f02c82cec0dab5714ed43390e614321d96adb5cb2836a9069eb8d8697a501"
+      "sha256": "342fab4967c4bc9bcb216529a8510561bceb9e57a77184e4f5d180db309288ac"
     },
     {
       "bytes": 1379,
@@ -290,10 +290,10 @@
       "sha256": "8bde71c6d446de171a3223e389d24bf0ba6878215c860109f6cb0f076a03d695"
     },
     {
-      "bytes": 378653,
+      "bytes": 436433,
       "path": "tools/psf_audit.py",
       "repo_path": "runtime/tools/psf_audit.py",
-      "sha256": "0c7cc895634c008cd501080a23343dabc5a933456f2d1d70e2b6b9c2d43e2228"
+      "sha256": "df1d02f99263f73cce029e999d4e0e7e0652d59ec5158130fae76990c28846ec"
     },
     {
       "bytes": 95014,

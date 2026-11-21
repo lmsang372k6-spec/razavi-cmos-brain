@@ -259,3 +259,14 @@ Nhìn vào bản ghi `M_TAIL: region=1, sat_margin=-0.126, gm_gds=3.1`, tác t�
 | `T051` / `T063` | loop gain / phase margin | Độ lợi vòng / Dự trữ pha | `loop_dc_gain_db` và `phase_margin_deg` trích xuất từ `stb.stb` sau khi trải pha |
 | `T079` | slew rate | Tốc độ biến thiên điện áp cực đại | `slew_rate_pos` và `slew_rate_neg` đo trên sườn $20\%\text{–}80\%$ của sóng giải nén |
 | `T2186` | process corners (TT/NN, FF, SS, FS, SF) | các góc quy trình chế tạo (TT/NN, FF, SS, FS, SF) | Tổng hợp giá trị xấu nhất `worst_case` qua cây thư mục góc quy trình |
+
+---
+
+## 7. Cổng Tự động Ngân sách Thụ động & Tương thích Spectre 15.1 Thực chiến (`design-audit` + `metrics`)
+
+1. **`psf_audit.py design-audit <dut.scs_or_dump.json> [--schematic dump.json] [--forbid-ideal-passives] --fail-on-violation` (`CHK-LDO-11`, `CHK-OPT-09`, `CHK-OPT-10`):**
+   - Kiểm tra trực tiếp netlist Spectre và/hoặc JSON schematic `ic617_client.py dump-json`: chặn tụ nội bộ phình to (`sum(C) <= 20 pF`, `single C <= 10 pF`, tỉ lệ diện tích tụ/MOS $\le 50\times$), chặn điện trở hàng $\text{M}\Omega$ không chế tạo được (`sum(R) <= 1 MOhm`, `single R <= 300 kOhm`), cảnh báo R/C lý tưởng (`--forbid-ideal-passives` để ép dùng primitive PDK ở bước sign-off), và kiểm tra đồng thời chiều xoay MOS, độ gọn schematic, số giao cắt `<= 15` và ngưỡng phân cấp `<= 35` linh kiện phẳng.
+2. **Tương thích toàn diện Spectre 15.1 thật trong `psf_audit.py`:**
+   - **Quy ước `loopGain` (`-A*beta` quanh $0^\circ$):** Tự đối chiếu `margin.stb` (`phaseMargin`) hoặc header `simulator: spectre` để khử lệch $180^\circ$ mà vẫn fail-closed với hồi tiếp dương và cực RHP hở mạch.
+   - **`.pz` `PoleAndQ`/`ZeroAndQ` & `max_pole_real_hz`:** Giải mã trường `COMPLEX DOUBLE` / `ARRAY(STRUCT)` và đưa `max_pole_real_hz` (`ldo_rightmost_pole_hz`) trực tiếp vào hệ chấm `spec.json`.
+   - **Rail `VIN` PMIC + cộng sinh sweep `VIN`:** Tự nhận `VIN` khi không có `VDD`, giữ nguyên cô lập `VDD`+`VIN` cho Op-Amp, ưu tiên bản ghi DC cố định để neo góc PVT khi trong cùng thư mục có thêm file quét Line Regulation `linereg.dc`, và khử triệt để `UnicodeEncodeError` trên PSF nhị phân với Python 2.6.6.

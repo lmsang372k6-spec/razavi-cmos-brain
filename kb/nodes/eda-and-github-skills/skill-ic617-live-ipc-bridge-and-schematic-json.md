@@ -261,3 +261,14 @@ PYTHONDONTWRITEBYTECODE=1 python -B /home/disk/eda/references/SKILL-ANALOG/tools
 | `T103` / `T366` | Parasitic capacitances / Device parasitic capacitances | Các điện dung ký sinh (linh kiện) | Được tính chính xác từ `ad, as, pd, ps` sau khi khử lỗi bọc nháy kép `%L` |
 | `T689` | parasitic resistance | điện trở ký sinh | Đồng bộ tổng trở `r` của điện trở poly phân đoạn qua `PasCdfFormInit` |
 | `T2194` | interdigitated and common-centroid layout | bố trí cài răng lược và đồng tâm chung | Bắt đầu từ sơ đồ nguyên lý đối xứng gương `R0`/`MY` và số ngón chẵn kiểm chứng bởi `saDumpSchematicJson` |
+
+---
+
+## 7. Hợp đồng Kỷ luật Hình học, Chiều xoay & Phân cấp Schematic (`CHK-OPT-10`)
+
+Mọi schematic xuất từ `ic617_client.py dump-json` đều được kiểm toán tự động bằng **`psf_audit.py design-audit <dump.json> --fail-on-violation`** theo 5 bất biến bắt buộc:
+1. **Chiều xoay MOSFET chuẩn Razavi:** Mọi PMOS giữ cực **Source hướng LÊN (`y(S) > y(D)`)**, mọi NMOS giữ cực **Source hướng XUỐNG (`y(D) > y(S)`)**, kênh thẳng đứng (`R0` / `MY`, lật đối xứng gương `R0` ↔ `MY` cho cặp vi sai & gương dòng); cấm xoay ngang `R90`/`R270` hoặc lộn ngược `MX`/`R180` trừ công tắc pass đặc biệt khai báo qua `--expect-sideways`.
+2. **Sắp khối trái $\to$ phải gọn nhẹ & có nhãn khối:** Thanh nguồn `VDD`/`VIN` liên tục phía trên, `VSS`/`GND` liên tục phía dưới; các khối đặt sát gọn theo luồng tín hiệu (`bbox <= 24 x 14`, diện tích giới hạn theo mật độ linh kiện) kèm note label rõ ranh giới từng khối.
+3. **Đi dây sạch (`crossovers <= 15`) & chống cột `STUB`:** Nối dây vuông góc thật bên trong từng khối; chỉ dùng `wire label` gọn cho bus bias/hồi tiếp đi xuyên $\ge 2$ khối; cấm nối xuyên thân linh kiện/chữ hoặc phát sinh dây cụt đơn cực (`single_term_nets > 50%`).
+4. **Ngưỡng phân cấp bắt buộc (`<= 35` linh kiện/trang):** Nếu số thiết bị phẳng vượt quá `35` linh kiện mà `child_cells` rỗng, `design-audit` lập tức gắn lỗi `FLAT_SCHEMATIC_OVER_COMPLEXITY` buộc tách thành các subcell có symbol riêng (`bias_startup`, `error_amp`, `driver_comp`, `protection`, `top`).
+5. **Chốt ERC sạch tuyệt đối:** `check_errors == 0`, `check_warnings == 0` và `floating_nets == []`.

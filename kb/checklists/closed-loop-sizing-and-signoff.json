@@ -118,6 +118,34 @@
         "skill-cace-spec-driven-characterization-contract",
         "skill-post-layout-pex-drc-lvs-debug"
       ]
+    },
+    {
+      "id": "CHK-OPT-09",
+      "name": "Kiểm toán Ngân sách Thụ động Thực tế Trên Chip (Chống Phình Diện tích R/C Lý tưởng)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi thiết kế analog/PMIC tích hợp phải tuân thủ trần ngân sách thụ động thực tế (mặc định Capless: sum(C_onchip) <= 20 pF, single C <= 10 pF, sum(R_onchip) <= 1 MΩ, single R <= 300 kΩ, tỉ lệ diện tích tụ/tổng cổng MOS <= 50x) và thay thế R/C lý tưởng bằng primitive PDK thực tế ở vòng sign-off.",
+      "why_vi": "Khi spec không chặn tổng R/C, thuật toán tối ưu có thể phình tụ nội bộ lớn hơn tụ tải ngoài hoặc thêm các điện trở nhiều MΩ không thể chế tạo hay chạy layout mà vẫn qua được bài chấm AC/Tran lý tưởng.",
+      "cadence_check": "Chạy `psf_audit.py design-audit <dut.scs> --schematic <dump.json> --fail-on-violation` (thêm `--forbid-ideal-passives` cho bản chốt PDK).",
+      "related_nodes": [
+        "skill-psf-mos-op-waveform-and-spec-auditor",
+        "skill-closed-loop-sizing-and-pareto-optimization",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
+    },
+    {
+      "id": "CHK-OPT-10",
+      "name": "Kỷ luật Chiều Xoay Transistor Chuẩn Lý thuyết, Bố cục Khối Gọn & Phân cấp Schematic IC617",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Mọi MOSFET khuếch đại/gương dòng giữ kênh thẳng đứng (`R0`/`MY`, PMOS Source ở TRÊN y(S)>y(D), NMOS Source ở DƯỚI y(D)>y(S)), cặp khớp xoay đối xứng `R0`/`MY`, bố trí khối gọn từ trái sang phải giữa ray nguồn trên và mass dưới (`bbox <= 24 x 14`, `crossovers <= 15`, `0` warnings/errors), và bắt buộc tách phân cấp subcell nếu tổng thiết bị > 35.",
+      "why_vi": "Trải phẳng 50–80 linh kiện với dây cắt chéo chằng chịt, khoảng cách dàn trải và transistor xoay sai hướng khiến kỹ sư không đọc nổi kiến trúc mạch, dễ lọt lỗi nối dây và kéo dài thời gian kiểm tra hậu kiểm.",
+      "cadence_check": "Xuất `ic617_client.py dump-json` kèm `export-png` và chạy `psf_audit.py design-audit <dump.json> --fail-on-violation` đạt PASS.",
+      "related_nodes": [
+        "skill-ic617-live-ipc-bridge-and-schematic-json",
+        "skill-ic617-skill-sch-cdf-automation",
+        "skill-psf-mos-op-waveform-and-spec-auditor"
+      ]
     }
   ]
 }

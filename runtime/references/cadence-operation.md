@@ -13,6 +13,26 @@ Với IC617, ưu tiên flow SKILL/OCEAN native đã kiểm chứng trong [ic617_
 
 Runner phải dùng cwd dự án, netlist/model path xác định, run ID và log riêng. Kiểm tra exit status, fatal/error, convergence và analysis/data tồn tại; “process completed” chưa chứng minh dữ liệu đủ để chấm spec. Các đường `.../apps/cadence/data/sessions/virtuoso-*` của launcher Desktop là session tạm, không phải vị trí dự án mặc định. Library thiết kế cần nằm trong `design/` thuộc dự án và `cds.lib` trỏ đúng.
 
-## Kỷ luật Dung lượng PSF ASCII & Thẩm mỹ Schematic IC617
-- **Tiết kiệm dung lượng đĩa (`psfascii`):** Mọi netlist có `tran`/`ac`/`stb`/`pstb`/`noise`/`pnoise`/`pss`/`pac` bắt buộc đặt `saveOptions options save=selected` kèm lệnh `save` tường minh các nút/dòng cần đo (`dcOpInfo` vẫn lưu tự động cho `op-audit`), nhờ đó kích thước mỗi góc giảm từ `~85 MB` xuống `~0,5–3 MB`. Trong giai đoạn tối ưu nháp chỉ quét 4–6 góc biên xấu nhất và tái sử dụng một thư mục bằng `--overwrite-run`; chỉ chạy đủ lưới PVT một lần trên bản chốt và dọn các `psf/` cũ bằng `python -B .../cadence_exec.py prune-runs --project . --keep 2` (`cadence_exec.py` tự chặn khi đĩa trống `< 512 MB`).
-- **Quy tắc vẽ Schematic Virtuoso:** Cấm vẽ schematic kiểu toàn mẩu `STUB` rời rạc từng cột. Phải đặt ray nguồn `VDD`/`VIN` phía trên, ray `VSS` phía dưới, sắp khối từ trái sang phải theo luồng tín hiệu, lật đối xứng `R0`/`MY` cho cặp vi sai và gương dòng, nối dây vuông góc thật không cắt xuyên thân linh kiện và chụp kiểm trực quan bằng `ic617_client.py export-png`.
+## Kỷ luật Dung lượng PSF ASCII, Quy chuẩn Schematic IC617 & Linh kiện Thực tế
+
+### 1. Tiết kiệm dung lượng đĩa (`psfascii`)
+- Mọi netlist có `tran`/`ac`/`stb`/`pstb`/`noise`/`pnoise`/`pss`/`pac` bắt buộc đặt `saveOptions options save=selected` kèm lệnh `save` tường minh các nút/dòng cần đo (`dcOpInfo` vẫn lưu tự động cho `op-audit`), nhờ đó kích thước mỗi góc giảm từ `~85 MB` xuống `~0,5–3 MB`.
+- Trong giai đoạn tối ưu nháp chỉ quét 4–6 góc biên xấu nhất và tái sử dụng một thư mục bằng `--overwrite-run`; chỉ chạy đủ lưới PVT một lần trên bản chốt và dọn các `psf/` cũ bằng `python -B .../cadence_exec.py prune-runs --project . --keep 2` (`cadence_exec.py` tự chặn khi đĩa trống `< 512 MB`).
+
+### 2. Chiều xoay Transistor chuẩn SGK Razavi & Phân khối Schematic (kiểm tra tự động bằng `design-audit`)
+- **Chiều xoay bắt buộc (kênh thẳng đứng `R0` / `MY`, cấm xoay ngang `R90`/`R270` hoặc lộn ngược `MX`/`R180` trừ công tắc truyền dòng được khai báo `--expect-sideways`):**
+  - **PMOS (tải gương, cascode trên, diff-pair PMOS, pass PMOS):** Cực **Source (`S`) hướng LÊN trên** về phía thanh `VDD`/`VIN`, cực **Drain (`D`) hướng XUỐNG dưới** (`y(S) > y(D)`).
+  - **NMOS (cặp vi sai, gương dòng dưới, cascode dưới, nguồn đuôi, xả/kẹp xuống GND):** Cực **Source (`S`) hướng XUỐNG dưới** về phía thanh `VSS`/`GND`, cực **Drain (`D`) hướng LÊN trên** (`y(D) > y(S)`).
+  - **Đối xứng cặp khớp nhau (`R0` ↔ `MY`):** Hai transistor của cặp vi sai, gương dòng, cascode phải đặt ngang hàng nhau (`y` bằng nhau) với hai cực Gate đối mặt nhau (`trái = R0`, `phải = MY`) nối thẳng ngang thật ngắn.
+- **Bố cục theo luồng tín hiệu & Khoảng cách gọn (`bbox <= 24 x 14`, `crossovers <= 15`):**
+  - Đặt ray nguồn `VDD`/`VIN` liên tục phía trên cùng, ray `VSS`/`GND` liên tục phía dưới cùng.
+  - Sắp xếp các khối chức năng từ **trái sang phải** theo thứ tự dòng tín hiệu (ví dụ với LDO: `BIAS & STARTUP` → `ERROR AMP` → `COMPENSATION / DRIVER` → `PASS PMOS & FB DIVIDER`, cụm phụ `SRE / CLAMP` tách gọn bên dưới kèm nhãn chú thích khối `note label`), thu gọn khoảng cách trong khối đủ thoáng không đè chữ, không trải rộng lan man.
+  - Nối dây vuông góc thật bên trong từng khối; chỉ dùng `wire label` ngắn, sạch cho bus phản hồi hoặc phân phối bias dài vượt qua $\ge 2$ khối để giữ `crossovers <= 15` (cấm tuyệt đối kiểu cột `STUB` đứt đoạn).
+  - **Quy tắc phân cấp bắt buộc:** Khi mạch vượt quá **`35` linh kiện**, **bắt buộc tách thành các subcell có symbol riêng** (`bias_startup`, `error_amp`, `driver_comp`, `protection`, `top`) thay vì nhồi phẳng toàn bộ vào 1 trang duy nhất.
+
+### 3. Giới hạn Linh kiện Thụ động Thực tế trên Silicon (Chống "nhồi R/C lý tưởng")
+- **Cấm dùng R/C lý tưởng khổng lồ** để ép đạt thông số mô phỏng pre-layout:
+  - **Tụ điện on-chip (Capless LDO / Op-Amp):** Tổng tụ nội bộ $\sum C_{\text{on-chip}} \le 20\text{ pF}$ (khuyến nghị $\le 15\text{ pF}$), mỗi tụ đơn lẻ $\le 10\text{ pF}$, luôn nhỏ hơn nhiều so với tải `CL`, và diện tích tụ ước tính ($\approx 2\text{ fF}/\mu\text{m}^2$) không phình gấp $> 50\times$ tổng diện tích MOS. Với mạch bù Capless LDO 45 nm/90 nm, ưu tiên **Miller / Ahuja cascode / FVF / DFC** giúp $C_c \approx 2\text{–}8\text{ pF}$ thay vì đặt tụ `30–130 pF`.
+  - **Điện trở on-chip:** Tổng điện trở danh định $\sum R \le 1\text{ M}\Omega$ (khuyến nghị $\le 500\text{ k}\Omega$), mỗi điện trở đơn lẻ $\le 200\text{–}300\text{ k}\Omega$. Tuyệt đối không đặt điện trở lý tưởng hàng $\text{M}\Omega$ (`2–25 MOhm`); khi cần trở lớn tạo hằng số thời gian RC hoặc khởi động dòng thấp, phải thay bằng **MOS hoạt động vùng triode/dưới ngưỡng hoặc pseudoresistor MOS thật** để phản ánh đúng ký sinh và sai lệch theo góc PVT.
+  - **Kiểm định tự động bắt buộc:** Chạy đồng thời:
+    `python -B .../psf_audit.py design-audit <dut.scs> --schematic <dump.json> --forbid-ideal-passives --fail-on-violation` (dùng `--forbid-ideal-passives` ở bước chốt PDK, bỏ cờ này khi còn ở bước thử nhanh pre-PDK nhưng vẫn giữ trần R/C thực tế).

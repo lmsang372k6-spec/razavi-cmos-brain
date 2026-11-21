@@ -149,6 +149,21 @@
         "topo-cmos-ldo-regulator",
         "law-cmos-wells-and-latchup-guard-rings"
       ]
+    },
+    {
+      "id": "CHK-LDO-11",
+      "name": "Ngân sách Thụ động Thực tế Trên Chip (Chống Nhồi Tụ Lý tưởng & Điện trở Hàng MΩ Không Chế tạo Được)",
+      "severity": "error",
+      "method": "structural",
+      "invariant": "Với Capless On-Chip LDO: tổng tụ bù/nội bộ sum(C_onchip) <= 20 pF (khuyến nghị <= 15 pF, mỗi tụ <= 10 pF, luôn nhỏ hơn nhiều so với CL ngoài); tổng điện trở sum(R_onchip) <= 1 MΩ (khuyến nghị <= 500 kΩ, mỗi điện trở <= 300 kΩ); cấm dùng điện trở lý tưởng >= 1 MΩ (thay bằng nhánh bias MOS / pseudoresistor MOS thật) và ưu tiên chuyển toàn bộ R/C chốt sang primitive PDK (`mimcap`/`momcap`/`res*poly`).",
+      "why_vi": "Dùng tụ bù hoặc tụ servo hàng trăm pF (ví dụ Cservo = 130 pF > cả CL = 100 pF) và điện trở lý tưởng 2–25 MΩ làm kết quả pre-layout đẹp giả tạo nhưng tốn diện tích gấp 100–500 lần toàn bộ transistor và sụp đổ hoàn toàn bởi tụ ký sinh xuống đế nền khi trích xuất PEX trên tiến trình CMOS 45 nm / 65 nm / 90 nm.",
+      "cadence_check": "Chạy `psf_audit.py design-audit <dut.scs> --schematic <dump.json> --fail-on-violation` (bắt buộc kèm `--forbid-ideal-passives` ở vòng sign-off PDK) trước khi kết luận mạch đạt chuẩn thực tế.",
+      "related_nodes": [
+        "topo-capless-ldo-fvf-ahuja-dfc-and-sre",
+        "topo-cmos-ldo-regulator",
+        "skill-psf-mos-op-waveform-and-spec-auditor",
+        "tech-common-centroid-sti-wpe-layout"
+      ]
     }
   ]
 }
